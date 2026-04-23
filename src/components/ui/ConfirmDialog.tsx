@@ -22,15 +22,15 @@ export function ConfirmDialog({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-[rgba(24,32,22,0.28)] px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-8">
-      <section className="w-full max-w-[26rem] rounded-[1.75rem] border border-[var(--outline-soft)] bg-[var(--surface-raised)] p-5 shadow-[var(--shadow-soft)]">
-        <h2 className="text-lg font-semibold text-[var(--ink-primary)]">{title}</h2>
-        <p className="mt-2 text-sm leading-6 text-[var(--ink-secondary)]">{description}</p>
-        <div className="mt-5 flex gap-3">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6 backdrop-blur-sm transition-opacity">
+      <section className="w-full max-w-[20rem] rounded-[28px] bg-[var(--surface-container)] p-6 shadow-2xl">
+        <h2 className="text-2xl font-normal text-[var(--on-surface)] mb-4">{title}</h2>
+        <p className="text-sm tracking-wide text-[var(--on-surface-variant)] mb-6">{description}</p>
+        <div className="flex justify-end gap-2 mt-2">
           <button
             type="button"
             onClick={onCancel}
-            className="flex-1 rounded-full border border-[var(--outline-soft)] px-4 py-3 text-sm font-medium text-[var(--ink-primary)]"
+            className="rounded-full px-4 py-2.5 text-sm font-medium text-[var(--primary)] hover:bg-[var(--primary)]/10 transition-colors tap-highlight-transparent"
           >
             取消
           </button>
@@ -38,8 +38,10 @@ export function ConfirmDialog({
             type="button"
             onClick={onConfirm}
             className={[
-              'flex-1 rounded-full px-4 py-3 text-sm font-medium text-white',
-              danger ? 'bg-[var(--danger)]' : 'bg-[var(--brand)]',
+              'rounded-full px-4 py-2.5 text-sm font-medium transition-colors tap-highlight-transparent',
+              danger 
+                ? 'text-[var(--error)] hover:bg-[var(--error)]/10' 
+                : 'text-[var(--primary)] hover:bg-[var(--primary)]/10',
             ].join(' ')}
           >
             {confirmLabel}

@@ -37,13 +37,17 @@ export function OverflowMenu({ items }: OverflowMenuProps) {
         aria-expanded={open}
         aria-label="更多操作"
         onClick={() => setOpen((current) => !current)}
-        className="inline-flex h-10 min-w-10 items-center justify-center rounded-full border border-[var(--outline-soft)] bg-[var(--surface-raised)] px-3 text-sm text-[var(--ink-secondary)]"
+        className="flex h-10 w-10 items-center justify-center rounded-full text-[var(--on-surface-variant)] transition-colors hover:bg-[var(--on-surface-variant)]/10 tap-highlight-transparent"
       >
-        菜单
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="1"/>
+          <circle cx="12" cy="5" r="1"/>
+          <circle cx="12" cy="19" r="1"/>
+        </svg>
       </button>
 
       {open ? (
-        <div className="absolute right-0 top-[calc(100%+0.5rem)] z-30 min-w-[10rem] overflow-hidden rounded-[1.25rem] border border-[var(--outline-soft)] bg-[var(--surface-raised)] p-1 shadow-[var(--shadow-soft)]">
+        <div className="absolute right-0 top-full mt-1 z-30 min-w-[140px] overflow-hidden rounded-xl bg-[var(--surface-container)] py-2 shadow-lg ring-1 ring-[var(--outline-variant)]/50 origin-top-right animate-in fade-in scale-95 duration-100">
           {items.map((item) => (
             <button
               key={item.label}
@@ -54,9 +58,9 @@ export function OverflowMenu({ items }: OverflowMenuProps) {
                 item.onSelect()
               }}
               className={[
-                'flex w-full items-center rounded-[1rem] px-4 py-3 text-left text-sm transition',
-                item.danger ? 'text-[var(--danger)]' : 'text-[var(--ink-primary)]',
-                item.disabled ? 'opacity-40' : 'hover:bg-[var(--surface-accent)]',
+                'flex w-full items-center px-4 py-3 text-left text-sm font-medium transition-colors tap-highlight-transparent',
+                item.danger ? 'text-[var(--error)]' : 'text-[var(--on-surface)]',
+                item.disabled ? 'opacity-40' : 'hover:bg-[var(--on-surface)]/10',
               ].join(' ')}
             >
               {item.label}

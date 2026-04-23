@@ -10,11 +10,11 @@ export function SummaryPage() {
   const { detail, error, isLoading } = useSessionSummaryData(sessionId)
 
   return (
-    <div className="space-y-4">
+    <div className="pb-4">
       <PageHeader title="训练总结" backTo="/" />
 
       {error ? (
-        <div className="rounded border border-rose-300 bg-rose-50 p-3 text-sm text-rose-700">
+        <div className="mx-4 mt-4 rounded-xl bg-[var(--error-container)] px-4 py-3 text-sm text-[var(--on-error-container)]">
           {error}
         </div>
       ) : null}

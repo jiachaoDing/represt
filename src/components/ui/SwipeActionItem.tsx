@@ -7,7 +7,7 @@ type SwipeActionItemProps = PropsWithChildren<{
   onLongPress?: () => void
 }>
 
-const ACTION_WIDTH = 88
+const ACTION_WIDTH = 80
 
 export function SwipeActionItem({
   actionLabel,
@@ -82,7 +82,7 @@ export function SwipeActionItem({
   function finishSwipe() {
     clearLongPressTimer()
     setDragging(false)
-    setOffsetX((current) => (current < -44 ? -ACTION_WIDTH : 0))
+    setOffsetX((current) => (current < -40 ? -ACTION_WIDTH : 0))
   }
 
   return (
@@ -103,9 +103,9 @@ export function SwipeActionItem({
           longPressTriggeredRef.current = false
         }
       }}
-      className="relative overflow-hidden rounded-[1.5rem]"
+      className="relative overflow-hidden w-full group"
     >
-      <div className="absolute inset-y-0 right-0 flex w-[88px] items-stretch justify-end">
+      <div className="absolute inset-y-0 right-0 flex w-[80px] items-stretch justify-end">
         <button
           type="button"
           disabled={disabled}
@@ -113,9 +113,13 @@ export function SwipeActionItem({
             setOffsetX(0)
             onAction()
           }}
-          className="flex w-[88px] items-center justify-center bg-[var(--surface-danger)] text-sm font-medium text-[var(--danger)]"
+          className="flex w-full items-center justify-center bg-[var(--error)] text-[var(--on-error)] transition-colors active:bg-[var(--error)]/80"
+          aria-label={actionLabel}
         >
-          {actionLabel}
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
         </button>
       </div>
       <div
@@ -125,9 +129,10 @@ export function SwipeActionItem({
         onPointerUp={finishSwipe}
         style={{
           transform: `translateX(${offsetX}px)`,
-          transition: dragging ? 'none' : 'transform 160ms ease',
+          transition: dragging ? 'none' : 'transform 200ms cubic-bezier(0.2, 0, 0, 1)',
           touchAction: 'pan-y',
         }}
+        className="w-full bg-[var(--surface)] relative z-10"
       >
         {children}
       </div>

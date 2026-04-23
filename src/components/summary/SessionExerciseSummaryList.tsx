@@ -1,10 +1,7 @@
 import { Link } from 'react-router-dom'
-
-import { SectionCard } from '../ui/SectionCard'
 import type { SessionSummaryDetail } from '../../db/sessions'
 import {
   getCompletedAtLabel,
-  getExerciseStatusLabel,
   getRepsLabel,
   getWeightLabel,
 } from '../../lib/session-display'
@@ -14,62 +11,74 @@ type SessionExerciseSummaryListProps = {
 }
 
 export function SessionExerciseSummaryList({ detail }: SessionExerciseSummaryListProps) {
-  const totalExerciseCount = detail?.exercises.length ?? 0
+  if (!detail) {
+    return null
+  }
+
+  if (detail.exercises.length === 0) {
+    return (
+      <div className="mx-4 mt-8">
+        <p className="text-[var(--on-surface-variant)]">这份训练还没有动作数据。</p>
+      </div>
+    )
+  }
 
   return (
-    <SectionCard
-      title="动作汇总"
-      action={
-        detail ? (
-          <span className="rounded border border-slate-300 px-2 py-1 text-xs">
-            {totalExerciseCount} 个动作
-          </span>
-        ) : null
-      }
-    >
-      {detail && detail.exercises.length === 0 ? <p>这份训练还没有动作数据。</p> : null}
-
-      {detail ? (
-        <div className="space-y-3">
-          {detail.exercises.map((exercise) => (
-            <div key={exercise.id} className="space-y-2 rounded border border-slate-200 p-3">
-              <div className="space-y-1">
-                <p className="font-medium">{exercise.name}</p>
-                <p className="text-xs text-slate-500">
-                  {exercise.completedSets} / {exercise.targetSets} 组 · {getExerciseStatusLabel(exercise.status)}
+    <section className="mt-8">
+      <div className="px-5 mb-4">
+        <h3 className="text-base font-semibold text-[var(--on-surface)]">动作明细</h3>
+      </div>
+      
+      <div className="flex flex-col border-y border-[var(--outline-variant)]">
+        {detail.exercises.map((exercise, index) => (
+          <div key={exercise.id} className={`px-5 py-5 ${index !== 0 ? 'border-t border-[var(--outline-variant)]' : ''}`}>
+            <div className="flex items-start justify-between">
+              <div>
+                <h4 className="text-[17px] font-medium text-[var(--on-surface)]">{exercise.name}</h4>
+                <p className="mt-0.5 text-sm text-[var(--on-surface-variant)]">
+                  已完成 {exercise.completedSets} 组
                 </p>
               </div>
-
-              {exercise.setRecords.length === 0 ? <p className="text-sm text-slate-500">还没有组记录。</p> : null}
-
-              {exercise.setRecords.map((setRecord) => (
-                <div key={setRecord.id} className="grid grid-cols-2 gap-3 rounded border border-slate-200 p-3 sm:grid-cols-4">
-                  <div>
-                    <p className="text-xs text-slate-500">组序号</p>
-                    <p className="mt-1 font-medium">第 {setRecord.setNumber} 组</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-500">完成时间</p>
-                    <p className="mt-1 font-medium">{getCompletedAtLabel(setRecord.completedAt)}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-500">重量</p>
-                    <p className="mt-1 font-medium">{getWeightLabel(setRecord.weightKg)}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-500">次数</p>
-                    <p className="mt-1 font-medium">{getRepsLabel(setRecord.reps)}</p>
-                  </div>
-                </div>
-              ))}
             </div>
-          ))}
-        </div>
-      ) : null}
 
-      <Link to="/" className="inline-flex rounded border border-slate-300 px-3 py-2 text-sm">
-        返回训练安排
-      </Link>
-    </SectionCard>
+            {exercise.setRecords.length > 0 ? (
+              <div className="mt-4 overflow-hidden rounded-xl border border-[var(--outline-variant)] bg-[var(--surface)]">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-[var(--surface-container)] text-[var(--on-surface-variant)]">
+                    <tr>
+                      <th className="px-4 py-2 font-medium w-16">组次</th>
+                      <th className="px-4 py-2 font-medium">重量</th>
+                      <th className="px-4 py-2 font-medium">次数</th>
+                      <th className="px-4 py-2 font-medium text-right">时间</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[var(--outline-variant)]">
+                    {exercise.setRecords.map((setRecord) => (
+                      <tr key={setRecord.id} className="text-[var(--on-surface)]">
+                        <td className="px-4 py-2.5 font-medium text-[var(--on-surface-variant)]">{setRecord.setNumber}</td>
+                        <td className="px-4 py-2.5">{getWeightLabel(setRecord.weightKg)}</td>
+                        <td className="px-4 py-2.5">{getRepsLabel(setRecord.reps)}</td>
+                        <td className="px-4 py-2.5 text-right text-[var(--on-surface-variant)]">{getCompletedAtLabel(setRecord.completedAt)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="mt-3 text-sm text-[var(--outline)]">没有记录数据</p>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-8 px-4 pb-12 flex justify-center">
+        <Link 
+          to="/" 
+          className="inline-flex h-10 items-center justify-center rounded-full border border-[var(--outline)] px-6 text-sm font-medium text-[var(--on-surface)] transition-colors hover:bg-[var(--surface-container)]"
+        >
+          返回今日安排
+        </Link>
+      </div>
+    </section>
   )
 }

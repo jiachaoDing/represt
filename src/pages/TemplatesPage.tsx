@@ -3,12 +3,9 @@ import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { BottomSheet } from '../components/ui/BottomSheet'
 import { ConfirmDialog } from '../components/ui/ConfirmDialog'
 import { FloatingActionButton } from '../components/ui/FloatingActionButton'
-import { OverflowMenu } from '../components/ui/OverflowMenu'
 import { PageHeader } from '../components/ui/PageHeader'
 import { Snackbar } from '../components/ui/Snackbar'
-import { StatusPill } from '../components/ui/StatusPill'
 import { SwipeActionItem } from '../components/ui/SwipeActionItem'
-import { TemplateTabs } from '../components/ui/TemplateTabs'
 import { useTemplatesPageData } from '../hooks/pages/useTemplatesPageData'
 import { getRepsLabel, getWeightLabel } from '../lib/session-display'
 import {
@@ -39,7 +36,6 @@ export function TemplatesPage() {
   } = useTemplatesPageData()
   const [deleteExerciseId, setDeleteExerciseId] = useState<string | null>(null)
   const [editExerciseId, setEditExerciseId] = useState<string | null>(null)
-  const [exerciseActionId, setExerciseActionId] = useState<string | null>(null)
   const [exerciseDraft, setExerciseDraft] = useState<TemplateExerciseDraft>(emptyTemplateExerciseDraft)
   const [isExerciseSheetOpen, setIsExerciseSheetOpen] = useState(false)
   const [renameTemplateName, setRenameTemplateName] = useState('')
@@ -56,14 +52,6 @@ export function TemplatesPage() {
     return () => window.clearTimeout(timer)
   }, [snackbarMessage])
 
-  const editingExercise = useMemo(
-    () => currentTemplate?.exercises.find((exercise) => exercise.id === editExerciseId) ?? null,
-    [currentTemplate, editExerciseId],
-  )
-  const actionExercise = useMemo(
-    () => currentTemplate?.exercises.find((exercise) => exercise.id === exerciseActionId) ?? null,
-    [currentTemplate, exerciseActionId],
-  )
   const deleteExercise = useMemo(
     () => currentTemplate?.exercises.find((exercise) => exercise.id === deleteExerciseId) ?? null,
     [currentTemplate, deleteExerciseId],
@@ -72,8 +60,9 @@ export function TemplatesPage() {
   function openTemplateSheet(mode: TemplateSheetMode) {
     if (mode === 'rename') {
       setRenameTemplateName(currentTemplate?.name ?? '')
+    } else if (mode === 'create') {
+      setNewTemplateName('')
     }
-
     setTemplateSheetMode(mode)
   }
 
@@ -147,7 +136,6 @@ export function TemplatesPage() {
     const didDelete = await handleDeleteExercise(currentTemplate.id, deleteExerciseId)
     if (didDelete) {
       setDeleteExerciseId(null)
-      setExerciseActionId(null)
       setEditExerciseId(null)
       setIsExerciseSheetOpen(false)
       setSnackbarMessage('动作已删除')
@@ -168,146 +156,168 @@ export function TemplatesPage() {
     }
   }
 
-  const overflowItems = [
-    {
-      label: '新增模板',
-      onSelect: () => openTemplateSheet('create'),
-    },
-    {
-      disabled: !currentTemplate,
-      label: '重命名模板',
-      onSelect: () => openTemplateSheet('rename'),
-    },
-    {
-      danger: true,
-      disabled: !currentTemplate,
-      label: '删除模板',
-      onSelect: () => setTemplateDeleteOpen(true),
-    },
-  ]
-
   return (
-    <div className="space-y-4 pb-4">
-      <PageHeader
-        title="模板编辑"
-        eyebrow="TrainRe"
-        actions={<OverflowMenu items={overflowItems} />}
-      />
+    <div className="pb-4">
+      <PageHeader title="模板管理" />
+
+      {/* Filter chips array */}
+      <div className="mt-2 -mx-4 overflow-x-auto px-4 scrollbar-hide">
+        <div className="flex items-center gap-2 pb-2 w-max">
+          {templates.map((template) => {
+            const isSelected = template.id === selectedTemplateId
+            return (
+              <button
+                key={template.id}
+                onClick={() => setSelectedTemplateId(template.id)}
+                disabled={isSubmitting}
+                className={[
+                  'flex items-center justify-center h-8 px-4 rounded-lg text-sm font-medium transition-colors whitespace-nowrap tap-highlight-transparent',
+                  isSelected 
+                    ? 'bg-[var(--primary-container)] text-[var(--on-primary-container)]' 
+                    : 'border border-[var(--outline)] text-[var(--on-surface-variant)] hover:bg-[var(--surface-container)]'
+                ].join(' ')}
+              >
+                {template.name}
+              </button>
+            )
+          })}
+          
+          {/* Create Template Action Chip */}
+          <button
+            onClick={() => openTemplateSheet('create')}
+            disabled={isSubmitting}
+            className="flex items-center justify-center h-8 px-3 rounded-lg border border-[var(--outline-variant)] text-[var(--primary)] hover:bg-[var(--primary)]/10 transition-colors whitespace-nowrap tap-highlight-transparent"
+          >
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            新增
+          </button>
+        </div>
+      </div>
 
       {error ? (
-        <div className="rounded-[1.25rem] border border-[var(--surface-danger)] bg-[rgba(255,218,214,0.65)] px-4 py-3 text-sm text-[var(--danger)]">
+        <div className="mx-4 mt-4 rounded-xl bg-[var(--error-container)] px-4 py-3 text-sm text-[var(--on-error-container)]">
           {error}
         </div>
       ) : null}
 
-      {templates.length > 0 ? (
-        <section className="overflow-hidden rounded-[1.75rem] border border-[var(--outline-soft)] bg-[var(--surface)] shadow-[var(--shadow-soft)]">
-          <div className="px-4 pt-4">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-sm font-medium text-[var(--ink-primary)]">
-                  {currentTemplate?.name ?? '当前模板'}
-                </p>
-              </div>
-              <StatusPill value={`${currentTemplate?.exercises.length ?? 0} 个动作`} />
-            </div>
-          </div>
-
-          <TemplateTabs
-            items={templates.map((template) => ({
-              disabled: isSubmitting,
-              id: template.id,
-              label: template.name,
-              meta: `${template.exercises.length} 个动作`,
-            }))}
-            selectedId={selectedTemplateId}
-            onSelect={setSelectedTemplateId}
-          />
-        </section>
-      ) : (
-        <section className="rounded-[1.75rem] border border-dashed border-[var(--outline-strong)] bg-[rgba(255,255,255,0.45)] px-5 py-6">
-          <p className="text-base font-semibold text-[var(--ink-primary)]">先创建一个模板</p>
-          <button
-            type="button"
-            onClick={() => openTemplateSheet('create')}
-            className="mt-4 inline-flex rounded-full bg-[var(--brand)] px-4 py-3 text-sm font-medium text-white"
-          >
-            新增模板
-          </button>
-        </section>
-      )}
-
-      <section className="space-y-3">
-        <div className="flex items-end justify-between px-1">
-          <div>
-            <p className="text-base font-semibold text-[var(--ink-primary)]">模板动作</p>
-          </div>
-        </div>
-
+      <section className="mt-4">
         {isLoading ? (
-          <div className="space-y-3">
+          <div className="space-y-0">
             {Array.from({ length: 4 }).map((_, index) => (
               <div
                 key={index}
-                className="h-[5.25rem] rounded-[1.5rem] border border-[var(--outline-soft)] bg-[rgba(255,255,255,0.7)]"
+                className="h-[4.5rem] border-b border-[var(--outline-variant)] bg-[var(--surface-container)] opacity-50 animate-pulse"
               />
             ))}
           </div>
         ) : null}
 
-        {!isLoading && currentTemplate && currentTemplate.exercises.length === 0 ? (
-          <div className="rounded-[1.75rem] border border-dashed border-[var(--outline-strong)] bg-[rgba(255,255,255,0.45)] px-5 py-6">
-            <p className="text-sm font-medium text-[var(--ink-primary)]">这个模板还没有动作</p>
+        {!isLoading && templates.length === 0 ? (
+          <div className="mx-4 rounded-xl border border-dashed border-[var(--outline)] px-5 py-8 text-center mt-6">
+            <p className="text-sm font-medium text-[var(--on-surface-variant)]">还没有创建任何模板</p>
+            <button
+              type="button"
+              onClick={() => openTemplateSheet('create')}
+              className="mt-4 inline-flex items-center text-sm font-medium text-[var(--primary)]"
+            >
+              新建模板
+            </button>
           </div>
         ) : null}
 
         {!isLoading && currentTemplate ? (
-          <div className="space-y-3">
-            {currentTemplate.exercises.map((exercise) => (
-              <SwipeActionItem
-                key={exercise.id}
-                actionLabel="删除"
-                disabled={isSubmitting}
-                onAction={() => setDeleteExerciseId(exercise.id)}
-                onLongPress={() => setExerciseActionId(exercise.id)}
+          <>
+            {/* Contextual Action Bar */}
+            <div className="flex items-center justify-between mb-4 border-b border-[var(--outline-variant)] pb-3">
+              <div className="flex-1 flex items-center gap-2">
+                <button
+                  onClick={() => openTemplateSheet('rename')}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-[var(--primary)] hover:bg-[var(--primary)]/10 transition-colors tap-highlight-transparent"
+                >
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                  </svg>
+                  编辑名称
+                </button>
+              </div>
+              <button
+                onClick={() => setTemplateDeleteOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-[var(--error)] hover:bg-[var(--error)]/10 transition-colors tap-highlight-transparent"
               >
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+                删除模板
+              </button>
+            </div>
+
+            {currentTemplate.exercises.length === 0 ? (
+              <div className="mx-4 rounded-xl border border-dashed border-[var(--outline)] px-5 py-8 text-center mt-6">
+                <p className="text-sm font-medium text-[var(--on-surface-variant)]">这个模板还没有动作</p>
                 <button
                   type="button"
-                  onClick={() => openEditExerciseSheet(exercise.id)}
-                  className="block w-full rounded-[1.5rem] border border-[var(--outline-soft)] bg-[var(--surface-raised)] px-4 py-4 text-left shadow-[var(--shadow-soft)]"
+                  onClick={openCreateExerciseSheet}
+                  className="mt-4 inline-flex items-center text-sm font-medium text-[var(--primary)]"
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="truncate text-base font-semibold text-[var(--ink-primary)]">
-                        {exercise.name}
-                      </p>
-                      <p className="mt-1 text-sm text-[var(--ink-secondary)]">
-                        默认 {exercise.targetSets} 组 · 休息 {exercise.restSeconds} 秒
-                      </p>
-                      <p className="mt-1 text-xs text-[var(--ink-tertiary)]">
-                        {getWeightLabel(exercise.weightKg ?? null)} · {getRepsLabel(exercise.reps ?? null)}
-                      </p>
-                    </div>
-                  </div>
+                  添加动作
                 </button>
-              </SwipeActionItem>
-            ))}
-          </div>
+              </div>
+            ) : (
+              <div className="flex flex-col border-y border-[var(--outline-variant)]">
+                {currentTemplate.exercises.map((exercise, index) => (
+                  <SwipeActionItem
+                    key={exercise.id}
+                    actionLabel="删除"
+                    disabled={isSubmitting}
+                    onAction={() => setDeleteExerciseId(exercise.id)}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => openEditExerciseSheet(exercise.id)}
+                      className={`block w-full text-left bg-[var(--surface)] px-4 py-4 ${index !== 0 ? 'border-t border-[var(--outline-variant)]' : ''}`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <svg viewBox="0 0 24 24" width="20" height="20" className="text-[var(--outline)] shrink-0" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <circle cx="9" cy="12" r="1"></circle><circle cx="9" cy="5" r="1"></circle><circle cx="9" cy="19" r="1"></circle><circle cx="15" cy="12" r="1"></circle><circle cx="15" cy="5" r="1"></circle><circle cx="15" cy="19" r="1"></circle>
+                        </svg>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-base font-normal text-[var(--on-surface)]">
+                            {exercise.name}
+                          </p>
+                          <p className="mt-0.5 text-sm text-[var(--on-surface-variant)]">
+                            {exercise.targetSets} 组 · 休息 {exercise.restSeconds} 秒
+                          </p>
+                          <p className="mt-0.5 text-xs text-[var(--outline)]">
+                            {getWeightLabel(exercise.weightKg ?? null)} · {getRepsLabel(exercise.reps ?? null)}
+                          </p>
+                        </div>
+                      </div>
+                    </button>
+                  </SwipeActionItem>
+                ))}
+              </div>
+            )}
+          </>
         ) : null}
       </section>
 
       {currentTemplate ? (
-        <FloatingActionButton label="新增动作" onClick={openCreateExerciseSheet} />
+        <FloatingActionButton onClick={openCreateExerciseSheet} />
       ) : null}
 
       <BottomSheet
         open={templateSheetMode !== null}
-        title={templateSheetMode === 'create' ? '新增模板' : '重命名模板'}
+        title={templateSheetMode === 'create' ? '新增模板' : '编辑名称'}
         onClose={() => setTemplateSheetMode(null)}
       >
-        <form className="space-y-4" onSubmit={handleTemplateSubmit}>
-          <label className="block space-y-2">
-            <span className="text-sm font-medium text-[var(--ink-primary)]">模板名称</span>
+        <form className="space-y-5 mt-2" onSubmit={handleTemplateSubmit}>
+          <label className="block">
+            <span className="block text-xs font-medium text-[var(--on-surface-variant)] mb-1 ml-1">模板名称</span>
             <input
               value={templateSheetMode === 'create' ? newTemplateName : renameTemplateName}
               disabled={isSubmitting}
@@ -316,17 +326,20 @@ export function TemplatesPage() {
                   ? setNewTemplateName(event.target.value)
                   : setRenameTemplateName(event.target.value)
               }
-              className="w-full rounded-[1.15rem] border border-[var(--outline-soft)] bg-white px-4 py-3 text-base outline-none"
+              className="w-full rounded-none border-b border-[var(--on-surface)] bg-[var(--surface-container)] px-4 py-3 text-base text-[var(--on-surface)] outline-none focus:border-b-2 focus:border-[var(--primary)] transition-all"
+              placeholder="例如：推胸日"
             />
           </label>
 
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full rounded-full bg-[var(--brand)] px-4 py-3 text-sm font-medium text-white disabled:opacity-40"
-          >
-            {templateSheetMode === 'create' ? '创建模板' : '保存名称'}
-          </button>
+          <div className="pt-2">
+            <button
+              type="submit"
+              disabled={isSubmitting || (templateSheetMode === 'create' ? !newTemplateName.trim() : !renameTemplateName.trim())}
+              className="w-full rounded-full bg-[var(--primary)] px-6 py-3.5 text-sm font-medium text-[var(--on-primary)] disabled:opacity-40 transition-opacity"
+            >
+              {templateSheetMode === 'create' ? '创建模板' : '保存'}
+            </button>
+          </div>
         </form>
       </BottomSheet>
 
@@ -340,22 +353,23 @@ export function TemplatesPage() {
         }}
       >
         {currentTemplate ? (
-          <form className="space-y-4" onSubmit={handleExerciseSubmit}>
-            <label className="block space-y-2">
-              <span className="text-sm font-medium text-[var(--ink-primary)]">动作名</span>
+          <form className="space-y-5 mt-2" onSubmit={handleExerciseSubmit}>
+            <label className="block">
+              <span className="block text-xs font-medium text-[var(--on-surface-variant)] mb-1 ml-1">动作名称</span>
               <input
                 value={exerciseDraft.name}
                 disabled={isSubmitting}
                 onChange={(event) =>
                   setExerciseDraft((current) => ({ ...current, name: event.target.value }))
                 }
-                className="w-full rounded-[1.15rem] border border-[var(--outline-soft)] bg-white px-4 py-3 text-base outline-none"
+                className="w-full rounded-none border-b border-[var(--on-surface)] bg-[var(--surface-container)] px-4 py-3 text-base text-[var(--on-surface)] outline-none focus:border-b-2 focus:border-[var(--primary)] transition-all"
+                placeholder="例如：杠铃卧推"
               />
             </label>
 
-            <div className="grid grid-cols-2 gap-3">
-              <label className="block space-y-2">
-                <span className="text-sm font-medium text-[var(--ink-primary)]">默认组数</span>
+            <div className="grid grid-cols-2 gap-4">
+              <label className="block">
+                <span className="block text-xs font-medium text-[var(--on-surface-variant)] mb-1 ml-1">默认组数</span>
                 <input
                   type="number"
                   min={1}
@@ -368,12 +382,12 @@ export function TemplatesPage() {
                       targetSets: event.target.value,
                     }))
                   }
-                  className="w-full rounded-[1.15rem] border border-[var(--outline-soft)] bg-white px-4 py-3 text-base outline-none"
+                  className="w-full rounded-none border-b border-[var(--on-surface)] bg-[var(--surface-container)] px-4 py-3 text-base text-[var(--on-surface)] outline-none focus:border-b-2 focus:border-[var(--primary)] transition-all"
                 />
               </label>
 
-              <label className="block space-y-2">
-                <span className="text-sm font-medium text-[var(--ink-primary)]">休息秒数</span>
+              <label className="block">
+                <span className="block text-xs font-medium text-[var(--on-surface-variant)] mb-1 ml-1">休息秒数</span>
                 <input
                   type="number"
                   min={0}
@@ -386,14 +400,14 @@ export function TemplatesPage() {
                       restSeconds: event.target.value,
                     }))
                   }
-                  className="w-full rounded-[1.15rem] border border-[var(--outline-soft)] bg-white px-4 py-3 text-base outline-none"
+                  className="w-full rounded-none border-b border-[var(--on-surface)] bg-[var(--surface-container)] px-4 py-3 text-base text-[var(--on-surface)] outline-none focus:border-b-2 focus:border-[var(--primary)] transition-all"
                 />
               </label>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <label className="block space-y-2">
-                <span className="text-sm font-medium text-[var(--ink-primary)]">默认重量 (kg)</span>
+            <div className="grid grid-cols-2 gap-4">
+              <label className="block">
+                <span className="block text-xs font-medium text-[var(--on-surface-variant)] mb-1 ml-1">默认重量 (kg)</span>
                 <input
                   type="number"
                   min={0}
@@ -407,12 +421,13 @@ export function TemplatesPage() {
                       weightKg: event.target.value,
                     }))
                   }
-                  className="w-full rounded-[1.15rem] border border-[var(--outline-soft)] bg-white px-4 py-3 text-base outline-none"
+                  className="w-full rounded-none border-b border-[var(--on-surface)] bg-[var(--surface-container)] px-4 py-3 text-base text-[var(--on-surface)] outline-none focus:border-b-2 focus:border-[var(--primary)] transition-all"
+                  placeholder="可选"
                 />
               </label>
 
-              <label className="block space-y-2">
-                <span className="text-sm font-medium text-[var(--ink-primary)]">默认次数</span>
+              <label className="block">
+                <span className="block text-xs font-medium text-[var(--on-surface-variant)] mb-1 ml-1">默认次数</span>
                 <input
                   type="number"
                   min={0}
@@ -425,54 +440,29 @@ export function TemplatesPage() {
                       reps: event.target.value,
                     }))
                   }
-                  className="w-full rounded-[1.15rem] border border-[var(--outline-soft)] bg-white px-4 py-3 text-base outline-none"
+                  className="w-full rounded-none border-b border-[var(--on-surface)] bg-[var(--surface-container)] px-4 py-3 text-base text-[var(--on-surface)] outline-none focus:border-b-2 focus:border-[var(--primary)] transition-all"
+                  placeholder="可选"
                 />
               </label>
             </div>
 
-            {editingExercise ? (
-              <div className="rounded-[1.25rem] bg-[rgba(24,32,22,0.04)] px-4 py-3 text-sm text-[var(--ink-secondary)]">
-                当前编辑：{editingExercise.name}
-              </div>
-            ) : null}
-
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full rounded-full bg-[var(--brand)] px-4 py-3 text-sm font-medium text-white disabled:opacity-40"
-            >
-              {editExerciseId ? '保存动作' : '添加动作'}
-            </button>
-          </form>
-        ) : null}
-      </BottomSheet>
-
-      <BottomSheet
-        open={actionExercise !== null}
-        title={actionExercise?.name ?? '动作'}
-        onClose={() => setExerciseActionId(null)}
-      >
-        {actionExercise ? (
-          <div className="space-y-3">
-            <div className="rounded-[1.25rem] bg-[rgba(24,32,22,0.04)] px-4 py-3 text-sm text-[var(--ink-secondary)]">
-              默认 {actionExercise.targetSets} 组 · 休息 {actionExercise.restSeconds} 秒 ·{' '}
-              {getWeightLabel(actionExercise.weightKg ?? null)} · {getRepsLabel(actionExercise.reps ?? null)}
+            <div className="pt-2">
+              <button
+                type="submit"
+                disabled={isSubmitting || !exerciseDraft.name.trim()}
+                className="w-full rounded-full bg-[var(--primary)] px-6 py-3.5 text-sm font-medium text-[var(--on-primary)] disabled:opacity-40 transition-opacity"
+              >
+                {editExerciseId ? '保存' : '添加动作'}
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => setDeleteExerciseId(actionExercise.id)}
-              className="w-full rounded-full bg-[var(--danger)] px-4 py-3 text-sm font-medium text-white"
-            >
-              删除这个动作
-            </button>
-          </div>
+          </form>
         ) : null}
       </BottomSheet>
 
       <ConfirmDialog
         open={deleteExercise !== null}
         title="删除动作？"
-        description={deleteExercise ? `“${deleteExercise.name}”` : ''}
+        description={deleteExercise ? `确定从模板中删除“${deleteExercise.name}”吗？` : ''}
         confirmLabel="删除"
         danger
         onCancel={() => setDeleteExerciseId(null)}
@@ -483,9 +473,9 @@ export function TemplatesPage() {
         open={templateDeleteOpen && currentTemplate !== null}
         title="删除模板？"
         description={
-          currentTemplate ? `“${currentTemplate.name}” 及其全部动作会被删除。` : ''
+          currentTemplate ? `确定删除“${currentTemplate.name}”吗？该操作无法恢复。` : ''
         }
-        confirmLabel="删除模板"
+        confirmLabel="删除"
         danger
         onCancel={() => setTemplateDeleteOpen(false)}
         onConfirm={() => void handleConfirmDeleteTemplate()}

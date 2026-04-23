@@ -1,31 +1,21 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 
 import { BottomSheet } from '../components/ui/BottomSheet'
 import { ConfirmDialog } from '../components/ui/ConfirmDialog'
 import { FloatingActionButton } from '../components/ui/FloatingActionButton'
-import { OverflowMenu } from '../components/ui/OverflowMenu'
 import { PageHeader } from '../components/ui/PageHeader'
 import { Snackbar } from '../components/ui/Snackbar'
-import { StatusPill } from '../components/ui/StatusPill'
 import { SwipeActionItem } from '../components/ui/SwipeActionItem'
-import { TemplateTabs } from '../components/ui/TemplateTabs'
 import { useNow } from '../hooks/useNow'
 import { useSchedulePageData } from '../hooks/pages/useSchedulePageData'
 import {
+  deriveExerciseStatus,
   getExerciseRestLabel,
-  getRepsLabel,
-  getSessionStatusLabel,
-  getWeightLabel,
 } from '../lib/session-display'
-
-function getSessionTone(status: 'active' | 'completed' | 'pending') {
-  return status === 'completed' ? 'positive' : 'neutral'
-}
 
 export function SchedulePage() {
   const now = useNow()
-  const navigate = useNavigate()
   const {
     canAddTemporaryExercise,
     currentSession,
@@ -38,18 +28,21 @@ export function SchedulePage() {
     isLoading,
     isSubmitting,
     newExerciseDraft,
-    selectedTemplateId,
     setNewExerciseDraft,
-    setSelectedTemplateId,
     shouldConfirmContinueBeforeAddingExercise,
     templates,
   } = useSchedulePageData()
-  const [actionExerciseId, setActionExerciseId] = useState<string | null>(null)
+  
+  const [isFabMenuOpen, setIsFabMenuOpen] = useState(false)
   const [deleteExerciseId, setDeleteExerciseId] = useState<string | null>(null)
   const [isContinueExerciseDialogOpen, setIsContinueExerciseDialogOpen] = useState(false)
   const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false)
   const [isTemplateSheetOpen, setIsTemplateSheetOpen] = useState(false)
+  
+  // Choose template to import
+  const [importSourceTemplateId, setImportSourceTemplateId] = useState<string | null>(null)
   const [selectedTemplateExerciseIds, setSelectedTemplateExerciseIds] = useState<string[]>([])
+  
   const [pendingTemplateImportId, setPendingTemplateImportId] = useState<string | null>(null)
   const [pendingTemplateExerciseIds, setPendingTemplateExerciseIds] = useState<string[]>([])
   const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null)
@@ -58,30 +51,27 @@ export function SchedulePage() {
     if (!snackbarMessage) {
       return
     }
-
     const timer = window.setTimeout(() => setSnackbarMessage(null), 2200)
     return () => window.clearTimeout(timer)
   }, [snackbarMessage])
 
-  const actionExercise = useMemo(
-    () => currentSession?.exercises.find((exercise) => exercise.id === actionExerciseId) ?? null,
-    [actionExerciseId, currentSession],
-  )
   const deleteExercise = useMemo(
     () => currentSession?.exercises.find((exercise) => exercise.id === deleteExerciseId) ?? null,
     [currentSession, deleteExerciseId],
   )
-  const selectedTemplate = useMemo(
-    () => templates.find((template) => template.id === selectedTemplateId) ?? null,
-    [selectedTemplateId, templates],
+  
+  const importSourceTemplate = useMemo(
+    () => templates.find((template) => template.id === importSourceTemplateId) ?? null,
+    [importSourceTemplateId, templates],
   )
+
   const pendingTemplateImportConfirmation = pendingTemplateImportId
     ? getTemplateImportConfirmation(pendingTemplateImportId, pendingTemplateExerciseIds)
     : null
 
   useEffect(() => {
-    setSelectedTemplateExerciseIds(selectedTemplate?.exercises.map((exercise) => exercise.id) ?? [])
-  }, [selectedTemplate])
+    setSelectedTemplateExerciseIds(importSourceTemplate?.exercises.map((exercise) => exercise.id) ?? [])
+  }, [importSourceTemplate])
 
   function toggleTemplateExercise(exerciseId: string) {
     setSelectedTemplateExerciseIds((current) =>
@@ -132,7 +122,7 @@ export function SchedulePage() {
   }
 
   async function handleImportTemplate() {
-    if (!selectedTemplateId) {
+    if (!importSourceTemplateId) {
       return
     }
 
@@ -141,13 +131,13 @@ export function SchedulePage() {
       return
     }
 
-    if (getTemplateImportConfirmation(selectedTemplateId, selectedTemplateExerciseIds)) {
-      setPendingTemplateImportId(selectedTemplateId)
+    if (getTemplateImportConfirmation(importSourceTemplateId, selectedTemplateExerciseIds)) {
+      setPendingTemplateImportId(importSourceTemplateId)
       setPendingTemplateExerciseIds(selectedTemplateExerciseIds)
       return
     }
 
-    await importTemplate(selectedTemplateId, selectedTemplateExerciseIds)
+    await importTemplate(importSourceTemplateId, selectedTemplateExerciseIds)
   }
 
   async function addExercise() {
@@ -178,116 +168,91 @@ export function SchedulePage() {
     const didDelete = await handleDeleteExercise(deleteExerciseId)
     if (didDelete) {
       setDeleteExerciseId(null)
-      setActionExerciseId(null)
       setSnackbarMessage('动作已删除')
     }
   }
 
-  const overflowItems = [
-    {
-      label: '编辑模板',
-      onSelect: () => navigate('/templates'),
-    },
-    ...(currentSession?.status === 'completed'
-      ? [
-          {
-            label: '查看总结',
-            onSelect: () => navigate(`/summary/${currentSession.id}`),
-          },
-        ]
-      : []),
-  ]
+  const todayStr = new Intl.DateTimeFormat('zh-CN', { month: 'long', day: 'numeric', weekday: 'short' }).format(new Date())
+  const completedCount = currentSession?.exercises.filter(e => deriveExerciseStatus(e) === 'completed').length || 0
+  const totalCount = currentSession?.exercises.length || 0
 
   return (
-    <div className="space-y-4 pb-4">
+    <div className="pb-4">
       <PageHeader
-        title="今日训练"
-        eyebrow="TrainRe"
-        actions={<OverflowMenu items={overflowItems} />}
+        title={todayStr}
+        subtitle={`${completedCount} / ${totalCount} 动作已完成`}
       />
 
       {error ? (
-        <div className="rounded-[1.25rem] border border-[var(--surface-danger)] bg-[rgba(255,218,214,0.65)] px-4 py-3 text-sm text-[var(--danger)]">
+        <div className="mx-4 mt-4 rounded-xl bg-[var(--error-container)] px-4 py-3 text-sm text-[var(--on-error-container)]">
           {error}
         </div>
       ) : null}
 
-      {hasTemplates ? (
-        <section className="overflow-hidden rounded-[1.75rem] border border-[var(--outline-soft)] bg-[var(--surface)] shadow-[var(--shadow-soft)]">
-          <div className="px-4 pt-4">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-sm font-medium text-[var(--ink-primary)]">
-                  快捷加入动作集合
-                </p>
-              </div>
-              {currentSession ? (
-                <StatusPill
-                  tone={getSessionTone(currentSession.status)}
-                  value={getSessionStatusLabel(currentSession.status)}
-                />
-              ) : null}
-            </div>
-          </div>
-
-          <TemplateTabs
-            items={templates.map((template) => ({
-              disabled: isSubmitting,
-              id: template.id,
-              label: template.name,
-              meta: `${template.exercises.length} 个动作`,
-            }))}
-            selectedId={selectedTemplateId}
-            onSelect={(templateId) => {
-              setSelectedTemplateId(templateId)
-              setIsTemplateSheetOpen(true)
-            }}
-          />
-
-          <div className="flex flex-wrap items-center gap-2 border-t border-[var(--outline-soft)] px-4 py-3 text-xs text-[var(--ink-secondary)]">
-            <StatusPill value={`${currentSession?.exercises.length ?? 0} 个今日动作`} />
-          </div>
-        </section>
-      ) : (
-        <section className="rounded-[1.75rem] border border-[var(--outline-soft)] bg-[var(--surface)] px-5 py-6 shadow-[var(--shadow-soft)]">
-          <p className="text-base font-semibold text-[var(--ink-primary)]">还没有动作集合模板</p>
-          <Link
-            to="/templates"
-            className="mt-4 inline-flex rounded-full bg-[var(--brand)] px-4 py-3 text-sm font-medium text-white"
-          >
-            去创建模板
-          </Link>
-        </section>
-      )}
-
-      <section className="space-y-3">
-        <div className="flex items-end justify-between px-1">
-          <div>
-            <p className="text-base font-semibold text-[var(--ink-primary)]">动作列表</p>
-          </div>
-        </div>
-
+      <section className="mt-6">
         {isLoading ? (
-          <div className="space-y-3">
+          <div className="space-y-0">
             {Array.from({ length: 4 }).map((_, index) => (
               <div
                 key={index}
-                className="h-[5.25rem] rounded-[1.5rem] border border-[var(--outline-soft)] bg-[rgba(255,255,255,0.7)]"
+                className="h-[4.5rem] border-b border-[var(--outline-variant)] bg-[var(--surface-container)] opacity-50 animate-pulse"
               />
             ))}
           </div>
         ) : null}
 
         {!isLoading && currentSession?.exercises.length === 0 ? (
-          <div className="rounded-[1.75rem] border border-dashed border-[var(--outline-strong)] bg-[rgba(255,255,255,0.45)] px-5 py-6">
-            <p className="text-sm font-medium text-[var(--ink-primary)]">今天还没有动作</p>
+          <div className="mx-4 rounded-xl border border-dashed border-[var(--outline)] px-5 py-8 text-center">
+            <p className="text-sm font-medium text-[var(--on-surface-variant)]">今天还没有动作</p>
+            {hasTemplates ? (
+              <button 
+                className="mt-4 text-sm font-medium text-[var(--primary)]"
+                onClick={() => setIsFabMenuOpen(true)}
+              >
+                从模板导入
+              </button>
+            ) : (
+               <Link 
+                 to="/templates"
+                 className="mt-4 block text-sm font-medium text-[var(--primary)]"
+               >
+                 去创建模板
+               </Link>
+            )}
           </div>
         ) : null}
 
         {!isLoading && currentSession ? (
-          <div className="space-y-3">
-            {currentSession.exercises.map((exercise) => {
+          <div className="flex flex-col border-y border-[var(--outline-variant)]">
+            {currentSession.exercises.map((exercise, index) => {
               const canDelete = canDeleteExercise(exercise.id)
+              const status = deriveExerciseStatus(exercise)
+              
+              let statusClasses = ''
+              let iconNode = null
+              
+              if (status === 'completed') {
+                statusClasses = 'border-l-4 border-l-[var(--primary)] bg-[var(--surface)]'
+                iconNode = (
+                  <svg viewBox="0 0 24 24" width="20" height="20" className="text-[var(--primary)] shrink-0" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                  </svg>
+                )
+              } else if (status === 'active') {
+                statusClasses = 'border-l-4 border-l-[var(--tertiary)] bg-[var(--tertiary-container)]'
+                iconNode = (
+                  <svg viewBox="0 0 24 24" width="20" height="20" className="text-[var(--tertiary)] shrink-0" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/>
+                  </svg>
+                )
+              } else {
+                statusClasses = 'border-l-4 border-l-[var(--outline)] bg-[var(--surface)]'
+                iconNode = (
+                  <svg viewBox="0 0 24 24" width="20" height="20" className="text-[var(--outline-variant)] shrink-0" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="9 18 15 12 9 6"/>
+                  </svg>
+                )
+              }
 
               return (
                 <SwipeActionItem
@@ -295,26 +260,21 @@ export function SchedulePage() {
                   actionLabel="删除"
                   disabled={!canDelete}
                   onAction={() => setDeleteExerciseId(exercise.id)}
-                  onLongPress={() => setActionExerciseId(exercise.id)}
                 >
                   <Link
                     to={`/exercise/${exercise.id}`}
-                    className="block rounded-[1.5rem] border border-[var(--outline-soft)] bg-[var(--surface-raised)] px-4 py-4 shadow-[var(--shadow-soft)]"
+                    className={`block w-full px-4 py-4 ${statusClasses} ${index !== 0 ? 'border-t border-t-[var(--outline-variant)]' : ''}`}
                   >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className="truncate text-base font-semibold text-[var(--ink-primary)]">
+                    <div className="flex items-center gap-3">
+                      <div className="min-w-0 flex-1">
+                        <p className={`truncate text-base font-normal ${status === 'completed' ? 'text-[var(--outline)] line-through' : 'text-[var(--on-surface)]'}`}>
                           {exercise.name}
                         </p>
-                        <p className="mt-1 text-sm text-[var(--ink-secondary)]">
-                          {exercise.completedSets} / {exercise.targetSets} 组 · 休息 {exercise.restSeconds} 秒
+                        <p className={`mt-0.5 text-sm ${status === 'active' ? 'text-[var(--tertiary)] font-medium' : status === 'completed' ? 'text-[var(--outline)]' : 'text-[var(--on-surface-variant)]'}`}>
+                          {status === 'active' ? getExerciseRestLabel(exercise, now) : `${exercise.completedSets} / ${exercise.targetSets} 组`}
                         </p>
                       </div>
-                      <div className="shrink-0 text-right">
-                        <p className="text-sm font-medium text-[var(--brand-strong)]">
-                          {getExerciseRestLabel(exercise, now)}
-                        </p>
-                      </div>
+                      {iconNode}
                     </div>
                   </Link>
                 </SwipeActionItem>
@@ -325,30 +285,70 @@ export function SchedulePage() {
       </section>
 
       {canAddTemporaryExercise ? (
-        <FloatingActionButton label="新增动作" onClick={() => setIsCreateSheetOpen(true)} />
+        <FloatingActionButton onClick={() => setIsFabMenuOpen(true)} />
       ) : null}
 
       <BottomSheet
+        open={isFabMenuOpen}
+        title="添加动作"
+        onClose={() => setIsFabMenuOpen(false)}
+      >
+        <div className="space-y-1">
+          {hasTemplates && templates.length > 0 ? (
+            templates.map((template) => (
+              <button
+                key={template.id}
+                onClick={() => {
+                  setImportSourceTemplateId(template.id)
+                  setIsFabMenuOpen(false)
+                  setIsTemplateSheetOpen(true)
+                }}
+                className="w-full flex items-center justify-between px-4 py-4 rounded-xl text-left hover:bg-[var(--surface-container)] transition-colors"
+              >
+                <span className="text-[var(--on-surface)] text-base font-medium">导入 {template.name}</span>
+                <span className="text-[var(--on-surface-variant)] text-sm">{template.exercises.length} 个动作</span>
+              </button>
+            ))
+          ) : null}
+          <div className="my-2 border-t border-[var(--outline-variant)]" />
+          <button
+            onClick={() => {
+              setIsFabMenuOpen(false)
+              setIsCreateSheetOpen(true)
+            }}
+            className="w-full flex items-center gap-3 px-4 py-4 rounded-xl text-left hover:bg-[var(--surface-container)] transition-colors"
+          >
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--on-surface)]">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            <span className="text-[var(--on-surface)] text-base font-medium">手动新建动作</span>
+          </button>
+        </div>
+      </BottomSheet>
+
+      <BottomSheet
         open={isCreateSheetOpen}
-        title="新增动作"
+        title="手动新建动作"
         onClose={() => setIsCreateSheetOpen(false)}
       >
-        <form className="space-y-4" onSubmit={handleAddExercise}>
-          <label className="block space-y-2">
-            <span className="text-sm font-medium text-[var(--ink-primary)]">动作名</span>
+        <form className="space-y-5 mt-2" onSubmit={handleAddExercise}>
+          <label className="block">
+            <span className="block text-xs font-medium text-[var(--on-surface-variant)] mb-1 ml-1">动作名称</span>
             <input
               value={newExerciseDraft.name}
               disabled={isSubmitting}
               onChange={(event) =>
                 setNewExerciseDraft((current) => ({ ...current, name: event.target.value }))
               }
-              className="w-full rounded-[1.15rem] border border-[var(--outline-soft)] bg-white px-4 py-3 text-base outline-none"
+              className="w-full rounded-none border-b border-[var(--on-surface)] bg-[var(--surface-container)] px-4 py-3 text-base text-[var(--on-surface)] outline-none focus:border-b-2 focus:border-[var(--primary)] transition-all"
+              placeholder="例如：杠铃卧推"
             />
           </label>
 
-          <div className="grid grid-cols-2 gap-3">
-            <label className="block space-y-2">
-              <span className="text-sm font-medium text-[var(--ink-primary)]">组数</span>
+          <div className="grid grid-cols-2 gap-4">
+            <label className="block">
+              <span className="block text-xs font-medium text-[var(--on-surface-variant)] mb-1 ml-1">组数</span>
               <input
                 type="number"
                 min={1}
@@ -361,12 +361,12 @@ export function SchedulePage() {
                     targetSets: event.target.value,
                   }))
                 }
-                className="w-full rounded-[1.15rem] border border-[var(--outline-soft)] bg-white px-4 py-3 text-base outline-none"
+                className="w-full rounded-none border-b border-[var(--on-surface)] bg-[var(--surface-container)] px-4 py-3 text-base text-[var(--on-surface)] outline-none focus:border-b-2 focus:border-[var(--primary)] transition-all"
               />
             </label>
 
-            <label className="block space-y-2">
-              <span className="text-sm font-medium text-[var(--ink-primary)]">休息秒数</span>
+            <label className="block">
+              <span className="block text-xs font-medium text-[var(--on-surface-variant)] mb-1 ml-1">休息秒数</span>
               <input
                 type="number"
                 min={0}
@@ -379,80 +379,56 @@ export function SchedulePage() {
                     restSeconds: event.target.value,
                   }))
                 }
-                className="w-full rounded-[1.15rem] border border-[var(--outline-soft)] bg-white px-4 py-3 text-base outline-none"
+                className="w-full rounded-none border-b border-[var(--on-surface)] bg-[var(--surface-container)] px-4 py-3 text-base text-[var(--on-surface)] outline-none focus:border-b-2 focus:border-[var(--primary)] transition-all"
               />
             </label>
           </div>
 
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full rounded-full bg-[var(--brand)] px-4 py-3 text-sm font-medium text-white disabled:opacity-40"
-          >
-            添加到今日训练
-          </button>
+          <div className="pt-2">
+            <button
+              type="submit"
+              disabled={isSubmitting || !newExerciseDraft.name.trim()}
+              className="w-full rounded-full bg-[var(--primary)] px-6 py-3.5 text-sm font-medium text-[var(--on-primary)] disabled:opacity-40 transition-opacity"
+            >
+              添加到今日训练
+            </button>
+          </div>
         </form>
       </BottomSheet>
 
       <BottomSheet
-        open={actionExercise !== null}
-        title={actionExercise?.name ?? '动作'}
-        onClose={() => setActionExerciseId(null)}
-      >
-        {actionExercise ? (
-          <div className="space-y-3">
-            <div className="rounded-[1.25rem] bg-[rgba(24,32,22,0.04)] px-4 py-3 text-sm text-[var(--ink-secondary)]">
-              {actionExercise.completedSets} / {actionExercise.targetSets} 组 · 休息{' '}
-              {actionExercise.restSeconds} 秒
-            </div>
-            {canDeleteExercise(actionExercise.id) ? (
-              <button
-                type="button"
-                onClick={() => setDeleteExerciseId(actionExercise.id)}
-                className="w-full rounded-full bg-[var(--danger)] px-4 py-3 text-sm font-medium text-white"
-              >
-                删除这个动作
-              </button>
-            ) : (
-              <p className="text-sm leading-6 text-[var(--ink-secondary)]">
-                这个动作已经开始，不能再删除。
-              </p>
-            )}
-          </div>
-        ) : null}
-      </BottomSheet>
-
-      <BottomSheet
-        open={isTemplateSheetOpen && selectedTemplate !== null}
-        title={selectedTemplate?.name ?? '模板'}
+        open={isTemplateSheetOpen && importSourceTemplate !== null}
+        title={importSourceTemplate?.name ?? '模板'}
         onClose={() => setIsTemplateSheetOpen(false)}
       >
-        {selectedTemplate ? (
+        {importSourceTemplate ? (
           <div className="space-y-4">
-            <div className="rounded-[1.25rem] bg-[rgba(24,32,22,0.04)] px-4 py-3 text-sm text-[var(--ink-secondary)]">
-              已选 {selectedTemplateExerciseIds.length} / {selectedTemplate.exercises.length} 个动作
-            </div>
+            <p className="text-sm text-[var(--on-surface-variant)] px-1">
+              选择要导入的动作 ({selectedTemplateExerciseIds.length} / {importSourceTemplate.exercises.length})
+            </p>
 
-            <div className="space-y-3">
-              {selectedTemplate.exercises.map((exercise) => (
+            <div className="max-h-[50vh] overflow-y-auto space-y-1 -mx-2 px-2">
+              {importSourceTemplate.exercises.map((exercise) => (
                 <label
                   key={exercise.id}
-                  className="flex items-start gap-3 rounded-[1.25rem] border border-[var(--outline-soft)] bg-white px-4 py-3"
+                  className="flex items-center gap-4 rounded-xl px-2 py-3 hover:bg-[var(--surface-container)] transition-colors cursor-pointer"
                 >
-                  <input
-                    type="checkbox"
-                    checked={selectedTemplateExerciseIds.includes(exercise.id)}
-                    disabled={isSubmitting}
-                    onChange={() => toggleTemplateExercise(exercise.id)}
-                    className="mt-1 h-4 w-4 rounded border-[var(--outline-strong)] text-[var(--brand)]"
-                  />
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-[var(--ink-primary)]">{exercise.name}</p>
-                    <p className="mt-1 text-xs text-[var(--ink-secondary)]">
+                  <div className="relative flex items-center justify-center w-5 h-5">
+                    <input
+                      type="checkbox"
+                      checked={selectedTemplateExerciseIds.includes(exercise.id)}
+                      disabled={isSubmitting}
+                      onChange={() => toggleTemplateExercise(exercise.id)}
+                      className="peer appearance-none w-5 h-5 rounded-sm border-2 border-[var(--outline)] checked:border-[var(--primary)] checked:bg-[var(--primary)] transition-all shrink-0"
+                    />
+                    <svg viewBox="0 0 24 24" className="absolute w-4 h-4 text-[var(--on-primary)] pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-base text-[var(--on-surface)]">{exercise.name}</p>
+                    <p className="text-xs text-[var(--on-surface-variant)] mt-0.5">
                       {exercise.targetSets} 组 · 休息 {exercise.restSeconds} 秒
-                    </p>
-                    <p className="mt-1 text-xs text-[var(--ink-tertiary)]">
-                      {getWeightLabel(exercise.weightKg ?? null)} · {getRepsLabel(exercise.reps ?? null)}
                     </p>
                   </div>
                 </label>
@@ -460,17 +436,19 @@ export function SchedulePage() {
             </div>
 
             {selectedTemplateExerciseIds.length === 0 ? (
-              <p className="text-sm text-[var(--danger)]">至少选择 1 个动作</p>
+              <p className="text-sm text-[var(--error)]">必须至少选择 1 个动作</p>
             ) : null}
 
-            <button
-              type="button"
-              disabled={isSubmitting || selectedTemplateExerciseIds.length === 0}
-              onClick={() => void handleImportTemplate()}
-              className="w-full rounded-full bg-[var(--brand)] px-4 py-3 text-sm font-medium text-white disabled:opacity-40"
-            >
-              加入今日训练
-            </button>
+            <div className="pt-2">
+              <button
+                type="button"
+                disabled={isSubmitting || selectedTemplateExerciseIds.length === 0}
+                onClick={() => void handleImportTemplate()}
+                className="w-full rounded-full bg-[var(--primary)] px-6 py-3.5 text-sm font-medium text-[var(--on-primary)] disabled:opacity-40 transition-opacity"
+              >
+                加入今日训练
+              </button>
+            </div>
           </div>
         ) : null}
       </BottomSheet>
@@ -479,7 +457,7 @@ export function SchedulePage() {
         open={isContinueExerciseDialogOpen}
         title="继续今日训练？"
         description="会更新今日训练总结。"
-        confirmLabel="继续添加"
+        confirmLabel="继续"
         onCancel={() => setIsContinueExerciseDialogOpen(false)}
         onConfirm={() => void addExercise()}
       />
@@ -488,7 +466,7 @@ export function SchedulePage() {
         open={pendingTemplateImportConfirmation !== null}
         title="加入这组动作？"
         description={getTemplateImportConfirmDescription()}
-        confirmLabel="继续加入"
+        confirmLabel="继续"
         onCancel={() => {
           setPendingTemplateImportId(null)
           setPendingTemplateExerciseIds([])
@@ -505,7 +483,7 @@ export function SchedulePage() {
       <ConfirmDialog
         open={deleteExercise !== null}
         title="删除动作？"
-        description={deleteExercise ? `“${deleteExercise.name}”` : ''}
+        description={deleteExercise ? `确定删除“${deleteExercise.name}”吗？该操作无法恢复。` : ''}
         confirmLabel="删除"
         danger
         onCancel={() => setDeleteExerciseId(null)}

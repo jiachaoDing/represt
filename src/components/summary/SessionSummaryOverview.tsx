@@ -1,8 +1,5 @@
 import { Link } from 'react-router-dom'
-
-import { SectionCard } from '../ui/SectionCard'
 import type { SessionSummaryDetail } from '../../db/sessions'
-import { getSessionStatusLabel } from '../../lib/session-display'
 
 type SessionSummaryOverviewProps = {
   detail: SessionSummaryDetail | null
@@ -13,51 +10,62 @@ export function SessionSummaryOverview({ detail, isLoading }: SessionSummaryOver
   const completedExerciseCount =
     detail?.exercises.filter((exercise) => exercise.status === 'completed').length ?? 0
   const totalExerciseCount = detail?.exercises.length ?? 0
+  
+  // Calculate total volume (weight * reps)
+  const totalVolume = detail?.exercises.reduce((acc, exercise) => {
+    return acc + exercise.setRecords.reduce((setAcc, set) => {
+      const weight = set.weightKg ?? 0
+      const reps = set.reps ?? 0
+      return setAcc + (weight * reps)
+    }, 0)
+  }, 0) ?? 0
+
+  if (isLoading) {
+    return (
+      <div className="mx-4 mt-6 h-[8rem] rounded-3xl bg-[var(--surface-container)] opacity-50 animate-pulse" />
+    )
+  }
+
+  if (!detail) {
+    return (
+      <div className="mx-4 mt-6 space-y-4 text-center">
+        <p className="text-[var(--on-surface-variant)]">没有找到这次训练。</p>
+        <Link to="/" className="inline-block rounded-full bg-[var(--primary)] px-6 py-3 text-sm font-medium text-[var(--on-primary)]">
+          返回训练安排
+        </Link>
+      </div>
+    )
+  }
 
   return (
-    <SectionCard
-      title="今日训练"
-      action={
-        detail ? (
-          <span className="rounded border border-slate-300 px-2 py-1 text-xs">
-            {getSessionStatusLabel(detail.session.status)}
-          </span>
-        ) : null
-      }
-    >
-      {isLoading ? <p>正在读取今日训练总结...</p> : null}
-
-      {!isLoading && !detail ? (
-        <div className="space-y-2">
-          <p>没有找到这次训练。</p>
-          <Link to="/" className="inline-flex rounded border border-slate-300 px-3 py-2 text-sm">
-            返回训练安排
-          </Link>
-        </div>
-      ) : null}
-
-      {detail ? (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
-          <div className="rounded border border-slate-200 p-3">
-            <p className="text-xs text-slate-500">训练类型</p>
-            <p className="mt-1 font-medium">今日训练</p>
-          </div>
-          <div className="rounded border border-slate-200 p-3">
-            <p className="text-xs text-slate-500">训练日期</p>
-            <p className="mt-1 font-medium">{detail.session.sessionDateKey}</p>
-          </div>
-          <div className="rounded border border-slate-200 p-3">
-            <p className="text-xs text-slate-500">状态</p>
-            <p className="mt-1 font-medium">{getSessionStatusLabel(detail.session.status)}</p>
-          </div>
-          <div className="rounded border border-slate-200 p-3">
-            <p className="text-xs text-slate-500">完成动作</p>
-            <p className="mt-1 font-medium">
-              {completedExerciseCount} / {totalExerciseCount}
-            </p>
+    <section className="mx-4 mt-4 overflow-hidden rounded-3xl bg-[var(--surface-container)] p-6">
+      <p className="text-sm font-medium text-[var(--on-surface-variant)]">{detail.session.sessionDateKey}</p>
+      
+      <div className="mt-6 grid grid-cols-2 gap-6">
+        <div>
+          <p className="text-xs text-[var(--on-surface-variant)] uppercase tracking-wider">完成动作</p>
+          <div className="mt-1 flex items-baseline gap-1">
+            <span className="text-4xl font-medium tracking-tighter text-[var(--on-surface)]" style={{ fontVariantNumeric: 'tabular-nums' }}>
+              {completedExerciseCount}
+            </span>
+            <span className="text-xl text-[var(--on-surface-variant)]">
+              / {totalExerciseCount}
+            </span>
           </div>
         </div>
-      ) : null}
-    </SectionCard>
+        
+        <div>
+          <p className="text-xs text-[var(--on-surface-variant)] uppercase tracking-wider">总容量</p>
+          <div className="mt-1 flex items-baseline gap-1">
+            <span className="text-4xl font-medium tracking-tighter text-[var(--on-surface)]" style={{ fontVariantNumeric: 'tabular-nums' }}>
+              {totalVolume.toLocaleString()}
+            </span>
+            <span className="text-xl text-[var(--on-surface-variant)]">
+              kg
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
   )
 }
