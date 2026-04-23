@@ -11,11 +11,7 @@ export function SummaryPage() {
 
   return (
     <div className="space-y-4">
-      <PageHeader
-        title="训练总结"
-        subtitle="回看今日训练结果。"
-        backTo="/"
-      />
+      <PageHeader title="训练总结" backTo="/" />
 
       {error ? (
         <div className="rounded border border-rose-300 bg-rose-50 p-3 text-sm text-rose-700">

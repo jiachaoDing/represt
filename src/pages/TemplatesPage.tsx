@@ -191,7 +191,6 @@ export function TemplatesPage() {
       <PageHeader
         title="模板编辑"
         eyebrow="TrainRe"
-        subtitle="模板是长期动作集合，只负责给今日训练提供默认动作。"
         actions={<OverflowMenu items={overflowItems} />}
       />
 
@@ -208,9 +207,6 @@ export function TemplatesPage() {
               <div>
                 <p className="text-sm font-medium text-[var(--ink-primary)]">
                   {currentTemplate?.name ?? '当前模板'}
-                </p>
-                <p className="mt-1 text-xs text-[var(--ink-secondary)]">
-                  编辑模板不会自动影响已生成的今日训练或历史训练。
                 </p>
               </div>
               <StatusPill value={`${currentTemplate?.exercises.length ?? 0} 个动作`} />
@@ -231,9 +227,6 @@ export function TemplatesPage() {
       ) : (
         <section className="rounded-[1.75rem] border border-dashed border-[var(--outline-strong)] bg-[rgba(255,255,255,0.45)] px-5 py-6">
           <p className="text-base font-semibold text-[var(--ink-primary)]">先创建一个模板</p>
-          <p className="mt-2 text-sm leading-6 text-[var(--ink-secondary)]">
-            模板页只做长期配置管理。创建模板后，下面的主屏会直接切换成该模板的动作列表。
-          </p>
           <button
             type="button"
             onClick={() => openTemplateSheet('create')}
@@ -248,9 +241,6 @@ export function TemplatesPage() {
         <div className="flex items-end justify-between px-1">
           <div>
             <p className="text-base font-semibold text-[var(--ink-primary)]">模板动作</p>
-            <p className="mt-1 text-sm text-[var(--ink-secondary)]">
-              点击编辑动作，左滑删除，长按打开上下文菜单。
-            </p>
           </div>
         </div>
 
@@ -268,9 +258,6 @@ export function TemplatesPage() {
         {!isLoading && currentTemplate && currentTemplate.exercises.length === 0 ? (
           <div className="rounded-[1.75rem] border border-dashed border-[var(--outline-strong)] bg-[rgba(255,255,255,0.45)] px-5 py-6">
             <p className="text-sm font-medium text-[var(--ink-primary)]">这个模板还没有动作</p>
-            <p className="mt-2 text-sm leading-6 text-[var(--ink-secondary)]">
-              用右下角 FAB 往当前模板里添加动作，编辑时通过底部弹层完成。
-            </p>
           </div>
         ) : null}
 
@@ -301,7 +288,6 @@ export function TemplatesPage() {
                         {getWeightLabel(exercise.weightKg ?? null)} · {getRepsLabel(exercise.reps ?? null)}
                       </p>
                     </div>
-                    <p className="shrink-0 text-xs text-[var(--ink-tertiary)]">点按编辑</p>
                   </div>
                 </button>
               </SwipeActionItem>
@@ -317,11 +303,6 @@ export function TemplatesPage() {
       <BottomSheet
         open={templateSheetMode !== null}
         title={templateSheetMode === 'create' ? '新增模板' : '重命名模板'}
-        description={
-          templateSheetMode === 'create'
-            ? '创建后可作为默认动作集合追加到今日训练。'
-            : '修改后不会自动影响已生成的今日训练或历史训练。'
-        }
         onClose={() => setTemplateSheetMode(null)}
       >
         <form className="space-y-4" onSubmit={handleTemplateSubmit}>
@@ -352,7 +333,6 @@ export function TemplatesPage() {
       <BottomSheet
         open={currentTemplate !== null && isExerciseSheetOpen}
         title={editExerciseId ? '编辑动作' : '新增动作'}
-        description="动作编辑保持轻量，不把大面积表单铺在页面里。"
         onClose={() => {
           setEditExerciseId(null)
           setExerciseDraft(emptyTemplateExerciseDraft)
@@ -470,7 +450,6 @@ export function TemplatesPage() {
       <BottomSheet
         open={actionExercise !== null}
         title={actionExercise?.name ?? '动作'}
-        description="低频操作收进上下文层，保持列表主体只承担浏览和点按编辑。"
         onClose={() => setExerciseActionId(null)}
       >
         {actionExercise ? (
@@ -493,7 +472,7 @@ export function TemplatesPage() {
       <ConfirmDialog
         open={deleteExercise !== null}
         title="删除动作？"
-        description={deleteExercise ? `“${deleteExercise.name}” 会从当前模板中移除。` : ''}
+        description={deleteExercise ? `“${deleteExercise.name}”` : ''}
         confirmLabel="删除"
         danger
         onCancel={() => setDeleteExerciseId(null)}
@@ -504,9 +483,7 @@ export function TemplatesPage() {
         open={templateDeleteOpen && currentTemplate !== null}
         title="删除模板？"
         description={
-          currentTemplate
-            ? `“${currentTemplate.name}” 及其全部动作都会被删除，已经开始的训练不会自动同步。`
-            : ''
+          currentTemplate ? `“${currentTemplate.name}” 及其全部动作会被删除。` : ''
         }
         confirmLabel="删除模板"
         danger

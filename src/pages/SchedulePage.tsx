@@ -110,12 +110,12 @@ export function SchedulePage() {
 
     if (pendingTemplateImportConfirmation.isDuplicateImport) {
       messages.push(
-        `“${pendingTemplateImportConfirmation.templateName}” 看起来已经加入过今日训练。允许重复加入，但会再追加一份动作。`,
+        `“${pendingTemplateImportConfirmation.templateName}” 可能已加入过今日训练，继续会重复追加。`,
       )
     }
 
     if (pendingTemplateImportConfirmation.willContinueCompletedSession) {
-      messages.push('这会继续今日训练，训练总结会更新。')
+      messages.push('会更新今日训练总结。')
     }
 
     return messages.join(' ')
@@ -203,7 +203,6 @@ export function SchedulePage() {
       <PageHeader
         title="今日训练"
         eyebrow="TrainRe"
-        subtitle="今天练什么，只看今天的动作列表。"
         actions={<OverflowMenu items={overflowItems} />}
       />
 
@@ -220,9 +219,6 @@ export function SchedulePage() {
               <div>
                 <p className="text-sm font-medium text-[var(--ink-primary)]">
                   快捷加入动作集合
-                </p>
-                <p className="mt-1 text-xs text-[var(--ink-secondary)]">
-                  模板只是默认动作集合，不会替换今天已经在练的内容。
                 </p>
               </div>
               {currentSession ? (
@@ -250,15 +246,11 @@ export function SchedulePage() {
 
           <div className="flex flex-wrap items-center gap-2 border-t border-[var(--outline-soft)] px-4 py-3 text-xs text-[var(--ink-secondary)]">
             <StatusPill value={`${currentSession?.exercises.length ?? 0} 个今日动作`} />
-            <span>点一个模板，预览后加入今日训练；手动新增动作依然独立存在。</span>
           </div>
         </section>
       ) : (
         <section className="rounded-[1.75rem] border border-[var(--outline-soft)] bg-[var(--surface)] px-5 py-6 shadow-[var(--shadow-soft)]">
           <p className="text-base font-semibold text-[var(--ink-primary)]">还没有动作集合模板</p>
-          <p className="mt-2 text-sm leading-6 text-[var(--ink-secondary)]">
-            今天的训练仍然可以直接手动加动作。模板只是为了更快把一组常用动作带进今天的列表。
-          </p>
           <Link
             to="/templates"
             className="mt-4 inline-flex rounded-full bg-[var(--brand)] px-4 py-3 text-sm font-medium text-white"
@@ -272,9 +264,6 @@ export function SchedulePage() {
         <div className="flex items-end justify-between px-1">
           <div>
             <p className="text-base font-semibold text-[var(--ink-primary)]">动作列表</p>
-            <p className="mt-1 text-sm text-[var(--ink-secondary)]">
-              点击进入动作页，左滑删除未开始动作，长按打开上下文菜单。
-            </p>
           </div>
         </div>
 
@@ -292,9 +281,6 @@ export function SchedulePage() {
         {!isLoading && currentSession?.exercises.length === 0 ? (
           <div className="rounded-[1.75rem] border border-dashed border-[var(--outline-strong)] bg-[rgba(255,255,255,0.45)] px-5 py-6">
             <p className="text-sm font-medium text-[var(--ink-primary)]">今天还没有动作</p>
-            <p className="mt-2 text-sm leading-6 text-[var(--ink-secondary)]">
-              可以直接用右下角 FAB 新增动作，也可以从上面的模板里把一组默认动作加入今天。
-            </p>
           </div>
         ) : null}
 
@@ -328,9 +314,6 @@ export function SchedulePage() {
                         <p className="text-sm font-medium text-[var(--brand-strong)]">
                           {getExerciseRestLabel(exercise, now)}
                         </p>
-                        <p className="mt-1 text-xs text-[var(--ink-tertiary)]">
-                          {canDelete ? '可左滑删除' : '点击继续训练'}
-                        </p>
                       </div>
                     </div>
                   </Link>
@@ -348,7 +331,6 @@ export function SchedulePage() {
       <BottomSheet
         open={isCreateSheetOpen}
         title="新增动作"
-        description="手动新增的动作只加入今天，不回写模板。"
         onClose={() => setIsCreateSheetOpen(false)}
       >
         <form className="space-y-4" onSubmit={handleAddExercise}>
@@ -415,7 +397,6 @@ export function SchedulePage() {
       <BottomSheet
         open={actionExercise !== null}
         title={actionExercise?.name ?? '动作'}
-        description="把低频操作放到上下文层，避免每一项常驻一排按钮。"
         onClose={() => setActionExerciseId(null)}
       >
         {actionExercise ? (
@@ -444,13 +425,12 @@ export function SchedulePage() {
       <BottomSheet
         open={isTemplateSheetOpen && selectedTemplate !== null}
         title={selectedTemplate?.name ?? '模板'}
-        description="先看清这组动作，再决定是否加入今天的训练。"
         onClose={() => setIsTemplateSheetOpen(false)}
       >
         {selectedTemplate ? (
           <div className="space-y-4">
             <div className="rounded-[1.25rem] bg-[rgba(24,32,22,0.04)] px-4 py-3 text-sm text-[var(--ink-secondary)]">
-              已选 {selectedTemplateExerciseIds.length} / {selectedTemplate.exercises.length} 个动作，加入后会追加到今日训练列表，不会覆盖现有动作。
+              已选 {selectedTemplateExerciseIds.length} / {selectedTemplate.exercises.length} 个动作
             </div>
 
             <div className="space-y-3">
@@ -498,7 +478,7 @@ export function SchedulePage() {
       <ConfirmDialog
         open={isContinueExerciseDialogOpen}
         title="继续今日训练？"
-        description="这会把新动作追加到今天已完成的训练里，训练总结也会一起更新。"
+        description="会更新今日训练总结。"
         confirmLabel="继续添加"
         onCancel={() => setIsContinueExerciseDialogOpen(false)}
         onConfirm={() => void addExercise()}
@@ -525,11 +505,7 @@ export function SchedulePage() {
       <ConfirmDialog
         open={deleteExercise !== null}
         title="删除动作？"
-        description={
-          deleteExercise
-            ? `“${deleteExercise.name}” 只会从今日训练移除，不会回写模板。`
-            : ''
-        }
+        description={deleteExercise ? `“${deleteExercise.name}”` : ''}
         confirmLabel="删除"
         danger
         onCancel={() => setDeleteExerciseId(null)}
