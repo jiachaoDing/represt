@@ -1,4 +1,4 @@
-import type { SessionExercise, WorkoutSession } from '../models/types'
+import type { SessionExercise, SetRecord, WorkoutSession } from '../models/types'
 import { db } from './app-db'
 import { ensureTemplateSeedData } from './templates'
 
@@ -9,6 +9,7 @@ export type WorkoutSessionWithExercises = WorkoutSession & {
 export type SessionExerciseDetail = {
   session: WorkoutSession
   exercise: SessionExercise
+  latestSetRecord: SetRecord | null
 }
 
 type SessionExerciseInput = {
@@ -21,6 +22,17 @@ const CURRENT_SESSION_KEY = 'trainre.current-session-id.v1'
 
 function nowIso() {
   return new Date().toISOString()
+}
+
+function getDurationSeconds(startedAt: string, completedAt: string) {
+  const startedAtMs = new Date(startedAt).getTime()
+  const completedAtMs = new Date(completedAt).getTime()
+
+  if (Number.isNaN(startedAtMs) || Number.isNaN(completedAtMs)) {
+    return 0
+  }
+
+  return Math.max(0, Math.round((completedAtMs - startedAtMs) / 1000))
 }
 
 function getStoredCurrentSessionId() {
@@ -73,6 +85,52 @@ async function getSessionExercises(sessionId: string) {
   return exercises.sort((left, right) => left.order - right.order)
 }
 
+async function getLatestSetRecord(sessionExerciseId: string) {
+  const records = await db.setRecords.where('sessionExerciseId').equals(sessionExerciseId).toArray()
+
+  if (records.length === 0) {
+    return null
+  }
+
+  return records.sort((left, right) => right.setNumber - left.setNumber)[0]
+}
+
+async function updateSessionStatus(sessionId: string, completedAt?: string) {
+  const session = await db.workoutSessions.get(sessionId)
+  if (!session) {
+    throw new Error('当前训练不存在。')
+  }
+
+  const exercises = await getSessionExercises(sessionId)
+  const hasCompletedSet = exercises.some((exercise) => exercise.completedSets > 0)
+  const isCompleted = exercises.length > 0 && exercises.every((exercise) => exercise.status === 'completed')
+
+  if (isCompleted) {
+    const endedAt = completedAt ?? nowIso()
+    await db.workoutSessions.update(sessionId, {
+      status: 'completed',
+      startedAt: session.startedAt ?? endedAt,
+      endedAt,
+    })
+    return
+  }
+
+  if (hasCompletedSet) {
+    await db.workoutSessions.update(sessionId, {
+      status: 'active',
+      startedAt: session.startedAt ?? completedAt ?? nowIso(),
+      endedAt: null,
+    })
+    return
+  }
+
+  await db.workoutSessions.update(sessionId, {
+    status: 'pending',
+    startedAt: null,
+    endedAt: null,
+  })
+}
+
 async function removeSessionGraph(sessionId: string) {
   await db.setRecords.where('sessionId').equals(sessionId).delete()
   await db.sessionExercises.where('sessionId').equals(sessionId).delete()
@@ -106,7 +164,11 @@ export async function getSessionExerciseDetail(sessionExerciseId: string) {
     return null
   }
 
-  const session = await getSessionRecord(exercise.sessionId)
+  const [session, latestSetRecord] = await Promise.all([
+    getSessionRecord(exercise.sessionId),
+    getLatestSetRecord(sessionExerciseId),
+  ])
+
   if (!session) {
     return null
   }
@@ -114,6 +176,7 @@ export async function getSessionExerciseDetail(sessionExerciseId: string) {
   return {
     session,
     exercise,
+    latestSetRecord,
   } satisfies SessionExerciseDetail
 }
 
@@ -235,6 +298,96 @@ export async function deletePendingSessionExercise(sessionId: string, sessionExe
   }
 
   await db.sessionExercises.delete(sessionExerciseId)
+}
+
+export async function completeSessionExerciseSet(
+  sessionExerciseId: string,
+  setStartedAt: string,
+): Promise<SetRecord> {
+  const completedAt = nowIso()
+  let createdSetRecord: SetRecord | null = null
+
+  await db.transaction(
+    'rw',
+    db.workoutSessions,
+    db.sessionExercises,
+    db.setRecords,
+    async () => {
+      const exercise = await db.sessionExercises.get(sessionExerciseId)
+      if (!exercise) {
+        throw new Error('当前动作不存在。')
+      }
+
+      if (exercise.status === 'completed' || exercise.completedSets >= exercise.targetSets) {
+        throw new Error('当前动作已完成，不能继续记录新的一组。')
+      }
+
+      const session = await db.workoutSessions.get(exercise.sessionId)
+      if (!session) {
+        throw new Error('当前训练不存在。')
+      }
+
+      const nextCompletedSets = exercise.completedSets + 1
+      const nextStatus = nextCompletedSets >= exercise.targetSets ? 'completed' : 'active'
+
+      const setRecord: SetRecord = {
+        id: crypto.randomUUID(),
+        sessionId: session.id,
+        sessionExerciseId: exercise.id,
+        setNumber: nextCompletedSets,
+        completedAt,
+        durationSeconds: getDurationSeconds(setStartedAt, completedAt),
+        weightKg: null,
+        reps: null,
+      }
+
+      createdSetRecord = setRecord
+
+      await db.setRecords.add(setRecord)
+      await db.sessionExercises.update(exercise.id, {
+        completedSets: nextCompletedSets,
+        lastCompletedAt: completedAt,
+        status: nextStatus,
+      })
+      await updateSessionStatus(session.id, completedAt)
+    },
+  )
+
+  if (!createdSetRecord) {
+    throw new Error('组记录创建失败。')
+  }
+
+  return createdSetRecord
+}
+
+export async function updateLatestSetRecordValues(
+  sessionExerciseId: string,
+  input: {
+    weightKg?: number | null
+    reps?: number | null
+  },
+) {
+  const latestSetRecord = await getLatestSetRecord(sessionExerciseId)
+  if (!latestSetRecord) {
+    throw new Error('当前动作还没有组记录，无法补录。')
+  }
+
+  const updates: Partial<SetRecord> = {}
+
+  if (Object.prototype.hasOwnProperty.call(input, 'weightKg')) {
+    updates.weightKg = input.weightKg ?? null
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, 'reps')) {
+    updates.reps = input.reps ?? null
+  }
+
+  await db.setRecords.update(latestSetRecord.id, updates)
+
+  return {
+    ...latestSetRecord,
+    ...updates,
+  } satisfies SetRecord
 }
 
 export async function startSession(sessionId: string) {

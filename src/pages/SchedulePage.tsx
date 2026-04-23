@@ -7,7 +7,6 @@ import {
   createOrRebuildCurrentSession,
   deletePendingSessionExercise,
   getCurrentSession,
-  startSession,
   type WorkoutSessionWithExercises,
 } from '../db/sessions'
 import { listTemplatesWithExercises, type TemplateWithExercises } from '../db/templates'
@@ -133,17 +132,6 @@ export function SchedulePage() {
     })
   }
 
-  async function handleStartSession() {
-    if (!currentSession) {
-      return
-    }
-
-    await runMutation(async () => {
-      await startSession(currentSession.id)
-      await loadData(currentSession.templateId)
-    })
-  }
-
   async function handleAddTemporaryExercise(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
@@ -181,7 +169,6 @@ export function SchedulePage() {
     ? templates.find((template) => template.id === currentSession.templateId) ?? null
     : null
   const canChangeTemplate = currentSession === null || currentSession.status === 'pending'
-  const canStartSession = currentSession?.status === 'pending'
   const canAddTemporaryExercise = currentSession !== null && currentSession.status !== 'completed'
   const hasTemplates = templates.length > 0
   const needsRebuild =
@@ -302,23 +289,16 @@ export function SchedulePage() {
               >
                 {sessionActionLabel}
               </button>
-              {canStartSession ? (
-                <button
-                  type="button"
-                  disabled={isSubmitting}
-                  onClick={() => void handleStartSession()}
-                  className="rounded-full border border-slate-300 px-4 py-3 text-sm font-medium text-slate-700 disabled:cursor-not-allowed disabled:text-slate-300"
-                >
-                  开始训练
-                </button>
-              ) : null}
             </div>
 
             {currentTemplate ? (
-              <p className="text-xs text-slate-500">
-                当前模板共 {currentTemplate.exercises.length} 个模板动作；创建 session 时会复制成独立的
-                SessionExercise。
-              </p>
+              <div className="space-y-1 text-xs text-slate-500">
+                <p>
+                  当前模板共 {currentTemplate.exercises.length} 个模板动作；创建 session 时会复制成独立的
+                  SessionExercise。
+                </p>
+                <p>训练会在第一次完成某个动作的一组后自动从“未开始”进入“进行中”。</p>
+              </div>
             ) : null}
           </div>
         ) : null}
