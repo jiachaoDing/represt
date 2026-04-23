@@ -13,6 +13,15 @@ export type SessionExerciseDetail = {
   latestSetRecord: SetRecord | null
 }
 
+export type SessionSummaryExercise = SessionExercise & {
+  setRecords: SetRecord[]
+}
+
+export type SessionSummaryDetail = {
+  session: WorkoutSession
+  exercises: SessionSummaryExercise[]
+}
+
 type SessionExerciseInput = {
   name: string
   targetSets?: number
@@ -84,6 +93,11 @@ async function getSessionRecord(sessionId: string) {
 async function getSessionExercises(sessionId: string) {
   const exercises = await db.sessionExercises.where('sessionId').equals(sessionId).toArray()
   return exercises.sort((left, right) => left.order - right.order)
+}
+
+async function getSessionSetRecords(sessionId: string) {
+  const setRecords = await db.setRecords.where('sessionId').equals(sessionId).toArray()
+  return setRecords.sort((left, right) => left.setNumber - right.setNumber)
 }
 
 async function getLatestSetRecord(sessionExerciseId: string) {
@@ -179,6 +193,34 @@ export async function getSessionExerciseDetail(sessionExerciseId: string) {
     exercise,
     latestSetRecord,
   } satisfies SessionExerciseDetail
+}
+
+export async function getSessionSummaryDetail(sessionId: string) {
+  const [session, exercises, setRecords] = await Promise.all([
+    getSessionRecord(sessionId),
+    getSessionExercises(sessionId),
+    getSessionSetRecords(sessionId),
+  ])
+
+  if (!session) {
+    return null
+  }
+
+  const setRecordsByExerciseId = new Map<string, SetRecord[]>()
+
+  for (const setRecord of setRecords) {
+    const current = setRecordsByExerciseId.get(setRecord.sessionExerciseId) ?? []
+    current.push(setRecord)
+    setRecordsByExerciseId.set(setRecord.sessionExerciseId, current)
+  }
+
+  return {
+    session,
+    exercises: exercises.map((exercise) => ({
+      ...exercise,
+      setRecords: setRecordsByExerciseId.get(exercise.id) ?? [],
+    })),
+  } satisfies SessionSummaryDetail
 }
 
 export async function createOrRebuildCurrentSession(templateId: string) {
