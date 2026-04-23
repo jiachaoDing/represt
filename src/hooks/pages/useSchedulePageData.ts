@@ -31,11 +31,20 @@ export function useSchedulePageData() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  async function loadData(preferredTemplateId?: string | null) {
+  async function fetchData() {
     const [templateItems, session] = await Promise.all([
       listTemplatesWithExercises(),
       getCurrentSession(),
     ])
+
+    return {
+      session,
+      templateItems,
+    }
+  }
+
+  async function loadData(preferredTemplateId?: string | null) {
+    const { session, templateItems } = await fetchData()
 
     setTemplates(templateItems)
     setCurrentSession(session)
@@ -64,11 +73,13 @@ export function useSchedulePageData() {
       setIsSubmitting(true)
       setError(null)
       await action()
+      return true
     } catch (mutationError) {
       console.error(mutationError)
       setError(
         mutationError instanceof Error ? mutationError.message : '训练安排保存失败，请重试。',
       )
+      return false
     } finally {
       setIsSubmitting(false)
     }
@@ -78,7 +89,13 @@ export function useSchedulePageData() {
     async function initialize() {
       try {
         setError(null)
-        await loadData()
+        const { session, templateItems } = await fetchData()
+
+        if (!session && templateItems[0]) {
+          await createOrRebuildCurrentSession(templateItems[0].id)
+        }
+
+        await loadData(templateItems[0]?.id ?? null)
       } catch (loadError) {
         console.error(loadError)
         setError('训练安排加载失败，请刷新页面后重试。')
@@ -92,21 +109,44 @@ export function useSchedulePageData() {
 
   async function handleCreateOrRebuildSession() {
     if (!selectedTemplateId) {
-      return
+      return false
     }
 
-    await runMutation(async () => {
+    return runMutation(async () => {
       await createOrRebuildCurrentSession(selectedTemplateId)
       await loadData(selectedTemplateId)
     })
   }
 
-  async function handleAddTemporaryExercise() {
-    if (!currentSession) {
-      return
+  async function handleSelectTemplate(templateId: string) {
+    setSelectedTemplateId(templateId)
+
+    if (!canChangeTemplate) {
+      return null
     }
 
-    await runMutation(async () => {
+    if (currentSession?.templateId === templateId && currentSession.status === 'pending') {
+      return null
+    }
+
+    const didSucceed = await runMutation(async () => {
+      await createOrRebuildCurrentSession(templateId)
+      await loadData(templateId)
+    })
+
+    if (!didSucceed) {
+      return null
+    }
+
+    return templates.find((template) => template.id === templateId)?.name ?? null
+  }
+
+  async function handleAddTemporaryExercise() {
+    if (!currentSession) {
+      return false
+    }
+
+    return runMutation(async () => {
       await addTemporarySessionExercise(currentSession.id, {
         name: newExerciseDraft.name,
         targetSets: parseIntegerInput(newExerciseDraft.targetSets),
@@ -119,14 +159,10 @@ export function useSchedulePageData() {
 
   async function handleDeleteExercise(sessionExerciseId: string) {
     if (!currentSession) {
-      return
+      return false
     }
 
-    if (!window.confirm('删除后不会回写模板。确定删除这个本次训练动作吗？')) {
-      return
-    }
-
-    await runMutation(async () => {
+    return runMutation(async () => {
       await deletePendingSessionExercise(currentSession.id, sessionExerciseId)
       await loadData(currentSession.templateId)
     })
@@ -160,6 +196,7 @@ export function useSchedulePageData() {
     handleAddTemporaryExercise,
     handleCreateOrRebuildSession,
     handleDeleteExercise,
+    handleSelectTemplate,
     hasTemplates,
     isLoading,
     isSubmitting,

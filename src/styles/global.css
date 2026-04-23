@@ -3,15 +3,30 @@
 :root {
   color-scheme: light;
   font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
-  background: #f5f7fb;
-  color: #0f172a;
-  --color-app-bg: radial-gradient(circle at top, #ffffff 0%, #eef2ff 24%, #f5f7fb 60%, #eef3f8 100%);
+  background: #f3f5f1;
+  color: #182016;
+  --app-bg: linear-gradient(180deg, #f8faf5 0%, #f3f5f1 42%, #eef2eb 100%);
+  --surface: rgba(255, 255, 255, 0.88);
+  --surface-raised: rgba(255, 255, 255, 0.96);
+  --surface-accent: #dcefd7;
+  --surface-strong: #182016;
+  --surface-danger: #ffdad6;
+  --brand: #2f6b36;
+  --brand-strong: #1e4d27;
+  --ink-primary: #182016;
+  --ink-secondary: #556052;
+  --ink-tertiary: #6f7a6c;
+  --outline-soft: rgba(35, 53, 32, 0.08);
+  --outline-strong: rgba(35, 53, 32, 0.14);
+  --danger: #b3261e;
+  --shadow-soft: 0 18px 40px rgba(36, 54, 32, 0.08);
 }
 
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  background: var(--app-bg);
 }
 
 a {
@@ -26,4 +41,12 @@ input {
 
 #root {
   min-height: 100vh;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: default;
 }

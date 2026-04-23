@@ -1,55 +1,52 @@
-import { NavLink, Outlet, useMatches } from 'react-router-dom'
+import { NavLink, Outlet, useLocation } from 'react-router-dom'
 
-const navigation = [
+const navigationItems = [
   { to: '/', label: '安排', end: true },
   { to: '/templates', label: '模板', end: false },
 ]
 
-type RouteHandle = {
-  title?: string
-}
-
 export function AppLayout() {
-  const matches = useMatches()
-  const currentMatch = [...matches].reverse().find((match) => {
-    const handle = match.handle as RouteHandle | undefined
-    return Boolean(handle?.title)
-  })
-  const title = (currentMatch?.handle as RouteHandle | undefined)?.title ?? '训练间歇记录器'
+  const location = useLocation()
+  const hideNavigation = location.pathname.startsWith('/exercise/')
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-950">
-      <div className="mx-auto flex min-h-screen w-full max-w-3xl flex-col px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))]">
-        <header className="border-b border-slate-200 py-4">
-          <div className="flex flex-wrap items-end justify-between gap-3">
-            <div>
-              <p className="text-sm font-medium text-slate-500">TrainRe</p>
-              <h1 className="text-2xl font-semibold">{title}</h1>
-            </div>
-            <nav className="flex gap-2">
-              {navigation.map((item) => (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  end={item.end}
-                  className={({ isActive }) =>
-                    [
-                      'rounded border px-3 py-2 text-sm',
-                      isActive
-                        ? 'border-slate-900 bg-slate-900 text-white'
-                        : 'border-slate-300 text-slate-700',
-                    ].join(' ')
-                  }
-                >
-                  {item.label}
-                </NavLink>
-              ))}
-            </nav>
-          </div>
-        </header>
-        <main className="flex-1 py-4">
+    <div className="min-h-screen bg-[var(--app-bg)] text-[var(--ink-primary)]">
+      <div className="mx-auto flex min-h-screen w-full max-w-[30rem] flex-col">
+        <main
+          className={[
+            'flex-1 px-4 pt-[max(0.75rem,env(safe-area-inset-top))]',
+            hideNavigation
+              ? 'pb-[max(1rem,env(safe-area-inset-bottom))]'
+              : 'pb-[calc(5.75rem+env(safe-area-inset-bottom))]',
+          ].join(' ')}
+        >
           <Outlet />
         </main>
+        {!hideNavigation ? (
+          <nav className="fixed inset-x-0 bottom-0 z-40">
+            <div className="mx-auto max-w-[30rem] px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3">
+              <div className="flex items-center justify-center gap-2 rounded-[1.75rem] border border-[var(--outline-soft)] bg-[var(--surface-raised)] px-3 py-2 shadow-[var(--shadow-soft)] backdrop-blur">
+                {navigationItems.map((item) => (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    end={item.end}
+                    className={({ isActive }) =>
+                      [
+                        'min-w-[7rem] rounded-full px-4 py-3 text-center text-sm font-medium transition',
+                        isActive
+                          ? 'bg-[var(--surface-accent)] text-[var(--brand-strong)]'
+                          : 'text-[var(--ink-secondary)]',
+                      ].join(' ')
+                    }
+                  >
+                    {item.label}
+                  </NavLink>
+                ))}
+              </div>
+            </div>
+          </nav>
+        ) : null}
       </div>
     </div>
   )

@@ -2,6 +2,7 @@ import { useParams } from 'react-router-dom'
 
 import { SessionExerciseSummaryList } from '../components/summary/SessionExerciseSummaryList'
 import { SessionSummaryOverview } from '../components/summary/SessionSummaryOverview'
+import { PageHeader } from '../components/ui/PageHeader'
 import { useNow } from '../hooks/useNow'
 import { useSessionSummaryData } from '../hooks/pages/useSessionSummaryData'
 
@@ -12,6 +13,12 @@ export function SummaryPage() {
 
   return (
     <div className="space-y-4">
+      <PageHeader
+        title="训练总结"
+        subtitle="回看本次训练结果。"
+        backTo="/"
+      />
+
       {error ? (
         <div className="rounded border border-rose-300 bg-rose-50 p-3 text-sm text-rose-700">
           {error}

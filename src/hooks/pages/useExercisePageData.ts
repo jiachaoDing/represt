@@ -74,11 +74,13 @@ export function useExercisePageData(id: string) {
       setIsSubmitting(true)
       setError(null)
       await action()
+      return true
     } catch (mutationError) {
       console.error(mutationError)
       setError(
         mutationError instanceof Error ? mutationError.message : '动作数据保存失败，请重试。',
       )
+      return false
     } finally {
       setIsSubmitting(false)
     }
@@ -86,10 +88,12 @@ export function useExercisePageData(id: string) {
 
   async function handleCompleteSet() {
     if (!detail || !setTimingStartedAt) {
-      return
+      return false
     }
 
-    await runMutation(async () => {
+    let didComplete = false
+
+    const didSucceed = await runMutation(async () => {
       const setRecord = await completeSessionExerciseSet(detail.exercise.id, setTimingStartedAt)
       const nextDetail = await getSessionExerciseDetail(detail.exercise.id)
 
@@ -98,15 +102,22 @@ export function useExercisePageData(id: string) {
       setSetTimingStartedAt(
         nextDetail && nextDetail.exercise.status !== 'completed' ? setRecord.completedAt : null,
       )
+      didComplete = true
     })
+
+    if (!didSucceed) {
+      return false
+    }
+
+    return didComplete
   }
 
   async function handleUpdateLatestSetRecord() {
     if (!detail?.latestSetRecord) {
-      return
+      return false
     }
 
-    await runMutation(async () => {
+    return runMutation(async () => {
       const latestSetRecord = await updateLatestSetRecordValues(detail.exercise.id, {
         weightKg: parseOptionalWeightKg(weightInput),
         reps: parseOptionalReps(repsInput),

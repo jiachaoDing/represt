@@ -16,7 +16,7 @@ import type { TemplateExerciseDraft } from '../../lib/template-editor'
 export function useTemplatesPageData() {
   const [templates, setTemplates] = useState<TemplateWithExercises[]>([])
   const [newTemplateName, setNewTemplateName] = useState('')
-  const [expandedTemplateId, setExpandedTemplateId] = useState<string | null>(null)
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -24,7 +24,7 @@ export function useTemplatesPageData() {
   async function loadTemplates(preferredTemplateId?: string | null) {
     const items = await listTemplatesWithExercises()
     setTemplates(items)
-    setExpandedTemplateId((current) => {
+    setSelectedTemplateId((current) => {
       if (preferredTemplateId !== undefined) {
         return items.some((template) => template.id === preferredTemplateId)
           ? preferredTemplateId
@@ -40,9 +40,11 @@ export function useTemplatesPageData() {
       setIsSubmitting(true)
       setError(null)
       await action()
+      return true
     } catch (mutationError) {
       console.error(mutationError)
       setError('模板数据保存失败，请重试。')
+      return false
     } finally {
       setIsSubmitting(false)
     }
@@ -65,7 +67,7 @@ export function useTemplatesPageData() {
   }, [])
 
   async function handleCreateTemplate() {
-    await runMutation(async () => {
+    return runMutation(async () => {
       const template = await createTemplate(newTemplateName)
       setNewTemplateName('')
       await loadTemplates(template.id)
@@ -73,25 +75,21 @@ export function useTemplatesPageData() {
   }
 
   async function handleSaveTemplateName(templateId: string, name: string) {
-    await runMutation(async () => {
+    return runMutation(async () => {
       await updateTemplateName(templateId, name)
       await loadTemplates(templateId)
     })
   }
 
   async function handleDeleteTemplate(templateId: string) {
-    if (!window.confirm('删除模板后，该模板下的动作也会一起删除。确定继续吗？')) {
-      return
-    }
-
-    await runMutation(async () => {
+    return runMutation(async () => {
       await deleteTemplate(templateId)
       await loadTemplates()
     })
   }
 
   async function handleCreateExercise(templateId: string, draft: TemplateExerciseDraft) {
-    await runMutation(async () => {
+    return runMutation(async () => {
       await createTemplateExercise(templateId, {
         name: draft.name,
         targetSets: parseIntegerInput(draft.targetSets),
@@ -106,7 +104,7 @@ export function useTemplatesPageData() {
     exerciseId: string,
     draft: TemplateExerciseDraft,
   ) {
-    await runMutation(async () => {
+    return runMutation(async () => {
       await updateTemplateExercise(exerciseId, {
         name: draft.name,
         targetSets: parseIntegerInput(draft.targetSets),
@@ -117,15 +115,16 @@ export function useTemplatesPageData() {
   }
 
   async function handleDeleteExercise(templateId: string, exerciseId: string) {
-    await runMutation(async () => {
+    return runMutation(async () => {
       await deleteTemplateExercise(exerciseId)
       await loadTemplates(templateId)
     })
   }
 
   return {
+    currentTemplate:
+      templates.find((template) => template.id === selectedTemplateId) ?? null,
     error,
-    expandedTemplateId,
     handleCreateExercise,
     handleCreateTemplate,
     handleDeleteExercise,
@@ -135,8 +134,9 @@ export function useTemplatesPageData() {
     isLoading,
     isSubmitting,
     newTemplateName,
-    setExpandedTemplateId,
     setNewTemplateName,
+    selectedTemplateId,
+    setSelectedTemplateId,
     templates,
   }
 }
