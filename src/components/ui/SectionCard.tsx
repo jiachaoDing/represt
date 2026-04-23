@@ -7,12 +7,12 @@ type SectionCardProps = PropsWithChildren<{
 
 export function SectionCard({ title, action, children }: SectionCardProps) {
   return (
-    <section className="rounded-3xl border border-white/80 bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
+    <section className="space-y-3 rounded border border-slate-200 bg-white p-4">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-base font-semibold text-slate-950">{title}</h2>
+        <h2 className="text-base font-semibold">{title}</h2>
         {action}
       </div>
-      <div className="mt-4 space-y-3 text-sm leading-6 text-slate-600">{children}</div>
+      <div className="space-y-3 text-sm text-slate-700">{children}</div>
     </section>
   )
 }

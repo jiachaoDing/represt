@@ -18,16 +18,15 @@ export function AppLayout() {
   const title = (currentMatch?.handle as RouteHandle | undefined)?.title ?? '训练间歇记录器'
 
   return (
-    <div className="min-h-screen bg-[var(--color-app-bg)] text-slate-950">
-      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))]">
-        <header className="sticky top-0 z-10 rounded-b-3xl border border-white/70 bg-white/85 px-4 py-4 shadow-[0_12px_40px_rgba(15,23,42,0.08)] backdrop-blur">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">TrainRe</p>
-          <div className="mt-2 flex items-end justify-between gap-3">
+    <div className="min-h-screen bg-slate-50 text-slate-950">
+      <div className="mx-auto flex min-h-screen w-full max-w-3xl flex-col px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))]">
+        <header className="border-b border-slate-200 py-4">
+          <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <h1 className="text-2xl font-semibold text-slate-950">{title}</h1>
-              <p className="mt-1 text-sm text-slate-500">极简力量训练记录 PWA 脚手架</p>
+              <p className="text-sm font-medium text-slate-500">TrainRe</p>
+              <h1 className="text-2xl font-semibold">{title}</h1>
             </div>
-            <nav className="flex items-center gap-2 rounded-full bg-slate-100 p-1">
+            <nav className="flex gap-2">
               {navigation.map((item) => (
                 <NavLink
                   key={item.to}
@@ -35,8 +34,10 @@ export function AppLayout() {
                   end={item.end}
                   className={({ isActive }) =>
                     [
-                      'rounded-full px-3 py-2 text-sm font-medium transition-colors',
-                      isActive ? 'bg-slate-950 text-white' : 'text-slate-600',
+                      'rounded border px-3 py-2 text-sm',
+                      isActive
+                        ? 'border-slate-900 bg-slate-900 text-white'
+                        : 'border-slate-300 text-slate-700',
                     ].join(' ')
                   }
                 >
@@ -46,7 +47,7 @@ export function AppLayout() {
             </nav>
           </div>
         </header>
-        <main className="flex-1 py-5">
+        <main className="flex-1 py-4">
           <Outlet />
         </main>
       </div>

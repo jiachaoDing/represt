@@ -1,6 +1,6 @@
 import { createBrowserRouter } from 'react-router-dom'
 
-import { AppLayout } from '../components/AppLayout'
+import { AppLayout } from '../components/layout/AppLayout'
 import { ExercisePage } from '../pages/ExercisePage'
 import { SchedulePage } from '../pages/SchedulePage'
 import { SummaryPage } from '../pages/SummaryPage'
