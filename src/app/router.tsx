@@ -1,0 +1,36 @@
+import { createBrowserRouter } from 'react-router-dom'
+
+import { AppLayout } from '../components/AppLayout'
+import { ExercisePage } from '../pages/ExercisePage'
+import { SchedulePage } from '../pages/SchedulePage'
+import { SummaryPage } from '../pages/SummaryPage'
+import { TemplatesPage } from '../pages/TemplatesPage'
+
+export const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <AppLayout />,
+    children: [
+      {
+        index: true,
+        element: <SchedulePage />,
+        handle: { title: '训练安排' },
+      },
+      {
+        path: 'exercise/:id',
+        element: <ExercisePage />,
+        handle: { title: '动作页' },
+      },
+      {
+        path: 'templates',
+        element: <TemplatesPage />,
+        handle: { title: '模板编辑' },
+      },
+      {
+        path: 'summary/:sessionId',
+        element: <SummaryPage />,
+        handle: { title: '训练总结' },
+      },
+    ],
+  },
+])

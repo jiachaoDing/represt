@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: light;
+  font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: #f5f7fb;
+  color: #0f172a;
+  --color-app-bg: radial-gradient(circle at top, #ffffff 0%, #eef2ff 24%, #f5f7fb 60%, #eef3f8 100%);
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+#root {
+  min-height: 100vh;
+}
