@@ -1,7 +1,5 @@
 export type SessionStatus = 'pending' | 'active' | 'completed'
 
-export type SessionExerciseStatus = 'pending' | 'active' | 'completed'
-
 export type RestTimerStatus = 'idle' | 'running' | 'ready'
 
 export interface WorkoutTemplate {
@@ -9,7 +7,6 @@ export interface WorkoutTemplate {
   name: string
   createdAt: string
   updatedAt: string
-  deletedAt: string | null
 }
 
 export interface TemplateExercise {
@@ -24,9 +21,6 @@ export interface TemplateExercise {
 export interface WorkoutSession {
   id: string
   sessionDateKey: string
-  status: SessionStatus
-  startedAt: string | null
-  endedAt: string | null
   createdAt: string
 }
 
@@ -41,7 +35,6 @@ export interface SessionExercise {
   order: number
   lastCompletedAt: string | null
   restEndsAt: string | null
-  status: SessionExerciseStatus
 }
 
 export interface SetRecord {
@@ -50,7 +43,6 @@ export interface SetRecord {
   sessionExerciseId: string
   setNumber: number
   completedAt: string
-  durationSeconds: number
   weightKg: number | null
   reps: number | null
 }

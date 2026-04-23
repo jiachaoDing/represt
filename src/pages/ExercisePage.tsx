@@ -8,7 +8,11 @@ import { Snackbar } from '../components/ui/Snackbar'
 import { StatusPill } from '../components/ui/StatusPill'
 import { useNow } from '../hooks/useNow'
 import { useExercisePageData } from '../hooks/pages/useExercisePageData'
-import { getCurrentSetDurationLabel, getRepsLabel, getWeightLabel } from '../lib/session-display'
+import {
+  getCompletedAtLabel,
+  getRepsLabel,
+  getWeightLabel,
+} from '../lib/session-display'
 import { formatDuration, getRestTimerSnapshot, getRestTimerState } from '../lib/rest-timer'
 
 function getHeroTone(state: 'completed' | 'counting' | 'ready' | 'resting') {
@@ -43,7 +47,6 @@ export function ExercisePage() {
     repsInput,
     setRepsInput,
     setWeightInput,
-    timingStartedAt,
     weightInput,
   } = useExercisePageData(id)
   const [isRecordSheetOpen, setIsRecordSheetOpen] = useState(false)
@@ -99,12 +102,12 @@ export function ExercisePage() {
     }
 
     return {
-      label: '当前组计时',
+      label: '待完成当前组',
       state: 'counting' as const,
-      supporting: '进入动作页后开始计时，点击一次即记录本组。',
-      value: getCurrentSetDurationLabel(timingStartedAt, now),
+      supporting: '点击下方按钮即可记录当前组，随后可补录重量和次数。',
+      value: `第 ${detail.exercise.completedSets + 1} 组`,
     }
-  }, [detail, now, restSnapshot, timingStartedAt])
+  }, [detail, restSnapshot])
 
   async function handleCompleteCurrentSet() {
     const didComplete = await handleCompleteSet()
@@ -197,7 +200,7 @@ export function ExercisePage() {
                 </p>
                 {latestSetRecord ? (
                   <p className="mt-2 text-sm text-[var(--ink-primary)]">
-                    第 {latestSetRecord.setNumber} 组 · {formatDuration(latestSetRecord.durationSeconds)} ·{' '}
+                    第 {latestSetRecord.setNumber} 组 · {getCompletedAtLabel(latestSetRecord.completedAt)} ·{' '}
                     {getWeightLabel(latestSetRecord.weightKg)} · {getRepsLabel(latestSetRecord.reps)}
                   </p>
                 ) : (
@@ -264,10 +267,10 @@ export function ExercisePage() {
               </div>
               <div className="rounded-[1.25rem] bg-[rgba(24,32,22,0.04)] px-4 py-3">
                 <p className="text-xs font-medium uppercase tracking-[0.16em] text-[var(--ink-tertiary)]">
-                  本组用时
+                  完成时间
                 </p>
                 <p className="mt-2 text-sm text-[var(--ink-primary)]">
-                  {formatDuration(latestSetRecord.durationSeconds)}
+                  {getCompletedAtLabel(latestSetRecord.completedAt)}
                 </p>
               </div>
             </div>

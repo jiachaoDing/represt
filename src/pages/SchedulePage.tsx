@@ -33,6 +33,7 @@ export function SchedulePage() {
     canAddTemporaryExercise,
     currentSession,
     error,
+    getTemplateImportConfirmation,
     handleAddTemporaryExercise,
     handleAddTemplateExercises,
     handleDeleteExercise,
@@ -43,12 +44,15 @@ export function SchedulePage() {
     selectedTemplateId,
     setNewExerciseDraft,
     setSelectedTemplateId,
+    shouldConfirmContinueBeforeAddingExercise,
     templates,
   } = useSchedulePageData()
   const [actionExerciseId, setActionExerciseId] = useState<string | null>(null)
   const [deleteExerciseId, setDeleteExerciseId] = useState<string | null>(null)
+  const [isContinueExerciseDialogOpen, setIsContinueExerciseDialogOpen] = useState(false)
   const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false)
   const [isTemplateSheetOpen, setIsTemplateSheetOpen] = useState(false)
+  const [pendingTemplateImportId, setPendingTemplateImportId] = useState<string | null>(null)
   const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null)
 
   useEffect(() => {
@@ -72,6 +76,9 @@ export function SchedulePage() {
     () => templates.find((template) => template.id === selectedTemplateId) ?? null,
     [selectedTemplateId, templates],
   )
+  const pendingTemplateImportConfirmation = pendingTemplateImportId
+    ? getTemplateImportConfirmation(pendingTemplateImportId)
+    : null
 
   function canDeleteExercise(exerciseId: string) {
     const exercise = currentSession?.exercises.find((item) => item.id === exerciseId)
@@ -83,26 +90,66 @@ export function SchedulePage() {
     )
   }
 
-  async function handleImportTemplate() {
-    if (!selectedTemplateId) {
-      return
+  function getTemplateImportConfirmDescription() {
+    if (!pendingTemplateImportConfirmation) {
+      return ''
     }
 
-    const result = await handleAddTemplateExercises(selectedTemplateId)
+    const messages: string[] = []
+
+    if (pendingTemplateImportConfirmation.isDuplicateImport) {
+      messages.push(
+        `“${pendingTemplateImportConfirmation.templateName}” 看起来已经加入过今日训练。允许重复加入，但会再追加一份动作。`,
+      )
+    }
+
+    if (pendingTemplateImportConfirmation.willContinueCompletedSession) {
+      messages.push('这会继续今日训练，训练总结会更新。')
+    }
+
+    return messages.join(' ')
+  }
+
+  async function importTemplate(templateId: string) {
+    const result = await handleAddTemplateExercises(templateId)
     if (result) {
+      setPendingTemplateImportId(null)
       setIsTemplateSheetOpen(false)
       setSnackbarMessage(`已把 ${result.name} 的 ${result.count} 个动作加入今日训练`)
     }
   }
 
-  async function handleAddExercise(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
+  async function handleImportTemplate() {
+    if (!selectedTemplateId) {
+      return
+    }
+
+    if (getTemplateImportConfirmation(selectedTemplateId)) {
+      setPendingTemplateImportId(selectedTemplateId)
+      return
+    }
+
+    await importTemplate(selectedTemplateId)
+  }
+
+  async function addExercise() {
     const didCreate = await handleAddTemporaryExercise()
 
     if (didCreate) {
+      setIsContinueExerciseDialogOpen(false)
       setIsCreateSheetOpen(false)
       setSnackbarMessage('动作已加入今日训练')
     }
+  }
+
+  async function handleAddExercise(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (shouldConfirmContinueBeforeAddingExercise) {
+      setIsContinueExerciseDialogOpen(true)
+      return
+    }
+
+    await addExercise()
   }
 
   async function handleConfirmDelete() {
@@ -413,6 +460,26 @@ export function SchedulePage() {
           </div>
         ) : null}
       </BottomSheet>
+
+      <ConfirmDialog
+        open={isContinueExerciseDialogOpen}
+        title="继续今日训练？"
+        description="这会把新动作追加到今天已完成的训练里，训练总结也会一起更新。"
+        confirmLabel="继续添加"
+        onCancel={() => setIsContinueExerciseDialogOpen(false)}
+        onConfirm={() => void addExercise()}
+      />
+
+      <ConfirmDialog
+        open={pendingTemplateImportConfirmation !== null}
+        title="加入这组动作？"
+        description={getTemplateImportConfirmDescription()}
+        confirmLabel="继续加入"
+        onCancel={() => setPendingTemplateImportId(null)}
+        onConfirm={() =>
+          void (pendingTemplateImportId ? importTemplate(pendingTemplateImportId) : Promise.resolve())
+        }
+      />
 
       <ConfirmDialog
         open={deleteExercise !== null}

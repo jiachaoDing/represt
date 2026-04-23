@@ -17,10 +17,33 @@ export type ScheduleExerciseDraft = {
   restSeconds: string
 }
 
+export type TemplateImportConfirmation = {
+  isDuplicateImport: boolean
+  templateName: string
+  willContinueCompletedSession: boolean
+}
+
 const emptyExerciseDraft: ScheduleExerciseDraft = {
   name: '',
   targetSets: '3',
   restSeconds: '90',
+}
+
+function hasImportedTemplateExercises(
+  session: WorkoutSessionWithExercises,
+  template: TemplateWithExercises,
+) {
+  if (template.exercises.length === 0) {
+    return false
+  }
+
+  const importedTemplateExerciseIds = new Set(
+    session.exercises
+      .map((exercise) => exercise.templateExerciseId)
+      .filter((templateExerciseId) => templateExerciseId !== null),
+  )
+
+  return template.exercises.every((exercise) => importedTemplateExerciseIds.has(exercise.id))
 }
 
 export function useSchedulePageData() {
@@ -126,6 +149,30 @@ export function useSchedulePageData() {
       : null
   }
 
+  function getTemplateImportConfirmation(templateId: string): TemplateImportConfirmation | null {
+    if (!currentSession) {
+      return null
+    }
+
+    const template = templates.find((item) => item.id === templateId)
+    if (!template) {
+      return null
+    }
+
+    const isDuplicateImport = hasImportedTemplateExercises(currentSession, template)
+    const willContinueCompletedSession = currentSession.status === 'completed'
+
+    if (!isDuplicateImport && !willContinueCompletedSession) {
+      return null
+    }
+
+    return {
+      isDuplicateImport,
+      templateName: template.name,
+      willContinueCompletedSession,
+    }
+  }
+
   async function handleAddTemporaryExercise() {
     if (!currentSession) {
       return false
@@ -154,6 +201,7 @@ export function useSchedulePageData() {
   }
 
   const canAddTemporaryExercise = currentSession !== null
+  const shouldConfirmContinueBeforeAddingExercise = currentSession?.status === 'completed'
   const hasTemplates = templates.length > 0
 
   return {
@@ -164,12 +212,14 @@ export function useSchedulePageData() {
     handleAddTemplateExercises,
     handleDeleteExercise,
     hasTemplates,
+    getTemplateImportConfirmation,
     isLoading,
     isSubmitting,
     newExerciseDraft,
     selectedTemplateId,
     setNewExerciseDraft,
     setSelectedTemplateId,
+    shouldConfirmContinueBeforeAddingExercise,
     templates,
   }
 }

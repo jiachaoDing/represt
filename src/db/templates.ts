@@ -79,7 +79,6 @@ export async function ensureTemplateSeedData() {
       name: template.name,
       createdAt: timestamp,
       updatedAt: timestamp,
-      deletedAt: null,
     }))
 
     const exercises = templates.flatMap((template, templateIndex) =>
@@ -123,7 +122,6 @@ export async function listTemplatesWithExercises() {
   }
 
   return templates
-    .filter((template) => template.deletedAt === null)
     .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))
     .map((template) => ({
       ...template,
@@ -138,7 +136,6 @@ export async function createTemplate(name: string) {
     name: normalizeTemplateName(name),
     createdAt: timestamp,
     updatedAt: timestamp,
-    deletedAt: null,
   }
 
   await db.workoutTemplates.add(template)

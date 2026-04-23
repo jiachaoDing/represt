@@ -2,8 +2,12 @@ import { Link } from 'react-router-dom'
 
 import { SectionCard } from '../ui/SectionCard'
 import type { SessionSummaryDetail } from '../../db/sessions'
-import { formatDuration } from '../../lib/rest-timer'
-import { getExerciseStatusLabel, getRepsLabel, getWeightLabel } from '../../lib/session-display'
+import {
+  getCompletedAtLabel,
+  getExerciseStatusLabel,
+  getRepsLabel,
+  getWeightLabel,
+} from '../../lib/session-display'
 
 type SessionExerciseSummaryListProps = {
   detail: SessionSummaryDetail | null
@@ -45,8 +49,8 @@ export function SessionExerciseSummaryList({ detail }: SessionExerciseSummaryLis
                     <p className="mt-1 font-medium">第 {setRecord.setNumber} 组</p>
                   </div>
                   <div>
-                    <p className="text-xs text-slate-500">用时</p>
-                    <p className="mt-1 font-medium">{formatDuration(setRecord.durationSeconds)}</p>
+                    <p className="text-xs text-slate-500">完成时间</p>
+                    <p className="mt-1 font-medium">{getCompletedAtLabel(setRecord.completedAt)}</p>
                   </div>
                   <div>
                     <p className="text-xs text-slate-500">重量</p>

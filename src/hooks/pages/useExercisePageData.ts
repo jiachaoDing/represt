@@ -23,7 +23,6 @@ function syncLatestSetInputs(
 
 export function useExercisePageData(id: string) {
   const [detail, setDetail] = useState<SessionExerciseDetail | null>(null)
-  const [setTimingStartedAt, setSetTimingStartedAt] = useState<string | null>(null)
   const [weightInput, setWeightInput] = useState('')
   const [repsInput, setRepsInput] = useState('')
   const [isLoading, setIsLoading] = useState(true)
@@ -45,9 +44,6 @@ export function useExercisePageData(id: string) {
 
         setDetail(result)
         syncLatestSetInputs(result, setWeightInput, setRepsInput)
-        setSetTimingStartedAt(
-          result && result.exercise.status !== 'completed' ? new Date().toISOString() : null,
-        )
       } catch (loadError) {
         if (isCancelled) {
           return
@@ -87,21 +83,18 @@ export function useExercisePageData(id: string) {
   }
 
   async function handleCompleteSet() {
-    if (!detail || !setTimingStartedAt) {
+    if (!detail) {
       return false
     }
 
     let didComplete = false
 
     const didSucceed = await runMutation(async () => {
-      const setRecord = await completeSessionExerciseSet(detail.exercise.id, setTimingStartedAt)
+      await completeSessionExerciseSet(detail.exercise.id)
       const nextDetail = await getSessionExerciseDetail(detail.exercise.id)
 
       setDetail(nextDetail)
       syncLatestSetInputs(nextDetail, setWeightInput, setRepsInput)
-      setSetTimingStartedAt(
-        nextDetail && nextDetail.exercise.status !== 'completed' ? setRecord.completedAt : null,
-      )
       didComplete = true
     })
 
@@ -138,10 +131,7 @@ export function useExercisePageData(id: string) {
 
   const latestSetRecord = detail?.latestSetRecord ?? null
   const canCompleteSet =
-    detail !== null &&
-    detail.exercise.status !== 'completed' &&
-    setTimingStartedAt !== null &&
-    !isSubmitting
+    detail !== null && detail.exercise.status !== 'completed' && !isSubmitting
 
   return {
     canCompleteSet,
@@ -155,7 +145,6 @@ export function useExercisePageData(id: string) {
     repsInput,
     setRepsInput,
     setWeightInput,
-    timingStartedAt: setTimingStartedAt,
     weightInput,
   }
 }

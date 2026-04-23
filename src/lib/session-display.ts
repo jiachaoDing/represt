@@ -1,5 +1,7 @@
-import { formatDuration, getRestTimerSnapshot, getRestTimerState } from './rest-timer'
-import type { SessionExercise, SessionExerciseStatus, SessionStatus } from '../models/types'
+import { getRestTimerSnapshot, getRestTimerState } from './rest-timer'
+import type { SessionExercise, SessionStatus } from '../models/types'
+
+export type DerivedExerciseStatus = 'pending' | 'active' | 'completed'
 
 export function getSessionStatusLabel(status: SessionStatus) {
   if (status === 'active') {
@@ -13,7 +15,21 @@ export function getSessionStatusLabel(status: SessionStatus) {
   return '未开始'
 }
 
-export function getExerciseStatusLabel(status: SessionExerciseStatus) {
+export function deriveExerciseStatus(
+  exercise: Pick<SessionExercise, 'completedSets' | 'targetSets'>,
+): DerivedExerciseStatus {
+  if (exercise.completedSets >= exercise.targetSets) {
+    return 'completed'
+  }
+
+  if (exercise.completedSets > 0) {
+    return 'active'
+  }
+
+  return 'pending'
+}
+
+export function getExerciseStatusLabel(status: DerivedExerciseStatus) {
   if (status === 'active') {
     return '进行中'
   }
@@ -26,44 +42,23 @@ export function getExerciseStatusLabel(status: SessionExerciseStatus) {
 }
 
 export function getExerciseRestLabel(exercise: SessionExercise, now: number) {
-  if (exercise.status === 'completed') {
+  if (deriveExerciseStatus(exercise) === 'completed') {
     return '已完成'
   }
 
   return getRestTimerSnapshot(getRestTimerState(exercise), now).label
 }
 
-export function getCurrentSetDurationLabel(startedAt: string | null, now: number) {
-  if (!startedAt) {
-    return '00:00'
+export function getCompletedAtLabel(completedAt: string) {
+  const completedAtDate = new Date(completedAt)
+  if (Number.isNaN(completedAtDate.getTime())) {
+    return '时间未知'
   }
 
-  const startedAtMs = new Date(startedAt).getTime()
-  if (Number.isNaN(startedAtMs)) {
-    return '00:00'
-  }
-
-  const elapsedSeconds = Math.max(0, Math.floor((now - startedAtMs) / 1000))
-  return formatDuration(elapsedSeconds)
-}
-
-export function getSessionDurationSeconds(
-  startedAt: string | null,
-  endedAt: string | null,
-  now: number,
-) {
-  if (!startedAt) {
-    return null
-  }
-
-  const startedAtMs = new Date(startedAt).getTime()
-  const endedAtMs = endedAt ? new Date(endedAt).getTime() : now
-
-  if (Number.isNaN(startedAtMs) || Number.isNaN(endedAtMs)) {
-    return null
-  }
-
-  return Math.max(0, Math.floor((endedAtMs - startedAtMs) / 1000))
+  return completedAtDate.toLocaleTimeString('zh-CN', {
+    hour: '2-digit',
+    minute: '2-digit',
+  })
 }
 
 export function getWeightLabel(weightKg: number | null) {

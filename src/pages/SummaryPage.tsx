@@ -3,12 +3,10 @@ import { useParams } from 'react-router-dom'
 import { SessionExerciseSummaryList } from '../components/summary/SessionExerciseSummaryList'
 import { SessionSummaryOverview } from '../components/summary/SessionSummaryOverview'
 import { PageHeader } from '../components/ui/PageHeader'
-import { useNow } from '../hooks/useNow'
 import { useSessionSummaryData } from '../hooks/pages/useSessionSummaryData'
 
 export function SummaryPage() {
   const { sessionId = 'unknown-session' } = useParams()
-  const now = useNow()
   const { detail, error, isLoading } = useSessionSummaryData(sessionId)
 
   return (
@@ -25,7 +23,7 @@ export function SummaryPage() {
         </div>
       ) : null}
 
-      <SessionSummaryOverview detail={detail} isLoading={isLoading} now={now} />
+      <SessionSummaryOverview detail={detail} isLoading={isLoading} />
       <SessionExerciseSummaryList detail={detail} />
     </div>
   )

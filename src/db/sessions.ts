@@ -1,25 +1,34 @@
-import type { SessionExercise, SetRecord, WorkoutSession } from '../models/types'
+import type { SessionExercise, SessionStatus, SetRecord, WorkoutSession } from '../models/types'
 import { getTodaySessionDateKey } from '../lib/session-date-key'
 import { getRestEndsAt } from '../lib/rest-timer'
+import { deriveExerciseStatus, type DerivedExerciseStatus } from '../lib/session-display'
 import { db } from './app-db'
 import { ensureTemplateSeedData } from './templates'
 
-export type WorkoutSessionWithExercises = WorkoutSession & {
-  exercises: SessionExercise[]
+export type WorkoutSessionWithStatus = WorkoutSession & {
+  status: SessionStatus
+}
+
+export type SessionExerciseWithStatus = SessionExercise & {
+  status: DerivedExerciseStatus
+}
+
+export type WorkoutSessionWithExercises = WorkoutSessionWithStatus & {
+  exercises: SessionExerciseWithStatus[]
 }
 
 export type SessionExerciseDetail = {
-  session: WorkoutSession
-  exercise: SessionExercise
+  session: WorkoutSessionWithStatus
+  exercise: SessionExerciseWithStatus
   latestSetRecord: SetRecord | null
 }
 
-export type SessionSummaryExercise = SessionExercise & {
+export type SessionSummaryExercise = SessionExerciseWithStatus & {
   setRecords: SetRecord[]
 }
 
 export type SessionSummaryDetail = {
-  session: WorkoutSession
+  session: WorkoutSessionWithStatus
   exercises: SessionSummaryExercise[]
 }
 
@@ -33,17 +42,6 @@ const CURRENT_SESSION_KEY = 'trainre.current-session-id.v1'
 
 function nowIso() {
   return new Date().toISOString()
-}
-
-function getDurationSeconds(startedAt: string, completedAt: string) {
-  const startedAtMs = new Date(startedAt).getTime()
-  const completedAtMs = new Date(completedAt).getTime()
-
-  if (Number.isNaN(startedAtMs) || Number.isNaN(completedAtMs)) {
-    return 0
-  }
-
-  return Math.max(0, Math.round((completedAtMs - startedAtMs) / 1000))
 }
 
 function getStoredCurrentSessionId() {
@@ -65,6 +63,39 @@ function normalizeSessionExercise(input: Partial<SessionExerciseInput>) {
     targetSets: Math.max(1, Math.floor(input.targetSets ?? 3)),
     restSeconds: Math.max(0, Math.floor(input.restSeconds ?? 90)),
   }
+}
+
+function deriveSessionStatus(exercises: Array<Pick<SessionExercise, 'completedSets' | 'targetSets'>>) {
+  if (exercises.length === 0) {
+    return 'pending' satisfies SessionStatus
+  }
+
+  if (exercises.every((exercise) => exercise.completedSets >= exercise.targetSets)) {
+    return 'completed' satisfies SessionStatus
+  }
+
+  if (exercises.some((exercise) => exercise.completedSets > 0)) {
+    return 'active' satisfies SessionStatus
+  }
+
+  return 'pending' satisfies SessionStatus
+}
+
+function attachDerivedExerciseStatus(exercise: SessionExercise) {
+  return {
+    ...exercise,
+    status: deriveExerciseStatus(exercise),
+  } satisfies SessionExerciseWithStatus
+}
+
+function attachDerivedSessionStatus(
+  session: WorkoutSession,
+  exercises: Array<Pick<SessionExercise, 'completedSets' | 'targetSets'>>,
+) {
+  return {
+    ...session,
+    status: deriveSessionStatus(exercises),
+  } satisfies WorkoutSessionWithStatus
 }
 
 async function resolveCurrentSessionId() {
@@ -114,50 +145,11 @@ async function getLatestSetRecord(sessionExerciseId: string) {
   return records.sort((left, right) => right.setNumber - left.setNumber)[0]
 }
 
-async function updateSessionStatus(sessionId: string, completedAt?: string) {
-  const session = await db.workoutSessions.get(sessionId)
-  if (!session) {
-    throw new Error('当前训练不存在。')
-  }
-
-  const exercises = await getSessionExercises(sessionId)
-  const hasCompletedSet = exercises.some((exercise) => exercise.completedSets > 0)
-  const isCompleted = exercises.length > 0 && exercises.every((exercise) => exercise.status === 'completed')
-
-  if (isCompleted) {
-    const endedAt = completedAt ?? nowIso()
-    await db.workoutSessions.update(sessionId, {
-      status: 'completed',
-      startedAt: session.startedAt ?? endedAt,
-      endedAt,
-    })
-    return
-  }
-
-  if (hasCompletedSet) {
-    await db.workoutSessions.update(sessionId, {
-      status: 'active',
-      startedAt: session.startedAt ?? completedAt ?? nowIso(),
-      endedAt: null,
-    })
-    return
-  }
-
-  await db.workoutSessions.update(sessionId, {
-    status: 'pending',
-    startedAt: null,
-    endedAt: null,
-  })
-}
-
 async function createSessionRecord() {
   const timestamp = nowIso()
   const session: WorkoutSession = {
     id: crypto.randomUUID(),
     sessionDateKey: getTodaySessionDateKey(),
-    status: 'pending',
-    startedAt: null,
-    endedAt: null,
     createdAt: timestamp,
   }
 
@@ -182,7 +174,6 @@ async function buildSessionExercisesFromTemplate(sessionId: string, templateId: 
     order: startOrder + index,
     lastCompletedAt: null,
     restEndsAt: null,
-    status: 'pending',
   })) satisfies SessionExercise[]
 }
 
@@ -202,8 +193,8 @@ export async function getCurrentSession() {
 
   const exercises = await getSessionExercises(session.id)
   return {
-    ...session,
-    exercises,
+    ...attachDerivedSessionStatus(session, exercises),
+    exercises: exercises.map(attachDerivedExerciseStatus),
   } satisfies WorkoutSessionWithExercises
 }
 
@@ -215,7 +206,7 @@ export async function getOrCreateTodaySession() {
 
   const session = await createSessionRecord()
   return {
-    ...session,
+    ...attachDerivedSessionStatus(session, []),
     exercises: [],
   } satisfies WorkoutSessionWithExercises
 }
@@ -236,8 +227,8 @@ export async function getSessionExerciseDetail(sessionExerciseId: string) {
   }
 
   return {
-    session,
-    exercise,
+    session: attachDerivedSessionStatus(session, [exercise]),
+    exercise: attachDerivedExerciseStatus(exercise),
     latestSetRecord,
   } satisfies SessionExerciseDetail
 }
@@ -262,9 +253,9 @@ export async function getSessionSummaryDetail(sessionId: string) {
   }
 
   return {
-    session,
+    session: attachDerivedSessionStatus(session, exercises),
     exercises: exercises.map((exercise) => ({
-      ...exercise,
+      ...attachDerivedExerciseStatus(exercise),
       setRecords: setRecordsByExerciseId.get(exercise.id) ?? [],
     })),
   } satisfies SessionSummaryDetail
@@ -280,8 +271,8 @@ export async function addTemplateExercisesToSession(sessionId: string, templateI
     throw new Error('只能把模板动作加入今天的训练。')
   }
 
-  if (!template || template.deletedAt !== null) {
-    throw new Error('模板不存在或已删除。')
+  if (!template) {
+    throw new Error('模板不存在。')
   }
 
   const existingExercises = await getSessionExercises(sessionId)
@@ -292,13 +283,7 @@ export async function addTemplateExercisesToSession(sessionId: string, templateI
     return []
   }
 
-  await db.transaction('rw', db.sessionExercises, db.workoutSessions, async () => {
-    await db.sessionExercises.bulkAdd(templateExercises)
-    await db.workoutSessions.update(sessionId, {
-      endedAt: null,
-    })
-    await updateSessionStatus(sessionId)
-  })
+  await db.sessionExercises.bulkAdd(templateExercises)
 
   return templateExercises
 }
@@ -324,14 +309,9 @@ export async function addTemporarySessionExercise(sessionId: string, input: Part
     order: nextOrder,
     lastCompletedAt: null,
     restEndsAt: null,
-    status: 'pending',
   }
 
   await db.sessionExercises.add(sessionExercise)
-  await db.workoutSessions.update(sessionId, {
-    endedAt: null,
-  })
-  await updateSessionStatus(sessionId)
 
   return sessionExercise
 }
@@ -346,24 +326,19 @@ export async function deletePendingSessionExercise(sessionId: string, sessionExe
     throw new Error('当前动作不存在。')
   }
 
-  if (sessionExercise.status !== 'pending' || sessionExercise.completedSets > 0) {
+  if (deriveExerciseStatus(sessionExercise) !== 'pending') {
     throw new Error('只能删除未开始的动作。')
   }
 
   await db.sessionExercises.delete(sessionExerciseId)
-  await updateSessionStatus(sessionId)
 }
 
-export async function completeSessionExerciseSet(
-  sessionExerciseId: string,
-  setStartedAt: string,
-): Promise<SetRecord> {
+export async function completeSessionExerciseSet(sessionExerciseId: string): Promise<SetRecord> {
   const completedAt = nowIso()
   let createdSetRecord: SetRecord | null = null
 
   await db.transaction(
     'rw',
-    db.workoutSessions,
     db.sessionExercises,
     db.setRecords,
     async () => {
@@ -372,27 +347,20 @@ export async function completeSessionExerciseSet(
         throw new Error('当前动作不存在。')
       }
 
-      if (exercise.status === 'completed' || exercise.completedSets >= exercise.targetSets) {
+      if (deriveExerciseStatus(exercise) === 'completed') {
         throw new Error('当前动作已完成，不能继续记录新的一组。')
       }
 
-      const session = await db.workoutSessions.get(exercise.sessionId)
-      if (!session) {
-        throw new Error('当前训练不存在。')
-      }
-
       const nextCompletedSets = exercise.completedSets + 1
-      const nextStatus = nextCompletedSets >= exercise.targetSets ? 'completed' : 'active'
       const restEndsAt =
-        nextStatus === 'completed' ? null : getRestEndsAt(completedAt, exercise.restSeconds)
+        nextCompletedSets >= exercise.targetSets ? null : getRestEndsAt(completedAt, exercise.restSeconds)
 
       const setRecord: SetRecord = {
         id: crypto.randomUUID(),
-        sessionId: session.id,
+        sessionId: exercise.sessionId,
         sessionExerciseId: exercise.id,
         setNumber: nextCompletedSets,
         completedAt,
-        durationSeconds: getDurationSeconds(setStartedAt, completedAt),
         weightKg: null,
         reps: null,
       }
@@ -404,9 +372,7 @@ export async function completeSessionExerciseSet(
         completedSets: nextCompletedSets,
         lastCompletedAt: completedAt,
         restEndsAt,
-        status: nextStatus,
       })
-      await updateSessionStatus(session.id, completedAt)
     },
   )
 
@@ -453,19 +419,6 @@ export async function startSession(sessionId: string) {
     throw new Error('当前训练不存在。')
   }
 
-  if (session.status !== 'pending') {
-    return session
-  }
-
-  const startedAt = nowIso()
-  await db.workoutSessions.update(sessionId, {
-    status: 'active',
-    startedAt,
-  })
-
-  return {
-    ...session,
-    status: 'active',
-    startedAt,
-  } satisfies WorkoutSession
+  const exercises = await getSessionExercises(sessionId)
+  return attachDerivedSessionStatus(session, exercises)
 }
