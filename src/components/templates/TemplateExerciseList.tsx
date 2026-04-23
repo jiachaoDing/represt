@@ -69,51 +69,60 @@ export function TemplateExerciseList({
   }
 
   return (
-    <div className="mt-4 flex flex-col border-y border-[var(--outline-variant)]">
-      {currentTemplate.exercises.map((exercise, index) => (
-        <SwipeActionItem
-          key={exercise.id}
-          actionLabel="删除"
-          disabled={isSubmitting}
-          onAction={() => onDelete(exercise.id)}
-        >
-          <button
-            type="button"
-            onClick={() => onEdit(exercise.id)}
-            className={`block w-full bg-[var(--surface)] px-4 py-4 text-left ${index !== 0 ? 'border-t border-[var(--outline-variant)]' : ''}`}
+    <div className="mt-4 flex flex-col px-4">
+      {/* Header Row */}
+      <div className="flex items-center px-2 pb-2 text-[12px] text-[var(--on-surface-variant)]">
+        <div className="w-6 shrink-0" />
+        <div className="flex-1 pl-2">动作名称</div>
+        <div className="w-[3.5rem] shrink-0 text-center">组数</div>
+        <div className="w-[3.5rem] shrink-0 text-center">休息</div>
+        <div className="w-[3.5rem] shrink-0 text-center">重量</div>
+        <div className="w-[3.5rem] shrink-0 text-center">次数</div>
+        <div className="w-6 shrink-0" />
+      </div>
+
+      <div className="flex flex-col gap-1">
+        {currentTemplate.exercises.map((exercise, index) => (
+          <SwipeActionItem
+            key={exercise.id}
+            actionLabel="删除"
+            disabled={isSubmitting}
+            onAction={() => onDelete(exercise.id)}
           >
-            <div className="flex items-center gap-3">
-              <svg
-                viewBox="0 0 24 24"
-                width="20"
-                height="20"
-                className="shrink-0 text-[var(--outline)]"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <circle cx="9" cy="12" r="1" />
-                <circle cx="9" cy="5" r="1" />
-                <circle cx="9" cy="19" r="1" />
-                <circle cx="15" cy="12" r="1" />
-                <circle cx="15" cy="5" r="1" />
-                <circle cx="15" cy="19" r="1" />
-              </svg>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-base text-[var(--on-surface)]">{exercise.name}</p>
-                <p className="mt-0.5 text-sm text-[var(--on-surface-variant)]">
-                  {exercise.targetSets} 组 · 休息 {exercise.restSeconds} 秒
-                </p>
-                <p className="mt-0.5 text-xs text-[var(--outline)]">
-                  {getWeightLabel(exercise.weightKg ?? null)} · {getRepsLabel(exercise.reps ?? null)}
-                </p>
+            <button
+              type="button"
+              onClick={() => onEdit(exercise.id)}
+              className="block w-full bg-[var(--surface)] px-2 py-3.5 text-left transition-colors active:bg-[var(--surface-container)] rounded-xl"
+            >
+              <div className="flex items-center text-[14px]">
+                <div className="w-6 shrink-0 text-[15px] font-bold text-[var(--on-surface)]">
+                  {index + 1}
+                </div>
+                <div className="flex-1 pl-2 truncate font-medium text-[var(--on-surface)]">
+                  {exercise.name}
+                </div>
+                <div className="w-[3.5rem] shrink-0 text-center text-[var(--on-surface-variant)]">
+                  {exercise.targetSets}组
+                </div>
+                <div className="w-[3.5rem] shrink-0 text-center text-[var(--on-surface-variant)]">
+                  {exercise.restSeconds}秒
+                </div>
+                <div className="w-[3.5rem] shrink-0 text-center text-[var(--on-surface-variant)]">
+                  {exercise.weightKg ? `${exercise.weightKg}kg` : '-'}
+                </div>
+                <div className="w-[3.5rem] shrink-0 text-center text-[var(--on-surface-variant)]">
+                  {exercise.reps ? `${exercise.reps}次` : '-'}
+                </div>
+                <div className="w-6 shrink-0 flex justify-end text-[var(--outline-variant)]">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="9 18 15 12 9 6" />
+                  </svg>
+                </div>
               </div>
-            </div>
-          </button>
-        </SwipeActionItem>
-      ))}
+            </button>
+          </SwipeActionItem>
+        ))}
+      </div>
     </div>
   )
 }

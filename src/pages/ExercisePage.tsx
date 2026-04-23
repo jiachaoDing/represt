@@ -15,7 +15,7 @@ import { useExercisePageData } from '../hooks/pages/useExercisePageData'
 export function ExercisePage() {
   const { id = 'unknown' } = useParams()
   const navigate = useNavigate()
-  const now = useNow()
+  const now = useNow(16)
   const {
     canCompleteSet,
     detail,
@@ -94,36 +94,30 @@ export function ExercisePage() {
 
       {detail ? (
         <>
-          <ExerciseHero detail={detail} now={now} />
-          <ExerciseLatestRecordCard
-            latestSetRecord={latestSetRecord}
-            onEdit={() => setIsRecordSheetOpen(true)}
-          />
-          <ExerciseMetaGrid
-            name={detail.exercise.name}
-            restSeconds={detail.exercise.restSeconds}
-          />
+          <div className="mx-4 mt-2 rounded-[1.5rem] border border-[var(--outline-variant)]/30 bg-[var(--surface)] shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)] overflow-hidden">
+            <ExerciseHero detail={detail} now={now} />
+            
+            <div className="h-[1px] w-full bg-[var(--outline-variant)]/20" />
+            
+            <ExerciseLatestRecordCard
+              latestSetRecord={latestSetRecord}
+              onEdit={() => setIsRecordSheetOpen(true)}
+            />
+            
+            <ExerciseMetaGrid
+              name={detail.exercise.name}
+              restSeconds={detail.exercise.restSeconds}
+            />
+          </div>
 
-          <div className="pointer-events-none fixed bottom-8 left-0 right-0 z-10 mx-auto flex max-w-[30rem] justify-center px-4">
+          <div className="fixed bottom-8 left-0 right-0 z-10 mx-auto flex max-w-[30rem] justify-center px-4">
             {detail.exercise.status !== 'completed' ? (
               <button
                 type="button"
                 disabled={!canCompleteSet}
                 onClick={() => void handleCompleteCurrentSet()}
-                className="pointer-events-auto flex h-[56px] items-center justify-center gap-2 rounded-full bg-[var(--primary)] px-8 text-base font-medium text-[var(--on-primary)] shadow-[0_4px_14px_rgba(46,107,94,0.3)] transition-transform tap-highlight-transparent active:scale-95 disabled:opacity-40"
+                className="flex w-full h-[52px] items-center justify-center rounded-xl bg-[var(--primary)] text-[16px] font-bold text-[var(--on-primary)] shadow-[0_4px_12px_rgba(22,78,48,0.2)] transition-transform tap-highlight-transparent active:scale-[0.98] disabled:opacity-40"
               >
-                <svg
-                  viewBox="0 0 24 24"
-                  width="20"
-                  height="20"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
                 完成第 {detail.exercise.completedSets + 1} 组
               </button>
             ) : null}

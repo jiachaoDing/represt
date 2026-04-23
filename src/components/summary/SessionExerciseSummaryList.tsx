@@ -24,48 +24,30 @@ export function SessionExerciseSummaryList({ detail }: SessionExerciseSummaryLis
   }
 
   return (
-    <section className="mt-8">
-      <div className="px-5 mb-4">
-        <h3 className="text-base font-semibold text-[var(--on-surface)]">动作明细</h3>
-      </div>
-      
-      <div className="flex flex-col border-y border-[var(--outline-variant)]">
-        {detail.exercises.map((exercise, index) => (
-          <div key={exercise.id} className={`px-5 py-5 ${index !== 0 ? 'border-t border-[var(--outline-variant)]' : ''}`}>
-            <div className="flex items-start justify-between">
-              <div>
-                <h4 className="text-[17px] font-medium text-[var(--on-surface)]">{exercise.name}</h4>
-                <p className="mt-0.5 text-sm text-[var(--on-surface-variant)]">
-                  已完成 {exercise.completedSets} 组
-                </p>
-              </div>
+    <section className="mt-6">
+      <div className="flex flex-col gap-4 px-4">
+        {detail.exercises.map((exercise) => (
+          <div key={exercise.id} className="rounded-[1.25rem] bg-[var(--surface)] p-5 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)] border border-[var(--outline-variant)]/20">
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="text-[16px] font-bold text-[var(--on-surface)]">{exercise.name}</h4>
+              <span className="text-[13px] font-medium text-[var(--primary)]">
+                {exercise.completedSets} 组完成
+              </span>
             </div>
 
             {exercise.setRecords.length > 0 ? (
-              <div className="mt-4 overflow-hidden rounded-xl border border-[var(--outline-variant)] bg-[var(--surface)]">
-                <table className="w-full text-left text-sm">
-                  <thead className="bg-[var(--surface-container)] text-[var(--on-surface-variant)]">
-                    <tr>
-                      <th className="px-4 py-2 font-medium w-16">组次</th>
-                      <th className="px-4 py-2 font-medium">重量</th>
-                      <th className="px-4 py-2 font-medium">次数</th>
-                      <th className="px-4 py-2 font-medium text-right">时间</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[var(--outline-variant)]">
-                    {exercise.setRecords.map((setRecord) => (
-                      <tr key={setRecord.id} className="text-[var(--on-surface)]">
-                        <td className="px-4 py-2.5 font-medium text-[var(--on-surface-variant)]">{setRecord.setNumber}</td>
-                        <td className="px-4 py-2.5">{getWeightLabel(setRecord.weightKg)}</td>
-                        <td className="px-4 py-2.5">{getRepsLabel(setRecord.reps)}</td>
-                        <td className="px-4 py-2.5 text-right text-[var(--on-surface-variant)]">{getCompletedAtLabel(setRecord.completedAt)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div className="flex flex-col gap-2.5">
+                {exercise.setRecords.map((setRecord) => (
+                  <div key={setRecord.id} className="flex items-center text-[14px]">
+                    <div className="w-12 text-[var(--on-surface-variant)]">{setRecord.setNumber}组</div>
+                    <div className="flex-1 text-[var(--on-surface)] pl-4">
+                      {setRecord.weightKg ?? 0}kg × {setRecord.reps ?? 0}
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : (
-              <p className="mt-3 text-sm text-[var(--outline)]">没有记录数据</p>
+              <p className="text-[13px] text-[var(--outline)]">没有记录数据</p>
             )}
           </div>
         ))}
@@ -74,7 +56,7 @@ export function SessionExerciseSummaryList({ detail }: SessionExerciseSummaryLis
       <div className="mt-8 px-4 pb-12 flex justify-center">
         <Link 
           to="/" 
-          className="inline-flex h-10 items-center justify-center rounded-full border border-[var(--outline)] px-6 text-sm font-medium text-[var(--on-surface)] transition-colors hover:bg-[var(--surface-container)]"
+          className="inline-flex h-12 w-full max-w-[200px] items-center justify-center rounded-xl bg-[var(--surface-container)] text-[15px] font-medium text-[var(--on-surface)] transition-colors tap-highlight-transparent active:scale-[0.98]"
         >
           返回今日安排
         </Link>

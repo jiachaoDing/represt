@@ -11,11 +11,13 @@ function ProgressRing({ completed, total }: { completed: number; total: number }
   const strokeDashoffset =
     total === 0 ? circumference : circumference - (completed / total) * circumference
 
+  const percentage = total === 0 ? 0 : Math.round((completed / total) * 100)
+
   return (
     <div className="relative flex items-center justify-center">
       <svg height={radius * 2} width={radius * 2} className="-rotate-90 transform">
         <circle
-          stroke="var(--surface-container)"
+          stroke="var(--primary-container)"
           fill="transparent"
           strokeWidth={stroke}
           r={normalizedRadius}
@@ -36,7 +38,7 @@ function ProgressRing({ completed, total }: { completed: number; total: number }
         />
       </svg>
       <div className="absolute flex flex-col items-center justify-center">
-        <span className="text-xs font-semibold text-[var(--on-surface)]">{completed}</span>
+        <span className="text-[15px] font-bold text-[var(--primary)]">{percentage}%</span>
       </div>
     </div>
   )
@@ -47,10 +49,10 @@ export function ScheduleProgressCard({
   totalCount,
 }: ScheduleProgressCardProps) {
   return (
-    <section className="mx-4 mb-6 mt-2 flex items-center justify-between rounded-3xl bg-[var(--surface-container)] p-5">
+    <section className="mx-4 mb-6 mt-2 flex items-center justify-between rounded-[1.25rem] bg-[var(--surface)] p-5 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)] border border-[var(--outline-variant)]/20">
       <div>
-        <h2 className="text-xl font-medium text-[var(--on-surface)]">今日进度</h2>
-        <p className="mt-1 text-sm text-[var(--on-surface-variant)]">
+        <h2 className="text-[17px] font-bold text-[var(--on-surface)]">今日进度</h2>
+        <p className="mt-1 text-[13px] text-[var(--on-surface-variant)]">
           已完成 {completedCount} 个动作，共 {totalCount} 个
         </p>
       </div>

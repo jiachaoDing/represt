@@ -16,6 +16,7 @@ type ScheduleExerciseListProps = {
 function getExerciseCardState(
   exercise: WorkoutSessionWithExercises['exercises'][number],
   now: number,
+  index: number,
 ) {
   const status = deriveExerciseStatus(exercise)
   const restLabel = getExerciseRestLabel(exercise, now)
@@ -25,86 +26,65 @@ function getExerciseCardState(
   if (status === 'completed') {
     return {
       icon: (
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--primary-container)] text-[var(--primary)]">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--primary)] text-white">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="20 6 9 17 4 12" />
           </svg>
         </div>
       ),
-      itemClassName: 'bg-[var(--surface-container)] opacity-60',
+      itemClassName: 'border border-[var(--outline-variant)]/30 bg-[var(--surface)] opacity-70',
       nameClassName: 'text-[var(--on-surface-variant)] line-through',
       metaClassName: 'text-[var(--outline)]',
       metaText: `${exercise.completedSets} / ${exercise.targetSets} 组`,
-      status,
+      statusText: '已完成 >',
+      statusClassName: 'text-[var(--outline)]',
     }
   }
 
   if (isReady) {
     return {
       icon: (
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--primary)] text-[var(--on-primary)] shadow-sm">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-            <path d="M8 5v14l11-7z" />
-          </svg>
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--primary)] text-white font-bold text-sm">
+          {index + 1}
         </div>
       ),
-      itemClassName: 'border-l-4 border-[var(--primary)] bg-[var(--primary-container)] shadow-sm',
+      itemClassName: 'border border-[var(--primary)]/30 bg-[var(--primary-container)]/10 shadow-[0_2px_8px_-4px_rgba(22,78,48,0.15)]',
       nameClassName: 'text-[var(--on-surface)]',
-      metaClassName: 'font-semibold text-[var(--primary)]',
-      metaText: restLabel,
-      status,
+      metaClassName: 'text-[var(--on-surface-variant)]',
+      metaText: `${exercise.completedSets} / ${exercise.targetSets} 组`,
+      statusText: '可继续下一组 >',
+      statusClassName: 'text-[var(--primary)] font-medium',
     }
   }
 
   if (isResting) {
     return {
       icon: (
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--tertiary)] text-[var(--on-tertiary)]">
-          <svg
-            viewBox="0 0 24 24"
-            width="20"
-            height="20"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <circle cx="12" cy="12" r="10" />
-            <polyline points="12 6 12 12 16 14" />
-          </svg>
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#F59E0B] text-white font-bold text-sm">
+          {index + 1}
         </div>
       ),
-      itemClassName: 'border-l-4 border-[var(--tertiary)] bg-[var(--tertiary-container)]',
+      itemClassName: 'border border-[#F59E0B]/30 bg-[#FFFBEB] shadow-[0_2px_8px_-4px_rgba(245,158,11,0.15)]',
       nameClassName: 'text-[var(--on-surface)]',
-      metaClassName: 'font-semibold text-[var(--tertiary)]',
-      metaText: restLabel,
-      status,
+      metaClassName: 'text-[var(--on-surface-variant)]',
+      metaText: `${exercise.completedSets} / ${exercise.targetSets} 组`,
+      statusText: `休息中 · ${restLabel.replace('倒计时 ', '')} >`,
+      statusClassName: 'text-[#D97706] font-medium',
     }
   }
 
   return {
     icon: (
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--surface-container)] text-[var(--on-surface-variant)]">
-        <svg
-          viewBox="0 0 24 24"
-          width="20"
-          height="20"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <polyline points="9 18 15 12 9 6" />
-        </svg>
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--surface-container)] text-[var(--on-surface-variant)] font-bold text-sm">
+        {index + 1}
       </div>
     ),
-    itemClassName: 'border border-[var(--outline-variant)] bg-[var(--surface)]',
+    itemClassName: 'border border-[var(--outline-variant)]/30 bg-[var(--surface)] shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)]',
     nameClassName: 'text-[var(--on-surface)]',
     metaClassName: 'text-[var(--on-surface-variant)]',
     metaText: `${exercise.completedSets} / ${exercise.targetSets} 组`,
-    status,
+    statusText: '未开始 >',
+    statusClassName: 'text-[var(--outline)]',
   }
 }
 
@@ -145,9 +125,9 @@ export function ScheduleExerciseList({
   }
 
   return (
-    <div className="flex flex-col gap-3 px-2">
-      {currentSession.exercises.map((exercise) => {
-        const cardState = getExerciseCardState(exercise, now)
+    <div className="flex flex-col gap-3 px-4">
+      {currentSession.exercises.map((exercise, index) => {
+        const cardState = getExerciseCardState(exercise, now, index)
         const canDelete = exercise.status === 'pending' && exercise.completedSets === 0
 
         return (
@@ -159,18 +139,23 @@ export function ScheduleExerciseList({
           >
             <Link
               to={`/exercise/${exercise.id}`}
-              className={`block w-full rounded-2xl px-4 py-4 transition-transform active:scale-[0.98] ${cardState.itemClassName}`}
+              className={`block w-full rounded-[1.25rem] px-4 py-4 transition-transform active:scale-[0.98] ${cardState.itemClassName}`}
             >
               <div className="flex items-center gap-4">
-                <div className="min-w-0 flex-1">
-                  <p className={`truncate text-[17px] font-medium ${cardState.nameClassName}`}>
-                    {exercise.name}
-                  </p>
-                  <p className={`mt-1 text-[13px] ${cardState.metaClassName}`}>
-                    {cardState.metaText}
-                  </p>
-                </div>
                 {cardState.icon}
+                <div className="min-w-0 flex-1 flex items-center justify-between">
+                  <div className="flex flex-col">
+                    <p className={`truncate text-[16px] font-bold ${cardState.nameClassName}`}>
+                      {exercise.name}
+                    </p>
+                    <p className={`mt-0.5 text-[12px] ${cardState.metaClassName}`}>
+                      {cardState.metaText}
+                    </p>
+                  </div>
+                  <div className={`text-[13px] shrink-0 ml-2 ${cardState.statusClassName}`}>
+                    {cardState.statusText}
+                  </div>
+                </div>
               </div>
             </Link>
           </SwipeActionItem>

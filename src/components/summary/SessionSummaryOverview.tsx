@@ -38,32 +38,28 @@ export function SessionSummaryOverview({ detail, isLoading }: SessionSummaryOver
   }
 
   return (
-    <section className="mx-4 mt-4 overflow-hidden rounded-3xl bg-[var(--surface-container)] p-6">
-      <p className="text-sm font-medium text-[var(--on-surface-variant)]">{detail.session.sessionDateKey}</p>
-      
-      <div className="mt-6 grid grid-cols-2 gap-6">
-        <div>
-          <p className="text-xs text-[var(--on-surface-variant)] uppercase tracking-wider">完成动作</p>
-          <div className="mt-1 flex items-baseline gap-1">
-            <span className="text-4xl font-medium tracking-tighter text-[var(--on-surface)]" style={{ fontVariantNumeric: 'tabular-nums' }}>
-              {completedExerciseCount}
-            </span>
-            <span className="text-xl text-[var(--on-surface-variant)]">
-              / {totalExerciseCount}
-            </span>
-          </div>
+    <section className="mx-4 mt-4 overflow-hidden rounded-[1.25rem] bg-[var(--surface)] shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)] border border-[var(--outline-variant)]/20 p-5">
+      <div className="grid grid-cols-4 gap-2 text-center">
+        <div className="flex flex-col gap-1.5">
+          <p className="text-[11px] text-[var(--on-surface-variant)]">训练日期</p>
+          <p className="text-[13px] font-bold text-[var(--on-surface)]">{detail.session.sessionDateKey.slice(5)}</p>
         </div>
         
-        <div>
-          <p className="text-xs text-[var(--on-surface-variant)] uppercase tracking-wider">总容量</p>
-          <div className="mt-1 flex items-baseline gap-1">
-            <span className="text-4xl font-medium tracking-tighter text-[var(--on-surface)]" style={{ fontVariantNumeric: 'tabular-nums' }}>
-              {totalVolume.toLocaleString()}
-            </span>
-            <span className="text-xl text-[var(--on-surface-variant)]">
-              kg
-            </span>
-          </div>
+        <div className="flex flex-col gap-1.5">
+          <p className="text-[11px] text-[var(--on-surface-variant)]">完成动作数</p>
+          <p className="text-[13px] font-bold text-[var(--on-surface)]">{completedExerciseCount} 个动作</p>
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <p className="text-[11px] text-[var(--on-surface-variant)]">总组数</p>
+          <p className="text-[13px] font-bold text-[var(--on-surface)]">
+            {detail.exercises.reduce((acc, ex) => acc + ex.completedSets, 0)} 组
+          </p>
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <p className="text-[11px] text-[var(--on-surface-variant)]">训练状态</p>
+          <p className="text-[13px] font-bold text-[var(--primary)]">已完成</p>
         </div>
       </div>
     </section>

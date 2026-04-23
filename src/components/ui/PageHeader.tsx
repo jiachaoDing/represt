@@ -45,7 +45,7 @@ export function PageHeader({
         ) : null}
 
         <div className="min-w-0 flex-1 flex flex-col justify-center py-1">
-          <h1 className="truncate text-[22px] leading-7 font-normal text-[var(--on-surface)]">
+          <h1 className="truncate text-[24px] leading-8 font-bold text-[var(--on-surface)]">
             {title}
           </h1>
           {subtitle ? (
