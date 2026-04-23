@@ -9,7 +9,7 @@ import {
   type SessionExerciseDetail,
 } from '../db/sessions'
 import { useNow } from '../hooks/useNow'
-import { formatDuration, getRestTimerSnapshot } from '../lib/rest-timer'
+import { formatDuration, getRestTimerSnapshot, getRestTimerState } from '../lib/rest-timer'
 import type { SessionExercise, SessionExerciseStatus } from '../models/types'
 
 function getExerciseStatusLabel(status: SessionExerciseStatus) {
@@ -40,26 +40,10 @@ function getCurrentSetDurationLabel(startedAt: string | null, now: number) {
 
 function getRestTimerLabel(exercise: SessionExercise, now: number) {
   if (exercise.status === 'completed') {
-    return '动作已完成'
+    return 'completed'
   }
 
-  if (!exercise.lastCompletedAt) {
-    return '未启动'
-  }
-
-  const endsAt = new Date(
-    new Date(exercise.lastCompletedAt).getTime() + exercise.restSeconds * 1000,
-  ).toISOString()
-
-  return getRestTimerSnapshot(
-    {
-      sessionExerciseId: exercise.id,
-      status: 'running',
-      startedAt: exercise.lastCompletedAt,
-      endsAt,
-    },
-    now,
-  ).label
+  return getRestTimerSnapshot(getRestTimerState(exercise), now).label
 }
 
 function toOptionalNumberString(value: number | null) {
@@ -249,7 +233,7 @@ export function ExercisePage() {
                 </p>
               </div>
               <div className="rounded-2xl bg-slate-100 p-3">
-                <p className="text-xs text-slate-500">组间歇状态</p>
+                <p className="text-xs text-slate-500">当前动作倒计时</p>
                 <p className="mt-1 font-medium text-slate-900">
                   {getRestTimerLabel(detail.exercise, now)}
                 </p>

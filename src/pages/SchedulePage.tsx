@@ -10,6 +10,8 @@ import {
   type WorkoutSessionWithExercises,
 } from '../db/sessions'
 import { listTemplatesWithExercises, type TemplateWithExercises } from '../db/templates'
+import { useNow } from '../hooks/useNow'
+import { getRestTimerSnapshot, getRestTimerState } from '../lib/rest-timer'
 import type { SessionExerciseStatus, SessionStatus } from '../models/types'
 
 type ExerciseDraft = {
@@ -53,7 +55,19 @@ function getExerciseStatusLabel(status: SessionExerciseStatus) {
   return '未开始'
 }
 
+function getExerciseRestLabel(
+  exercise: WorkoutSessionWithExercises['exercises'][number],
+  now: number,
+) {
+  if (exercise.status === 'completed') {
+    return 'completed'
+  }
+
+  return getRestTimerSnapshot(getRestTimerState(exercise), now).label
+}
+
 export function SchedulePage() {
+  const now = useNow()
   const [templates, setTemplates] = useState<TemplateWithExercises[]>([])
   const [currentSession, setCurrentSession] = useState<WorkoutSessionWithExercises | null>(null)
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null)
@@ -343,6 +357,9 @@ export function SchedulePage() {
                   <p className="mt-1 text-xs text-slate-500">
                     {exercise.completedSets} / {exercise.targetSets} 组 · 休息 {exercise.restSeconds} 秒 ·{' '}
                     {getExerciseStatusLabel(exercise.status)}
+                  </p>
+                  <p className="mt-1 text-xs font-medium text-slate-700">
+                    倒计时状态：{getExerciseRestLabel(exercise, now)}
                   </p>
                 </Link>
 

@@ -1,4 +1,5 @@
 import type { SessionExercise, SetRecord, WorkoutSession } from '../models/types'
+import { getRestEndsAt } from '../lib/rest-timer'
 import { db } from './app-db'
 import { ensureTemplateSeedData } from './templates'
 
@@ -219,6 +220,7 @@ export async function createOrRebuildCurrentSession(templateId: string) {
     restSeconds: exercise.restSeconds,
     order: exercise.order,
     lastCompletedAt: null,
+    restEndsAt: null,
     status: 'pending',
   }))
 
@@ -271,6 +273,7 @@ export async function addTemporarySessionExercise(sessionId: string, input: Part
     restSeconds: normalized.restSeconds,
     order: nextOrder,
     lastCompletedAt: null,
+    restEndsAt: null,
     status: 'pending',
   }
 
@@ -329,6 +332,8 @@ export async function completeSessionExerciseSet(
 
       const nextCompletedSets = exercise.completedSets + 1
       const nextStatus = nextCompletedSets >= exercise.targetSets ? 'completed' : 'active'
+      const restEndsAt =
+        nextStatus === 'completed' ? null : getRestEndsAt(completedAt, exercise.restSeconds)
 
       const setRecord: SetRecord = {
         id: crypto.randomUUID(),
@@ -347,6 +352,7 @@ export async function completeSessionExerciseSet(
       await db.sessionExercises.update(exercise.id, {
         completedSets: nextCompletedSets,
         lastCompletedAt: completedAt,
+        restEndsAt,
         status: nextStatus,
       })
       await updateSessionStatus(session.id, completedAt)

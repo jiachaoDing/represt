@@ -41,6 +41,7 @@ export interface SessionExercise {
   restSeconds: number
   order: number
   lastCompletedAt: string | null
+  restEndsAt: string | null
   status: SessionExerciseStatus
 }
 
