@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import {
   addTemplateExercisesToSession,
@@ -61,7 +61,7 @@ export function useSchedulePageData() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  async function fetchData() {
+  const fetchData = useCallback(async () => {
     const [templateItems, session] = await Promise.all([
       listTemplatesWithExercises(),
       getCurrentSession(),
@@ -71,9 +71,9 @@ export function useSchedulePageData() {
       session,
       templateItems,
     }
-  }
+  }, [])
 
-  async function loadData(preferredTemplateId?: string | null) {
+  const loadData = useCallback(async (preferredTemplateId?: string | null) => {
     const { session, templateItems } = await fetchData()
 
     setTemplates(templateItems)
@@ -92,7 +92,7 @@ export function useSchedulePageData() {
 
       return templateItems[0]?.id ?? null
     })
-  }
+  }, [fetchData])
 
   async function runMutation(action: () => Promise<void>) {
     try {
@@ -127,7 +127,7 @@ export function useSchedulePageData() {
     }
 
     void initialize()
-  }, [])
+  }, [fetchData, loadData])
 
   async function handleAddTemplateExercises(templateId: string, templateExerciseIds?: string[]) {
     if (!currentSession) {
