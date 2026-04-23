@@ -190,7 +190,7 @@ export function TemplatesPage() {
       <PageHeader
         title="模板编辑"
         eyebrow="TrainRe"
-        subtitle="聚焦当前模板，不再把所有模板堆成一整页。"
+        subtitle="模板是长期动作集合，只负责给今日训练提供默认动作。"
         actions={<OverflowMenu items={overflowItems} />}
       />
 
@@ -209,7 +209,7 @@ export function TemplatesPage() {
                   {currentTemplate?.name ?? '当前模板'}
                 </p>
                 <p className="mt-1 text-xs text-[var(--ink-secondary)]">
-                  和训练安排页共用同一套顶部模板切换方式。
+                  编辑模板不会自动影响已生成的今日训练或历史训练。
                 </p>
               </div>
               <StatusPill value={`${currentTemplate?.exercises.length ?? 0} 个动作`} />
@@ -315,8 +315,8 @@ export function TemplatesPage() {
         title={templateSheetMode === 'create' ? '新增模板' : '重命名模板'}
         description={
           templateSheetMode === 'create'
-            ? '模板切换区会立即出现新模板。'
-            : '修改后不会自动回写已经开始的训练。'
+            ? '创建后可作为默认动作集合追加到今日训练。'
+            : '修改后不会自动影响已生成的今日训练或历史训练。'
         }
         onClose={() => setTemplateSheetMode(null)}
       >

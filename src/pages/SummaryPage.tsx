@@ -15,7 +15,7 @@ export function SummaryPage() {
     <div className="space-y-4">
       <PageHeader
         title="训练总结"
-        subtitle="回看本次训练结果。"
+        subtitle="回看今日训练结果。"
         backTo="/"
       />
 

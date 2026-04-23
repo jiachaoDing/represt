@@ -23,8 +23,7 @@ export interface TemplateExercise {
 
 export interface WorkoutSession {
   id: string
-  templateId: string | null
-  templateName: string | null
+  sessionDateKey: string
   status: SessionStatus
   startedAt: string | null
   endedAt: string | null

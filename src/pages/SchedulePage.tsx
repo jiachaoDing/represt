@@ -101,7 +101,7 @@ export function SchedulePage() {
 
     if (didCreate) {
       setIsCreateSheetOpen(false)
-      setSnackbarMessage('动作已加入本次训练')
+      setSnackbarMessage('动作已加入今日训练')
     }
   }
 

@@ -50,6 +50,14 @@ class TrainReDatabase extends Dexie {
                 : getRestEndsAt(exercise.lastCompletedAt, exercise.restSeconds)
           })
       })
+
+    this.version(3).stores({
+      workoutTemplates: 'id, name, updatedAt, deletedAt',
+      templateExercises: 'id, templateId, [templateId+order]',
+      workoutSessions: 'id, &sessionDateKey, status, createdAt',
+      sessionExercises: 'id, sessionId, status, restEndsAt, [sessionId+order]',
+      setRecords: 'id, sessionId, sessionExerciseId, [sessionExerciseId+setNumber], completedAt',
+    })
   }
 }
 

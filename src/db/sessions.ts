@@ -1,4 +1,5 @@
 import type { SessionExercise, SetRecord, WorkoutSession } from '../models/types'
+import { getTodaySessionDateKey } from '../lib/session-date-key'
 import { getRestEndsAt } from '../lib/rest-timer'
 import { db } from './app-db'
 import { ensureTemplateSeedData } from './templates'
@@ -34,22 +35,6 @@ function nowIso() {
   return new Date().toISOString()
 }
 
-function getDayKey(value: string | Date) {
-  const date = value instanceof Date ? value : new Date(value)
-  if (Number.isNaN(date.getTime())) {
-    return null
-  }
-
-  return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`
-}
-
-function isSameLocalDay(left: string, right: string | Date) {
-  const leftKey = getDayKey(left)
-  const rightKey = getDayKey(right)
-
-  return leftKey !== null && rightKey !== null && leftKey === rightKey
-}
-
 function getDurationSeconds(startedAt: string, completedAt: string) {
   const startedAtMs = new Date(startedAt).getTime()
   const completedAtMs = new Date(completedAt).getTime()
@@ -83,18 +68,19 @@ function normalizeSessionExercise(input: Partial<SessionExerciseInput>) {
 }
 
 async function resolveCurrentSessionId() {
+  const todayDateKey = getTodaySessionDateKey()
   const storedSessionId = getStoredCurrentSessionId()
   if (storedSessionId) {
     const storedSession = await db.workoutSessions.get(storedSessionId)
-    if (storedSession && isSameLocalDay(storedSession.createdAt, new Date())) {
+    if (storedSession && storedSession.sessionDateKey === todayDateKey) {
       return storedSession.id
     }
 
     setStoredCurrentSessionId(null)
   }
 
-  const sessions = await db.workoutSessions.orderBy('createdAt').reverse().toArray()
-  const latestTodaySession = sessions.find((session) => isSameLocalDay(session.createdAt, new Date()))
+  const sessions = await db.workoutSessions.where('sessionDateKey').equals(todayDateKey).toArray()
+  const latestTodaySession = sessions.sort((left, right) => right.createdAt.localeCompare(left.createdAt))[0]
 
   if (!latestTodaySession) {
     return null
@@ -164,12 +150,11 @@ async function updateSessionStatus(sessionId: string, completedAt?: string) {
   })
 }
 
-async function createSessionRecord(input?: Partial<Pick<WorkoutSession, 'templateId' | 'templateName'>>) {
+async function createSessionRecord() {
   const timestamp = nowIso()
   const session: WorkoutSession = {
     id: crypto.randomUUID(),
-    templateId: input?.templateId ?? null,
-    templateName: input?.templateName ?? null,
+    sessionDateKey: getTodaySessionDateKey(),
     status: 'pending',
     startedAt: null,
     endedAt: null,
@@ -291,7 +276,7 @@ export async function addTemplateExercisesToSession(sessionId: string, templateI
     db.workoutTemplates.get(templateId),
   ])
 
-  if (!session || !isSameLocalDay(session.createdAt, new Date())) {
+  if (!session || session.sessionDateKey !== getTodaySessionDateKey()) {
     throw new Error('只能把模板动作加入今天的训练。')
   }
 
@@ -311,8 +296,6 @@ export async function addTemplateExercisesToSession(sessionId: string, templateI
     await db.sessionExercises.bulkAdd(templateExercises)
     await db.workoutSessions.update(sessionId, {
       endedAt: null,
-      templateId: null,
-      templateName: null,
     })
     await updateSessionStatus(sessionId)
   })
@@ -347,8 +330,6 @@ export async function addTemporarySessionExercise(sessionId: string, input: Part
   await db.sessionExercises.add(sessionExercise)
   await db.workoutSessions.update(sessionId, {
     endedAt: null,
-    templateId: null,
-    templateName: null,
   })
   await updateSessionStatus(sessionId)
 

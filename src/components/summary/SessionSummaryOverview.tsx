@@ -25,7 +25,7 @@ export function SessionSummaryOverview({
 
   return (
     <SectionCard
-      title="本次训练"
+      title="今日训练"
       action={
         detail ? (
           <span className="rounded border border-slate-300 px-2 py-1 text-xs">
@@ -34,7 +34,7 @@ export function SessionSummaryOverview({
         ) : null
       }
     >
-      {isLoading ? <p>正在读取训练总结...</p> : null}
+      {isLoading ? <p>正在读取今日训练总结...</p> : null}
 
       {!isLoading && !detail ? (
         <div className="space-y-2">
@@ -46,10 +46,18 @@ export function SessionSummaryOverview({
       ) : null}
 
       {detail ? (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-5">
           <div className="rounded border border-slate-200 p-3">
-            <p className="text-xs text-slate-500">训练名称</p>
-            <p className="mt-1 font-medium">{detail.session.templateName ?? '临时训练'}</p>
+            <p className="text-xs text-slate-500">训练类型</p>
+            <p className="mt-1 font-medium">今日训练</p>
+          </div>
+          <div className="rounded border border-slate-200 p-3">
+            <p className="text-xs text-slate-500">训练日期</p>
+            <p className="mt-1 font-medium">{detail.session.sessionDateKey}</p>
+          </div>
+          <div className="rounded border border-slate-200 p-3">
+            <p className="text-xs text-slate-500">状态</p>
+            <p className="mt-1 font-medium">{getSessionStatusLabel(detail.session.status)}</p>
           </div>
           <div className="rounded border border-slate-200 p-3">
             <p className="text-xs text-slate-500">总时长</p>

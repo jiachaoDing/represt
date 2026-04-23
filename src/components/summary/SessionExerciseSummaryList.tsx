@@ -23,7 +23,7 @@ export function SessionExerciseSummaryList({ detail }: SessionExerciseSummaryLis
         ) : null
       }
     >
-      {detail && detail.exercises.length === 0 ? <p>这次训练还没有动作数据。</p> : null}
+      {detail && detail.exercises.length === 0 ? <p>这份训练还没有动作数据。</p> : null}
 
       {detail ? (
         <div className="space-y-3">
