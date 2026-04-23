@@ -12,6 +12,7 @@ type TemplateExerciseInput = {
 }
 
 const TEMPLATE_SEED_KEY = 'trainre.templates.seeded.v1'
+let ensureTemplateSeedPromise: Promise<void> | null = null
 
 const demoTemplates: Array<{
   name: string
@@ -56,40 +57,53 @@ async function touchTemplate(templateId: string) {
 }
 
 export async function ensureTemplateSeedData() {
-  if (localStorage.getItem(TEMPLATE_SEED_KEY) === 'true') {
+  if (ensureTemplateSeedPromise) {
+    await ensureTemplateSeedPromise
     return
   }
 
-  const templateCount = await db.workoutTemplates.count()
-  if (templateCount > 0) {
-    localStorage.setItem(TEMPLATE_SEED_KEY, 'true')
-    return
-  }
+  ensureTemplateSeedPromise = (async () => {
+    if (localStorage.getItem(TEMPLATE_SEED_KEY) === 'true') {
+      return
+    }
 
-  const timestamp = nowIso()
-  const templates = demoTemplates.map((template) => ({
-    id: crypto.randomUUID(),
-    name: template.name,
-    createdAt: timestamp,
-    updatedAt: timestamp,
-    deletedAt: null,
-  }))
+    const templateCount = await db.workoutTemplates.count()
+    if (templateCount > 0) {
+      localStorage.setItem(TEMPLATE_SEED_KEY, 'true')
+      return
+    }
 
-  const exercises = templates.flatMap((template, templateIndex) =>
-    demoTemplates[templateIndex].exercises.map((exercise, order) => ({
+    const timestamp = nowIso()
+    const templates = demoTemplates.map((template) => ({
       id: crypto.randomUUID(),
-      templateId: template.id,
-      ...exercise,
-      order,
-    })),
-  )
+      name: template.name,
+      createdAt: timestamp,
+      updatedAt: timestamp,
+      deletedAt: null,
+    }))
 
-  await db.transaction('rw', db.workoutTemplates, db.templateExercises, async () => {
-    await db.workoutTemplates.bulkAdd(templates)
-    await db.templateExercises.bulkAdd(exercises)
-  })
+    const exercises = templates.flatMap((template, templateIndex) =>
+      demoTemplates[templateIndex].exercises.map((exercise, order) => ({
+        id: crypto.randomUUID(),
+        templateId: template.id,
+        ...exercise,
+        order,
+      })),
+    )
 
-  localStorage.setItem(TEMPLATE_SEED_KEY, 'true')
+    await db.transaction('rw', db.workoutTemplates, db.templateExercises, async () => {
+      await db.workoutTemplates.bulkAdd(templates)
+      await db.templateExercises.bulkAdd(exercises)
+    })
+
+    localStorage.setItem(TEMPLATE_SEED_KEY, 'true')
+  })()
+
+  try {
+    await ensureTemplateSeedPromise
+  } finally {
+    ensureTemplateSeedPromise = null
+  }
 }
 
 export async function listTemplatesWithExercises() {
