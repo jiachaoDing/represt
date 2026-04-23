@@ -34,6 +34,22 @@ function nowIso() {
   return new Date().toISOString()
 }
 
+function getDayKey(value: string | Date) {
+  const date = value instanceof Date ? value : new Date(value)
+  if (Number.isNaN(date.getTime())) {
+    return null
+  }
+
+  return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`
+}
+
+function isSameLocalDay(left: string, right: string | Date) {
+  const leftKey = getDayKey(left)
+  const rightKey = getDayKey(right)
+
+  return leftKey !== null && rightKey !== null && leftKey === rightKey
+}
+
 function getDurationSeconds(startedAt: string, completedAt: string) {
   const startedAtMs = new Date(startedAt).getTime()
   const completedAtMs = new Date(completedAt).getTime()
@@ -70,20 +86,22 @@ async function resolveCurrentSessionId() {
   const storedSessionId = getStoredCurrentSessionId()
   if (storedSessionId) {
     const storedSession = await db.workoutSessions.get(storedSessionId)
-    if (storedSession) {
+    if (storedSession && isSameLocalDay(storedSession.createdAt, new Date())) {
       return storedSession.id
     }
 
     setStoredCurrentSessionId(null)
   }
 
-  const latestSession = await db.workoutSessions.orderBy('createdAt').last()
-  if (!latestSession) {
+  const sessions = await db.workoutSessions.orderBy('createdAt').reverse().toArray()
+  const latestTodaySession = sessions.find((session) => isSameLocalDay(session.createdAt, new Date()))
+
+  if (!latestTodaySession) {
     return null
   }
 
-  setStoredCurrentSessionId(latestSession.id)
-  return latestSession.id
+  setStoredCurrentSessionId(latestTodaySession.id)
+  return latestTodaySession.id
 }
 
 async function getSessionRecord(sessionId: string) {
@@ -146,10 +164,41 @@ async function updateSessionStatus(sessionId: string, completedAt?: string) {
   })
 }
 
-async function removeSessionGraph(sessionId: string) {
-  await db.setRecords.where('sessionId').equals(sessionId).delete()
-  await db.sessionExercises.where('sessionId').equals(sessionId).delete()
-  await db.workoutSessions.delete(sessionId)
+async function createSessionRecord(input?: Partial<Pick<WorkoutSession, 'templateId' | 'templateName'>>) {
+  const timestamp = nowIso()
+  const session: WorkoutSession = {
+    id: crypto.randomUUID(),
+    templateId: input?.templateId ?? null,
+    templateName: input?.templateName ?? null,
+    status: 'pending',
+    startedAt: null,
+    endedAt: null,
+    createdAt: timestamp,
+  }
+
+  await db.workoutSessions.add(session)
+  setStoredCurrentSessionId(session.id)
+
+  return session
+}
+
+async function buildSessionExercisesFromTemplate(sessionId: string, templateId: string, startOrder = 0) {
+  const templateExercises = await db.templateExercises.where('templateId').equals(templateId).toArray()
+  const sortedTemplateExercises = templateExercises.sort((left, right) => left.order - right.order)
+
+  return sortedTemplateExercises.map((exercise, index) => ({
+    id: crypto.randomUUID(),
+    sessionId,
+    templateExerciseId: exercise.id,
+    name: exercise.name,
+    targetSets: exercise.targetSets,
+    completedSets: 0,
+    restSeconds: exercise.restSeconds,
+    order: startOrder + index,
+    lastCompletedAt: null,
+    restEndsAt: null,
+    status: 'pending',
+  })) satisfies SessionExercise[]
 }
 
 export async function getCurrentSession() {
@@ -170,6 +219,19 @@ export async function getCurrentSession() {
   return {
     ...session,
     exercises,
+  } satisfies WorkoutSessionWithExercises
+}
+
+export async function getOrCreateTodaySession() {
+  const currentSession = await getCurrentSession()
+  if (currentSession) {
+    return currentSession
+  }
+
+  const session = await createSessionRecord()
+  return {
+    ...session,
+    exercises: [],
   } satisfies WorkoutSessionWithExercises
 }
 
@@ -223,82 +285,45 @@ export async function getSessionSummaryDetail(sessionId: string) {
   } satisfies SessionSummaryDetail
 }
 
-export async function createOrRebuildCurrentSession(templateId: string) {
-  await ensureTemplateSeedData()
+export async function addTemplateExercisesToSession(sessionId: string, templateId: string) {
+  const [session, template] = await Promise.all([
+    getSessionRecord(sessionId),
+    db.workoutTemplates.get(templateId),
+  ])
 
-  const currentSessionId = await resolveCurrentSessionId()
-  const currentSession = currentSessionId ? await getSessionRecord(currentSessionId) : null
-  if (currentSession && currentSession.status !== 'pending') {
-    throw new Error('当前训练已开始，不能切换模板。')
+  if (!session || !isSameLocalDay(session.createdAt, new Date())) {
+    throw new Error('只能把模板动作加入今天的训练。')
   }
 
-  const template = await db.workoutTemplates.get(templateId)
   if (!template || template.deletedAt !== null) {
     throw new Error('模板不存在或已删除。')
   }
 
-  const templateExercises = await db.templateExercises.where('templateId').equals(templateId).toArray()
-  const sortedTemplateExercises = templateExercises.sort((left, right) => left.order - right.order)
-  const timestamp = nowIso()
-  const sessionId = crypto.randomUUID()
+  const existingExercises = await getSessionExercises(sessionId)
+  const nextOrder = existingExercises.reduce((maxOrder, exercise) => Math.max(maxOrder, exercise.order), -1) + 1
+  const templateExercises = await buildSessionExercisesFromTemplate(sessionId, templateId, nextOrder)
 
-  const session: WorkoutSession = {
-    id: sessionId,
-    templateId: template.id,
-    templateName: template.name,
-    status: 'pending',
-    startedAt: null,
-    endedAt: null,
-    createdAt: timestamp,
+  if (templateExercises.length === 0) {
+    return []
   }
 
-  const sessionExercises: SessionExercise[] = sortedTemplateExercises.map((exercise) => ({
-    id: crypto.randomUUID(),
-    sessionId,
-    templateExerciseId: exercise.id,
-    name: exercise.name,
-    targetSets: exercise.targetSets,
-    completedSets: 0,
-    restSeconds: exercise.restSeconds,
-    order: exercise.order,
-    lastCompletedAt: null,
-    restEndsAt: null,
-    status: 'pending',
-  }))
+  await db.transaction('rw', db.sessionExercises, db.workoutSessions, async () => {
+    await db.sessionExercises.bulkAdd(templateExercises)
+    await db.workoutSessions.update(sessionId, {
+      endedAt: null,
+      templateId: null,
+      templateName: null,
+    })
+    await updateSessionStatus(sessionId)
+  })
 
-  await db.transaction(
-    'rw',
-    db.workoutSessions,
-    db.sessionExercises,
-    db.setRecords,
-    async () => {
-      if (currentSession) {
-        await removeSessionGraph(currentSession.id)
-      }
-
-      await db.workoutSessions.add(session)
-      if (sessionExercises.length > 0) {
-        await db.sessionExercises.bulkAdd(sessionExercises)
-      }
-    },
-  )
-
-  setStoredCurrentSessionId(session.id)
-
-  return {
-    ...session,
-    exercises: sessionExercises,
-  } satisfies WorkoutSessionWithExercises
+  return templateExercises
 }
 
 export async function addTemporarySessionExercise(sessionId: string, input: Partial<SessionExerciseInput>) {
   const session = await getSessionRecord(sessionId)
   if (!session) {
     throw new Error('当前训练不存在。')
-  }
-
-  if (session.status === 'completed') {
-    throw new Error('已完成的训练不能再新增动作。')
   }
 
   const normalized = normalizeSessionExercise(input)
@@ -320,6 +345,12 @@ export async function addTemporarySessionExercise(sessionId: string, input: Part
   }
 
   await db.sessionExercises.add(sessionExercise)
+  await db.workoutSessions.update(sessionId, {
+    endedAt: null,
+    templateId: null,
+    templateName: null,
+  })
+  await updateSessionStatus(sessionId)
 
   return sessionExercise
 }
@@ -334,15 +365,12 @@ export async function deletePendingSessionExercise(sessionId: string, sessionExe
     throw new Error('当前动作不存在。')
   }
 
-  if (session.status !== 'pending') {
-    throw new Error('训练已开始后不能删除动作。')
-  }
-
   if (sessionExercise.status !== 'pending' || sessionExercise.completedSets > 0) {
     throw new Error('只能删除未开始的动作。')
   }
 
   await db.sessionExercises.delete(sessionExerciseId)
+  await updateSessionStatus(sessionId)
 }
 
 export async function completeSessionExerciseSet(

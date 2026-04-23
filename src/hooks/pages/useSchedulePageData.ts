@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 
 import {
+  addTemplateExercisesToSession,
   addTemporarySessionExercise,
-  createOrRebuildCurrentSession,
   deletePendingSessionExercise,
   getCurrentSession,
+  getOrCreateTodaySession,
   type WorkoutSessionWithExercises,
 } from '../../db/sessions'
 import { listTemplatesWithExercises, type TemplateWithExercises } from '../../db/templates'
@@ -49,10 +50,6 @@ export function useSchedulePageData() {
     setTemplates(templateItems)
     setCurrentSession(session)
     setSelectedTemplateId((current) => {
-      if (session?.templateId && templateItems.some((template) => template.id === session.templateId)) {
-        return session.templateId
-      }
-
       if (
         preferredTemplateId &&
         templateItems.some((template) => template.id === preferredTemplateId)
@@ -89,12 +86,8 @@ export function useSchedulePageData() {
     async function initialize() {
       try {
         setError(null)
-        const { session, templateItems } = await fetchData()
-
-        if (!session && templateItems[0]) {
-          await createOrRebuildCurrentSession(templateItems[0].id)
-        }
-
+        await getOrCreateTodaySession()
+        const { templateItems } = await fetchData()
         await loadData(templateItems[0]?.id ?? null)
       } catch (loadError) {
         console.error(loadError)
@@ -107,30 +100,15 @@ export function useSchedulePageData() {
     void initialize()
   }, [])
 
-  async function handleCreateOrRebuildSession() {
-    if (!selectedTemplateId) {
+  async function handleAddTemplateExercises(templateId: string) {
+    if (!currentSession) {
       return false
     }
 
-    return runMutation(async () => {
-      await createOrRebuildCurrentSession(selectedTemplateId)
-      await loadData(selectedTemplateId)
-    })
-  }
-
-  async function handleSelectTemplate(templateId: string) {
     setSelectedTemplateId(templateId)
 
-    if (!canChangeTemplate) {
-      return null
-    }
-
-    if (currentSession?.templateId === templateId && currentSession.status === 'pending') {
-      return null
-    }
-
     const didSucceed = await runMutation(async () => {
-      await createOrRebuildCurrentSession(templateId)
+      await addTemplateExercisesToSession(currentSession.id, templateId)
       await loadData(templateId)
     })
 
@@ -138,7 +116,14 @@ export function useSchedulePageData() {
       return null
     }
 
-    return templates.find((template) => template.id === templateId)?.name ?? null
+    const template = templates.find((item) => item.id === templateId)
+
+    return template
+      ? {
+          count: template.exercises.length,
+          name: template.name,
+        }
+      : null
   }
 
   async function handleAddTemporaryExercise() {
@@ -153,7 +138,7 @@ export function useSchedulePageData() {
         restSeconds: parseIntegerInput(newExerciseDraft.restSeconds),
       })
       setNewExerciseDraft(emptyExerciseDraft)
-      await loadData(currentSession.templateId)
+      await loadData(selectedTemplateId)
     })
   }
 
@@ -164,46 +149,25 @@ export function useSchedulePageData() {
 
     return runMutation(async () => {
       await deletePendingSessionExercise(currentSession.id, sessionExerciseId)
-      await loadData(currentSession.templateId)
+      await loadData(selectedTemplateId)
     })
   }
 
-  const currentTemplate = currentSession
-    ? templates.find((template) => template.id === currentSession.templateId) ?? null
-    : null
-  const canChangeTemplate = currentSession === null || currentSession.status === 'pending'
-  const canAddTemporaryExercise = currentSession !== null && currentSession.status !== 'completed'
+  const canAddTemporaryExercise = currentSession !== null
   const hasTemplates = templates.length > 0
-  const needsRebuild =
-    currentSession?.status === 'pending' &&
-    selectedTemplateId !== null &&
-    currentSession.templateId !== selectedTemplateId
-
-  let sessionActionLabel = '创建本次训练'
-  if (currentSession && currentSession.status === 'pending') {
-    sessionActionLabel = needsRebuild ? '按新模板重建' : '重建当前训练'
-  }
-  if (currentSession && currentSession.status !== 'pending') {
-    sessionActionLabel = '当前训练已开始'
-  }
 
   return {
     canAddTemporaryExercise,
-    canChangeTemplate,
     currentSession,
-    currentTemplate,
     error,
     handleAddTemporaryExercise,
-    handleCreateOrRebuildSession,
+    handleAddTemplateExercises,
     handleDeleteExercise,
-    handleSelectTemplate,
     hasTemplates,
     isLoading,
     isSubmitting,
-    needsRebuild,
     newExerciseDraft,
     selectedTemplateId,
-    sessionActionLabel,
     setNewExerciseDraft,
     setSelectedTemplateId,
     templates,
