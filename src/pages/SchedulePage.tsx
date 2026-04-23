@@ -12,7 +12,12 @@ import { SwipeActionItem } from '../components/ui/SwipeActionItem'
 import { TemplateTabs } from '../components/ui/TemplateTabs'
 import { useNow } from '../hooks/useNow'
 import { useSchedulePageData } from '../hooks/pages/useSchedulePageData'
-import { getExerciseRestLabel, getSessionStatusLabel } from '../lib/session-display'
+import {
+  getExerciseRestLabel,
+  getRepsLabel,
+  getSessionStatusLabel,
+  getWeightLabel,
+} from '../lib/session-display'
 
 function getSessionTone(status: 'active' | 'completed' | 'pending') {
   return status === 'completed' ? 'positive' : 'neutral'
@@ -44,7 +49,9 @@ export function SchedulePage() {
   const [isContinueExerciseDialogOpen, setIsContinueExerciseDialogOpen] = useState(false)
   const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false)
   const [isTemplateSheetOpen, setIsTemplateSheetOpen] = useState(false)
+  const [selectedTemplateExerciseIds, setSelectedTemplateExerciseIds] = useState<string[]>([])
   const [pendingTemplateImportId, setPendingTemplateImportId] = useState<string | null>(null)
+  const [pendingTemplateExerciseIds, setPendingTemplateExerciseIds] = useState<string[]>([])
   const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null)
 
   useEffect(() => {
@@ -69,8 +76,20 @@ export function SchedulePage() {
     [selectedTemplateId, templates],
   )
   const pendingTemplateImportConfirmation = pendingTemplateImportId
-    ? getTemplateImportConfirmation(pendingTemplateImportId)
+    ? getTemplateImportConfirmation(pendingTemplateImportId, pendingTemplateExerciseIds)
     : null
+
+  useEffect(() => {
+    setSelectedTemplateExerciseIds(selectedTemplate?.exercises.map((exercise) => exercise.id) ?? [])
+  }, [selectedTemplate])
+
+  function toggleTemplateExercise(exerciseId: string) {
+    setSelectedTemplateExerciseIds((current) =>
+      current.includes(exerciseId)
+        ? current.filter((id) => id !== exerciseId)
+        : [...current, exerciseId],
+    )
+  }
 
   function canDeleteExercise(exerciseId: string) {
     const exercise = currentSession?.exercises.find((item) => item.id === exerciseId)
@@ -102,10 +121,11 @@ export function SchedulePage() {
     return messages.join(' ')
   }
 
-  async function importTemplate(templateId: string) {
-    const result = await handleAddTemplateExercises(templateId)
+  async function importTemplate(templateId: string, templateExerciseIds: string[]) {
+    const result = await handleAddTemplateExercises(templateId, templateExerciseIds)
     if (result) {
       setPendingTemplateImportId(null)
+      setPendingTemplateExerciseIds([])
       setIsTemplateSheetOpen(false)
       setSnackbarMessage(`已把 ${result.name} 的 ${result.count} 个动作加入今日训练`)
     }
@@ -116,12 +136,18 @@ export function SchedulePage() {
       return
     }
 
-    if (getTemplateImportConfirmation(selectedTemplateId)) {
-      setPendingTemplateImportId(selectedTemplateId)
+    if (selectedTemplateExerciseIds.length === 0) {
+      setSnackbarMessage('至少选择 1 个动作')
       return
     }
 
-    await importTemplate(selectedTemplateId)
+    if (getTemplateImportConfirmation(selectedTemplateId, selectedTemplateExerciseIds)) {
+      setPendingTemplateImportId(selectedTemplateId)
+      setPendingTemplateExerciseIds(selectedTemplateExerciseIds)
+      return
+    }
+
+    await importTemplate(selectedTemplateId, selectedTemplateExerciseIds)
   }
 
   async function addExercise() {
@@ -424,26 +450,42 @@ export function SchedulePage() {
         {selectedTemplate ? (
           <div className="space-y-4">
             <div className="rounded-[1.25rem] bg-[rgba(24,32,22,0.04)] px-4 py-3 text-sm text-[var(--ink-secondary)]">
-              共 {selectedTemplate.exercises.length} 个动作，加入后会追加到今日训练列表，不会覆盖现有动作。
+              已选 {selectedTemplateExerciseIds.length} / {selectedTemplate.exercises.length} 个动作，加入后会追加到今日训练列表，不会覆盖现有动作。
             </div>
 
             <div className="space-y-3">
               {selectedTemplate.exercises.map((exercise) => (
-                <div
+                <label
                   key={exercise.id}
-                  className="rounded-[1.25rem] border border-[var(--outline-soft)] bg-white px-4 py-3"
+                  className="flex items-start gap-3 rounded-[1.25rem] border border-[var(--outline-soft)] bg-white px-4 py-3"
                 >
-                  <p className="text-sm font-medium text-[var(--ink-primary)]">{exercise.name}</p>
-                  <p className="mt-1 text-xs text-[var(--ink-secondary)]">
-                    {exercise.targetSets} 组 · 休息 {exercise.restSeconds} 秒
-                  </p>
-                </div>
+                  <input
+                    type="checkbox"
+                    checked={selectedTemplateExerciseIds.includes(exercise.id)}
+                    disabled={isSubmitting}
+                    onChange={() => toggleTemplateExercise(exercise.id)}
+                    className="mt-1 h-4 w-4 rounded border-[var(--outline-strong)] text-[var(--brand)]"
+                  />
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-[var(--ink-primary)]">{exercise.name}</p>
+                    <p className="mt-1 text-xs text-[var(--ink-secondary)]">
+                      {exercise.targetSets} 组 · 休息 {exercise.restSeconds} 秒
+                    </p>
+                    <p className="mt-1 text-xs text-[var(--ink-tertiary)]">
+                      {getWeightLabel(exercise.weightKg ?? null)} · {getRepsLabel(exercise.reps ?? null)}
+                    </p>
+                  </div>
+                </label>
               ))}
             </div>
 
+            {selectedTemplateExerciseIds.length === 0 ? (
+              <p className="text-sm text-[var(--danger)]">至少选择 1 个动作</p>
+            ) : null}
+
             <button
               type="button"
-              disabled={isSubmitting}
+              disabled={isSubmitting || selectedTemplateExerciseIds.length === 0}
               onClick={() => void handleImportTemplate()}
               className="w-full rounded-full bg-[var(--brand)] px-4 py-3 text-sm font-medium text-white disabled:opacity-40"
             >
@@ -467,9 +509,16 @@ export function SchedulePage() {
         title="加入这组动作？"
         description={getTemplateImportConfirmDescription()}
         confirmLabel="继续加入"
-        onCancel={() => setPendingTemplateImportId(null)}
+        onCancel={() => {
+          setPendingTemplateImportId(null)
+          setPendingTemplateExerciseIds([])
+        }}
         onConfirm={() =>
-          void (pendingTemplateImportId ? importTemplate(pendingTemplateImportId) : Promise.resolve())
+          void (
+            pendingTemplateImportId
+              ? importTemplate(pendingTemplateImportId, pendingTemplateExerciseIds)
+              : Promise.resolve()
+          )
         }
       />
 

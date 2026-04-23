@@ -32,8 +32,14 @@ const emptyExerciseDraft: ScheduleExerciseDraft = {
 function hasImportedTemplateExercises(
   session: WorkoutSessionWithExercises,
   template: TemplateWithExercises,
+  templateExerciseIds?: string[],
 ) {
-  if (template.exercises.length === 0) {
+  const selectedTemplateExerciseIds = templateExerciseIds ? new Set(templateExerciseIds) : null
+  const selectedExercises = template.exercises.filter((exercise) =>
+    selectedTemplateExerciseIds ? selectedTemplateExerciseIds.has(exercise.id) : true,
+  )
+
+  if (selectedExercises.length === 0) {
     return false
   }
 
@@ -43,7 +49,7 @@ function hasImportedTemplateExercises(
       .filter((templateExerciseId) => templateExerciseId !== null),
   )
 
-  return template.exercises.every((exercise) => importedTemplateExerciseIds.has(exercise.id))
+  return selectedExercises.every((exercise) => importedTemplateExerciseIds.has(exercise.id))
 }
 
 export function useSchedulePageData() {
@@ -123,7 +129,7 @@ export function useSchedulePageData() {
     void initialize()
   }, [])
 
-  async function handleAddTemplateExercises(templateId: string) {
+  async function handleAddTemplateExercises(templateId: string, templateExerciseIds?: string[]) {
     if (!currentSession) {
       return false
     }
@@ -131,7 +137,7 @@ export function useSchedulePageData() {
     setSelectedTemplateId(templateId)
 
     const didSucceed = await runMutation(async () => {
-      await addTemplateExercisesToSession(currentSession.id, templateId)
+      await addTemplateExercisesToSession(currentSession.id, templateId, templateExerciseIds)
       await loadData(templateId)
     })
 
@@ -139,17 +145,23 @@ export function useSchedulePageData() {
       return null
     }
 
+    const selectedTemplateExerciseIds = templateExerciseIds ? new Set(templateExerciseIds) : null
     const template = templates.find((item) => item.id === templateId)
 
     return template
       ? {
-          count: template.exercises.length,
+          count: template.exercises.filter((exercise) =>
+            selectedTemplateExerciseIds ? selectedTemplateExerciseIds.has(exercise.id) : true,
+          ).length,
           name: template.name,
         }
       : null
   }
 
-  function getTemplateImportConfirmation(templateId: string): TemplateImportConfirmation | null {
+  function getTemplateImportConfirmation(
+    templateId: string,
+    templateExerciseIds?: string[],
+  ): TemplateImportConfirmation | null {
     if (!currentSession) {
       return null
     }
@@ -159,7 +171,11 @@ export function useSchedulePageData() {
       return null
     }
 
-    const isDuplicateImport = hasImportedTemplateExercises(currentSession, template)
+    const isDuplicateImport = hasImportedTemplateExercises(
+      currentSession,
+      template,
+      templateExerciseIds,
+    )
     const willContinueCompletedSession = currentSession.status === 'completed'
 
     if (!isDuplicateImport && !willContinueCompletedSession) {

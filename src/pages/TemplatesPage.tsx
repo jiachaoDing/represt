@@ -10,6 +10,7 @@ import { StatusPill } from '../components/ui/StatusPill'
 import { SwipeActionItem } from '../components/ui/SwipeActionItem'
 import { TemplateTabs } from '../components/ui/TemplateTabs'
 import { useTemplatesPageData } from '../hooks/pages/useTemplatesPageData'
+import { getRepsLabel, getWeightLabel } from '../lib/session-display'
 import {
   emptyTemplateExerciseDraft,
   toTemplateExerciseDraft,
@@ -296,6 +297,9 @@ export function TemplatesPage() {
                       <p className="mt-1 text-sm text-[var(--ink-secondary)]">
                         默认 {exercise.targetSets} 组 · 休息 {exercise.restSeconds} 秒
                       </p>
+                      <p className="mt-1 text-xs text-[var(--ink-tertiary)]">
+                        {getWeightLabel(exercise.weightKg ?? null)} · {getRepsLabel(exercise.reps ?? null)}
+                      </p>
                     </div>
                     <p className="shrink-0 text-xs text-[var(--ink-tertiary)]">点按编辑</p>
                   </div>
@@ -407,6 +411,45 @@ export function TemplatesPage() {
               </label>
             </div>
 
+            <div className="grid grid-cols-2 gap-3">
+              <label className="block space-y-2">
+                <span className="text-sm font-medium text-[var(--ink-primary)]">默认重量 (kg)</span>
+                <input
+                  type="number"
+                  min={0}
+                  step="0.5"
+                  inputMode="decimal"
+                  value={exerciseDraft.weightKg}
+                  disabled={isSubmitting}
+                  onChange={(event) =>
+                    setExerciseDraft((current) => ({
+                      ...current,
+                      weightKg: event.target.value,
+                    }))
+                  }
+                  className="w-full rounded-[1.15rem] border border-[var(--outline-soft)] bg-white px-4 py-3 text-base outline-none"
+                />
+              </label>
+
+              <label className="block space-y-2">
+                <span className="text-sm font-medium text-[var(--ink-primary)]">默认次数</span>
+                <input
+                  type="number"
+                  min={0}
+                  inputMode="numeric"
+                  value={exerciseDraft.reps}
+                  disabled={isSubmitting}
+                  onChange={(event) =>
+                    setExerciseDraft((current) => ({
+                      ...current,
+                      reps: event.target.value,
+                    }))
+                  }
+                  className="w-full rounded-[1.15rem] border border-[var(--outline-soft)] bg-white px-4 py-3 text-base outline-none"
+                />
+              </label>
+            </div>
+
             {editingExercise ? (
               <div className="rounded-[1.25rem] bg-[rgba(24,32,22,0.04)] px-4 py-3 text-sm text-[var(--ink-secondary)]">
                 当前编辑：{editingExercise.name}
@@ -433,7 +476,8 @@ export function TemplatesPage() {
         {actionExercise ? (
           <div className="space-y-3">
             <div className="rounded-[1.25rem] bg-[rgba(24,32,22,0.04)] px-4 py-3 text-sm text-[var(--ink-secondary)]">
-              默认 {actionExercise.targetSets} 组 · 休息 {actionExercise.restSeconds} 秒
+              默认 {actionExercise.targetSets} 组 · 休息 {actionExercise.restSeconds} 秒 ·{' '}
+              {getWeightLabel(actionExercise.weightKg ?? null)} · {getRepsLabel(actionExercise.reps ?? null)}
             </div>
             <button
               type="button"

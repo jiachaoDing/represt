@@ -60,22 +60,25 @@ public/
 ## 当前已实现能力
 
 - 自动创建“今日训练”，并按 `sessionDateKey` 识别当天会话
-- 模板列表与模板动作 CRUD
+- 模板列表与模板动作 CRUD（支持可选默认重量、次数）
 - 空库时自动写入两套演示模板
-- 从模板把动作追加到今日训练
+- 从模板把动作追加到今日训练，并可只选择其中部分动作
 - 手动向今日训练新增动作
 - 删除今日训练中尚未开始的动作
 - 动作页完成当前组，并记录完成时间
 - 基于 `restEndsAt` 计算每个动作的独立休息倒计时
-- 补录最近一组的重量与次数
+- 动作页手动打开最近一组补录弹层，补录重量与次数
+- 模板动作配置了默认重量或次数时，新生成组记录会先带入这些初始值
 - 训练完成后查看总结页
 - PWA manifest、Service Worker 注册、离线静态资源缓存
 
 ## 数据建模说明
 
 - `WorkoutTemplate` 和 `WorkoutSession` 分离，模板编辑不会自动回写已生成训练。
+- `TemplateExercise` 除组数与休息时长外，还可选持久化 `weightKg`、`reps` 作为模板默认值。
 - `WorkoutSession` 只持久化 `id`、`sessionDateKey`、`createdAt`；会话状态在运行时由动作完成情况派生。
 - `SessionExercise` 持久化 `completedSets`、`lastCompletedAt`、`restEndsAt` 等执行数据；动作状态同样在运行时派生。
+- `SetRecord` 持久化本次训练的真实重量与次数；若动作来自模板，则创建组记录时会复制模板默认值作为可编辑初始值。
 - `RestTimerState` 是由 `SessionExercise` 计算出的界面态，不是单独的数据库表。
 - IndexedDB 当前包含 5 张表：`workoutTemplates`、`templateExercises`、`workoutSessions`、`sessionExercises`、`setRecords`。
 

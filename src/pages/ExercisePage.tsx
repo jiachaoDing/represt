@@ -104,7 +104,7 @@ export function ExercisePage() {
     return {
       label: '待完成当前组',
       state: 'counting' as const,
-      supporting: '点击下方按钮即可记录当前组，随后可补录重量和次数。',
+      supporting: '点击下方按钮即可记录当前组，随后可手动补录重量和次数。',
       value: `第 ${detail.exercise.completedSets + 1} 组`,
     }
   }, [detail, restSnapshot])
@@ -112,7 +112,6 @@ export function ExercisePage() {
   async function handleCompleteCurrentSet() {
     const didComplete = await handleCompleteSet()
     if (didComplete && detail) {
-      setIsRecordSheetOpen(true)
       setSnackbarMessage(`已完成第 ${detail.exercise.completedSets + 1} 组`)
     }
   }
@@ -205,7 +204,7 @@ export function ExercisePage() {
                   </p>
                 ) : (
                   <p className="mt-2 text-sm text-[var(--ink-secondary)]">
-                    还没有组记录，完成一组后会自动打开补录层。
+                    还没有组记录，完成一组后可手动进入补录层。
                   </p>
                 )}
               </div>
@@ -316,7 +315,7 @@ export function ExercisePage() {
           </div>
         ) : (
           <p className="text-sm leading-6 text-[var(--ink-secondary)]">
-            还没有组记录。完成一组后，系统会自动在这里展示最近一组并允许你补录重量和次数。
+            还没有组记录。完成一组后，系统会在这里展示最近一组，你可以手动打开补录。
           </p>
         )}
       </BottomSheet>

@@ -15,6 +15,8 @@ export interface TemplateExercise {
   name: string
   targetSets: number
   restSeconds: number
+  weightKg?: number | null
+  reps?: number | null
   order: number
 }
 

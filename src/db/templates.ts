@@ -9,6 +9,8 @@ type TemplateExerciseInput = {
   name: string
   targetSets: number
   restSeconds: number
+  weightKg?: number | null
+  reps?: number | null
 }
 
 const TEMPLATE_SEED_KEY = 'trainre.templates.seeded.v1'
@@ -49,6 +51,8 @@ function normalizeExercise(input: Partial<TemplateExerciseInput>) {
     name: input.name?.trim() || '未命名动作',
     targetSets: Math.max(1, Math.floor(input.targetSets ?? 3)),
     restSeconds: Math.max(0, Math.floor(input.restSeconds ?? 90)),
+    weightKg: input.weightKg ?? null,
+    reps: input.reps ?? null,
   }
 }
 

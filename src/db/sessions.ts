@@ -159,9 +159,19 @@ async function createSessionRecord() {
   return session
 }
 
-async function buildSessionExercisesFromTemplate(sessionId: string, templateId: string, startOrder = 0) {
+async function buildSessionExercisesFromTemplate(
+  sessionId: string,
+  templateId: string,
+  startOrder = 0,
+  templateExerciseIds?: string[],
+) {
   const templateExercises = await db.templateExercises.where('templateId').equals(templateId).toArray()
-  const sortedTemplateExercises = templateExercises.sort((left, right) => left.order - right.order)
+  const selectedTemplateExerciseIds = templateExerciseIds ? new Set(templateExerciseIds) : null
+  const sortedTemplateExercises = templateExercises
+    .filter((exercise) =>
+      selectedTemplateExerciseIds ? selectedTemplateExerciseIds.has(exercise.id) : true,
+    )
+    .sort((left, right) => left.order - right.order)
 
   return sortedTemplateExercises.map((exercise, index) => ({
     id: crypto.randomUUID(),
@@ -261,7 +271,11 @@ export async function getSessionSummaryDetail(sessionId: string) {
   } satisfies SessionSummaryDetail
 }
 
-export async function addTemplateExercisesToSession(sessionId: string, templateId: string) {
+export async function addTemplateExercisesToSession(
+  sessionId: string,
+  templateId: string,
+  templateExerciseIds?: string[],
+) {
   const [session, template] = await Promise.all([
     getSessionRecord(sessionId),
     db.workoutTemplates.get(templateId),
@@ -277,7 +291,12 @@ export async function addTemplateExercisesToSession(sessionId: string, templateI
 
   const existingExercises = await getSessionExercises(sessionId)
   const nextOrder = existingExercises.reduce((maxOrder, exercise) => Math.max(maxOrder, exercise.order), -1) + 1
-  const templateExercises = await buildSessionExercisesFromTemplate(sessionId, templateId, nextOrder)
+  const templateExercises = await buildSessionExercisesFromTemplate(
+    sessionId,
+    templateId,
+    nextOrder,
+    templateExerciseIds,
+  )
 
   if (templateExercises.length === 0) {
     return []
@@ -341,6 +360,7 @@ export async function completeSessionExerciseSet(sessionExerciseId: string): Pro
     'rw',
     db.sessionExercises,
     db.setRecords,
+    db.templateExercises,
     async () => {
       const exercise = await db.sessionExercises.get(sessionExerciseId)
       if (!exercise) {
@@ -351,6 +371,9 @@ export async function completeSessionExerciseSet(sessionExerciseId: string): Pro
         throw new Error('当前动作已完成，不能继续记录新的一组。')
       }
 
+      const templateExercise = exercise.templateExerciseId
+        ? await db.templateExercises.get(exercise.templateExerciseId)
+        : null
       const nextCompletedSets = exercise.completedSets + 1
       const restEndsAt =
         nextCompletedSets >= exercise.targetSets ? null : getRestEndsAt(completedAt, exercise.restSeconds)
@@ -361,8 +384,8 @@ export async function completeSessionExerciseSet(sessionExerciseId: string): Pro
         sessionExerciseId: exercise.id,
         setNumber: nextCompletedSets,
         completedAt,
-        weightKg: null,
-        reps: null,
+        weightKg: templateExercise?.weightKg ?? null,
+        reps: templateExercise?.reps ?? null,
       }
 
       createdSetRecord = setRecord

@@ -10,7 +10,11 @@ import {
   updateTemplateName,
   type TemplateWithExercises,
 } from '../../db/templates'
-import { parseIntegerInput } from '../../lib/input-parsers'
+import {
+  parseIntegerInput,
+  parseOptionalReps,
+  parseOptionalWeightKg,
+} from '../../lib/input-parsers'
 import type { TemplateExerciseDraft } from '../../lib/template-editor'
 
 export function useTemplatesPageData() {
@@ -94,6 +98,8 @@ export function useTemplatesPageData() {
         name: draft.name,
         targetSets: parseIntegerInput(draft.targetSets),
         restSeconds: parseIntegerInput(draft.restSeconds),
+        weightKg: parseOptionalWeightKg(draft.weightKg),
+        reps: parseOptionalReps(draft.reps),
       })
       await loadTemplates(templateId)
     })
@@ -109,6 +115,8 @@ export function useTemplatesPageData() {
         name: draft.name,
         targetSets: parseIntegerInput(draft.targetSets),
         restSeconds: parseIntegerInput(draft.restSeconds),
+        weightKg: parseOptionalWeightKg(draft.weightKg),
+        reps: parseOptionalReps(draft.reps),
       })
       await loadTemplates(templateId)
     })
