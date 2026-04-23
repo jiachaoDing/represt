@@ -11,13 +11,13 @@ import {
 import { listTemplatesWithExercises, type TemplateWithExercises } from '../../db/templates'
 import { parseIntegerInput } from '../../lib/input-parsers'
 
-export type ScheduleExerciseDraft = {
+type ScheduleExerciseDraft = {
   name: string
   targetSets: string
   restSeconds: string
 }
 
-export type TemplateImportConfirmation = {
+type TemplateImportConfirmation = {
   isDuplicateImport: boolean
   templateName: string
   willContinueCompletedSession: boolean

@@ -15,15 +15,7 @@ import { useSchedulePageData } from '../hooks/pages/useSchedulePageData'
 import { getExerciseRestLabel, getSessionStatusLabel } from '../lib/session-display'
 
 function getSessionTone(status: 'active' | 'completed' | 'pending') {
-  if (status === 'completed') {
-    return 'positive' as const
-  }
-
-  if (status === 'active') {
-    return 'neutral' as const
-  }
-
-  return 'neutral' as const
+  return status === 'completed' ? 'positive' : 'neutral'
 }
 
 export function SchedulePage() {

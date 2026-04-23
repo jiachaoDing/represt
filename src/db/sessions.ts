@@ -5,11 +5,11 @@ import { deriveExerciseStatus, type DerivedExerciseStatus } from '../lib/session
 import { db } from './app-db'
 import { ensureTemplateSeedData } from './templates'
 
-export type WorkoutSessionWithStatus = WorkoutSession & {
+type WorkoutSessionWithStatus = WorkoutSession & {
   status: SessionStatus
 }
 
-export type SessionExerciseWithStatus = SessionExercise & {
+type SessionExerciseWithStatus = SessionExercise & {
   status: DerivedExerciseStatus
 }
 
@@ -23,7 +23,7 @@ export type SessionExerciseDetail = {
   latestSetRecord: SetRecord | null
 }
 
-export type SessionSummaryExercise = SessionExerciseWithStatus & {
+type SessionSummaryExercise = SessionExerciseWithStatus & {
   setRecords: SetRecord[]
 }
 
@@ -411,14 +411,4 @@ export async function updateLatestSetRecordValues(
     ...latestSetRecord,
     ...updates,
   } satisfies SetRecord
-}
-
-export async function startSession(sessionId: string) {
-  const session = await getSessionRecord(sessionId)
-  if (!session) {
-    throw new Error('当前训练不存在。')
-  }
-
-  const exercises = await getSessionExercises(sessionId)
-  return attachDerivedSessionStatus(session, exercises)
 }

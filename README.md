@@ -1,6 +1,6 @@
 # 训练间歇记录器
 
-一个面向力量训练场景的极简 PWA 脚手架。当前阶段只初始化基础架构、页面壳子、路由、本地数据层和离线能力，不实现完整业务。
+一个面向力量训练场景的极简 PWA。当前实现已经覆盖“今日训练、模板维护、动作执行、最近一组补录、训练总结”这一轮最小闭环，数据保存在本地 IndexedDB。
 
 ## 安装依赖
 
@@ -45,33 +45,46 @@ npm run preview
 ```text
 src/
   app/          应用入口、路由、PWA 注册
-  components/   共享布局与基础展示组件
-  db/           Dexie 数据库初始化与 schema
-  hooks/        当前只放基础时间驱动 hook
-  lib/          轻量工具函数
-  models/       MVP 类型定义
-  pages/        路由页面壳子
+  components/   布局、总结区块、通用 UI 组件
+  db/           Dexie 数据读写与 schema
+  hooks/        页面数据 hook 与时间驱动 hook
+  lib/          输入解析、倒计时、状态展示等轻量工具
+  models/       持久化模型与派生状态类型
+  pages/        训练安排、动作、模板、总结页面
   styles/       全局样式与 Tailwind 入口
 public/
   icon.svg
   icon-maskable.svg
 ```
 
-## 当前已具备的能力
+## 当前已实现能力
 
-- 可运行的 Vite + React + TypeScript 项目
-- Tailwind CSS 可直接使用
-- PWA manifest、主题色、基础图标占位、开发环境 Service Worker
-- 四个 MVP 路由页面壳子
-- 适合移动端的共享布局
-- Dexie 数据库与五张基础表 schema
-- 训练模板、本次训练、动作、组记录、倒计时的基础类型定义
+- 自动创建“今日训练”，并按 `sessionDateKey` 识别当天会话
+- 模板列表与模板动作 CRUD
+- 空库时自动写入两套演示模板
+- 从模板把动作追加到今日训练
+- 手动向今日训练新增动作
+- 删除今日训练中尚未开始的动作
+- 动作页完成当前组，并记录完成时间
+- 基于 `restEndsAt` 计算每个动作的独立休息倒计时
+- 补录最近一组的重量与次数
+- 训练完成后查看总结页
+- PWA manifest、Service Worker 注册、离线静态资源缓存
 
 ## 数据建模说明
 
-- `WorkoutTemplate` 和 `WorkoutSession` 分离，符合“模板与本次训练分离”的规则。
-- `SessionStatus` 与 `SessionExerciseStatus` 只保留 `pending | active | completed` 三种主状态。
-- `RestTimerState` 使用 `endsAt` 作为核心字段，便于后续用结束时间戳计算剩余倒计时，并支持切页后继续运行。
+- `WorkoutTemplate` 和 `WorkoutSession` 分离，模板编辑不会自动回写已生成训练。
+- `WorkoutSession` 只持久化 `id`、`sessionDateKey`、`createdAt`；会话状态在运行时由动作完成情况派生。
+- `SessionExercise` 持久化 `completedSets`、`lastCompletedAt`、`restEndsAt` 等执行数据；动作状态同样在运行时派生。
+- `RestTimerState` 是由 `SessionExercise` 计算出的界面态，不是单独的数据库表。
+- IndexedDB 当前包含 5 张表：`workoutTemplates`、`templateExercises`、`workoutSessions`、`sessionExercises`、`setRecords`。
+
+## 当前未覆盖的能力
+
+- 独立历史列表或历史训练浏览页
+- 训练总时长统计
+- 训练中撤销“完成本组”
+- 训练中直接编辑长期模板
 
 ## PWA 图标说明
 
@@ -81,11 +94,3 @@ public/
 - `public/icon-maskable.svg`
 
 后续上线前建议替换为正式的 `192x192` 和 `512x512` PNG 图标，以获得更完整的安装体验。
-
-## 下一步开发建议
-
-1. 先补 Dexie 初始化数据与模板 CRUD，让训练安排页能读取真实模板。
-2. 实现“基于模板创建本次训练”的流程，并把 `SessionExercise` 生成出来。
-3. 完善动作页的“点击一次完成一组”、最近一组完成时间展示与补录入口。
-4. 用 `endsAt` 驱动独立倒计时显示，并保证跨页面继续运行。
-5. 继续补训练总结页和最近一组重量、次数补录体验。
