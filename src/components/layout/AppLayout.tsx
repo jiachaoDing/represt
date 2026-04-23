@@ -44,7 +44,8 @@ const navigationItems = [
 
 export function AppLayout() {
   const location = useLocation()
-  const hideNavigation = location.pathname.startsWith('/exercise/')
+  const hideNavigation =
+    location.pathname.startsWith('/exercise/') || location.pathname.startsWith('/calendar')
 
   return (
     <div className="min-h-screen bg-[var(--surface)] text-[var(--on-surface)] selection:bg-[var(--primary-container)] selection:text-[var(--on-primary-container)]">

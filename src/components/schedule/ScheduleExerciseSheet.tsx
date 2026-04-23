@@ -6,6 +6,8 @@ type ScheduleExerciseDraft = {
   name: string
   targetSets: string
   restSeconds: string
+  weightKg: string
+  reps: string
 }
 
 type ScheduleExerciseSheetProps = {
@@ -69,6 +71,41 @@ export function ScheduleExerciseSheet({
               disabled={isSubmitting}
               onChange={(event) => onDraftChange({ ...draft, restSeconds: event.target.value })}
               className="w-full rounded-none border-b border-[var(--on-surface)] bg-[var(--surface-container)] px-4 py-3 text-base text-[var(--on-surface)] outline-none transition-all focus:border-b-2 focus:border-[var(--primary)]"
+            />
+          </label>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <label className="block">
+            <span className="mb-1 ml-1 block text-xs font-medium text-[var(--on-surface-variant)]">
+              默认重量 (kg)
+            </span>
+            <input
+              type="number"
+              min={0}
+              step="0.5"
+              inputMode="decimal"
+              value={draft.weightKg}
+              disabled={isSubmitting}
+              onChange={(event) => onDraftChange({ ...draft, weightKg: event.target.value })}
+              className="w-full rounded-none border-b border-[var(--on-surface)] bg-[var(--surface-container)] px-4 py-3 text-base text-[var(--on-surface)] outline-none transition-all focus:border-b-2 focus:border-[var(--primary)]"
+              placeholder="可选"
+            />
+          </label>
+
+          <label className="block">
+            <span className="mb-1 ml-1 block text-xs font-medium text-[var(--on-surface-variant)]">
+              默认次数
+            </span>
+            <input
+              type="number"
+              min={0}
+              inputMode="numeric"
+              value={draft.reps}
+              disabled={isSubmitting}
+              onChange={(event) => onDraftChange({ ...draft, reps: event.target.value })}
+              className="w-full rounded-none border-b border-[var(--on-surface)] bg-[var(--surface-container)] px-4 py-3 text-base text-[var(--on-surface)] outline-none transition-all focus:border-b-2 focus:border-[var(--primary)]"
+              placeholder="可选"
             />
           </label>
         </div>

@@ -1,10 +1,5 @@
 import { Link } from 'react-router-dom'
 import type { SessionSummaryDetail } from '../../db/sessions'
-import {
-  getCompletedAtLabel,
-  getRepsLabel,
-  getWeightLabel,
-} from '../../lib/session-display'
 
 type SessionExerciseSummaryListProps = {
   detail: SessionSummaryDetail | null

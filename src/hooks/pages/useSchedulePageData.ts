@@ -9,12 +9,18 @@ import {
   type WorkoutSessionWithExercises,
 } from '../../db/sessions'
 import { listTemplatesWithExercises, type TemplateWithExercises } from '../../db/templates'
-import { parseIntegerInput } from '../../lib/input-parsers'
+import {
+  parseIntegerInput,
+  parseOptionalReps,
+  parseOptionalWeightKg,
+} from '../../lib/input-parsers'
 
 type ScheduleExerciseDraft = {
   name: string
   targetSets: string
   restSeconds: string
+  weightKg: string
+  reps: string
 }
 
 type TemplateImportConfirmation = {
@@ -27,6 +33,8 @@ const emptyExerciseDraft: ScheduleExerciseDraft = {
   name: '',
   targetSets: '3',
   restSeconds: '90',
+  weightKg: '',
+  reps: '',
 }
 
 function hasImportedTemplateExercises(
@@ -199,6 +207,8 @@ export function useSchedulePageData() {
         name: newExerciseDraft.name,
         targetSets: parseIntegerInput(newExerciseDraft.targetSets),
         restSeconds: parseIntegerInput(newExerciseDraft.restSeconds),
+        defaultWeightKg: parseOptionalWeightKg(newExerciseDraft.weightKg),
+        defaultReps: parseOptionalReps(newExerciseDraft.reps),
       })
       setNewExerciseDraft(emptyExerciseDraft)
       await loadData(selectedTemplateId)

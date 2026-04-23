@@ -1,24 +1,21 @@
+import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import type { SessionSummaryDetail } from '../../db/sessions'
 
 type SessionSummaryOverviewProps = {
   detail: SessionSummaryDetail | null
+  emptyState?: ReactNode
   isLoading: boolean
 }
 
-export function SessionSummaryOverview({ detail, isLoading }: SessionSummaryOverviewProps) {
+export function SessionSummaryOverview({
+  detail,
+  emptyState,
+  isLoading,
+}: SessionSummaryOverviewProps) {
   const completedExerciseCount =
     detail?.exercises.filter((exercise) => exercise.status === 'completed').length ?? 0
   const totalExerciseCount = detail?.exercises.length ?? 0
-  
-  // Calculate total volume (weight * reps)
-  const totalVolume = detail?.exercises.reduce((acc, exercise) => {
-    return acc + exercise.setRecords.reduce((setAcc, set) => {
-      const weight = set.weightKg ?? 0
-      const reps = set.reps ?? 0
-      return setAcc + (weight * reps)
-    }, 0)
-  }, 0) ?? 0
 
   if (isLoading) {
     return (
@@ -27,6 +24,10 @@ export function SessionSummaryOverview({ detail, isLoading }: SessionSummaryOver
   }
 
   if (!detail) {
+    if (emptyState) {
+      return <>{emptyState}</>
+    }
+
     return (
       <div className="mx-4 mt-6 space-y-4 text-center">
         <p className="text-[var(--on-surface-variant)]">没有找到这次训练。</p>
@@ -47,7 +48,9 @@ export function SessionSummaryOverview({ detail, isLoading }: SessionSummaryOver
         
         <div className="flex flex-col gap-1.5">
           <p className="text-[11px] text-[var(--on-surface-variant)]">完成动作数</p>
-          <p className="text-[13px] font-bold text-[var(--on-surface)]">{completedExerciseCount} 个动作</p>
+          <p className="text-[13px] font-bold text-[var(--on-surface)]">
+            {completedExerciseCount} / {totalExerciseCount}
+          </p>
         </div>
 
         <div className="flex flex-col gap-1.5">

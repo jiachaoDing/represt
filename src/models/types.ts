@@ -32,6 +32,8 @@ export interface SessionExercise {
   templateExerciseId: string | null
   name: string
   targetSets: number
+  defaultWeightKg?: number | null
+  defaultReps?: number | null
   completedSets: number
   restSeconds: number
   order: number

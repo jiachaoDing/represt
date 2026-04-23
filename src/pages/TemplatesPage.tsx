@@ -4,7 +4,6 @@ import { ConfirmDialog } from '../components/ui/ConfirmDialog'
 import { FloatingActionButton } from '../components/ui/FloatingActionButton'
 import { Snackbar } from '../components/ui/Snackbar'
 import { TemplateExerciseList } from '../components/templates/TemplateExerciseList'
-import { TemplateExerciseSheet } from '../components/templates/TemplateExerciseSheet'
 import { TemplateNameSheet } from '../components/templates/TemplateNameSheet'
 import { TemplateSwitcher } from '../components/templates/TemplateSwitcher'
 import { useTemplatesPageData } from '../hooks/pages/useTemplatesPageData'
@@ -39,7 +38,10 @@ export function TemplatesPage() {
         selectedTemplateId={templates.selectedTemplateId}
         templates={templates.templates}
         onCreate={() => ui.openTemplateSheet('create')}
-        onSelect={templates.setSelectedTemplateId}
+        onSelect={(templateId) => {
+          ui.closeExerciseEditor()
+          templates.setSelectedTemplateId(templateId)
+        }}
       />
 
       {templates.error ? (
@@ -51,16 +53,24 @@ export function TemplatesPage() {
       <section className="mt-4">
         <TemplateExerciseList
           currentTemplate={templates.currentTemplate}
+          draft={ui.exerciseDraft}
+          editExerciseId={ui.editExerciseId}
+          isCreatingExercise={ui.isCreatingExercise}
           isLoading={templates.isLoading}
           isSubmitting={templates.isSubmitting}
           templatesCount={templates.templates.length}
-          onCreate={ui.openCreateExerciseSheet}
+          onCancelEditing={ui.closeExerciseEditor}
+          onCreate={ui.openCreateExerciseEditor}
           onDelete={ui.setDeleteExerciseId}
-          onEdit={ui.openEditExerciseSheet}
+          onDraftChange={ui.setExerciseDraft}
+          onEdit={ui.openEditExerciseEditor}
+          onSubmit={ui.handleExerciseSubmit}
         />
       </section>
 
-      {templates.currentTemplate ? <FloatingActionButton onClick={ui.openCreateExerciseSheet} /> : null}
+      {templates.currentTemplate && !ui.isExerciseEditorActive ? (
+        <FloatingActionButton onClick={ui.openCreateExerciseEditor} />
+      ) : null}
 
       <TemplateNameSheet
         createName={templates.newTemplateName}
@@ -72,16 +82,6 @@ export function TemplatesPage() {
         onCreateNameChange={templates.setNewTemplateName}
         onRenameNameChange={ui.setRenameTemplateName}
         onSubmit={(event) => void ui.handleTemplateSubmit(event, ui.renameTemplateName)}
-      />
-
-      <TemplateExerciseSheet
-        draft={ui.exerciseDraft}
-        editExerciseId={ui.editExerciseId}
-        isOpen={templates.currentTemplate !== null && ui.isExerciseSheetOpen}
-        isSubmitting={templates.isSubmitting}
-        onClose={ui.closeExerciseSheet}
-        onDraftChange={ui.setExerciseDraft}
-        onSubmit={ui.handleExerciseSubmit}
       />
 
       <ConfirmDialog

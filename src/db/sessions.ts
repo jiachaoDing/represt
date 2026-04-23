@@ -36,6 +36,8 @@ type SessionExerciseInput = {
   name: string
   targetSets?: number
   restSeconds?: number
+  defaultReps?: number | null
+  defaultWeightKg?: number | null
 }
 
 const CURRENT_SESSION_KEY = 'trainre.current-session-id.v1'
@@ -62,6 +64,8 @@ function normalizeSessionExercise(input: Partial<SessionExerciseInput>) {
     name: input.name?.trim() || '未命名动作',
     targetSets: Math.max(1, Math.floor(input.targetSets ?? 3)),
     restSeconds: Math.max(0, Math.floor(input.restSeconds ?? 90)),
+    defaultWeightKg: input.defaultWeightKg ?? null,
+    defaultReps: input.defaultReps ?? null,
   }
 }
 
@@ -125,6 +129,10 @@ async function getSessionRecord(sessionId: string) {
   return db.workoutSessions.get(sessionId)
 }
 
+async function getSessionRecordByDateKey(sessionDateKey: string) {
+  return db.workoutSessions.where('sessionDateKey').equals(sessionDateKey).first()
+}
+
 async function getSessionExercises(sessionId: string) {
   const exercises = await db.sessionExercises.where('sessionId').equals(sessionId).toArray()
   return exercises.sort((left, right) => left.order - right.order)
@@ -179,6 +187,8 @@ async function buildSessionExercisesFromTemplate(
     templateExerciseId: exercise.id,
     name: exercise.name,
     targetSets: exercise.targetSets,
+    defaultWeightKg: exercise.weightKg ?? null,
+    defaultReps: exercise.reps ?? null,
     completedSets: 0,
     restSeconds: exercise.restSeconds,
     order: startOrder + index,
@@ -271,6 +281,20 @@ export async function getSessionSummaryDetail(sessionId: string) {
   } satisfies SessionSummaryDetail
 }
 
+export async function getSessionSummaryDetailByDateKey(sessionDateKey: string) {
+  const session = await getSessionRecordByDateKey(sessionDateKey)
+  if (!session) {
+    return null
+  }
+
+  return getSessionSummaryDetail(session.id)
+}
+
+export async function listSessionDateKeys() {
+  const sessions = await db.workoutSessions.orderBy('sessionDateKey').toArray()
+  return sessions.map((session) => session.sessionDateKey)
+}
+
 export async function addTemplateExercisesToSession(
   sessionId: string,
   templateId: string,
@@ -323,6 +347,8 @@ export async function addTemporarySessionExercise(sessionId: string, input: Part
     templateExerciseId: null,
     name: normalized.name,
     targetSets: normalized.targetSets,
+    defaultWeightKg: normalized.defaultWeightKg,
+    defaultReps: normalized.defaultReps,
     completedSets: 0,
     restSeconds: normalized.restSeconds,
     order: nextOrder,
@@ -384,8 +410,8 @@ export async function completeSessionExerciseSet(sessionExerciseId: string): Pro
         sessionExerciseId: exercise.id,
         setNumber: nextCompletedSets,
         completedAt,
-        weightKg: templateExercise?.weightKg ?? null,
-        reps: templateExercise?.reps ?? null,
+        weightKg: exercise.defaultWeightKg ?? templateExercise?.weightKg ?? null,
+        reps: exercise.defaultReps ?? templateExercise?.reps ?? null,
       }
 
       createdSetRecord = setRecord

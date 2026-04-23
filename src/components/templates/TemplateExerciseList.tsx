@@ -1,25 +1,40 @@
-import { SwipeActionItem } from '../ui/SwipeActionItem'
-import { getRepsLabel, getWeightLabel } from '../../lib/session-display'
+import type { FormEvent } from 'react'
+
 import type { TemplateWithExercises } from '../../db/templates'
+import type { TemplateExerciseDraft } from '../../lib/template-editor'
+import { SwipeActionItem } from '../ui/SwipeActionItem'
+import { TemplateExerciseInlineEditor } from './TemplateExerciseInlineEditor'
 
 type TemplateExerciseListProps = {
   currentTemplate: TemplateWithExercises | null
+  draft: TemplateExerciseDraft
+  editExerciseId: string | null
+  isCreatingExercise: boolean
   isLoading: boolean
   isSubmitting: boolean
   templatesCount: number
+  onCancelEditing: () => void
   onCreate: () => void
   onDelete: (exerciseId: string) => void
+  onDraftChange: (draft: TemplateExerciseDraft) => void
   onEdit: (exerciseId: string) => void
+  onSubmit: (event: FormEvent<HTMLFormElement>) => void
 }
 
 export function TemplateExerciseList({
   currentTemplate,
+  draft,
+  editExerciseId,
+  isCreatingExercise,
   isLoading,
   isSubmitting,
   templatesCount,
+  onCancelEditing,
   onCreate,
   onDelete,
+  onDraftChange,
   onEdit,
+  onSubmit,
 }: TemplateExerciseListProps) {
   if (isLoading) {
     return (
@@ -38,13 +53,6 @@ export function TemplateExerciseList({
     return (
       <div className="mx-4 mt-6 rounded-xl border border-dashed border-[var(--outline)] px-5 py-8 text-center">
         <p className="text-sm font-medium text-[var(--on-surface-variant)]">还没有模板</p>
-        <button
-          type="button"
-          onClick={onCreate}
-          className="mt-4 inline-flex items-center text-sm font-medium text-[var(--primary)]"
-        >
-          新建模板
-        </button>
       </div>
     )
   }
@@ -53,75 +61,98 @@ export function TemplateExerciseList({
     return null
   }
 
-  if (currentTemplate.exercises.length === 0) {
-    return (
-      <div className="mx-4 mt-6 rounded-xl border border-dashed border-[var(--outline)] px-5 py-8 text-center">
-        <p className="text-sm font-medium text-[var(--on-surface-variant)]">这个模板还没有动作</p>
-        <button
-          type="button"
-          onClick={onCreate}
-          className="mt-4 inline-flex items-center text-sm font-medium text-[var(--primary)]"
-        >
-          添加动作
-        </button>
-      </div>
-    )
-  }
+  const shouldShowEmptyHint = currentTemplate.exercises.length === 0 && !isCreatingExercise
 
   return (
-    <div className="mt-4 flex flex-col px-4">
-      {/* Header Row */}
-      <div className="flex items-center px-2 pb-2 text-[12px] text-[var(--on-surface-variant)]">
-        <div className="w-6 shrink-0" />
-        <div className="flex-1 pl-2">动作名称</div>
-        <div className="w-[3.5rem] shrink-0 text-center">组数</div>
-        <div className="w-[3.5rem] shrink-0 text-center">休息</div>
-        <div className="w-[3.5rem] shrink-0 text-center">重量</div>
-        <div className="w-[3.5rem] shrink-0 text-center">次数</div>
-        <div className="w-6 shrink-0" />
-      </div>
-
-      <div className="flex flex-col gap-1">
-        {currentTemplate.exercises.map((exercise, index) => (
-          <SwipeActionItem
-            key={exercise.id}
-            actionLabel="删除"
-            disabled={isSubmitting}
-            onAction={() => onDelete(exercise.id)}
+    <div className="mt-4 px-4">
+      {shouldShowEmptyHint ? (
+        <div className="rounded-xl border border-dashed border-[var(--outline)] px-5 py-8 text-center">
+          <p className="text-sm font-medium text-[var(--on-surface-variant)]">这个模板还没有动作</p>
+          <button
+            type="button"
+            onClick={onCreate}
+            className="mt-4 inline-flex items-center text-sm font-medium text-[var(--primary)]"
           >
-            <button
-              type="button"
-              onClick={() => onEdit(exercise.id)}
-              className="block w-full bg-[var(--surface)] px-2 py-3.5 text-left transition-colors active:bg-[var(--surface-container)] rounded-xl"
+            添加动作
+          </button>
+        </div>
+      ) : null}
+
+      {!shouldShowEmptyHint ? (
+        <div className="px-2 pb-2 text-[12px] text-[var(--on-surface-variant)]">
+          左滑可删除，点右侧铅笔可编辑
+        </div>
+      ) : null}
+
+      <div className="flex flex-col gap-3">
+        {currentTemplate.exercises.map((exercise, index) => {
+          if (editExerciseId === exercise.id) {
+            return (
+              <TemplateExerciseInlineEditor
+                key={exercise.id}
+                draft={draft}
+                isEditing
+                isSubmitting={isSubmitting}
+                onCancel={onCancelEditing}
+                onDraftChange={onDraftChange}
+                onSubmit={onSubmit}
+              />
+            )
+          }
+
+          return (
+            <SwipeActionItem
+              key={exercise.id}
+              actionLabel="删除"
+              disabled={isSubmitting}
+              onAction={() => onDelete(exercise.id)}
             >
-              <div className="flex items-center text-[14px]">
-                <div className="w-6 shrink-0 text-[15px] font-bold text-[var(--on-surface)]">
-                  {index + 1}
-                </div>
-                <div className="flex-1 pl-2 truncate font-medium text-[var(--on-surface)]">
-                  {exercise.name}
-                </div>
-                <div className="w-[3.5rem] shrink-0 text-center text-[var(--on-surface-variant)]">
-                  {exercise.targetSets}组
-                </div>
-                <div className="w-[3.5rem] shrink-0 text-center text-[var(--on-surface-variant)]">
-                  {exercise.restSeconds}秒
-                </div>
-                <div className="w-[3.5rem] shrink-0 text-center text-[var(--on-surface-variant)]">
-                  {exercise.weightKg ? `${exercise.weightKg}kg` : '-'}
-                </div>
-                <div className="w-[3.5rem] shrink-0 text-center text-[var(--on-surface-variant)]">
-                  {exercise.reps ? `${exercise.reps}次` : '-'}
-                </div>
-                <div className="w-6 shrink-0 flex justify-end text-[var(--outline-variant)]">
-                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="9 18 15 12 9 6" />
-                  </svg>
+              <div className="rounded-[1.25rem] border border-[var(--outline-variant)]/20 bg-[var(--surface)] px-4 py-4 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)]">
+                <div className="flex items-start gap-3">
+                  <div className="pt-0.5 text-[15px] font-bold text-[var(--on-surface)]">
+                    {index + 1}
+                  </div>
+
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-[15px] font-semibold text-[var(--on-surface)]">
+                      {exercise.name}
+                    </div>
+                    <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[13px] text-[var(--on-surface-variant)]">
+                      <span>{exercise.targetSets} 组</span>
+                      <span>{exercise.restSeconds} 秒</span>
+                      <span>{exercise.weightKg ? `${exercise.weightKg} kg` : '重量 -'}</span>
+                      <span>{exercise.reps ? `${exercise.reps} 次` : '次数 -'}</span>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => onEdit(exercise.id)}
+                    disabled={isSubmitting}
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-[var(--on-surface-variant)] transition-colors hover:bg-[var(--surface-container)] disabled:opacity-40"
+                    aria-label={`编辑${exercise.name}`}
+                  >
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 20h9" />
+                      <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                    </svg>
+                  </button>
                 </div>
               </div>
-            </button>
-          </SwipeActionItem>
-        ))}
+            </SwipeActionItem>
+          )
+        })}
+
+        {isCreatingExercise ? (
+          <TemplateExerciseInlineEditor
+            draft={draft}
+            isEditing={false}
+            isSubmitting={isSubmitting}
+            onCancel={onCancelEditing}
+            onDraftChange={onDraftChange}
+            onSubmit={onSubmit}
+          />
+        ) : null}
       </div>
     </div>
   )

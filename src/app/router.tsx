@@ -1,6 +1,7 @@
 import { createBrowserRouter } from 'react-router-dom'
 
 import { AppLayout } from '../components/layout/AppLayout'
+import { CalendarPage } from '../pages/CalendarPage'
 import { ExercisePage } from '../pages/ExercisePage'
 import { SchedulePage } from '../pages/SchedulePage'
 import { SummaryPage } from '../pages/SummaryPage'
@@ -27,9 +28,19 @@ export const router = createBrowserRouter([
         handle: { title: '模板编辑' },
       },
       {
+        path: 'summary',
+        element: <SummaryPage />,
+        handle: { title: '训练总结' },
+      },
+      {
         path: 'summary/:sessionId',
         element: <SummaryPage />,
         handle: { title: '训练总结' },
+      },
+      {
+        path: 'calendar',
+        element: <CalendarPage />,
+        handle: { title: '训练日历' },
       },
     ],
   },

@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom'
+
 import { PageHeader } from '../components/ui/PageHeader'
 import { ConfirmDialog } from '../components/ui/ConfirmDialog'
 import { FloatingActionButton } from '../components/ui/FloatingActionButton'
@@ -39,8 +41,8 @@ export function SchedulePage() {
       <PageHeader 
         title={todayStr} 
         actions={
-          <button 
-            type="button" 
+          <Link
+            to="/calendar"
             className="flex h-9 w-9 items-center justify-center rounded-xl border border-[var(--outline-variant)] text-[var(--on-surface-variant)] transition-colors hover:bg-[var(--on-surface-variant)]/5"
             aria-label="日历"
           >
@@ -50,7 +52,7 @@ export function SchedulePage() {
               <line x1="8" y1="2" x2="8" y2="6"/>
               <line x1="3" y1="10" x2="21" y2="10"/>
             </svg>
-          </button>
+          </Link>
         }
       />
 

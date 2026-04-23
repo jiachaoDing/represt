@@ -1,8 +1,20 @@
 import { useEffect, useState } from 'react'
 
-import { getSessionSummaryDetail, type SessionSummaryDetail } from '../../db/sessions'
+import {
+  getSessionSummaryDetail,
+  getSessionSummaryDetailByDateKey,
+  type SessionSummaryDetail,
+} from '../../db/sessions'
 
-export function useSessionSummaryData(sessionId: string) {
+type UseSessionSummaryDataInput = {
+  sessionDateKey?: string
+  sessionId?: string
+}
+
+export function useSessionSummaryData({
+  sessionDateKey,
+  sessionId,
+}: UseSessionSummaryDataInput) {
   const [detail, setDetail] = useState<SessionSummaryDetail | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -16,7 +28,11 @@ export function useSessionSummaryData(sessionId: string) {
         setIsLoading(true)
         setDetail(null)
 
-        const result = await getSessionSummaryDetail(sessionId)
+        const result = sessionId
+          ? await getSessionSummaryDetail(sessionId)
+          : sessionDateKey
+            ? await getSessionSummaryDetailByDateKey(sessionDateKey)
+            : null
         if (isCancelled) {
           return
         }
@@ -41,7 +57,7 @@ export function useSessionSummaryData(sessionId: string) {
     return () => {
       isCancelled = true
     }
-  }, [sessionId])
+  }, [sessionDateKey, sessionId])
 
   return {
     detail,

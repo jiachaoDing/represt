@@ -28,9 +28,9 @@ type UseTemplatesPageUiOptions = {
 export function useTemplatesPageUi({
   currentTemplate,
   handleCreateExercise,
-  handleCreateTemplate,
   handleDeleteExercise,
   handleDeleteTemplate,
+  handleCreateTemplate,
   handleSaveExercise,
   handleSaveTemplateName,
   setNewTemplateName,
@@ -39,7 +39,7 @@ export function useTemplatesPageUi({
   const [deleteExerciseId, setDeleteExerciseId] = useState<string | null>(null)
   const [editExerciseId, setEditExerciseId] = useState<string | null>(null)
   const [exerciseDraft, setExerciseDraft] = useState<TemplateExerciseDraft>(emptyTemplateExerciseDraft)
-  const [isExerciseSheetOpen, setIsExerciseSheetOpen] = useState(false)
+  const [isCreatingExercise, setIsCreatingExercise] = useState(false)
   const [renameTemplateName, setRenameTemplateName] = useState('')
   const [templateDeleteOpen, setTemplateDeleteOpen] = useState(false)
   const [templateSheetMode, setTemplateSheetMode] = useState<TemplateSheetMode>(null)
@@ -48,6 +48,7 @@ export function useTemplatesPageUi({
     () => currentTemplate?.exercises.find((exercise) => exercise.id === deleteExerciseId) ?? null,
     [currentTemplate, deleteExerciseId],
   )
+  const isExerciseEditorActive = isCreatingExercise || editExerciseId !== null
 
   function openTemplateSheet(mode: TemplateSheetMode) {
     if (mode === 'create') {
@@ -61,27 +62,27 @@ export function useTemplatesPageUi({
     setTemplateSheetMode(mode)
   }
 
-  function openCreateExerciseSheet() {
+  function closeExerciseEditor() {
     setEditExerciseId(null)
     setExerciseDraft(emptyTemplateExerciseDraft)
-    setIsExerciseSheetOpen(true)
+    setIsCreatingExercise(false)
   }
 
-  function openEditExerciseSheet(exerciseId: string) {
+  function openCreateExerciseEditor() {
+    setEditExerciseId(null)
+    setExerciseDraft(emptyTemplateExerciseDraft)
+    setIsCreatingExercise(true)
+  }
+
+  function openEditExerciseEditor(exerciseId: string) {
     const exercise = currentTemplate?.exercises.find((item) => item.id === exerciseId)
     if (!exercise) {
       return
     }
 
+    setIsCreatingExercise(false)
     setEditExerciseId(exercise.id)
     setExerciseDraft(toTemplateExerciseDraft(exercise))
-    setIsExerciseSheetOpen(true)
-  }
-
-  function closeExerciseSheet() {
-    setEditExerciseId(null)
-    setExerciseDraft(emptyTemplateExerciseDraft)
-    setIsExerciseSheetOpen(false)
   }
 
   async function handleTemplateSubmit(
@@ -114,18 +115,22 @@ export function useTemplatesPageUi({
       return
     }
 
-    if (!editExerciseId) {
+    if (isCreatingExercise) {
       const didCreate = await handleCreateExercise(currentTemplate.id, exerciseDraft)
       if (didCreate) {
-        closeExerciseSheet()
+        closeExerciseEditor()
         setMessage('动作已加入模板')
       }
       return
     }
 
+    if (!editExerciseId) {
+      return
+    }
+
     const didSave = await handleSaveExercise(currentTemplate.id, editExerciseId, exerciseDraft)
     if (didSave) {
-      closeExerciseSheet()
+      closeExerciseEditor()
       setMessage('动作已更新')
     }
   }
@@ -138,7 +143,9 @@ export function useTemplatesPageUi({
     const didDelete = await handleDeleteExercise(currentTemplate.id, deleteExerciseId)
     if (didDelete) {
       setDeleteExerciseId(null)
-      closeExerciseSheet()
+      if (editExerciseId === deleteExerciseId) {
+        closeExerciseEditor()
+      }
       setMessage('动作已删除')
     }
   }
@@ -152,13 +159,13 @@ export function useTemplatesPageUi({
     if (didDelete) {
       setTemplateDeleteOpen(false)
       setTemplateSheetMode(null)
-      closeExerciseSheet()
+      closeExerciseEditor()
       setMessage('模板已删除')
     }
   }
 
   return {
-    closeExerciseSheet,
+    closeExerciseEditor,
     deleteExercise,
     editExerciseId,
     exerciseDraft,
@@ -166,10 +173,11 @@ export function useTemplatesPageUi({
     handleConfirmDeleteTemplate,
     handleExerciseSubmit,
     handleTemplateSubmit,
-    isExerciseSheetOpen,
+    isCreatingExercise,
+    isExerciseEditorActive,
     message,
-    openCreateExerciseSheet,
-    openEditExerciseSheet,
+    openCreateExerciseEditor,
+    openEditExerciseEditor,
     openTemplateSheet,
     renameTemplateName,
     setDeleteExerciseId,
