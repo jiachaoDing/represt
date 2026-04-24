@@ -1,12 +1,30 @@
+import { lazy, Suspense, type ReactNode } from 'react'
 import { createBrowserRouter } from 'react-router-dom'
 
 import { AppLayout } from '../components/layout/AppLayout'
-import { CalendarPage } from '../pages/CalendarPage'
-import { ExercisePage } from '../pages/ExercisePage'
-import { SchedulePage } from '../pages/SchedulePage'
-import { SummaryPage } from '../pages/SummaryPage'
-import { TrainingCyclePage } from '../pages/TrainingCyclePage'
-import { TemplatesPage } from '../pages/TemplatesPage'
+
+const CalendarPage = lazy(() =>
+  import('../pages/CalendarPage').then((module) => ({ default: module.CalendarPage })),
+)
+const ExercisePage = lazy(() =>
+  import('../pages/ExercisePage').then((module) => ({ default: module.ExercisePage })),
+)
+const SchedulePage = lazy(() =>
+  import('../pages/SchedulePage').then((module) => ({ default: module.SchedulePage })),
+)
+const SummaryPage = lazy(() =>
+  import('../pages/SummaryPage').then((module) => ({ default: module.SummaryPage })),
+)
+const TrainingCyclePage = lazy(() =>
+  import('../pages/TrainingCyclePage').then((module) => ({ default: module.TrainingCyclePage })),
+)
+const TemplatesPage = lazy(() =>
+  import('../pages/TemplatesPage').then((module) => ({ default: module.TemplatesPage })),
+)
+
+function lazyRoute(element: ReactNode) {
+  return <Suspense fallback={null}>{element}</Suspense>
+}
 
 export const router = createBrowserRouter([
   {
@@ -15,37 +33,37 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <SchedulePage />,
+        element: lazyRoute(<SchedulePage />),
         handle: { title: '训练安排' },
       },
       {
         path: 'exercise/:id',
-        element: <ExercisePage />,
+        element: lazyRoute(<ExercisePage />),
         handle: { title: '动作页' },
       },
       {
         path: 'templates',
-        element: <TemplatesPage />,
+        element: lazyRoute(<TemplatesPage />),
         handle: { title: '模板编辑' },
       },
       {
         path: 'templates/cycle',
-        element: <TrainingCyclePage />,
+        element: lazyRoute(<TrainingCyclePage />),
         handle: { title: '循环日程' },
       },
       {
         path: 'summary',
-        element: <SummaryPage />,
+        element: lazyRoute(<SummaryPage />),
         handle: { title: '训练总结' },
       },
       {
         path: 'summary/:sessionId',
-        element: <SummaryPage />,
+        element: lazyRoute(<SummaryPage />),
         handle: { title: '训练总结' },
       },
       {
         path: 'calendar',
-        element: <CalendarPage />,
+        element: lazyRoute(<CalendarPage />),
         handle: { title: '训练日历' },
       },
     ],
