@@ -141,7 +141,15 @@ export function ExercisePage() {
               >
                 完成第 {detail.exercise.completedSets + 1} 组
               </button>
-            ) : null}
+            ) : (
+              <button
+                type="button"
+                onClick={() => navigate('/')}
+                className="flex w-full h-[52px] items-center justify-center rounded-xl bg-[var(--primary-container)] text-[16px] font-bold text-[var(--on-primary-container)] shadow-[0_4px_12px_rgba(0,0,0,0.05)] transition-transform tap-highlight-transparent active:scale-[0.98]"
+              >
+                选择其他动作
+              </button>
+            )}
           </div>
         </>
       ) : null}
