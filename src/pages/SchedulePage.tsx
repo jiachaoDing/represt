@@ -12,7 +12,6 @@ import { getTemplateColor } from '../lib/template-color'
 import { ScheduleActionSheet } from '../components/schedule/ScheduleActionSheet'
 import { ScheduleExerciseList } from '../components/schedule/ScheduleExerciseList'
 import { ScheduleExerciseSheet } from '../components/schedule/ScheduleExerciseSheet'
-import { ScheduleProgressCard } from '../components/schedule/ScheduleProgressCard'
 import { ScheduleTemplateImportSheet } from '../components/schedule/ScheduleTemplateImportSheet'
 
 export function SchedulePage() {
@@ -61,10 +60,6 @@ export function SchedulePage() {
         }
       />
 
-      {!schedule.isLoading && schedule.currentSession ? (
-        <ScheduleProgressCard completedSets={completedSets} totalSets={totalSets} />
-      ) : null}
-
       {!schedule.isLoading ? (
         <TodayTrainingPlanCard
           cycle={schedule.trainingCycle}
@@ -72,6 +67,8 @@ export function SchedulePage() {
           didAutoImportToday={schedule.didAutoImportToday}
           getTemplateColor={(templateId) => templateColorMap.get(templateId) ?? null}
           todayTemplateName={schedule.todayTemplate?.name ?? null}
+          completedSets={completedSets}
+          totalSets={totalSets}
         />
       ) : null}
 
