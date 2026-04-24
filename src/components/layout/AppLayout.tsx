@@ -1,5 +1,7 @@
 import type { MouseEvent } from 'react'
-import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { NavLink, useLocation, useNavigate } from 'react-router-dom'
+
+import { PageTransition } from '../motion/PageTransition'
 
 const navigationItems = [
   { 
@@ -65,19 +67,8 @@ export function AppLayout() {
     if (location.pathname === to) {
       return
     }
-
-    const transitionDocument = document as Document & {
-      startViewTransition?: (callback: () => void) => void
-    }
-
-    if (!transitionDocument.startViewTransition) {
-      navigate(to)
-      return
-    }
-
-    transitionDocument.startViewTransition(() => {
-      navigate(to)
-    })
+    
+    navigate(to)
   }
 
   return (
@@ -91,7 +82,7 @@ export function AppLayout() {
               : 'pb-[calc(5rem+env(safe-area-inset-bottom))]',
           ].join(' ')}
         >
-          <Outlet />
+          <PageTransition />
         </main>
         
         {!hideNavigation ? (

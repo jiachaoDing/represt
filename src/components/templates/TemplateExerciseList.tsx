@@ -10,6 +10,7 @@ import {
 } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 
+import { AnimatedList, AnimatedListItem } from '../motion/AnimatedList'
 import { SortableTemplateExerciseItem } from './SortableTemplateExerciseItem'
 import { TemplateExerciseDragOverlay } from './TemplateExerciseDragOverlay'
 import { TemplateExerciseInlineEditor } from './TemplateExerciseInlineEditor'
@@ -181,16 +182,18 @@ export function TemplateExerciseList({
         </div>
       ) : null}
 
-      <div className="flex flex-col gap-3">
+      <AnimatedList className="flex flex-col gap-3">
         {isCreatingExercise ? (
-          <TemplateExerciseInlineEditor
-            draft={draft}
-            isEditing={false}
-            isSubmitting={isSubmitting}
-            onCancel={onCancelEditing}
-            onDraftChange={onDraftChange}
-            onSubmit={onSubmit}
-          />
+          <AnimatedListItem key="creating-exercise">
+            <TemplateExerciseInlineEditor
+              draft={draft}
+              isEditing={false}
+              isSubmitting={isSubmitting}
+              onCancel={onCancelEditing}
+              onDraftChange={onDraftChange}
+              onSubmit={onSubmit}
+            />
+          </AnimatedListItem>
         ) : null}
 
         <DndContext
@@ -203,11 +206,10 @@ export function TemplateExerciseList({
             items={orderedExercises.map((exercise) => exercise.id)}
             strategy={verticalListSortingStrategy}
           >
-            {orderedExercises.map((exercise, index) => {
-              if (editExerciseId === exercise.id) {
-                return (
+            {orderedExercises.map((exercise, index) => (
+              <AnimatedListItem key={exercise.id}>
+                {editExerciseId === exercise.id ? (
                   <TemplateExerciseInlineEditor
-                    key={exercise.id}
                     draft={draft}
                     isEditing
                     isSubmitting={isSubmitting}
@@ -215,22 +217,19 @@ export function TemplateExerciseList({
                     onDraftChange={onDraftChange}
                     onSubmit={onSubmit}
                   />
-                )
-              }
-
-              return (
-                <SortableTemplateExerciseItem
-                  key={exercise.id}
-                  exercise={exercise}
-                  index={index}
-                  isSorting={isSorting}
-                  isSubmitting={isSubmitting}
-                  onDelete={onDelete}
-                  onEdit={onEdit}
-                  registerItemRef={registerItemRef}
-                />
-              )
-            })}
+                ) : (
+                  <SortableTemplateExerciseItem
+                    exercise={exercise}
+                    index={index}
+                    isSorting={isSorting}
+                    isSubmitting={isSubmitting}
+                    onDelete={onDelete}
+                    onEdit={onEdit}
+                    registerItemRef={registerItemRef}
+                  />
+                )}
+              </AnimatedListItem>
+            ))}
           </SortableContext>
 
           <TemplateExerciseDragOverlay
@@ -238,7 +237,7 @@ export function TemplateExerciseList({
             activeExerciseIndex={activeExerciseIndex}
           />
         </DndContext>
-      </div>
+      </AnimatedList>
     </div>
   )
 }

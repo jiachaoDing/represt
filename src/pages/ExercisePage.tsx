@@ -1,9 +1,11 @@
 import { useNavigate, useParams } from 'react-router-dom'
 import { useState, type FormEvent } from 'react'
+import { motion } from 'framer-motion'
 
 import { ExerciseHero } from '../components/exercise/ExerciseHero'
 import { ExerciseLatestRecordCard } from '../components/exercise/ExerciseLatestRecordCard'
 import { ExerciseMetaGrid } from '../components/exercise/ExerciseMetaGrid'
+import { AnimatedContentSwap } from '../components/motion/AnimatedContentSwap'
 import { ExerciseRecordSheet } from '../components/exercise/ExerciseRecordSheet'
 import { OverflowMenu } from '../components/ui/OverflowMenu'
 import { PageHeader } from '../components/ui/PageHeader'
@@ -12,6 +14,7 @@ import { useNow } from '../hooks/useNow'
 import { useBackLinkState } from '../hooks/useRouteBack'
 import { useSnackbarMessage } from '../hooks/useSnackbarMessage'
 import { useExercisePageData } from '../hooks/pages/useExercisePageData'
+import { listSpringTransition } from '../components/motion/motion-tokens'
 
 export function ExercisePage() {
   const { id = 'unknown' } = useParams()
@@ -78,6 +81,7 @@ export function ExercisePage() {
         },
       ]
     : []
+  const isCompleted = detail?.exercise.status === 'completed'
 
   return (
     <div className="relative flex min-h-full flex-col pb-4">
@@ -131,25 +135,63 @@ export function ExercisePage() {
             />
           </div>
 
-          <div className="fixed bottom-8 left-0 right-0 z-10 mx-auto flex max-w-[30rem] justify-center px-4">
-            {detail.exercise.status !== 'completed' ? (
-              <button
-                type="button"
-                disabled={!canCompleteSet}
-                onClick={() => void handleCompleteCurrentSet()}
-                className="flex w-full h-[52px] items-center justify-center rounded-xl bg-[var(--primary)] text-[16px] font-bold text-[var(--on-primary)] shadow-[0_4px_12px_rgba(22,78,48,0.2)] transition-transform tap-highlight-transparent active:scale-[0.98] disabled:opacity-40"
-              >
-                完成第 {detail.exercise.completedSets + 1} 组
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={() => navigate('/')}
-                className="flex w-full h-[52px] items-center justify-center rounded-xl bg-[var(--primary-container)] text-[16px] font-bold text-[var(--on-primary-container)] shadow-[0_4px_12px_rgba(0,0,0,0.05)] transition-transform tap-highlight-transparent active:scale-[0.98]"
-              >
-                选择其他动作
-              </button>
-            )}
+          <div className="mt-4 flex flex-1 items-center justify-center px-4 py-8">
+            <motion.button
+              layout
+              type="button"
+              disabled={!isCompleted && !canCompleteSet}
+              onClick={
+                isCompleted
+                  ? () => navigate('/')
+                  : () => void handleCompleteCurrentSet()
+              }
+              transition={listSpringTransition}
+              className={[
+                'flex h-[52px] w-full items-center justify-center rounded-xl text-[16px] font-bold shadow-[0_4px_12px_rgba(0,0,0,0.05)] transition-transform tap-highlight-transparent active:scale-[0.98] disabled:opacity-40',
+                isCompleted
+                  ? 'bg-[var(--primary-container)] text-[var(--on-primary-container)]'
+                  : 'bg-[var(--primary)] text-[var(--on-primary)] shadow-[0_4px_12px_rgba(22,78,48,0.2)]',
+              ].join(' ')}
+            >
+              <AnimatedContentSwap contentKey={isCompleted ? 'completed' : detail.exercise.completedSets}>
+                <span className="inline-flex items-center gap-2">
+                  {isCompleted ? (
+                    <>
+                      <svg
+                        viewBox="0 0 24 24"
+                        width="18"
+                        height="18"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.4"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <polyline points="9 18 15 12 9 6" />
+                      </svg>
+                      <span>选择其他动作</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg
+                        viewBox="0 0 24 24"
+                        width="18"
+                        height="18"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.4"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M5 12h14" />
+                        <path d="m12 5 7 7-7 7" />
+                      </svg>
+                      <span>完成第 {detail.exercise.completedSets + 1} 组</span>
+                    </>
+                  )}
+                </span>
+              </AnimatedContentSwap>
+            </motion.button>
           </div>
         </>
       ) : null}

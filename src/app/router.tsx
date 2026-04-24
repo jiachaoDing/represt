@@ -3,27 +3,39 @@ import { createBrowserRouter } from 'react-router-dom'
 
 import { AppLayout } from '../components/layout/AppLayout'
 
+const loadCalendarPage = () => import('../pages/CalendarPage')
+const loadExercisePage = () => import('../pages/ExercisePage')
+const loadSchedulePage = () => import('../pages/SchedulePage')
+const loadSummaryPage = () => import('../pages/SummaryPage')
+const loadTrainingCyclePage = () => import('../pages/TrainingCyclePage')
+const loadTemplatesPage = () => import('../pages/TemplatesPage')
+
 const CalendarPage = lazy(() =>
-  import('../pages/CalendarPage').then((module) => ({ default: module.CalendarPage })),
+  loadCalendarPage().then((module) => ({ default: module.CalendarPage })),
 )
 const ExercisePage = lazy(() =>
-  import('../pages/ExercisePage').then((module) => ({ default: module.ExercisePage })),
+  loadExercisePage().then((module) => ({ default: module.ExercisePage })),
 )
 const SchedulePage = lazy(() =>
-  import('../pages/SchedulePage').then((module) => ({ default: module.SchedulePage })),
+  loadSchedulePage().then((module) => ({ default: module.SchedulePage })),
 )
 const SummaryPage = lazy(() =>
-  import('../pages/SummaryPage').then((module) => ({ default: module.SummaryPage })),
+  loadSummaryPage().then((module) => ({ default: module.SummaryPage })),
 )
 const TrainingCyclePage = lazy(() =>
-  import('../pages/TrainingCyclePage').then((module) => ({ default: module.TrainingCyclePage })),
+  loadTrainingCyclePage().then((module) => ({ default: module.TrainingCyclePage })),
 )
 const TemplatesPage = lazy(() =>
-  import('../pages/TemplatesPage').then((module) => ({ default: module.TemplatesPage })),
+  loadTemplatesPage().then((module) => ({ default: module.TemplatesPage })),
 )
 
 function lazyRoute(element: ReactNode) {
   return <Suspense fallback={null}>{element}</Suspense>
+}
+
+export function preloadPrimaryRouteModules() {
+  void loadTemplatesPage()
+  void loadSummaryPage()
 }
 
 export const router = createBrowserRouter([

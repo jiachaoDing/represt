@@ -12,6 +12,7 @@ import {
 import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable'
 
 import type { WorkoutSessionWithExercises } from '../../db/sessions'
+import { AnimatedList, AnimatedListItem } from '../motion/AnimatedList'
 import { ScheduleExerciseCard } from './ScheduleExerciseCard'
 import { SortableScheduleExerciseItem } from './SortableScheduleExerciseItem'
 
@@ -181,17 +182,20 @@ export function ScheduleExerciseList({
           items={orderedExercises.map((exercise) => exercise.id)}
           strategy={verticalListSortingStrategy}
         >
-          {orderedExercises.map((exercise, index) => (
-            <SortableScheduleExerciseItem
-              key={exercise.id}
-              exercise={exercise}
-              index={index}
-              isSorting={isSorting}
-              isSubmitting={isSubmitting}
-              now={now}
-              onDelete={onDelete}
-            />
-          ))}
+          <AnimatedList className="flex flex-col gap-3">
+            {orderedExercises.map((exercise, index) => (
+              <AnimatedListItem key={exercise.id}>
+                <SortableScheduleExerciseItem
+                  exercise={exercise}
+                  index={index}
+                  isSorting={isSorting}
+                  isSubmitting={isSubmitting}
+                  now={now}
+                  onDelete={onDelete}
+                />
+              </AnimatedListItem>
+            ))}
+          </AnimatedList>
         </SortableContext>
 
         <DragOverlay>
