@@ -8,8 +8,17 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
+
+# Build outputs
 dist
 dist-ssr
+dev-dist
+*.tsbuildinfo
+.vite
+coverage
+*.apk
+*.aab
+*.ap_
 *.local
 
 # Editor directories and files
