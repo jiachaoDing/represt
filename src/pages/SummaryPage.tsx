@@ -45,7 +45,10 @@ export function SummaryPage() {
   const calendarTo = `/calendar${buildSummarySearch(selectedDateKey)}`
   const emptyState = isDateMode ? (
     <div className="mx-4 mt-6 rounded-[1.25rem] border border-dashed border-[var(--outline-variant)]/40 bg-[var(--surface)] px-5 py-8 text-center">
-      <p className="text-base font-semibold text-[var(--on-surface)]">这一天没有训练</p>
+      <p className="text-base font-semibold text-[var(--on-surface)]">还没有训练记录</p>
+      <p className="mt-2 text-sm leading-5 text-[var(--on-surface-variant)]">
+        完成一组后，这里会生成训练总结。
+      </p>
       <Link
         to={calendarTo}
         state={backLinkState}
@@ -60,6 +63,7 @@ export function SummaryPage() {
     <div className="pb-4">
       <PageHeader
         title="训练总结"
+        titleAlign="center"
         backFallbackTo={sessionId ? '/summary' : undefined}
         subtitle={
           isDateMode || !detail

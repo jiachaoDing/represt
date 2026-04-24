@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react'
 
 import { BottomSheet } from '../components/ui/BottomSheet'
 import { ConfirmDialog } from '../components/ui/ConfirmDialog'
@@ -8,6 +8,59 @@ import { Snackbar } from '../components/ui/Snackbar'
 import { useSnackbarMessage } from '../hooks/useSnackbarMessage'
 import { useTrainingCyclePageData } from '../hooks/pages/useTrainingCyclePageData'
 import { getTemplateColor } from '../lib/template-color'
+
+type OptionIconProps = {
+  children: ReactNode
+  className?: string
+  style?: CSSProperties
+}
+
+function OptionIcon({ children, className = '', style }: OptionIconProps) {
+  return (
+    <span
+      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${className}`}
+      style={style}
+    >
+      {children}
+    </span>
+  )
+}
+
+function TodayIcon() {
+  return (
+    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 21s7-4.4 7-11a7 7 0 1 0-14 0c0 6.6 7 11 7 11z" />
+      <circle cx="12" cy="10" r="2.5" strokeWidth="2" />
+    </svg>
+  )
+}
+
+function RestIcon() {
+  return (
+    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.4 15.2A8 8 0 0 1 8.8 3.6 8.5 8.5 0 1 0 20.4 15.2z" />
+    </svg>
+  )
+}
+
+function TemplateIcon() {
+  return (
+    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 7h12M6 12h12M6 17h8" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 7h.01M4 12h.01M4 17h.01" />
+    </svg>
+  )
+}
+
+function DeleteIcon() {
+  return (
+    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 7h12" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 7V5h4v2" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10l.5 8h7l.5-8" />
+    </svg>
+  )
+}
 
 export function TrainingCyclePage() {
   const {
@@ -209,7 +262,9 @@ export function TrainingCyclePage() {
             disabled={isSubmitting || todayCycleDay?.slot.id === selectedSlotId}
             className="flex items-center gap-3 rounded-[1rem] bg-[var(--secondary-container)] px-4 py-3.5 text-left text-[var(--on-secondary-container)] disabled:opacity-50 active:scale-[0.98] transition-transform"
           >
-            <span className="text-[18px]">📍</span>
+            <OptionIcon className="bg-[var(--surface)]/70 text-[var(--secondary)]">
+              <TodayIcon />
+            </OptionIcon>
             <div className="flex-1">
               <span className="block font-medium">将这一天校准为“今天”</span>
               <span className="block text-[12px] opacity-70 mt-0.5">如果你打乱了计划，可以手动重置进度</span>
@@ -237,11 +292,9 @@ export function TrainingCyclePage() {
             ].join(' ')}
           >
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--surface-container-high)]">
-                <svg className="h-5 w-5 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                </svg>
-              </div>
+              <OptionIcon className="bg-[var(--surface-container)] text-[var(--on-surface-variant)]">
+                <RestIcon />
+              </OptionIcon>
               <span className="font-semibold">休息日</span>
             </div>
             {selectedTemplate === null && (
@@ -273,12 +326,12 @@ export function TrainingCyclePage() {
                 ].join(' ')}
               >
                 <div className="flex items-center gap-3">
-                  <div
-                    className="flex h-10 w-10 items-center justify-center rounded-full text-[18px] shadow-sm"
-                    style={{ backgroundColor: color.solid, color: '#fff' }}
+                  <OptionIcon
+                    className="shadow-sm"
+                    style={{ backgroundColor: color.soft, color: color.solid }}
                   >
-                    {template.name.slice(0, 1)}
-                  </div>
+                    <TemplateIcon />
+                  </OptionIcon>
                   <div>
                     <div className="font-semibold">{template.name}</div>
                     <div className="text-[13px] font-medium opacity-70 mt-0.5">
@@ -307,8 +360,10 @@ export function TrainingCyclePage() {
             disabled={isSubmitting}
             className="flex items-center gap-3 rounded-[1rem] px-4 py-3.5 text-left text-[var(--error)] hover:bg-[var(--error-container)] transition-colors active:scale-[0.98]"
           >
-            <span className="text-[18px] ml-1">🗑️</span>
-            <span className="font-medium ml-1">删除此天</span>
+            <OptionIcon className="bg-[var(--error-container)] text-[var(--error)]">
+              <DeleteIcon />
+            </OptionIcon>
+            <span className="font-medium">删除此天</span>
           </button>
         </div>
       </BottomSheet>
@@ -323,7 +378,7 @@ export function TrainingCyclePage() {
         onConfirm={() => void confirmDeleteSlot()}
       />
 
-      <Snackbar message={message} />
+      <Snackbar message={message} placement="aboveFab" />
     </div>
   )
 }

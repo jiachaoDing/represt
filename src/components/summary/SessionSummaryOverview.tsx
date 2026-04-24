@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import type { SessionSummaryDetail } from '../../db/sessions'
+import { getSessionStatusLabel } from '../../lib/session-display'
 
 type SessionSummaryOverviewProps = {
   detail: SessionSummaryDetail | null
@@ -16,6 +17,20 @@ export function SessionSummaryOverview({
   const completedExerciseCount =
     detail?.exercises.filter((exercise) => exercise.status === 'completed').length ?? 0
   const totalExerciseCount = detail?.exercises.length ?? 0
+  const completedSetCount =
+    detail?.exercises.reduce((acc, exercise) => acc + exercise.completedSets, 0) ?? 0
+  const targetSetCount =
+    detail?.exercises.reduce((acc, exercise) => acc + exercise.targetSets, 0) ?? 0
+  const completionRate =
+    targetSetCount > 0 ? Math.min(100, Math.round((completedSetCount / targetSetCount) * 100)) : null
+  const completedExerciseNames =
+    detail?.exercises.filter((exercise) => exercise.completedSets > 0).map((exercise) => exercise.name) ?? []
+  const exerciseNamePreview = completedExerciseNames.slice(0, 3).join('、')
+  const exerciseNameSuffix = completedExerciseNames.length > 3 ? `等 ${completedExerciseNames.length} 个动作` : ''
+  const summaryText =
+    completedExerciseNames.length > 0
+      ? `${exerciseNamePreview}${exerciseNameSuffix}已记录。`
+      : '完成一组后，这里会生成训练总结。'
 
   if (isLoading) {
     return (
@@ -39,32 +54,43 @@ export function SessionSummaryOverview({
   }
 
   return (
-    <section className="mx-4 mt-4 overflow-hidden rounded-[1.25rem] bg-[var(--surface)] shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)] border border-[var(--outline-variant)]/20 p-5">
-      <div className="grid grid-cols-4 gap-2 text-center">
-        <div className="flex flex-col gap-1.5">
-          <p className="text-[11px] text-[var(--on-surface-variant)]">训练日期</p>
-          <p className="text-[13px] font-bold text-[var(--on-surface)]">{detail.session.sessionDateKey.slice(5)}</p>
-        </div>
-        
-        <div className="flex flex-col gap-1.5">
-          <p className="text-[11px] text-[var(--on-surface-variant)]">完成动作数</p>
-          <p className="text-[13px] font-bold text-[var(--on-surface)]">
-            {completedExerciseCount} / {totalExerciseCount}
+    <section className="mx-4 mt-4 overflow-hidden rounded-[1.5rem] border border-[var(--outline-variant)]/20 bg-[var(--surface)] p-5 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)]">
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <p className="text-[13px] font-medium text-[var(--on-surface-variant)]">
+            {detail.session.sessionDateKey.slice(5)} 训练
           </p>
+          <p className="mt-2 text-[3.25rem] font-bold leading-none tracking-normal text-[var(--on-surface)]">
+            {completedSetCount}
+          </p>
+          <p className="mt-2 text-[14px] font-medium text-[var(--on-surface-variant)]">总完成组数</p>
         </div>
 
-        <div className="flex flex-col gap-1.5">
-          <p className="text-[11px] text-[var(--on-surface-variant)]">总组数</p>
-          <p className="text-[13px] font-bold text-[var(--on-surface)]">
-            {detail.exercises.reduce((acc, ex) => acc + ex.completedSets, 0)} 组
+        <span className="shrink-0 rounded-full bg-[var(--primary-container)] px-3 py-1 text-[12px] font-semibold text-[var(--on-primary-container)]">
+          {getSessionStatusLabel(detail.session.status)}
+        </span>
+      </div>
+
+      <div className="mt-5 grid grid-cols-3 gap-2">
+        <div className="rounded-2xl bg-[var(--surface-container)] px-3 py-3">
+          <p className="text-[11px] text-[var(--on-surface-variant)]">动作</p>
+          <p className="mt-1 text-[15px] font-bold text-[var(--on-surface)]">
+            {completedExerciseCount}/{totalExerciseCount}
           </p>
         </div>
-
-        <div className="flex flex-col gap-1.5">
-          <p className="text-[11px] text-[var(--on-surface-variant)]">训练状态</p>
-          <p className="text-[13px] font-bold text-[var(--primary)]">已完成</p>
+        <div className="rounded-2xl bg-[var(--surface-container)] px-3 py-3">
+          <p className="text-[11px] text-[var(--on-surface-variant)]">进度</p>
+          <p className="mt-1 text-[15px] font-bold text-[var(--on-surface)]">
+            {completionRate === null ? '已记录' : `${completionRate}%`}
+          </p>
+        </div>
+        <div className="rounded-2xl bg-[var(--surface-container)] px-3 py-3">
+          <p className="text-[11px] text-[var(--on-surface-variant)]">目标组</p>
+          <p className="mt-1 text-[15px] font-bold text-[var(--on-surface)]">{targetSetCount} 组</p>
         </div>
       </div>
+
+      <p className="mt-4 text-[13px] leading-5 text-[var(--on-surface-variant)]">{summaryText}</p>
     </section>
   )
 }

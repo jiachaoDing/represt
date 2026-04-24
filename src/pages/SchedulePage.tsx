@@ -46,6 +46,7 @@ export function SchedulePage() {
     <div className="pb-4">
       <PageHeader 
         title={todayStr} 
+        titleAlign="start"
         actions={
           <Link
             to="/calendar"

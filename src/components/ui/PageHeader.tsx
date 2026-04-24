@@ -9,6 +9,7 @@ type PageHeaderProps = {
   backFallbackTo?: string
   subtitle?: string
   title: string
+  titleAlign?: 'start' | 'center' | 'end'
 }
 
 export function PageHeader({
@@ -16,9 +17,13 @@ export function PageHeader({
   backFallbackTo,
   subtitle,
   title,
+  titleAlign = 'start',
 }: PageHeaderProps) {
   const [scrolled, setScrolled] = useState(false)
   const backTo = useResolvedBackTo(backFallbackTo)
+  const useFloatingTitle = !backTo && titleAlign !== 'start'
+  const titleAlignmentClass =
+    titleAlign === 'center' ? 'items-center text-center' : 'items-end text-right'
 
   useEffect(() => {
     const handleScroll = () => {
@@ -47,8 +52,15 @@ export function PageHeader({
           </Link>
         ) : null}
 
-        <div className="min-w-0 flex-1 flex flex-col justify-center py-1">
-          <h1 className="truncate text-[24px] leading-8 font-bold text-[var(--on-surface)]">
+        <div
+          className={[
+            'min-w-0 flex-1 flex-col justify-center py-1',
+            useFloatingTitle
+              ? `pointer-events-none absolute inset-x-4 top-0 flex h-16 ${titleAlignmentClass}`
+              : 'flex',
+          ].join(' ')}
+        >
+          <h1 className="page-header-title truncate text-[22px] leading-8 font-bold tracking-normal text-[var(--on-surface)]">
             {title}
           </h1>
           {subtitle ? (
@@ -56,7 +68,7 @@ export function PageHeader({
           ) : null}
         </div>
         
-        {actions ? <div className="shrink-0 flex items-center justify-end">{actions}</div> : null}
+        {actions ? <div className="ml-auto flex shrink-0 items-center justify-end">{actions}</div> : null}
       </div>
     </header>
   )

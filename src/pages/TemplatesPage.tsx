@@ -37,6 +37,7 @@ export function TemplatesPage() {
     <div className="pb-4">
       <PageHeader
         title="模板管理"
+        titleAlign="center"
         actions={menuItems.length > 0 ? <OverflowMenu items={menuItems} /> : undefined}
       />
 

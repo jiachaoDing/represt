@@ -1,4 +1,5 @@
-import { NavLink, Outlet, useLocation } from 'react-router-dom'
+import type { MouseEvent } from 'react'
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 
 const navigationItems = [
   { 
@@ -6,7 +7,7 @@ const navigationItems = [
     label: '训练', 
     end: true,
     icon: (isActive: boolean) => (
-      <svg viewBox="0 0 24 24" width="24" height="24" fill={isActive ? "currentColor" : "none"} stroke="currentColor" strokeWidth={isActive ? "0" : "2"} strokeLinecap="round" strokeLinejoin="round">
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth={isActive ? "2.5" : "2"} strokeLinecap="round" strokeLinejoin="round">
         <path d="M6 5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5z"/>
         <line x1="10" y1="11" x2="14" y2="11"/>
         <line x1="10" y1="15" x2="14" y2="15"/>
@@ -18,7 +19,7 @@ const navigationItems = [
     label: '模板', 
     end: false,
     icon: (isActive: boolean) => (
-      <svg viewBox="0 0 24 24" width="24" height="24" fill={isActive ? "currentColor" : "none"} stroke="currentColor" strokeWidth={isActive ? "0" : "2"} strokeLinecap="round" strokeLinejoin="round">
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth={isActive ? "2.5" : "2"} strokeLinecap="round" strokeLinejoin="round">
         <line x1="8" y1="6" x2="21" y2="6"/>
         <line x1="8" y1="12" x2="21" y2="12"/>
         <line x1="8" y1="18" x2="21" y2="18"/>
@@ -33,7 +34,7 @@ const navigationItems = [
     label: '总结', 
     end: false,
     icon: (isActive: boolean) => (
-      <svg viewBox="0 0 24 24" width="24" height="24" fill={isActive ? "currentColor" : "none"} stroke="currentColor" strokeWidth={isActive ? "0" : "2"} strokeLinecap="round" strokeLinejoin="round">
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth={isActive ? "2.5" : "2"} strokeLinecap="round" strokeLinejoin="round">
         <line x1="18" y1="20" x2="18" y2="10"/>
         <line x1="12" y1="20" x2="12" y2="4"/>
         <line x1="6" y1="20" x2="6" y2="14"/>
@@ -44,8 +45,40 @@ const navigationItems = [
 
 export function AppLayout() {
   const location = useLocation()
+  const navigate = useNavigate()
   const hideNavigation =
     location.pathname.startsWith('/exercise/') || location.pathname.startsWith('/calendar')
+
+  function handleNavigationClick(event: MouseEvent<HTMLAnchorElement>, to: string) {
+    if (
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey
+    ) {
+      return
+    }
+
+    event.preventDefault()
+
+    if (location.pathname === to) {
+      return
+    }
+
+    const transitionDocument = document as Document & {
+      startViewTransition?: (callback: () => void) => void
+    }
+
+    if (!transitionDocument.startViewTransition) {
+      navigate(to)
+      return
+    }
+
+    transitionDocument.startViewTransition(() => {
+      navigate(to)
+    })
+  }
 
   return (
     <div className="min-h-screen bg-[var(--surface)] text-[var(--on-surface)] selection:bg-[var(--primary-container)] selection:text-[var(--on-primary-container)]">
@@ -70,14 +103,15 @@ export function AppLayout() {
                     key={item.to}
                     to={item.to}
                     end={item.end}
-                    className="flex-1 flex flex-col items-center justify-center gap-1 tap-highlight-transparent"
+                    onClick={(event) => handleNavigationClick(event, item.to)}
+                    className="flex-1 flex flex-col items-center justify-center gap-1 tap-highlight-transparent focus-visible:outline-none"
                   >
                     {({ isActive }) => (
                       <>
                         <div className={[
                           'flex h-8 px-5 items-center justify-center rounded-full transition-colors duration-200',
-                          isActive 
-                            ? 'bg-[var(--primary-container)] text-[var(--on-primary-container)]' 
+                          isActive
+                            ? 'active-nav-pill bg-[var(--primary-container)] text-[var(--on-primary-container)]'
                             : 'text-[var(--on-surface-variant)] hover:bg-[var(--on-surface-variant)]/10'
                         ].join(' ')}>
                           {item.icon(isActive)}
