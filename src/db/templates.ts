@@ -22,7 +22,7 @@ const demoTemplates: Array<{
   exercises: TemplateExerciseInput[]
 }> = [
   {
-    name: 'A日：拉 + 后链 + 核心',
+    name: '拉力日',
     exercises: [
       { name: '引体向上', targetSets: 4, restSeconds: 150 },
       { name: '坐姿划船', targetSets: 4, restSeconds: 150 },
@@ -33,7 +33,7 @@ const demoTemplates: Array<{
     ],
   },
   {
-    name: 'B日：推 + 腿 + 核心',
+    name: '推力日',
     exercises: [
       { name: '双杠臂屈伸', targetSets: 4, restSeconds: 150 },
       { name: '卧推', targetSets: 4, restSeconds: 150 },
