@@ -1,5 +1,6 @@
 import type { FormEvent } from 'react'
 
+import { ExerciseNameInput } from '../exercise/ExerciseNameInput'
 import { BottomSheet } from '../ui/BottomSheet'
 
 type ScheduleExerciseDraft = {
@@ -30,18 +31,18 @@ export function ScheduleExerciseSheet({
   return (
     <BottomSheet open={isOpen} title="手动新建动作" onClose={onClose}>
       <form className="mt-2 space-y-5" onSubmit={onSubmit}>
-        <label className="block">
+        <div className="block">
           <span className="mb-1 ml-1 block text-xs font-medium text-[var(--on-surface-variant)]">
             动作名称
           </span>
-          <input
+          <ExerciseNameInput
             value={draft.name}
             disabled={isSubmitting}
-            onChange={(event) => onDraftChange({ ...draft, name: event.target.value })}
+            onChange={(name) => onDraftChange({ ...draft, name })}
             className="w-full rounded-none border-b border-[var(--on-surface)] bg-[var(--surface-container)] px-4 py-3 text-base text-[var(--on-surface)] outline-none transition-all focus:border-b-2 focus:border-[var(--primary)]"
             placeholder="例如：杠铃卧推"
           />
-        </label>
+        </div>
 
         <div className="grid grid-cols-2 gap-4">
           <label className="block">

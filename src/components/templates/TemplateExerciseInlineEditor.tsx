@@ -1,5 +1,6 @@
 import type { FormEvent } from 'react'
 
+import { ExerciseNameInput } from '../exercise/ExerciseNameInput'
 import type { TemplateExerciseDraft } from '../../lib/template-editor'
 
 type TemplateExerciseInlineEditorProps = {
@@ -25,18 +26,18 @@ export function TemplateExerciseInlineEditor({
       className="rounded-[1.25rem] border border-[var(--outline-variant)]/30 bg-[var(--surface)] p-4 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)]"
     >
       <div className="space-y-4">
-        <label className="block">
+        <div className="block">
           <span className="mb-1 ml-1 block text-xs font-medium text-[var(--on-surface-variant)]">
             动作名称
           </span>
-          <input
+          <ExerciseNameInput
             value={draft.name}
             disabled={isSubmitting}
-            onChange={(event) => onDraftChange({ ...draft, name: event.target.value })}
+            onChange={(name) => onDraftChange({ ...draft, name })}
             className="w-full rounded-xl bg-[var(--surface-container)] px-4 py-3 text-base text-[var(--on-surface)] outline-none ring-1 ring-transparent transition-all focus:ring-[var(--primary)]"
             placeholder="例如：杠铃卧推"
           />
-        </label>
+        </div>
 
         <div className="grid grid-cols-2 gap-3">
           <label className="block">

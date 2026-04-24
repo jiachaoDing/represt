@@ -112,6 +112,15 @@ button:disabled {
   cursor: default;
 }
 
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 .page-header-title {
   view-transition-name: page-title;
 }

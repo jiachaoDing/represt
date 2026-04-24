@@ -208,7 +208,7 @@ export function ExercisePage() {
         onWeightChange={setWeightInput}
       />
 
-      <Snackbar message={message} />
+      <Snackbar message={message} placement="top" />
     </div>
   )
 }

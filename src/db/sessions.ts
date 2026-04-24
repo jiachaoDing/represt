@@ -42,6 +42,7 @@ type SessionExerciseInput = {
 }
 
 const CURRENT_SESSION_KEY = 'trainre.current-session-id.v1'
+let getOrCreateTodaySessionPromise: Promise<WorkoutSessionWithExercises> | null = null
 
 function nowIso() {
   return new Date().toISOString()
@@ -287,16 +288,28 @@ export async function getCurrentSession() {
 }
 
 export async function getOrCreateTodaySession() {
-  const currentSession = await getCurrentSession()
-  if (currentSession) {
-    return currentSession
+  if (getOrCreateTodaySessionPromise) {
+    return getOrCreateTodaySessionPromise
   }
 
-  const session = await createSessionRecord()
-  return {
-    ...attachDerivedSessionStatus(session, []),
-    exercises: [],
-  } satisfies WorkoutSessionWithExercises
+  getOrCreateTodaySessionPromise = (async () => {
+    const currentSession = await getCurrentSession()
+    if (currentSession) {
+      return currentSession
+    }
+
+    const session = await createSessionRecord()
+    return {
+      ...attachDerivedSessionStatus(session, []),
+      exercises: [],
+    } satisfies WorkoutSessionWithExercises
+  })()
+
+  try {
+    return await getOrCreateTodaySessionPromise
+  } finally {
+    getOrCreateTodaySessionPromise = null
+  }
 }
 
 export async function getSessionExerciseDetail(sessionExerciseId: string) {

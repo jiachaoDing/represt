@@ -22,19 +22,25 @@ const demoTemplates: Array<{
   exercises: TemplateExerciseInput[]
 }> = [
   {
-    name: '上肢力量 A',
+    name: 'A日：拉 + 后链 + 核心',
     exercises: [
-      { name: '卧推', targetSets: 5, restSeconds: 150 },
-      { name: '杠铃划船', targetSets: 4, restSeconds: 120 },
-      { name: '哑铃肩推', targetSets: 3, restSeconds: 90 },
+      { name: '引体向上', targetSets: 4, restSeconds: 150 },
+      { name: '坐姿划船', targetSets: 4, restSeconds: 150 },
+      { name: '罗马尼亚硬拉', targetSets: 3, restSeconds: 150 },
+      { name: '高位下拉', targetSets: 3, restSeconds: 90 },
+      { name: '面拉', targetSets: 3, restSeconds: 90 },
+      { name: '悬垂举腿', targetSets: 3, restSeconds: 90 },
     ],
   },
   {
-    name: '下肢力量 B',
+    name: 'B日：推 + 腿 + 核心',
     exercises: [
-      { name: '深蹲', targetSets: 5, restSeconds: 180 },
-      { name: '罗马尼亚硬拉', targetSets: 4, restSeconds: 150 },
-      { name: '箭步蹲', targetSets: 3, restSeconds: 90 },
+      { name: '双杠臂屈伸', targetSets: 4, restSeconds: 150 },
+      { name: '卧推', targetSets: 4, restSeconds: 150 },
+      { name: '深蹲', targetSets: 4, restSeconds: 150 },
+      { name: '哑铃坐姿肩推', targetSets: 3, restSeconds: 90 },
+      { name: '俯卧撑', targetSets: 3, restSeconds: 90 },
+      { name: '平板支撑', targetSets: 3, restSeconds: 90 },
     ],
   },
 ]

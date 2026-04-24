@@ -1,11 +1,12 @@
 type SnackbarProps = {
   message: string | null
-  placement?: 'default' | 'aboveFab'
+  placement?: 'default' | 'aboveFab' | 'top'
 }
 
 const placementClassMap = {
   default: 'bottom-[calc(6.75rem+env(safe-area-inset-bottom))]',
   aboveFab: 'bottom-[calc(10.25rem+env(safe-area-inset-bottom))]',
+  top: 'top-[calc(4.5rem+env(safe-area-inset-top))]',
 }
 
 export function Snackbar({ message, placement = 'default' }: SnackbarProps) {
