@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 
+import { useBackLinkState } from '../../hooks/useRouteBack'
 import { TrainingCycleDots } from './TrainingCycleDots'
 import type { TrainingCycle } from '../../models/types'
 import type { TemplateColor } from '../../lib/template-color'
@@ -64,12 +65,15 @@ export function TodayTrainingPlanCard({
   completedSets,
   totalSets,
 }: TodayTrainingPlanCardProps) {
+  void didAutoImportToday
   const isConfigured = (cycle?.slots.length ?? 0) > 0
+  const backLinkState = useBackLinkState()
 
   return (
     <section className="mx-4 mb-6 mt-2 rounded-[1.25rem] border border-[var(--outline-variant)]/20 bg-[var(--surface)] p-1.5 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)] flex items-stretch">
       <Link 
-        to="/templates/cycle" 
+        to="/templates/cycle"
+        state={backLinkState}
         className="flex-1 flex flex-col justify-center rounded-[1rem] p-3.5 hover:bg-[var(--on-surface)]/5 active:bg-[var(--on-surface)]/10 transition-colors"
       >
         <div className="min-w-0">

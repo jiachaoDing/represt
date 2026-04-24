@@ -6,6 +6,7 @@ import { SessionSummaryOverview } from '../components/summary/SessionSummaryOver
 import { SummaryDateSwitcher } from '../components/summary/SummaryDateSwitcher'
 import { PageHeader } from '../components/ui/PageHeader'
 import { useSessionSummaryData } from '../hooks/pages/useSessionSummaryData'
+import { useBackLinkState } from '../hooks/useRouteBack'
 import {
   addDaysToSessionDateKey,
   formatSessionDateKey,
@@ -20,6 +21,7 @@ function buildSummarySearch(dateKey: string) {
 export function SummaryPage() {
   const { sessionId } = useParams()
   const [searchParams, setSearchParams] = useSearchParams()
+  const backLinkState = useBackLinkState()
   const todayDateKey = getTodaySessionDateKey()
   const selectedDateKey = useMemo(() => {
     const currentDate = searchParams.get('date')
@@ -46,6 +48,7 @@ export function SummaryPage() {
       <p className="text-base font-semibold text-[var(--on-surface)]">这一天没有训练</p>
       <Link
         to={calendarTo}
+        state={backLinkState}
         className="mt-4 inline-flex h-10 items-center justify-center rounded-xl bg-[var(--surface-container)] px-4 text-sm font-medium text-[var(--on-surface)]"
       >
         打开日历
@@ -57,7 +60,7 @@ export function SummaryPage() {
     <div className="pb-4">
       <PageHeader
         title="训练总结"
-        backTo={sessionId ? '/' : undefined}
+        backFallbackTo={sessionId ? '/summary' : undefined}
         subtitle={
           isDateMode || !detail
             ? undefined

@@ -2,7 +2,6 @@ import { useMemo, useState, type FormEvent } from 'react'
 
 import { useSnackbarMessage } from '../useSnackbarMessage'
 import type { TemplateWithExercises } from '../../db/templates'
-import type { WorkoutSessionWithExercises } from '../../db/sessions'
 
 type TemplateImportConfirmation = {
   isDuplicateImport: boolean
@@ -11,7 +10,6 @@ type TemplateImportConfirmation = {
 }
 
 type UseSchedulePageUiOptions = {
-  currentSession: WorkoutSessionWithExercises | null
   getTemplateImportConfirmation: (
     templateId: string,
     templateExerciseIds?: string[],
@@ -28,7 +26,6 @@ type UseSchedulePageUiOptions = {
 }
 
 export function useSchedulePageUi({
-  currentSession,
   getTemplateImportConfirmation,
   handleAddTemplateExercises,
   handleAddTemporaryExercise,
@@ -38,7 +35,6 @@ export function useSchedulePageUi({
   templates,
 }: UseSchedulePageUiOptions) {
   const { message, setMessage } = useSnackbarMessage()
-  const [deleteExerciseId, setDeleteExerciseId] = useState<string | null>(null)
   const [importSourceTemplateId, setImportSourceTemplateId] = useState<string | null>(null)
   const [isActionSheetOpen, setIsActionSheetOpen] = useState(false)
   const [isContinueDialogOpen, setIsContinueDialogOpen] = useState(false)
@@ -48,10 +44,6 @@ export function useSchedulePageUi({
   const [pendingTemplateExerciseIds, setPendingTemplateExerciseIds] = useState<string[]>([])
   const [selectedTemplateExerciseIds, setSelectedTemplateExerciseIds] = useState<string[]>([])
 
-  const deleteExercise = useMemo(
-    () => currentSession?.exercises.find((exercise) => exercise.id === deleteExerciseId) ?? null,
-    [currentSession, deleteExerciseId],
-  )
   const importSourceTemplate = useMemo(
     () => templates.find((template) => template.id === importSourceTemplateId) ?? null,
     [importSourceTemplateId, templates],
@@ -141,14 +133,9 @@ export function useSchedulePageUi({
     await addExercise()
   }
 
-  async function handleConfirmDelete() {
-    if (!deleteExerciseId) {
-      return
-    }
-
-    const didDelete = await handleDeleteExercise(deleteExerciseId)
+  async function handleDeleteExerciseAction(sessionExerciseId: string) {
+    const didDelete = await handleDeleteExercise(sessionExerciseId)
     if (didDelete) {
-      setDeleteExerciseId(null)
       setMessage('动作已删除')
     }
   }
@@ -156,9 +143,8 @@ export function useSchedulePageUi({
   return {
     addExercise,
     confirmPendingTemplateImport,
-    deleteExercise,
     handleAddExercise,
-    handleConfirmDelete,
+    handleDeleteExerciseAction,
     handleImportTemplate,
     importSourceTemplate,
     isActionSheetOpen,
@@ -171,7 +157,6 @@ export function useSchedulePageUi({
     pendingTemplateImportConfirmation,
     selectTemplateForImport,
     selectedTemplateExerciseIds,
-    setDeleteExerciseId,
     setIsActionSheetOpen,
     setIsContinueDialogOpen,
     setIsCreateSheetOpen,

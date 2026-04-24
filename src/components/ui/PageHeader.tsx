@@ -2,20 +2,23 @@ import { Link } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 
+import { useResolvedBackTo } from '../../hooks/useRouteBack'
+
 type PageHeaderProps = {
   actions?: ReactNode
-  backTo?: string
+  backFallbackTo?: string
   subtitle?: string
   title: string
 }
 
 export function PageHeader({
   actions,
-  backTo,
+  backFallbackTo,
   subtitle,
   title,
 }: PageHeaderProps) {
   const [scrolled, setScrolled] = useState(false)
+  const backTo = useResolvedBackTo(backFallbackTo)
 
   useEffect(() => {
     const handleScroll = () => {

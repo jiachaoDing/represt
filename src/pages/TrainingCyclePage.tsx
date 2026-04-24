@@ -82,7 +82,11 @@ export function TrainingCyclePage() {
 
   return (
     <div className="pb-4 min-h-screen bg-[var(--surface)]">
-      <PageHeader title="循环日程" subtitle={`当前循环：${trainingCycle?.slots.length || 0} 天`} backTo="/templates" />
+      <PageHeader
+        title="循环日程"
+        subtitle={`当前循环：${trainingCycle?.slots.length || 0} 天`}
+        backFallbackTo="/templates"
+      />
 
       {error ? (
         <div className="mx-4 mt-4 rounded-xl bg-[var(--error-container)] px-4 py-3 text-sm text-[var(--on-error-container)]">

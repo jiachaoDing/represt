@@ -3,6 +3,7 @@ import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 
 import type { WorkoutSessionWithExercises } from '../../db/sessions'
+import { useBackLinkState } from '../../hooks/useRouteBack'
 import { SwipeActionItem } from '../ui/SwipeActionItem'
 import { ScheduleExerciseCard } from './ScheduleExerciseCard'
 
@@ -23,6 +24,7 @@ export function SortableScheduleExerciseItem({
   now,
   onDelete,
 }: SortableScheduleExerciseItemProps) {
+  const backLinkState = useBackLinkState()
   const {
     attributes,
     listeners,
@@ -60,6 +62,7 @@ export function SortableScheduleExerciseItem({
           index={index}
           isDragging={isDragging}
           isSubmitting={isSubmitting || isSorting}
+          linkState={backLinkState}
           now={now}
           dragHandleProps={{
             attributes,

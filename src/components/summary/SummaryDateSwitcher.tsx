@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom'
 
+import { useBackLinkState } from '../../hooks/useRouteBack'
+
 type SummaryDateSwitcherProps = {
   calendarTo: string
   canGoNext: boolean
@@ -15,6 +17,8 @@ export function SummaryDateSwitcher({
   onNext,
   onPrevious,
 }: SummaryDateSwitcherProps) {
+  const backLinkState = useBackLinkState()
+
   return (
     <section className="mx-4 mt-4 rounded-[1.25rem] border border-[var(--outline-variant)]/20 bg-[var(--surface)] p-3 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)]">
       <div className="flex items-center gap-2">
@@ -48,6 +52,7 @@ export function SummaryDateSwitcher({
 
         <Link
           to={calendarTo}
+          state={backLinkState}
           className="inline-flex h-10 shrink-0 items-center justify-center rounded-xl border border-[var(--outline-variant)]/30 px-3 text-[13px] font-medium text-[var(--on-surface)] transition-colors hover:bg-[var(--surface-container)]"
         >
           日历

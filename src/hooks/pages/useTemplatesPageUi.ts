@@ -1,4 +1,4 @@
-import { useMemo, useState, type FormEvent } from 'react'
+import { useState, type FormEvent } from 'react'
 
 import { useSnackbarMessage } from '../useSnackbarMessage'
 import {
@@ -36,7 +36,6 @@ export function useTemplatesPageUi({
   setNewTemplateName,
 }: UseTemplatesPageUiOptions) {
   const { message, setMessage } = useSnackbarMessage()
-  const [deleteExerciseId, setDeleteExerciseId] = useState<string | null>(null)
   const [editExerciseId, setEditExerciseId] = useState<string | null>(null)
   const [exerciseDraft, setExerciseDraft] = useState<TemplateExerciseDraft>(emptyTemplateExerciseDraft)
   const [isCreatingExercise, setIsCreatingExercise] = useState(false)
@@ -44,10 +43,6 @@ export function useTemplatesPageUi({
   const [templateDeleteOpen, setTemplateDeleteOpen] = useState(false)
   const [templateSheetMode, setTemplateSheetMode] = useState<TemplateSheetMode>(null)
 
-  const deleteExercise = useMemo(
-    () => currentTemplate?.exercises.find((exercise) => exercise.id === deleteExerciseId) ?? null,
-    [currentTemplate, deleteExerciseId],
-  )
   const isExerciseEditorActive = isCreatingExercise || editExerciseId !== null
 
   function openTemplateSheet(mode: TemplateSheetMode) {
@@ -135,15 +130,14 @@ export function useTemplatesPageUi({
     }
   }
 
-  async function handleConfirmDeleteExercise() {
-    if (!currentTemplate || !deleteExerciseId) {
+  async function handleDeleteExerciseAction(exerciseId: string) {
+    if (!currentTemplate) {
       return
     }
 
-    const didDelete = await handleDeleteExercise(currentTemplate.id, deleteExerciseId)
+    const didDelete = await handleDeleteExercise(currentTemplate.id, exerciseId)
     if (didDelete) {
-      setDeleteExerciseId(null)
-      if (editExerciseId === deleteExerciseId) {
+      if (editExerciseId === exerciseId) {
         closeExerciseEditor()
       }
       setMessage('动作已删除')
@@ -166,10 +160,9 @@ export function useTemplatesPageUi({
 
   return {
     closeExerciseEditor,
-    deleteExercise,
     editExerciseId,
     exerciseDraft,
-    handleConfirmDeleteExercise,
+    handleDeleteExerciseAction,
     handleConfirmDeleteTemplate,
     handleExerciseSubmit,
     handleTemplateSubmit,
@@ -180,7 +173,6 @@ export function useTemplatesPageUi({
     openEditExerciseEditor,
     openTemplateSheet,
     renameTemplateName,
-    setDeleteExerciseId,
     setExerciseDraft,
     setRenameTemplateName,
     setTemplateDeleteOpen,

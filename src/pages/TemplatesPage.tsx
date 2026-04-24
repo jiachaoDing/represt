@@ -77,7 +77,7 @@ export function TemplatesPage() {
           templatesCount={templates.templates.length}
           onCancelEditing={ui.closeExerciseEditor}
           onCreate={ui.openCreateExerciseEditor}
-          onDelete={ui.setDeleteExerciseId}
+          onDelete={(exerciseId) => void ui.handleDeleteExerciseAction(exerciseId)}
           onDraftChange={ui.setExerciseDraft}
           onEdit={ui.openEditExerciseEditor}
           onReorder={(orderedExerciseIds) =>
@@ -100,16 +100,6 @@ export function TemplatesPage() {
         onCreateNameChange={templates.setNewTemplateName}
         onRenameNameChange={ui.setRenameTemplateName}
         onSubmit={(event) => void ui.handleTemplateSubmit(event, ui.renameTemplateName)}
-      />
-
-      <ConfirmDialog
-        open={ui.deleteExercise !== null}
-        title="删除动作？"
-        description={ui.deleteExercise ? `确定从模板中删除“${ui.deleteExercise.name}”吗？` : ''}
-        confirmLabel="删除"
-        danger
-        onCancel={() => ui.setDeleteExerciseId(null)}
-        onConfirm={() => void ui.handleConfirmDeleteExercise()}
       />
 
       <ConfirmDialog

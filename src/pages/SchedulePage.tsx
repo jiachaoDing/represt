@@ -6,6 +6,7 @@ import { PageHeader } from '../components/ui/PageHeader'
 import { ConfirmDialog } from '../components/ui/ConfirmDialog'
 import { Snackbar } from '../components/ui/Snackbar'
 import { useNow } from '../hooks/useNow'
+import { useBackLinkState } from '../hooks/useRouteBack'
 import { useSchedulePageData } from '../hooks/pages/useSchedulePageData'
 import { useSchedulePageUi } from '../hooks/pages/useSchedulePageUi'
 import { getTemplateColor } from '../lib/template-color'
@@ -16,6 +17,7 @@ import { ScheduleTemplateImportSheet } from '../components/schedule/ScheduleTemp
 
 export function SchedulePage() {
   const now = useNow()
+  const backLinkState = useBackLinkState()
   const schedule = useSchedulePageData()
   const ui = useSchedulePageUi(schedule)
   const templateColorMap = useMemo(
@@ -47,6 +49,7 @@ export function SchedulePage() {
         actions={
           <Link
             to="/calendar"
+            state={backLinkState}
             className="flex h-9 w-9 items-center justify-center rounded-xl border border-[var(--outline-variant)] text-[var(--on-surface-variant)] transition-colors hover:bg-[var(--on-surface-variant)]/5"
             aria-label="日历"
           >
@@ -85,7 +88,7 @@ export function SchedulePage() {
           isLoading={schedule.isLoading}
           isSubmitting={schedule.isSubmitting}
           now={now}
-          onDelete={ui.setDeleteExerciseId}
+          onDelete={(exerciseId) => void ui.handleDeleteExerciseAction(exerciseId)}
           onOpenAdd={ui.openAddEntry}
           onReorder={schedule.handleReorderExercises}
         />
@@ -141,16 +144,6 @@ export function SchedulePage() {
           ui.setPendingTemplateExerciseIds([])
         }}
         onConfirm={() => void ui.confirmPendingTemplateImport()}
-      />
-
-      <ConfirmDialog
-        open={ui.deleteExercise !== null}
-        title="删除动作？"
-        description={ui.deleteExercise ? `确定删除“${ui.deleteExercise.name}”吗？该操作无法恢复。` : ''}
-        confirmLabel="删除"
-        danger
-        onCancel={() => ui.setDeleteExerciseId(null)}
-        onConfirm={() => void ui.handleConfirmDelete()}
       />
 
       <Snackbar message={ui.message} />

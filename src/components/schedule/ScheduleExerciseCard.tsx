@@ -15,6 +15,7 @@ type ScheduleExerciseCardProps = {
   index: number
   isDragging?: boolean
   isSubmitting: boolean
+  linkState?: { backTo: string }
   now: number
   dragHandleProps?: {
     attributes: DraggableAttributes
@@ -103,6 +104,7 @@ export function ScheduleExerciseCard({
   index,
   isDragging = false,
   isSubmitting,
+  linkState,
   now,
   dragHandleProps,
 }: ScheduleExerciseCardProps) {
@@ -145,6 +147,7 @@ export function ScheduleExerciseCard({
         {href ? (
           <Link
             to={href}
+            state={linkState}
             className="block w-full transition-transform active:scale-[0.98]"
           >
             {content}

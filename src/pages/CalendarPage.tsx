@@ -42,7 +42,11 @@ export function CalendarPage() {
 
   return (
     <div className="pb-4">
-      <PageHeader title="训练日历" subtitle={selectedDateLabel} backTo={buildSummaryPath(selectedDateKey)} />
+      <PageHeader
+        title="训练日历"
+        subtitle={selectedDateLabel}
+        backFallbackTo={buildSummaryPath(selectedDateKey)}
+      />
 
       <section className="mx-4 mt-4 rounded-[1.25rem] border border-[var(--outline-variant)]/20 bg-[var(--surface)] p-3 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)]">
         <div className="flex items-center justify-between gap-3">

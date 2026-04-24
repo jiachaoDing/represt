@@ -9,6 +9,7 @@ import { OverflowMenu } from '../components/ui/OverflowMenu'
 import { PageHeader } from '../components/ui/PageHeader'
 import { Snackbar } from '../components/ui/Snackbar'
 import { useNow } from '../hooks/useNow'
+import { useBackLinkState } from '../hooks/useRouteBack'
 import { useSnackbarMessage } from '../hooks/useSnackbarMessage'
 import { useExercisePageData } from '../hooks/pages/useExercisePageData'
 
@@ -32,6 +33,7 @@ export function ExercisePage() {
   } = useExercisePageData(id)
   const { message, setMessage } = useSnackbarMessage()
   const [isRecordSheetOpen, setIsRecordSheetOpen] = useState(false)
+  const backLinkState = useBackLinkState()
 
   async function handleCompleteCurrentSet() {
     const didComplete = await handleCompleteSet()
@@ -53,7 +55,7 @@ export function ExercisePage() {
     ? [
         {
           label: '查看总结',
-          onSelect: () => navigate(`/summary/${detail.session.id}`),
+          onSelect: () => navigate(`/summary/${detail.session.id}`, { state: backLinkState }),
         },
       ]
     : []
@@ -67,7 +69,7 @@ export function ExercisePage() {
             ? `进度: ${Math.min(detail.exercise.completedSets + 1, detail.exercise.targetSets)} / ${detail.exercise.targetSets} 组`
             : '专注当前动作'
         }
-        backTo="/"
+        backFallbackTo="/"
         actions={menuItems.length > 0 ? <OverflowMenu items={menuItems} /> : undefined}
       />
 
