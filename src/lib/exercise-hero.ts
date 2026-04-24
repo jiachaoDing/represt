@@ -1,4 +1,4 @@
-import { formatDurationWithMs, getRestTimerSnapshot, getRestTimerState } from './rest-timer'
+import { formatDuration, getRestTimerSnapshot, getRestTimerState } from './rest-timer'
 import type { SessionExerciseDetail } from '../db/sessions'
 
 type ExerciseHeroState = 'completed' | 'counting' | 'ready' | 'resting'
@@ -7,12 +7,7 @@ export type ExerciseHeroData = {
   label: string
   state: ExerciseHeroState
   supporting: string
-  value:
-    | string
-    | {
-        main: string
-        fraction: string
-      }
+  value: string
 }
 
 export function getExerciseHeroTone(state: ExerciseHeroState) {
@@ -51,7 +46,7 @@ export function getExerciseHeroData(
       label: '休息中',
       state: 'resting',
       supporting: '倒计时结束后继续下一组。',
-      value: formatDurationWithMs(restSnapshot.remainingMs),
+      value: formatDuration(restSnapshot.remainingSeconds),
     }
   }
 

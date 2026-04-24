@@ -18,22 +18,12 @@ export function ExerciseHero({ detail, now }: ExerciseHeroProps) {
       <p className="mb-6 text-[15px] font-medium text-[var(--on-surface-variant)]">
         {hero.label}
       </p>
-      {typeof hero.value === 'string' ? (
-        <h2
-          className={`text-[5rem] leading-none font-medium tracking-tight ${getExerciseHeroTone(hero.state)}`}
-          style={{ fontVariantNumeric: 'tabular-nums' }}
-        >
-          {hero.value}
-        </h2>
-      ) : (
-        <div
-          className={`flex items-baseline justify-center tracking-tight ${getExerciseHeroTone(hero.state)}`}
-          style={{ fontVariantNumeric: 'tabular-nums' }}
-        >
-          <h2 className="text-[5rem] leading-none font-medium">{hero.value.main}</h2>
-          <span className="text-[3.5rem] font-medium opacity-80">{hero.value.fraction}</span>
-        </div>
-      )}
+      <h2
+        className={`text-[5rem] leading-none font-medium tracking-tight ${getExerciseHeroTone(hero.state)}`}
+        style={{ fontVariantNumeric: 'tabular-nums' }}
+      >
+        {hero.value}
+      </h2>
       
       {/* Fake progress bar placeholder that looks like the design */}
       {hero.state === 'resting' && (

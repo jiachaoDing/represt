@@ -3,6 +3,7 @@ import {
   DndContext,
   MouseSensor,
   TouchSensor,
+  closestCenter,
   useSensor,
   useSensors,
   type DragEndEvent,
@@ -11,6 +12,7 @@ import {
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 
 import { AnimatedList, AnimatedListItem } from '../motion/AnimatedList'
+import { verticalSortModifiers } from '../dnd/vertical-sortable-motion'
 import { SortableTemplateExerciseItem } from './SortableTemplateExerciseItem'
 import { TemplateExerciseDragOverlay } from './TemplateExerciseDragOverlay'
 import { TemplateExerciseInlineEditor } from './TemplateExerciseInlineEditor'
@@ -157,7 +159,7 @@ export function TemplateExerciseList({
       {!shouldShowEmptyHint ? (
         <div className="flex items-center justify-between px-2 pb-2">
           <div className="text-[12px] text-[var(--on-surface-variant)]">
-            左滑删除，长按左侧序号拖动排序
+            左滑删除，长按卡片拖动排序
           </div>
           <button
             type="button"
@@ -198,6 +200,8 @@ export function TemplateExerciseList({
 
         <DndContext
           sensors={sensors}
+          collisionDetection={closestCenter}
+          modifiers={verticalSortModifiers}
           onDragStart={handleDragStart}
           onDragCancel={handleDragCancel}
           onDragEnd={handleDragEnd}
@@ -207,7 +211,7 @@ export function TemplateExerciseList({
             strategy={verticalListSortingStrategy}
           >
             {orderedExercises.map((exercise, index) => (
-              <AnimatedListItem key={exercise.id}>
+              <div key={exercise.id}>
                 {editExerciseId === exercise.id ? (
                   <TemplateExerciseInlineEditor
                     draft={draft}
@@ -228,7 +232,7 @@ export function TemplateExerciseList({
                     registerItemRef={registerItemRef}
                   />
                 )}
-              </AnimatedListItem>
+              </div>
             ))}
           </SortableContext>
 

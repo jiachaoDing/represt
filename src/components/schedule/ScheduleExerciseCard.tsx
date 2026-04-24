@@ -1,8 +1,4 @@
 import { Link } from 'react-router-dom'
-import type {
-  DraggableAttributes,
-  DraggableSyntheticListeners,
-} from '@dnd-kit/core'
 
 import { deriveExerciseStatus, getExerciseRestLabel } from '../../lib/session-display'
 import type { WorkoutSessionWithExercises } from '../../db/sessions'
@@ -17,11 +13,6 @@ type ScheduleExerciseCardProps = {
   isSubmitting: boolean
   linkState?: { backTo: string }
   now: number
-  dragHandleProps?: {
-    attributes: DraggableAttributes
-    listeners: DraggableSyntheticListeners
-    setActivatorNodeRef?: (element: HTMLElement | null) => void
-  }
 }
 
 function getExerciseCardState(exercise: ScheduleExercise, now: number, index: number) {
@@ -106,7 +97,6 @@ export function ScheduleExerciseCard({
   isSubmitting,
   linkState,
   now,
-  dragHandleProps,
 }: ScheduleExerciseCardProps) {
   const cardState = getExerciseCardState(exercise, now, index)
   const content = (
@@ -123,26 +113,19 @@ export function ScheduleExerciseCard({
 
   return (
     <div className="relative">
-      <button
-        type="button"
-        disabled={isSubmitting}
-        ref={dragHandleProps?.setActivatorNodeRef}
+      <div
         className={`absolute left-4 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full transition-colors ${
           cardState.handleClassName
-        } ${isDragging ? 'cursor-grabbing' : 'cursor-grab active:cursor-grabbing'} disabled:cursor-default disabled:opacity-40`}
-        style={{ touchAction: 'manipulation' }}
-        aria-label={`长按拖动调整“${exercise.name}”顺序`}
-        onClick={(event) => event.preventDefault()}
-        {...dragHandleProps?.attributes}
-        {...dragHandleProps?.listeners}
+        } ${isSubmitting ? 'opacity-40' : ''}`}
+        aria-hidden="true"
       >
         {cardState.handle}
-      </button>
+      </div>
 
       <div
         className={`rounded-[1.25rem] pl-16 pr-4 py-4 transition-shadow duration-200 ${
           cardState.itemClassName
-        } ${isDragging ? 'shadow-[0_16px_40px_-18px_rgba(0,0,0,0.35)]' : ''}`}
+        } ${isDragging ? 'shadow-[0_10px_28px_-18px_rgba(0,0,0,0.35)]' : ''}`}
       >
         {href ? (
           <Link

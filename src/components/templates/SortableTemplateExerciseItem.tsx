@@ -2,6 +2,7 @@ import type { CSSProperties } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 
+import { verticalSortTransition } from '../dnd/vertical-sortable-motion'
 import { TemplateExerciseCard } from './TemplateExerciseCard'
 import type { SortableTemplateExerciseItemProps } from './template-exercise-list.types'
 
@@ -25,26 +26,30 @@ export function SortableTemplateExerciseItem({
   } = useSortable({
     id: exercise.id,
     disabled: isSubmitting,
-    transition: {
-      duration: 220,
-      easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
-    },
+    transition: verticalSortTransition,
   })
 
   const style: CSSProperties = {
-    transform: CSS.Transform.toString(transform),
+    transform: isDragging ? undefined : CSS.Transform.toString(transform),
     transition,
-    zIndex: isDragging ? 20 : 'auto',
+    touchAction: 'manipulation',
   }
 
   return (
     <div
       ref={(element) => {
         setNodeRef(element)
+        setActivatorNodeRef(element)
         registerItemRef(exercise.id, element)
       }}
       style={style}
-      className={isDragging ? 'relative opacity-0' : 'relative'}
+      className={[
+        isDragging ? 'relative opacity-0 pointer-events-none' : 'relative',
+        isSubmitting ? 'cursor-default' : 'cursor-grab active:cursor-grabbing',
+      ].join(' ')}
+      aria-label={`长按拖动调整“${exercise.name}”顺序`}
+      {...attributes}
+      {...listeners}
     >
       <TemplateExerciseCard
         exercise={exercise}
@@ -53,11 +58,6 @@ export function SortableTemplateExerciseItem({
         isSubmitting={isSubmitting || isSorting}
         onDelete={onDelete}
         onEdit={onEdit}
-        dragHandleProps={{
-          attributes,
-          listeners,
-          setActivatorNodeRef,
-        }}
       />
     </div>
   )

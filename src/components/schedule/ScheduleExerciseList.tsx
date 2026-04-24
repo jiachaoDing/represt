@@ -1,9 +1,11 @@
 import { useMemo, useState } from 'react'
+import { createPortal } from 'react-dom'
 import {
   DndContext,
   DragOverlay,
   MouseSensor,
   TouchSensor,
+  closestCenter,
   useSensor,
   useSensors,
   type DragEndEvent,
@@ -12,7 +14,10 @@ import {
 import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable'
 
 import type { WorkoutSessionWithExercises } from '../../db/sessions'
-import { AnimatedList, AnimatedListItem } from '../motion/AnimatedList'
+import {
+  verticalSortDropAnimation,
+  verticalSortModifiers,
+} from '../dnd/vertical-sortable-motion'
 import { ScheduleExerciseCard } from './ScheduleExerciseCard'
 import { SortableScheduleExerciseItem } from './SortableScheduleExerciseItem'
 
@@ -147,6 +152,27 @@ export function ScheduleExerciseList({
     )
   }
 
+  const dragOverlay = createPortal(
+    <DragOverlay
+      adjustScale={false}
+      dropAnimation={verticalSortDropAnimation}
+      modifiers={verticalSortModifiers}
+    >
+      {activeExercise ? (
+        <div className="opacity-95">
+          <ScheduleExerciseCard
+            exercise={activeExercise}
+            index={activeExerciseIndex}
+            isDragging
+            isSubmitting
+            now={now}
+          />
+        </div>
+      ) : null}
+    </DragOverlay>,
+    document.body,
+  )
+
   return (
     <div className="flex flex-col gap-3 px-4">
       <div className="-mb-1 flex justify-end px-2">
@@ -174,6 +200,8 @@ export function ScheduleExerciseList({
 
       <DndContext
         sensors={sensors}
+        collisionDetection={closestCenter}
+        modifiers={verticalSortModifiers}
         onDragStart={handleDragStart}
         onDragCancel={handleDragCancel}
         onDragEnd={handleDragEnd}
@@ -182,9 +210,9 @@ export function ScheduleExerciseList({
           items={orderedExercises.map((exercise) => exercise.id)}
           strategy={verticalListSortingStrategy}
         >
-          <AnimatedList className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3">
             {orderedExercises.map((exercise, index) => (
-              <AnimatedListItem key={exercise.id}>
+              <div key={exercise.id}>
                 <SortableScheduleExerciseItem
                   exercise={exercise}
                   index={index}
@@ -193,24 +221,12 @@ export function ScheduleExerciseList({
                   now={now}
                   onDelete={onDelete}
                 />
-              </AnimatedListItem>
+              </div>
             ))}
-          </AnimatedList>
+          </div>
         </SortableContext>
 
-        <DragOverlay>
-          {activeExercise ? (
-            <div className="rotate-[0.4deg] scale-[1.02]">
-              <ScheduleExerciseCard
-                exercise={activeExercise}
-                index={activeExerciseIndex}
-                isDragging
-                isSubmitting
-                now={now}
-              />
-            </div>
-          ) : null}
-        </DragOverlay>
+        {dragOverlay}
       </DndContext>
     </div>
   )

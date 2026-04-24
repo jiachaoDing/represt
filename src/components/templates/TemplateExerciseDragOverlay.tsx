@@ -1,6 +1,11 @@
 import { DragOverlay } from '@dnd-kit/core'
+import { createPortal } from 'react-dom'
 
 import type { TemplateExercise } from '../../models/types'
+import {
+  verticalSortDropAnimation,
+  verticalSortModifiers,
+} from '../dnd/vertical-sortable-motion'
 import { TemplateExerciseCard } from './TemplateExerciseCard'
 
 type TemplateExerciseDragOverlayProps = {
@@ -12,10 +17,14 @@ export function TemplateExerciseDragOverlay({
   activeExercise,
   activeExerciseIndex,
 }: TemplateExerciseDragOverlayProps) {
-  return (
-    <DragOverlay>
+  const overlay = (
+    <DragOverlay
+      adjustScale={false}
+      dropAnimation={verticalSortDropAnimation}
+      modifiers={verticalSortModifiers}
+    >
       {activeExercise ? (
-        <div className="rotate-[0.4deg] scale-[1.02]">
+        <div className="opacity-95">
           <TemplateExerciseCard
             exercise={activeExercise}
             index={activeExerciseIndex}
@@ -26,4 +35,6 @@ export function TemplateExerciseDragOverlay({
       ) : null}
     </DragOverlay>
   )
+
+  return createPortal(overlay, document.body)
 }

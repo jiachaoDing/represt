@@ -7,20 +7,6 @@ export function formatDuration(totalSeconds: number) {
   return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
 }
 
-export function formatDurationWithMs(remainingMs: number) {
-  const totalSeconds = Math.max(0, Math.floor(remainingMs / 1000))
-  const minutes = Math.floor(totalSeconds / 60)
-  const seconds = totalSeconds % 60
-  
-  // Get centiseconds (10s of ms) for the two decimal places like a stopwatch
-  const centiseconds = Math.floor((Math.max(0, remainingMs) % 1000) / 10)
-
-  return {
-    main: `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`,
-    fraction: `.${String(centiseconds).padStart(2, '0')}`
-  }
-}
-
 export function getRestEndsAt(startedAt: string, restSeconds: number) {
   const startedAtMs = new Date(startedAt).getTime()
   if (Number.isNaN(startedAtMs)) {

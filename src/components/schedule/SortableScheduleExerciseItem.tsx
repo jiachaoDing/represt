@@ -6,6 +6,7 @@ import type { WorkoutSessionWithExercises } from '../../db/sessions'
 import { useBackLinkState } from '../../hooks/useRouteBack'
 import { SwipeActionItem } from '../ui/SwipeActionItem'
 import { ScheduleExerciseCard } from './ScheduleExerciseCard'
+import { verticalSortTransition } from '../dnd/vertical-sortable-motion'
 
 type SortableScheduleExerciseItemProps = {
   exercise: WorkoutSessionWithExercises['exercises'][number]
@@ -36,21 +37,31 @@ export function SortableScheduleExerciseItem({
   } = useSortable({
     id: exercise.id,
     disabled: isSubmitting,
-    transition: {
-      duration: 220,
-      easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
-    },
+    transition: verticalSortTransition,
   })
 
   const style: CSSProperties = {
-    transform: CSS.Transform.toString(transform),
+    transform: isDragging ? undefined : CSS.Transform.toString(transform),
     transition,
-    zIndex: isDragging ? 20 : 'auto',
+    touchAction: 'manipulation',
   }
   const canDelete = exercise.status === 'pending' && exercise.completedSets === 0
 
   return (
-    <div ref={setNodeRef} style={style} className={isDragging ? 'relative opacity-0' : 'relative'}>
+    <div
+      ref={(element) => {
+        setNodeRef(element)
+        setActivatorNodeRef(element)
+      }}
+      style={style}
+      className={[
+        isDragging ? 'relative opacity-0 pointer-events-none' : 'relative',
+        isSubmitting ? 'cursor-default' : 'cursor-grab active:cursor-grabbing',
+      ].join(' ')}
+      aria-label={`长按拖动调整“${exercise.name}”顺序`}
+      {...attributes}
+      {...listeners}
+    >
       <SwipeActionItem
         actionLabel="删除"
         disabled={!canDelete || isSorting || isSubmitting || isDragging}
@@ -64,11 +75,6 @@ export function SortableScheduleExerciseItem({
           isSubmitting={isSubmitting || isSorting}
           linkState={backLinkState}
           now={now}
-          dragHandleProps={{
-            attributes,
-            listeners,
-            setActivatorNodeRef,
-          }}
         />
       </SwipeActionItem>
     </div>

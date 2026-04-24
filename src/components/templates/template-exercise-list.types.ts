@@ -1,8 +1,4 @@
 import type { FormEvent } from 'react'
-import type {
-  DraggableAttributes,
-  DraggableSyntheticListeners,
-} from '@dnd-kit/core'
 
 import type { TemplateWithExercises } from '../../db/templates'
 import type { TemplateExerciseDraft } from '../../lib/template-editor'
@@ -34,11 +30,6 @@ export type TemplateExerciseCardProps = {
   isSubmitting: boolean
   onDelete?: (exerciseId: string) => void
   onEdit?: (exerciseId: string) => void
-  dragHandleProps?: {
-    attributes: DraggableAttributes
-    listeners: DraggableSyntheticListeners
-    setActivatorNodeRef?: (element: HTMLElement | null) => void
-  }
 }
 
 export type SortableTemplateExerciseItemProps = {
