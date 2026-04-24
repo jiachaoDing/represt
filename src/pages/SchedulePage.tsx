@@ -1,11 +1,14 @@
+import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 
+import { TodayTrainingPlanCard } from '../components/training-cycle/TodayTrainingPlanCard'
 import { PageHeader } from '../components/ui/PageHeader'
 import { ConfirmDialog } from '../components/ui/ConfirmDialog'
 import { Snackbar } from '../components/ui/Snackbar'
 import { useNow } from '../hooks/useNow'
 import { useSchedulePageData } from '../hooks/pages/useSchedulePageData'
 import { useSchedulePageUi } from '../hooks/pages/useSchedulePageUi'
+import { getTemplateColor } from '../lib/template-color'
 import { ScheduleActionSheet } from '../components/schedule/ScheduleActionSheet'
 import { ScheduleExerciseList } from '../components/schedule/ScheduleExerciseList'
 import { ScheduleExerciseSheet } from '../components/schedule/ScheduleExerciseSheet'
@@ -16,6 +19,10 @@ export function SchedulePage() {
   const now = useNow()
   const schedule = useSchedulePageData()
   const ui = useSchedulePageUi(schedule)
+  const templateColorMap = useMemo(
+    () => new Map(schedule.templates.map((template, index) => [template.id, getTemplateColor(index)])),
+    [schedule.templates],
+  )
 
   const todayStr = new Intl.DateTimeFormat('zh-CN', {
     month: 'long',
@@ -56,6 +63,16 @@ export function SchedulePage() {
 
       {!schedule.isLoading && schedule.currentSession ? (
         <ScheduleProgressCard completedSets={completedSets} totalSets={totalSets} />
+      ) : null}
+
+      {!schedule.isLoading ? (
+        <TodayTrainingPlanCard
+          cycle={schedule.trainingCycle}
+          currentIndex={schedule.todayCycleDay?.index ?? null}
+          didAutoImportToday={schedule.didAutoImportToday}
+          getTemplateColor={(templateId) => templateColorMap.get(templateId) ?? null}
+          todayTemplateName={schedule.todayTemplate?.name ?? null}
+        />
       ) : null}
 
       {schedule.error ? (

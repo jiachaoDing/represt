@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import {
   createTemplate,
@@ -12,14 +12,22 @@ import {
   type TemplateWithExercises,
 } from '../../db/templates'
 import {
+  getTodayTrainingCycleDay,
+  getTrainingCycle,
+  getTrainingCycleTemplateDaysUntil,
+  getTrainingCycleTemplateIndexes,
+} from '../../db/training-cycle'
+import {
   parseIntegerInput,
   parseOptionalReps,
   parseOptionalWeightKg,
 } from '../../lib/input-parsers'
 import type { TemplateExerciseDraft } from '../../lib/template-editor'
+import type { TrainingCycle } from '../../models/types'
 
 export function useTemplatesPageData() {
   const [templates, setTemplates] = useState<TemplateWithExercises[]>([])
+  const [trainingCycle, setTrainingCycle] = useState<TrainingCycle | null>(null)
   const [newTemplateName, setNewTemplateName] = useState('')
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -28,8 +36,9 @@ export function useTemplatesPageData() {
   const [error, setError] = useState<string | null>(null)
 
   async function loadTemplates(preferredTemplateId?: string | null) {
-    const items = await listTemplatesWithExercises()
+    const [items, cycle] = await Promise.all([listTemplatesWithExercises(), getTrainingCycle()])
     setTemplates(items)
+    setTrainingCycle(cycle)
     setSelectedTemplateId((current) => {
       if (preferredTemplateId !== undefined) {
         return items.some((template) => template.id === preferredTemplateId)
@@ -139,10 +148,31 @@ export function useTemplatesPageData() {
     })
   }
 
+  const currentTemplate =
+    templates.find((template) => template.id === selectedTemplateId) ?? null
+  const todayCycleDay = useMemo(() => getTodayTrainingCycleDay(trainingCycle), [trainingCycle])
+  const todayTemplate = useMemo(() => {
+    if (!todayCycleDay?.slot.templateId) {
+      return null
+    }
+
+    return templates.find((template) => template.id === todayCycleDay.slot.templateId) ?? null
+  }, [templates, todayCycleDay])
+  const currentTemplateCyclePreview = useMemo(() => {
+    if (!currentTemplate) {
+      return null
+    }
+
+    return {
+      daysUntil: getTrainingCycleTemplateDaysUntil(trainingCycle, currentTemplate.id),
+      slotIndexes: getTrainingCycleTemplateIndexes(trainingCycle, currentTemplate.id),
+    }
+  }, [currentTemplate, trainingCycle])
+
   return {
     clearLastCreatedExerciseId: () => setLastCreatedExerciseId(null),
-    currentTemplate:
-      templates.find((template) => template.id === selectedTemplateId) ?? null,
+    currentTemplate,
+    currentTemplateCyclePreview,
     error,
     handleCreateExercise,
     handleCreateTemplate,
@@ -158,6 +188,9 @@ export function useTemplatesPageData() {
     setNewTemplateName,
     selectedTemplateId,
     setSelectedTemplateId,
+    todayCycleDay,
+    todayTemplate,
+    trainingCycle,
     templates,
   }
 }

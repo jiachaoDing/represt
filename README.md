@@ -61,8 +61,10 @@ public/
 
 - 自动创建“今日训练”，并按 `sessionDateKey` 识别当天会话
 - 模板列表与模板动作 CRUD（支持可选默认重量、次数）
+- 一套全局循环日程，可按自然日安排模板或休息日
 - 空库时自动写入两套演示模板
 - 从模板把动作追加到今日训练，并可只选择其中部分动作
+- 命中当日循环模板时，进入训练页会自动加入今日训练且同一天只执行一次
 - 手动向今日训练新增动作
 - 删除今日训练中尚未开始的动作
 - 动作页完成当前组，并记录完成时间
@@ -75,12 +77,13 @@ public/
 ## 数据建模说明
 
 - `WorkoutTemplate` 和 `WorkoutSession` 分离，模板编辑不会自动回写已生成训练。
+- `TrainingCycle` 持久化一套全局循环配置，包含循环位数组、锚点日期与锚点位置。
 - `TemplateExercise` 除组数与休息时长外，还可选持久化 `weightKg`、`reps` 作为模板默认值。
-- `WorkoutSession` 只持久化 `id`、`sessionDateKey`、`createdAt`；会话状态在运行时由动作完成情况派生。
+- `WorkoutSession` 还会记录当天是否已完成循环模板自动导入；会话状态仍在运行时由动作完成情况派生。
 - `SessionExercise` 持久化 `completedSets`、`lastCompletedAt`、`restEndsAt` 等执行数据；动作状态同样在运行时派生。
 - `SetRecord` 持久化本次训练的真实重量与次数；若动作来自模板，则创建组记录时会复制模板默认值作为可编辑初始值。
 - `RestTimerState` 是由 `SessionExercise` 计算出的界面态，不是单独的数据库表。
-- IndexedDB 当前包含 5 张表：`workoutTemplates`、`templateExercises`、`workoutSessions`、`sessionExercises`、`setRecords`。
+- IndexedDB 当前包含 6 张表：`trainingCycles`、`workoutTemplates`、`templateExercises`、`workoutSessions`、`sessionExercises`、`setRecords`。
 
 ## 当前未覆盖的能力
 

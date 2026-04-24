@@ -5,6 +5,7 @@ import { CalendarPage } from '../pages/CalendarPage'
 import { ExercisePage } from '../pages/ExercisePage'
 import { SchedulePage } from '../pages/SchedulePage'
 import { SummaryPage } from '../pages/SummaryPage'
+import { TrainingCyclePage } from '../pages/TrainingCyclePage'
 import { TemplatesPage } from '../pages/TemplatesPage'
 
 export const router = createBrowserRouter([
@@ -26,6 +27,11 @@ export const router = createBrowserRouter([
         path: 'templates',
         element: <TemplatesPage />,
         handle: { title: '模板编辑' },
+      },
+      {
+        path: 'templates/cycle',
+        element: <TrainingCyclePage />,
+        handle: { title: '循环日程' },
       },
       {
         path: 'summary',

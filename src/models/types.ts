@@ -9,6 +9,19 @@ export interface WorkoutTemplate {
   updatedAt: string
 }
 
+export interface TrainingCycleSlot {
+  id: string
+  templateId: string | null
+}
+
+export interface TrainingCycle {
+  id: string
+  slots: TrainingCycleSlot[]
+  anchorDateKey: string
+  anchorIndex: number
+  updatedAt: string
+}
+
 export interface TemplateExercise {
   id: string
   templateId: string
@@ -24,6 +37,8 @@ export interface WorkoutSession {
   id: string
   sessionDateKey: string
   createdAt: string
+  autoImportedTemplateId?: string | null
+  autoImportedAt?: string | null
 }
 
 export interface SessionExercise {

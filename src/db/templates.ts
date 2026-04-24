@@ -1,5 +1,6 @@
 import type { TemplateExercise, WorkoutTemplate } from '../models/types'
 import { db } from './app-db'
+import { clearTemplateFromTrainingCycle } from './training-cycle'
 
 export type TemplateWithExercises = WorkoutTemplate & {
   exercises: TemplateExercise[]
@@ -159,6 +160,8 @@ export async function deleteTemplate(templateId: string) {
     await db.templateExercises.where('templateId').equals(templateId).delete()
     await db.workoutTemplates.delete(templateId)
   })
+
+  await clearTemplateFromTrainingCycle(templateId)
 }
 
 export async function createTemplateExercise(templateId: string, input: Partial<TemplateExerciseInput>) {

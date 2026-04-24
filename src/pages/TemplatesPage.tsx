@@ -1,3 +1,6 @@
+import { useMemo } from 'react'
+
+import { TemplateCyclePreviewCard } from '../components/training-cycle/TemplateCyclePreviewCard'
 import { PageHeader } from '../components/ui/PageHeader'
 import { OverflowMenu } from '../components/ui/OverflowMenu'
 import { ConfirmDialog } from '../components/ui/ConfirmDialog'
@@ -7,10 +10,15 @@ import { TemplateNameSheet } from '../components/templates/TemplateNameSheet'
 import { TemplateSwitcher } from '../components/templates/TemplateSwitcher'
 import { useTemplatesPageData } from '../hooks/pages/useTemplatesPageData'
 import { useTemplatesPageUi } from '../hooks/pages/useTemplatesPageUi'
+import { getTemplateColor } from '../lib/template-color'
 
 export function TemplatesPage() {
   const templates = useTemplatesPageData()
   const ui = useTemplatesPageUi(templates)
+  const templateColorMap = useMemo(
+    () => new Map(templates.templates.map((template, index) => [template.id, getTemplateColor(index)])),
+    [templates.templates],
+  )
   const menuItems = templates.currentTemplate
     ? [
         {
@@ -48,6 +56,14 @@ export function TemplatesPage() {
           {templates.error}
         </div>
       ) : null}
+
+      <TemplateCyclePreviewCard
+        cycle={templates.trainingCycle}
+        currentIndex={templates.todayCycleDay?.index ?? null}
+        daysUntil={templates.currentTemplateCyclePreview?.daysUntil ?? null}
+        getTemplateColor={(templateId) => templateColorMap.get(templateId) ?? null}
+        templateId={templates.currentTemplate?.id ?? null}
+      />
 
       <section className="mt-4">
         <TemplateExerciseList

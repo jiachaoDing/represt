@@ -4,6 +4,7 @@ import { getRestEndsAt } from '../lib/rest-timer'
 import { deriveExerciseStatus, type DerivedExerciseStatus } from '../lib/session-display'
 import { db } from './app-db'
 import { ensureTemplateSeedData } from './templates'
+import { getTodayTrainingCycleDay, getTrainingCycle } from './training-cycle'
 
 type WorkoutSessionWithStatus = WorkoutSession & {
   status: SessionStatus
@@ -159,6 +160,8 @@ async function createSessionRecord() {
     id: crypto.randomUUID(),
     sessionDateKey: getTodaySessionDateKey(),
     createdAt: timestamp,
+    autoImportedTemplateId: null,
+    autoImportedAt: null,
   }
 
   await db.workoutSessions.add(session)
@@ -197,6 +200,70 @@ async function buildSessionExercisesFromTemplate(
   })) satisfies SessionExercise[]
 }
 
+async function maybeAutoImportTrainingCycleTemplate(session: WorkoutSession) {
+  if (session.sessionDateKey !== getTodaySessionDateKey()) {
+    return session
+  }
+
+  if (session.autoImportedAt) {
+    return session
+  }
+
+  const cycle = await getTrainingCycle()
+  const todayCycleDay = getTodayTrainingCycleDay(cycle)
+  const templateId = todayCycleDay?.slot.templateId ?? null
+
+  if (!templateId) {
+    return session
+  }
+
+  const [existingExercises, template] = await Promise.all([
+    getSessionExercises(session.id),
+    db.workoutTemplates.get(templateId),
+  ])
+
+  if (!template) {
+    return session
+  }
+
+  const importedTemplateExerciseIds = new Set(
+    existingExercises
+      .map((exercise) => exercise.templateExerciseId)
+      .filter((templateExerciseId) => templateExerciseId !== null),
+  )
+  const templateExerciseIds = (
+    await db.templateExercises.where('templateId').equals(templateId).sortBy('order')
+  )
+    .map((exercise) => exercise.id)
+    .filter((templateExerciseId) => !importedTemplateExerciseIds.has(templateExerciseId))
+  const nextOrder =
+    existingExercises.reduce((maxOrder, exercise) => Math.max(maxOrder, exercise.order), -1) + 1
+  const nextExercises = await buildSessionExercisesFromTemplate(
+    session.id,
+    templateId,
+    nextOrder,
+    templateExerciseIds,
+  )
+  const autoImportedAt = nowIso()
+
+  await db.transaction('rw', db.workoutSessions, db.sessionExercises, async () => {
+    if (nextExercises.length > 0) {
+      await db.sessionExercises.bulkAdd(nextExercises)
+    }
+
+    await db.workoutSessions.update(session.id, {
+      autoImportedTemplateId: templateId,
+      autoImportedAt,
+    })
+  })
+
+  return {
+    ...session,
+    autoImportedTemplateId: templateId,
+    autoImportedAt,
+  } satisfies WorkoutSession
+}
+
 export async function getCurrentSession() {
   await ensureTemplateSeedData()
 
@@ -211,9 +278,10 @@ export async function getCurrentSession() {
     return null
   }
 
-  const exercises = await getSessionExercises(session.id)
+  const hydratedSession = await maybeAutoImportTrainingCycleTemplate(session)
+  const exercises = await getSessionExercises(hydratedSession.id)
   return {
-    ...attachDerivedSessionStatus(session, exercises),
+    ...attachDerivedSessionStatus(hydratedSession, exercises),
     exercises: exercises.map(attachDerivedExerciseStatus),
   } satisfies WorkoutSessionWithExercises
 }

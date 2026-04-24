@@ -9,12 +9,14 @@ import {
   reorderSessionExercises,
   type WorkoutSessionWithExercises,
 } from '../../db/sessions'
+import { getTodayTrainingCycleDay, getTrainingCycle } from '../../db/training-cycle'
 import { listTemplatesWithExercises, type TemplateWithExercises } from '../../db/templates'
 import {
   parseIntegerInput,
   parseOptionalReps,
   parseOptionalWeightKg,
 } from '../../lib/input-parsers'
+import type { TrainingCycle } from '../../models/types'
 
 type ScheduleExerciseDraft = {
   name: string
@@ -63,6 +65,7 @@ function hasImportedTemplateExercises(
 
 export function useSchedulePageData() {
   const [templates, setTemplates] = useState<TemplateWithExercises[]>([])
+  const [trainingCycle, setTrainingCycle] = useState<TrainingCycle | null>(null)
   const [currentSession, setCurrentSession] = useState<WorkoutSessionWithExercises | null>(null)
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null)
   const [newExerciseDraft, setNewExerciseDraft] = useState<ScheduleExerciseDraft>(emptyExerciseDraft)
@@ -71,21 +74,24 @@ export function useSchedulePageData() {
   const [error, setError] = useState<string | null>(null)
 
   const fetchData = useCallback(async () => {
-    const [templateItems, session] = await Promise.all([
+    const [templateItems, session, cycle] = await Promise.all([
       listTemplatesWithExercises(),
       getCurrentSession(),
+      getTrainingCycle(),
     ])
 
     return {
+      cycle,
       session,
       templateItems,
     }
   }, [])
 
   const loadData = useCallback(async (preferredTemplateId?: string | null) => {
-    const { session, templateItems } = await fetchData()
+    const { cycle, session, templateItems } = await fetchData()
 
     setTemplates(templateItems)
+    setTrainingCycle(cycle)
     setCurrentSession(session)
     setSelectedTemplateId((current) => {
       if (
@@ -238,13 +244,24 @@ export function useSchedulePageData() {
     })
   }
 
+  const todayCycleDay = getTodayTrainingCycleDay(trainingCycle)
+  const todayTemplate =
+    todayCycleDay?.slot.templateId
+      ? templates.find((template) => template.id === todayCycleDay.slot.templateId) ?? null
+      : null
   const canAddTemporaryExercise = currentSession !== null
+  const didAutoImportToday =
+    currentSession !== null &&
+    todayTemplate !== null &&
+    currentSession.autoImportedTemplateId === todayTemplate.id &&
+    currentSession.autoImportedAt !== null
   const shouldConfirmContinueBeforeAddingExercise = currentSession?.status === 'completed'
   const hasTemplates = templates.length > 0
 
   return {
     canAddTemporaryExercise,
     currentSession,
+    didAutoImportToday,
     error,
     handleAddTemporaryExercise,
     handleAddTemplateExercises,
@@ -259,6 +276,9 @@ export function useSchedulePageData() {
     setNewExerciseDraft,
     setSelectedTemplateId,
     shouldConfirmContinueBeforeAddingExercise,
+    todayCycleDay,
+    todayTemplate,
+    trainingCycle,
     templates,
   }
 }

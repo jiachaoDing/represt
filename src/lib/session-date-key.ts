@@ -82,6 +82,19 @@ export function addMonthsToSessionDateKey(sessionDateKey: string, amount: number
   return buildSessionDateKey(new Date(date.getFullYear(), date.getMonth() + amount, 1))
 }
 
+export function diffSessionDateKeys(leftSessionDateKey: string, rightSessionDateKey: string) {
+  const leftDate = parseSessionDateKey(leftSessionDateKey)
+  const rightDate = parseSessionDateKey(rightSessionDateKey)
+
+  if (!leftDate || !rightDate) {
+    return 0
+  }
+
+  const millisecondsPerDay = 24 * 60 * 60 * 1000
+
+  return Math.round((leftDate.getTime() - rightDate.getTime()) / millisecondsPerDay)
+}
+
 export function getMonthCalendarDateCells(sessionDateKey: string) {
   const date = parseSessionDateKey(sessionDateKey)
   if (!date) {
