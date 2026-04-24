@@ -22,10 +22,9 @@ export function SchedulePage() {
     day: 'numeric',
     weekday: 'short',
   }).format(new Date())
-  const completedCount =
-    schedule.currentSession?.exercises.filter((exercise) => exercise.status === 'completed')
-      .length ?? 0
-  const totalCount = schedule.currentSession?.exercises.length ?? 0
+  const completedSets =
+    schedule.currentSession?.exercises.reduce((sum, exercise) => sum + exercise.completedSets, 0) ?? 0
+  const totalSets = schedule.currentSession?.exercises.reduce((sum, exercise) => sum + exercise.targetSets, 0) ?? 0
   const importConfirmDescription = [
     ui.pendingTemplateImportConfirmation?.isDuplicateImport
       ? `“${ui.pendingTemplateImportConfirmation.templateName}”可能已加入过今日训练。`
@@ -56,7 +55,7 @@ export function SchedulePage() {
       />
 
       {!schedule.isLoading && schedule.currentSession ? (
-        <ScheduleProgressCard completedCount={completedCount} totalCount={totalCount} />
+        <ScheduleProgressCard completedSets={completedSets} totalSets={totalSets} />
       ) : null}
 
       {schedule.error ? (
