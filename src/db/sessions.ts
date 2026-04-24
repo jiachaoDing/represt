@@ -520,6 +520,55 @@ export async function completeSessionExerciseSet(sessionExerciseId: string): Pro
   return createdSetRecord
 }
 
+export async function undoLatestSessionExerciseSet(sessionExerciseId: string): Promise<SetRecord> {
+  let deletedSetRecord: SetRecord | null = null
+
+  await db.transaction(
+    'rw',
+    db.sessionExercises,
+    db.setRecords,
+    async () => {
+      const exercise = await db.sessionExercises.get(sessionExerciseId)
+      if (!exercise) {
+        throw new Error('当前动作不存在。')
+      }
+
+      const latestSetRecord = await getLatestSetRecord(sessionExerciseId)
+      if (!latestSetRecord) {
+        throw new Error('当前动作还没有已完成的组。')
+      }
+
+      const previousSetRecords = (
+        await db.setRecords.where('sessionExerciseId').equals(sessionExerciseId).toArray()
+      )
+        .filter((record) => record.id !== latestSetRecord.id)
+        .sort((left, right) => right.setNumber - left.setNumber)
+      const previousLatestSetRecord = previousSetRecords[0] ?? null
+      const completedSets = previousSetRecords.length
+      const lastCompletedAt = previousLatestSetRecord?.completedAt ?? null
+      const restEndsAt =
+        previousLatestSetRecord && completedSets < exercise.targetSets
+          ? getRestEndsAt(previousLatestSetRecord.completedAt, exercise.restSeconds)
+          : null
+
+      await db.setRecords.delete(latestSetRecord.id)
+      await db.sessionExercises.update(exercise.id, {
+        completedSets,
+        lastCompletedAt,
+        restEndsAt,
+      })
+
+      deletedSetRecord = latestSetRecord
+    },
+  )
+
+  if (!deletedSetRecord) {
+    throw new Error('最近一组撤销失败。')
+  }
+
+  return deletedSetRecord
+}
+
 export async function updateLatestSetRecordValues(
   sessionExerciseId: string,
   input: {

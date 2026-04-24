@@ -19,9 +19,11 @@ export function ExercisePage() {
   const now = useNow(16)
   const {
     canCompleteSet,
+    canUndoLatestSet,
     detail,
     error,
     handleCompleteSet,
+    handleUndoLatestSet,
     handleUpdateLatestSetRecord,
     isLoading,
     isSubmitting,
@@ -51,8 +53,25 @@ export function ExercisePage() {
     }
   }
 
+  async function handleUndoPreviousSetCompletion() {
+    if (!detail) {
+      return
+    }
+
+    const undoneSetNumber = detail.exercise.completedSets
+    const didUndo = await handleUndoLatestSet()
+    if (didUndo) {
+      setMessage(`已撤销第 ${undoneSetNumber} 组`)
+    }
+  }
+
   const menuItems = detail
     ? [
+        {
+          label: '撤销上组完成',
+          disabled: !canUndoLatestSet,
+          onSelect: () => void handleUndoPreviousSetCompletion(),
+        },
         {
           label: '查看总结',
           onSelect: () => navigate(`/summary/${detail.session.id}`, { state: backLinkState }),

@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import {
   completeSessionExerciseSet,
   getSessionExerciseDetail,
+  undoLatestSessionExerciseSet,
   updateLatestSetRecordValues,
   type SessionExerciseDetail,
 } from '../../db/sessions'
@@ -129,15 +130,41 @@ export function useExercisePageData(id: string) {
     })
   }
 
+  async function handleUndoLatestSet() {
+    if (!detail?.latestSetRecord) {
+      return false
+    }
+
+    let didUndo = false
+
+    const didSucceed = await runMutation(async () => {
+      await undoLatestSessionExerciseSet(detail.exercise.id)
+      const nextDetail = await getSessionExerciseDetail(detail.exercise.id)
+
+      setDetail(nextDetail)
+      syncLatestSetInputs(nextDetail, setWeightInput, setRepsInput)
+      didUndo = true
+    })
+
+    if (!didSucceed) {
+      return false
+    }
+
+    return didUndo
+  }
+
   const latestSetRecord = detail?.latestSetRecord ?? null
   const canCompleteSet =
     detail !== null && detail.exercise.status !== 'completed' && !isSubmitting
+  const canUndoLatestSet = latestSetRecord !== null && !isSubmitting
 
   return {
     canCompleteSet,
+    canUndoLatestSet,
     detail,
     error,
     handleCompleteSet,
+    handleUndoLatestSet,
     handleUpdateLatestSetRecord,
     isLoading,
     isSubmitting,

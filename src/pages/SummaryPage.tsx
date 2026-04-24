@@ -61,20 +61,22 @@ export function SummaryPage() {
 
   return (
     <div className="pb-4">
-      <PageHeader
-        title="训练总结"
-        titleAlign="center"
-        backFallbackTo={sessionId ? '/summary' : undefined}
-        subtitle={
-          isDateMode || !detail
-            ? undefined
-            : formatSessionDateKey(detail.session.sessionDateKey, {
-                month: 'long',
-                day: 'numeric',
-                weekday: 'short',
-              })
-        }
-      />
+      {!isDateMode ? (
+        <PageHeader
+          title="训练详情"
+          titleAlign="center"
+          backFallbackTo="/summary"
+          subtitle={
+            detail
+              ? formatSessionDateKey(detail.session.sessionDateKey, {
+                  month: 'long',
+                  day: 'numeric',
+                  weekday: 'short',
+                })
+              : undefined
+          }
+        />
+      ) : null}
 
       {isDateMode ? (
         <SummaryDateSwitcher
