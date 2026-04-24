@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom'
 
 import { PageHeader } from '../components/ui/PageHeader'
 import { ConfirmDialog } from '../components/ui/ConfirmDialog'
-import { FloatingActionButton } from '../components/ui/FloatingActionButton'
 import { Snackbar } from '../components/ui/Snackbar'
 import { useNow } from '../hooks/useNow'
 import { useSchedulePageData } from '../hooks/pages/useSchedulePageData'
@@ -76,8 +75,6 @@ export function SchedulePage() {
           onOpenAdd={ui.openAddEntry}
         />
       </section>
-
-      {schedule.canAddTemporaryExercise ? <FloatingActionButton onClick={ui.openAddEntry} /> : null}
 
       <ScheduleActionSheet
         hasTemplates={schedule.hasTemplates}

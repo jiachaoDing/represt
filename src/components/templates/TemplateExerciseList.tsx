@@ -79,8 +79,21 @@ export function TemplateExerciseList({
       ) : null}
 
       {!shouldShowEmptyHint ? (
-        <div className="px-2 pb-2 text-[12px] text-[var(--on-surface-variant)]">
-          左滑可删除，点右侧铅笔可编辑
+        <div className="flex items-center justify-between px-2 pb-2">
+          <div className="text-[12px] text-[var(--on-surface-variant)]">
+            左滑可删除，点右侧铅笔可编辑
+          </div>
+          <button
+            type="button"
+            onClick={onCreate}
+            className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--primary)] hover:bg-[var(--primary)]/10 transition-colors"
+            aria-label="添加动作"
+          >
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+          </button>
         </div>
       ) : null}
 

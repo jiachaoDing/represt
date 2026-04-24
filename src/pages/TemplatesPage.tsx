@@ -1,7 +1,6 @@
 import { PageHeader } from '../components/ui/PageHeader'
 import { OverflowMenu } from '../components/ui/OverflowMenu'
 import { ConfirmDialog } from '../components/ui/ConfirmDialog'
-import { FloatingActionButton } from '../components/ui/FloatingActionButton'
 import { Snackbar } from '../components/ui/Snackbar'
 import { TemplateExerciseList } from '../components/templates/TemplateExerciseList'
 import { TemplateNameSheet } from '../components/templates/TemplateNameSheet'
@@ -67,10 +66,6 @@ export function TemplatesPage() {
           onSubmit={ui.handleExerciseSubmit}
         />
       </section>
-
-      {templates.currentTemplate && !ui.isExerciseEditorActive ? (
-        <FloatingActionButton onClick={ui.openCreateExerciseEditor} />
-      ) : null}
 
       <TemplateNameSheet
         createName={templates.newTemplateName}

@@ -126,6 +126,19 @@ export function ScheduleExerciseList({
 
   return (
     <div className="flex flex-col gap-3 px-4">
+      <div className="flex justify-end px-2 -mb-1">
+        <button
+          type="button"
+          onClick={onOpenAdd}
+          className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--primary)] hover:bg-[var(--primary)]/10 transition-colors"
+          aria-label={hasTemplates ? '添加动作' : '新建动作'}
+        >
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+        </button>
+      </div>
       {currentSession.exercises.map((exercise, index) => {
         const cardState = getExerciseCardState(exercise, now, index)
         const canDelete = exercise.status === 'pending' && exercise.completedSets === 0
