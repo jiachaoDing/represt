@@ -378,6 +378,26 @@ export async function deletePendingSessionExercise(sessionId: string, sessionExe
   await db.sessionExercises.delete(sessionExerciseId)
 }
 
+export async function reorderSessionExercises(sessionId: string, orderedExerciseIds: string[]) {
+  const exercises = await getSessionExercises(sessionId)
+  if (exercises.length !== orderedExerciseIds.length) {
+    return
+  }
+
+  const exerciseIdSet = new Set(exercises.map((exercise) => exercise.id))
+  if (orderedExerciseIds.some((exerciseId) => !exerciseIdSet.has(exerciseId))) {
+    return
+  }
+
+  await db.transaction('rw', db.sessionExercises, async () => {
+    await Promise.all(
+      orderedExerciseIds.map((exerciseId, order) =>
+        db.sessionExercises.update(exerciseId, { order }),
+      ),
+    )
+  })
+}
+
 export async function completeSessionExerciseSet(sessionExerciseId: string): Promise<SetRecord> {
   const completedAt = nowIso()
   let createdSetRecord: SetRecord | null = null

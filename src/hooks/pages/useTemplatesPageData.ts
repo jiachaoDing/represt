@@ -6,6 +6,7 @@ import {
   deleteTemplate,
   deleteTemplateExercise,
   listTemplatesWithExercises,
+  reorderTemplateExercises,
   updateTemplateExercise,
   updateTemplateName,
   type TemplateWithExercises,
@@ -23,6 +24,7 @@ export function useTemplatesPageData() {
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [lastCreatedExerciseId, setLastCreatedExerciseId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   async function loadTemplates(preferredTemplateId?: string | null) {
@@ -94,13 +96,14 @@ export function useTemplatesPageData() {
 
   async function handleCreateExercise(templateId: string, draft: TemplateExerciseDraft) {
     return runMutation(async () => {
-      await createTemplateExercise(templateId, {
+      const exercise = await createTemplateExercise(templateId, {
         name: draft.name,
         targetSets: parseIntegerInput(draft.targetSets),
         restSeconds: parseIntegerInput(draft.restSeconds),
         weightKg: parseOptionalWeightKg(draft.weightKg),
         reps: parseOptionalReps(draft.reps),
       })
+      setLastCreatedExerciseId(exercise.id)
       await loadTemplates(templateId)
     })
   }
@@ -129,7 +132,15 @@ export function useTemplatesPageData() {
     })
   }
 
+  async function handleReorderExercises(templateId: string, orderedExerciseIds: string[]) {
+    return runMutation(async () => {
+      await reorderTemplateExercises(templateId, orderedExerciseIds)
+      await loadTemplates(templateId)
+    })
+  }
+
   return {
+    clearLastCreatedExerciseId: () => setLastCreatedExerciseId(null),
     currentTemplate:
       templates.find((template) => template.id === selectedTemplateId) ?? null,
     error,
@@ -137,10 +148,12 @@ export function useTemplatesPageData() {
     handleCreateTemplate,
     handleDeleteExercise,
     handleDeleteTemplate,
+    handleReorderExercises,
     handleSaveExercise,
     handleSaveTemplateName,
     isLoading,
     isSubmitting,
+    lastCreatedExerciseId,
     newTemplateName,
     setNewTemplateName,
     selectedTemplateId,

@@ -1,25 +1,21 @@
-import type { FormEvent } from 'react'
+import { useMemo, useState } from 'react'
+import {
+  DndContext,
+  MouseSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+  type DragStartEvent,
+} from '@dnd-kit/core'
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 
-import type { TemplateWithExercises } from '../../db/templates'
-import type { TemplateExerciseDraft } from '../../lib/template-editor'
-import { SwipeActionItem } from '../ui/SwipeActionItem'
+import { SortableTemplateExerciseItem } from './SortableTemplateExerciseItem'
+import { TemplateExerciseDragOverlay } from './TemplateExerciseDragOverlay'
 import { TemplateExerciseInlineEditor } from './TemplateExerciseInlineEditor'
-
-type TemplateExerciseListProps = {
-  currentTemplate: TemplateWithExercises | null
-  draft: TemplateExerciseDraft
-  editExerciseId: string | null
-  isCreatingExercise: boolean
-  isLoading: boolean
-  isSubmitting: boolean
-  templatesCount: number
-  onCancelEditing: () => void
-  onCreate: () => void
-  onDelete: (exerciseId: string) => void
-  onDraftChange: (draft: TemplateExerciseDraft) => void
-  onEdit: (exerciseId: string) => void
-  onSubmit: (event: FormEvent<HTMLFormElement>) => void
-}
+import type { TemplateExerciseListProps } from './template-exercise-list.types'
+import { getOrderedExercises, getReorderedExerciseIds } from './template-exercise-list.utils'
+import { useScrollToPendingExercise } from './useScrollToPendingExercise'
 
 export function TemplateExerciseList({
   currentTemplate,
@@ -28,14 +24,93 @@ export function TemplateExerciseList({
   isCreatingExercise,
   isLoading,
   isSubmitting,
+  pendingScrollExerciseId,
   templatesCount,
   onCancelEditing,
   onCreate,
   onDelete,
   onDraftChange,
   onEdit,
+  onReorder,
+  onScrollAnimationComplete,
   onSubmit,
 }: TemplateExerciseListProps) {
+  const [exerciseOrder, setExerciseOrder] = useState<string[] | null>(null)
+  const [activeExerciseId, setActiveExerciseId] = useState<string | null>(null)
+  const [isSorting, setIsSorting] = useState(false)
+
+  const sensors = useSensors(
+    useSensor(MouseSensor, {
+      activationConstraint: {
+        delay: 180,
+        tolerance: 6,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 220,
+        tolerance: 8,
+      },
+    }),
+  )
+
+  const orderedExercises = useMemo(() => {
+    return getOrderedExercises(currentTemplate?.exercises ?? [], exerciseOrder)
+  }, [currentTemplate, exerciseOrder])
+
+  const activeExercise =
+    activeExerciseId === null
+      ? null
+      : orderedExercises.find((exercise) => exercise.id === activeExerciseId) ?? null
+  const activeExerciseIndex =
+    activeExercise === null
+      ? -1
+      : orderedExercises.findIndex((exercise) => exercise.id === activeExercise.id)
+  const { registerItemRef } = useScrollToPendingExercise({
+    exerciseIds: orderedExercises.map((exercise) => exercise.id),
+    pendingScrollExerciseId,
+    onScrollAnimationComplete,
+  })
+
+  function handleDragStart(event: DragStartEvent) {
+    setActiveExerciseId(String(event.active.id))
+    setIsSorting(true)
+  }
+
+  function handleDragCancel() {
+    setActiveExerciseId(null)
+    setIsSorting(false)
+  }
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+
+    setActiveExerciseId(null)
+    setIsSorting(false)
+
+    if (!currentTemplate || !over || active.id === over.id) {
+      return
+    }
+
+    const nextOrderIds = getReorderedExerciseIds(
+      orderedExercises,
+      String(active.id),
+      String(over.id),
+    )
+
+    if (!nextOrderIds) {
+      return
+    }
+
+    setExerciseOrder(nextOrderIds)
+
+    void onReorder(nextOrderIds).then((didReorder) => {
+      if (!didReorder) {
+        setExerciseOrder(currentTemplate.exercises.map((exercise) => exercise.id))
+      }
+    })
+  }
+
   if (isLoading) {
     return (
       <div className="space-y-0">
@@ -61,7 +136,7 @@ export function TemplateExerciseList({
     return null
   }
 
-  const shouldShowEmptyHint = currentTemplate.exercises.length === 0 && !isCreatingExercise
+  const shouldShowEmptyHint = orderedExercises.length === 0 && !isCreatingExercise
 
   return (
     <div className="mt-4 px-4">
@@ -81,15 +156,24 @@ export function TemplateExerciseList({
       {!shouldShowEmptyHint ? (
         <div className="flex items-center justify-between px-2 pb-2">
           <div className="text-[12px] text-[var(--on-surface-variant)]">
-            左滑可删除，点右侧铅笔可编辑
+            左滑删除，长按左侧序号拖动排序
           </div>
           <button
             type="button"
             onClick={onCreate}
-            className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--primary)] hover:bg-[var(--primary)]/10 transition-colors"
+            className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/10"
             aria-label="添加动作"
           >
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              viewBox="0 0 24 24"
+              width="20"
+              height="20"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <line x1="12" y1="5" x2="12" y2="19" />
               <line x1="5" y1="12" x2="19" y2="12" />
             </svg>
@@ -98,64 +182,6 @@ export function TemplateExerciseList({
       ) : null}
 
       <div className="flex flex-col gap-3">
-        {currentTemplate.exercises.map((exercise, index) => {
-          if (editExerciseId === exercise.id) {
-            return (
-              <TemplateExerciseInlineEditor
-                key={exercise.id}
-                draft={draft}
-                isEditing
-                isSubmitting={isSubmitting}
-                onCancel={onCancelEditing}
-                onDraftChange={onDraftChange}
-                onSubmit={onSubmit}
-              />
-            )
-          }
-
-          return (
-            <SwipeActionItem
-              key={exercise.id}
-              actionLabel="删除"
-              disabled={isSubmitting}
-              onAction={() => onDelete(exercise.id)}
-            >
-              <div className="rounded-[1.25rem] border border-[var(--outline-variant)]/20 bg-[var(--surface)] px-4 py-4 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)]">
-                <div className="flex items-start gap-3">
-                  <div className="pt-0.5 text-[15px] font-bold text-[var(--on-surface)]">
-                    {index + 1}
-                  </div>
-
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate text-[15px] font-semibold text-[var(--on-surface)]">
-                      {exercise.name}
-                    </div>
-                    <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[13px] text-[var(--on-surface-variant)]">
-                      <span>{exercise.targetSets} 组</span>
-                      <span>{exercise.restSeconds} 秒</span>
-                      <span>{exercise.weightKg ? `${exercise.weightKg} kg` : '重量 -'}</span>
-                      <span>{exercise.reps ? `${exercise.reps} 次` : '次数 -'}</span>
-                    </div>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => onEdit(exercise.id)}
-                    disabled={isSubmitting}
-                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-[var(--on-surface-variant)] transition-colors hover:bg-[var(--surface-container)] disabled:opacity-40"
-                    aria-label={`编辑${exercise.name}`}
-                  >
-                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M12 20h9" />
-                      <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            </SwipeActionItem>
-          )
-        })}
-
         {isCreatingExercise ? (
           <TemplateExerciseInlineEditor
             draft={draft}
@@ -166,6 +192,52 @@ export function TemplateExerciseList({
             onSubmit={onSubmit}
           />
         ) : null}
+
+        <DndContext
+          sensors={sensors}
+          onDragStart={handleDragStart}
+          onDragCancel={handleDragCancel}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={orderedExercises.map((exercise) => exercise.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            {orderedExercises.map((exercise, index) => {
+              if (editExerciseId === exercise.id) {
+                return (
+                  <TemplateExerciseInlineEditor
+                    key={exercise.id}
+                    draft={draft}
+                    isEditing
+                    isSubmitting={isSubmitting}
+                    onCancel={onCancelEditing}
+                    onDraftChange={onDraftChange}
+                    onSubmit={onSubmit}
+                  />
+                )
+              }
+
+              return (
+                <SortableTemplateExerciseItem
+                  key={exercise.id}
+                  exercise={exercise}
+                  index={index}
+                  isSorting={isSorting}
+                  isSubmitting={isSubmitting}
+                  onDelete={onDelete}
+                  onEdit={onEdit}
+                  registerItemRef={registerItemRef}
+                />
+              )
+            })}
+          </SortableContext>
+
+          <TemplateExerciseDragOverlay
+            activeExercise={activeExercise}
+            activeExerciseIndex={activeExerciseIndex}
+          />
+        </DndContext>
       </div>
     </div>
   )

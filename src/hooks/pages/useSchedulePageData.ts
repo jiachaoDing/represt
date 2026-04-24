@@ -6,6 +6,7 @@ import {
   deletePendingSessionExercise,
   getCurrentSession,
   getOrCreateTodaySession,
+  reorderSessionExercises,
   type WorkoutSessionWithExercises,
 } from '../../db/sessions'
 import { listTemplatesWithExercises, type TemplateWithExercises } from '../../db/templates'
@@ -226,6 +227,17 @@ export function useSchedulePageData() {
     })
   }
 
+  async function handleReorderExercises(orderedExerciseIds: string[]) {
+    if (!currentSession) {
+      return false
+    }
+
+    return runMutation(async () => {
+      await reorderSessionExercises(currentSession.id, orderedExerciseIds)
+      await loadData(selectedTemplateId)
+    })
+  }
+
   const canAddTemporaryExercise = currentSession !== null
   const shouldConfirmContinueBeforeAddingExercise = currentSession?.status === 'completed'
   const hasTemplates = templates.length > 0
@@ -237,6 +249,7 @@ export function useSchedulePageData() {
     handleAddTemporaryExercise,
     handleAddTemplateExercises,
     handleDeleteExercise,
+    handleReorderExercises,
     hasTemplates,
     getTemplateImportConfirmation,
     isLoading,

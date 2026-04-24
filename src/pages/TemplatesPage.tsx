@@ -57,12 +57,19 @@ export function TemplatesPage() {
           isCreatingExercise={ui.isCreatingExercise}
           isLoading={templates.isLoading}
           isSubmitting={templates.isSubmitting}
+          pendingScrollExerciseId={templates.lastCreatedExerciseId}
           templatesCount={templates.templates.length}
           onCancelEditing={ui.closeExerciseEditor}
           onCreate={ui.openCreateExerciseEditor}
           onDelete={ui.setDeleteExerciseId}
           onDraftChange={ui.setExerciseDraft}
           onEdit={ui.openEditExerciseEditor}
+          onReorder={(orderedExerciseIds) =>
+            templates.currentTemplate
+              ? templates.handleReorderExercises(templates.currentTemplate.id, orderedExerciseIds)
+              : Promise.resolve(false)
+          }
+          onScrollAnimationComplete={templates.clearLastCreatedExerciseId}
           onSubmit={ui.handleExerciseSubmit}
         />
       </section>

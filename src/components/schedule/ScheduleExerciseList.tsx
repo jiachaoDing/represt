@@ -1,101 +1,123 @@
-import { Link } from 'react-router-dom'
+import { useMemo, useState } from 'react'
+import {
+  DndContext,
+  DragOverlay,
+  MouseSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+  type DragStartEvent,
+} from '@dnd-kit/core'
+import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable'
 
-import { SwipeActionItem } from '../ui/SwipeActionItem'
-import { deriveExerciseStatus, getExerciseRestLabel } from '../../lib/session-display'
 import type { WorkoutSessionWithExercises } from '../../db/sessions'
+import { ScheduleExerciseCard } from './ScheduleExerciseCard'
+import { SortableScheduleExerciseItem } from './SortableScheduleExerciseItem'
 
 type ScheduleExerciseListProps = {
   currentSession: WorkoutSessionWithExercises | null
   hasTemplates: boolean
   isLoading: boolean
+  isSubmitting: boolean
   now: number
   onDelete: (exerciseId: string) => void
   onOpenAdd: () => void
-}
-
-function getExerciseCardState(
-  exercise: WorkoutSessionWithExercises['exercises'][number],
-  now: number,
-  index: number,
-) {
-  const status = deriveExerciseStatus(exercise)
-  const restLabel = getExerciseRestLabel(exercise, now)
-  const isReady = status === 'active' && restLabel === '可继续下一组'
-  const isResting = status === 'active' && !isReady
-
-  if (status === 'completed') {
-    return {
-      icon: (
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--primary)] text-white">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-        </div>
-      ),
-      itemClassName: 'border border-[var(--outline-variant)]/30 bg-[var(--surface)] opacity-70',
-      nameClassName: 'text-[var(--on-surface-variant)] line-through',
-      metaClassName: 'text-[var(--outline)]',
-      metaText: `${exercise.completedSets} / ${exercise.targetSets} 组`,
-      statusText: '已完成 >',
-      statusClassName: 'text-[var(--outline)]',
-    }
-  }
-
-  if (isReady) {
-    return {
-      icon: (
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--primary)] text-white font-bold text-sm">
-          {index + 1}
-        </div>
-      ),
-      itemClassName: 'border border-[var(--primary)]/30 bg-[var(--primary-container)]/10 shadow-[0_2px_8px_-4px_rgba(22,78,48,0.15)]',
-      nameClassName: 'text-[var(--on-surface)]',
-      metaClassName: 'text-[var(--on-surface-variant)]',
-      metaText: `${exercise.completedSets} / ${exercise.targetSets} 组`,
-      statusText: '可继续下一组 >',
-      statusClassName: 'text-[var(--primary)] font-medium',
-    }
-  }
-
-  if (isResting) {
-    return {
-      icon: (
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#F59E0B] text-white font-bold text-sm">
-          {index + 1}
-        </div>
-      ),
-      itemClassName: 'border border-[#F59E0B]/30 bg-[#FFFBEB] shadow-[0_2px_8px_-4px_rgba(245,158,11,0.15)]',
-      nameClassName: 'text-[var(--on-surface)]',
-      metaClassName: 'text-[var(--on-surface-variant)]',
-      metaText: `${exercise.completedSets} / ${exercise.targetSets} 组`,
-      statusText: `休息中 · ${restLabel.replace('倒计时 ', '')} >`,
-      statusClassName: 'text-[#D97706] font-medium',
-    }
-  }
-
-  return {
-    icon: (
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--surface-container)] text-[var(--on-surface-variant)] font-bold text-sm">
-        {index + 1}
-      </div>
-    ),
-    itemClassName: 'border border-[var(--outline-variant)]/30 bg-[var(--surface)] shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)]',
-    nameClassName: 'text-[var(--on-surface)]',
-    metaClassName: 'text-[var(--on-surface-variant)]',
-    metaText: `${exercise.completedSets} / ${exercise.targetSets} 组`,
-    statusText: '未开始 >',
-    statusClassName: 'text-[var(--outline)]',
-  }
+  onReorder: (orderedExerciseIds: string[]) => Promise<boolean>
 }
 
 export function ScheduleExerciseList({
   currentSession,
   hasTemplates,
   isLoading,
+  isSubmitting,
   now,
   onDelete,
   onOpenAdd,
+  onReorder,
 }: ScheduleExerciseListProps) {
+  const [exerciseOrder, setExerciseOrder] = useState<string[] | null>(null)
+  const [activeExerciseId, setActiveExerciseId] = useState<string | null>(null)
+  const [isSorting, setIsSorting] = useState(false)
+
+  const sensors = useSensors(
+    useSensor(MouseSensor, {
+      activationConstraint: {
+        delay: 180,
+        tolerance: 6,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 220,
+        tolerance: 8,
+      },
+    }),
+  )
+
+  const orderedExercises = useMemo(() => {
+    const exercises = currentSession?.exercises ?? []
+    if (!exerciseOrder || exerciseOrder.length !== exercises.length) {
+      return exercises
+    }
+
+    const exerciseMap = new Map(exercises.map((exercise) => [exercise.id, exercise]))
+    const nextExercises = exerciseOrder
+      .map((exerciseId) => exerciseMap.get(exerciseId) ?? null)
+      .filter((exercise): exercise is WorkoutSessionWithExercises['exercises'][number] => exercise !== null)
+
+    return nextExercises.length === exercises.length ? nextExercises : exercises
+  }, [currentSession, exerciseOrder])
+
+  const activeExercise =
+    activeExerciseId === null
+      ? null
+      : orderedExercises.find((exercise) => exercise.id === activeExerciseId) ?? null
+  const activeExerciseIndex =
+    activeExercise === null
+      ? -1
+      : orderedExercises.findIndex((exercise) => exercise.id === activeExercise.id)
+
+  function handleDragStart(event: DragStartEvent) {
+    setActiveExerciseId(String(event.active.id))
+    setIsSorting(true)
+  }
+
+  function handleDragCancel() {
+    setActiveExerciseId(null)
+    setIsSorting(false)
+  }
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+
+    setActiveExerciseId(null)
+    setIsSorting(false)
+
+    if (!currentSession || !over || active.id === over.id) {
+      return
+    }
+
+    const oldIndex = orderedExercises.findIndex((exercise) => exercise.id === active.id)
+    const newIndex = orderedExercises.findIndex((exercise) => exercise.id === over.id)
+
+    if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex) {
+      return
+    }
+
+    const nextOrderIds = arrayMove(orderedExercises, oldIndex, newIndex).map(
+      (exercise) => exercise.id,
+    )
+
+    setExerciseOrder(nextOrderIds)
+
+    void onReorder(nextOrderIds).then((didReorder) => {
+      if (!didReorder) {
+        setExerciseOrder(currentSession.exercises.map((exercise) => exercise.id))
+      }
+    })
+  }
+
   if (isLoading) {
     return (
       <div className="space-y-3 px-4">
@@ -126,54 +148,66 @@ export function ScheduleExerciseList({
 
   return (
     <div className="flex flex-col gap-3 px-4">
-      <div className="flex justify-end px-2 -mb-1">
+      <div className="-mb-1 flex justify-end px-2">
         <button
           type="button"
           onClick={onOpenAdd}
-          className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--primary)] hover:bg-[var(--primary)]/10 transition-colors"
+          className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/10"
           aria-label={hasTemplates ? '添加动作' : '新建动作'}
         >
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            viewBox="0 0 24 24"
+            width="20"
+            height="20"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <line x1="12" y1="5" x2="12" y2="19" />
             <line x1="5" y1="12" x2="19" y2="12" />
           </svg>
         </button>
       </div>
-      {currentSession.exercises.map((exercise, index) => {
-        const cardState = getExerciseCardState(exercise, now, index)
-        const canDelete = exercise.status === 'pending' && exercise.completedSets === 0
 
-        return (
-          <SwipeActionItem
-            key={exercise.id}
-            actionLabel="删除"
-            disabled={!canDelete}
-            onAction={() => onDelete(exercise.id)}
-          >
-            <Link
-              to={`/exercise/${exercise.id}`}
-              className={`block w-full rounded-[1.25rem] px-4 py-4 transition-transform active:scale-[0.98] ${cardState.itemClassName}`}
-            >
-              <div className="flex items-center gap-4">
-                {cardState.icon}
-                <div className="min-w-0 flex-1 flex items-center justify-between">
-                  <div className="flex flex-col">
-                    <p className={`truncate text-[16px] font-bold ${cardState.nameClassName}`}>
-                      {exercise.name}
-                    </p>
-                    <p className={`mt-0.5 text-[12px] ${cardState.metaClassName}`}>
-                      {cardState.metaText}
-                    </p>
-                  </div>
-                  <div className={`text-[13px] shrink-0 ml-2 ${cardState.statusClassName}`}>
-                    {cardState.statusText}
-                  </div>
-                </div>
-              </div>
-            </Link>
-          </SwipeActionItem>
-        )
-      })}
+      <DndContext
+        sensors={sensors}
+        onDragStart={handleDragStart}
+        onDragCancel={handleDragCancel}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext
+          items={orderedExercises.map((exercise) => exercise.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          {orderedExercises.map((exercise, index) => (
+            <SortableScheduleExerciseItem
+              key={exercise.id}
+              exercise={exercise}
+              index={index}
+              isSorting={isSorting}
+              isSubmitting={isSubmitting}
+              now={now}
+              onDelete={onDelete}
+            />
+          ))}
+        </SortableContext>
+
+        <DragOverlay>
+          {activeExercise ? (
+            <div className="rotate-[0.4deg] scale-[1.02]">
+              <ScheduleExerciseCard
+                exercise={activeExercise}
+                index={activeExerciseIndex}
+                isDragging
+                isSubmitting
+                now={now}
+              />
+            </div>
+          ) : null}
+        </DragOverlay>
+      </DndContext>
     </div>
   )
 }

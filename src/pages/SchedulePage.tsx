@@ -70,9 +70,11 @@ export function SchedulePage() {
           currentSession={schedule.currentSession}
           hasTemplates={schedule.hasTemplates}
           isLoading={schedule.isLoading}
+          isSubmitting={schedule.isSubmitting}
           now={now}
           onDelete={ui.setDeleteExerciseId}
           onOpenAdd={ui.openAddEntry}
+          onReorder={schedule.handleReorderExercises}
         />
       </section>
 

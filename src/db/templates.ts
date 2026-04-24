@@ -201,3 +201,24 @@ export async function deleteTemplateExercise(exerciseId: string) {
   await db.templateExercises.delete(exerciseId)
   await touchTemplate(current.templateId)
 }
+
+export async function reorderTemplateExercises(templateId: string, orderedExerciseIds: string[]) {
+  const exercises = await db.templateExercises.where('templateId').equals(templateId).sortBy('order')
+  if (exercises.length !== orderedExerciseIds.length) {
+    return
+  }
+
+  const exerciseIdSet = new Set(exercises.map((exercise) => exercise.id))
+  if (orderedExerciseIds.some((exerciseId) => !exerciseIdSet.has(exerciseId))) {
+    return
+  }
+
+  await db.transaction('rw', db.templateExercises, db.workoutTemplates, async () => {
+    await Promise.all(
+      orderedExerciseIds.map((exerciseId, order) =>
+        db.templateExercises.update(exerciseId, { order }),
+      ),
+    )
+    await touchTemplate(templateId)
+  })
+}
