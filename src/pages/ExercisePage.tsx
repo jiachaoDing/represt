@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import { ExerciseHero } from '../components/exercise/ExerciseHero'
 import { ExerciseLatestRecordCard } from '../components/exercise/ExerciseLatestRecordCard'
 import { ExerciseMetaGrid } from '../components/exercise/ExerciseMetaGrid'
+import { ExercisePageLoading } from '../components/exercise/ExercisePageLoading'
 import { AnimatedContentSwap } from '../components/motion/AnimatedContentSwap'
 import { ExerciseRecordSheet } from '../components/exercise/ExerciseRecordSheet'
 import { OverflowMenu } from '../components/ui/OverflowMenu'
@@ -103,11 +104,7 @@ export function ExercisePage() {
       ) : null}
 
       {isLoading ? (
-        <div className="mt-12 flex flex-1 flex-col items-center justify-center space-y-4 opacity-50 animate-pulse">
-          <div className="h-4 w-24 rounded bg-[var(--surface-container)]" />
-          <div className="h-16 w-48 rounded bg-[var(--surface-container)]" />
-          <div className="mt-8 h-4 w-64 rounded bg-[var(--surface-container)]" />
-        </div>
+        <ExercisePageLoading showHeader={false} />
       ) : null}
 
       {!isLoading && !detail ? (

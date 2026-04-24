@@ -4,6 +4,7 @@ import { BottomSheet } from '../components/ui/BottomSheet'
 import { ConfirmDialog } from '../components/ui/ConfirmDialog'
 import { PageHeader } from '../components/ui/PageHeader'
 import { Snackbar } from '../components/ui/Snackbar'
+import { TrainingCyclePageLoading } from '../components/training-cycle/TrainingCyclePageLoading'
 import { useSnackbarMessage } from '../hooks/useSnackbarMessage'
 import { useTrainingCyclePageData } from '../hooks/pages/useTrainingCyclePageData'
 import { addDaysToSessionDateKey, formatSessionDateKey } from '../lib/session-date-key'
@@ -145,7 +146,7 @@ export function TrainingCyclePage() {
 
       <div className="min-h-0 flex-1 overflow-y-auto">
         {isLoading ? (
-        <div className="mx-4 mt-8 h-32 animate-pulse rounded-[1rem] bg-[var(--surface-container)] opacity-50" />
+          <TrainingCyclePageLoading showHeader={false} />
         ) : trainingCycle && trainingCycle.slots.length > 0 ? (
         <section className="relative mx-auto mt-4 max-w-lg pb-28">
           {/* Continuous Left Timeline */}

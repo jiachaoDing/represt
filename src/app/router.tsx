@@ -2,6 +2,8 @@ import { lazy, Suspense, type ReactNode } from 'react'
 import { createBrowserRouter } from 'react-router-dom'
 
 import { AppLayout } from '../components/layout/AppLayout'
+import { ExercisePageLoading } from '../components/exercise/ExercisePageLoading'
+import { TrainingCyclePageLoading } from '../components/training-cycle/TrainingCyclePageLoading'
 
 const loadCalendarPage = () => import('../pages/CalendarPage')
 const loadExercisePage = () => import('../pages/ExercisePage')
@@ -29,8 +31,8 @@ const TemplatesPage = lazy(() =>
   loadTemplatesPage().then((module) => ({ default: module.TemplatesPage })),
 )
 
-function lazyRoute(element: ReactNode) {
-  return <Suspense fallback={null}>{element}</Suspense>
+function lazyRoute(element: ReactNode, fallback: ReactNode = null) {
+  return <Suspense fallback={fallback}>{element}</Suspense>
 }
 
 export function preloadPrimaryRouteModules() {
@@ -50,7 +52,7 @@ export const router = createBrowserRouter([
       },
       {
         path: 'exercise/:id',
-        element: lazyRoute(<ExercisePage />),
+        element: lazyRoute(<ExercisePage />, <ExercisePageLoading />),
         handle: { title: '动作页' },
       },
       {
@@ -60,7 +62,7 @@ export const router = createBrowserRouter([
       },
       {
         path: 'templates/cycle',
-        element: lazyRoute(<TrainingCyclePage />),
+        element: lazyRoute(<TrainingCyclePage />, <TrainingCyclePageLoading />),
         handle: { title: '循环日程' },
       },
       {
