@@ -2,10 +2,15 @@ import { useEffect } from 'react'
 import { RouterProvider } from 'react-router-dom'
 
 import { preloadPrimaryRouteModules, router } from './router'
+import { initNotificationNavigation } from '../native/notification-navigation'
 
 function App() {
   useEffect(() => {
     void import('../db/templates').then(({ ensureTemplateSeedData }) => ensureTemplateSeedData())
+  }, [])
+
+  useEffect(() => {
+    void initNotificationNavigation(router)
   }, [])
 
   useEffect(() => {

@@ -12,6 +12,7 @@ import {
   parseOptionalWeightKg,
   toOptionalNumberString,
 } from '../../lib/input-parsers'
+import { scheduleRestTimerNotification } from '../../native/training-notifications'
 
 function syncLatestSetInputs(
   detail: SessionExerciseDetail | null,
@@ -20,6 +21,22 @@ function syncLatestSetInputs(
 ) {
   setWeightInput(toOptionalNumberString(detail?.latestSetRecord?.weightKg ?? null))
   setRepsInput(toOptionalNumberString(detail?.latestSetRecord?.reps ?? null))
+}
+
+async function syncRestTimerNotification(detail: SessionExerciseDetail | null) {
+  if (!detail) {
+    return
+  }
+
+  try {
+    await scheduleRestTimerNotification({
+      exerciseId: detail.exercise.id,
+      exerciseName: detail.exercise.name,
+      restEndsAt: detail.exercise.restEndsAt,
+    })
+  } catch (notificationError) {
+    console.warn(notificationError)
+  }
 }
 
 export function useExercisePageData(id: string) {
@@ -96,6 +113,7 @@ export function useExercisePageData(id: string) {
 
       setDetail(nextDetail)
       syncLatestSetInputs(nextDetail, setWeightInput, setRepsInput)
+      await syncRestTimerNotification(nextDetail)
       didComplete = true
     })
 
@@ -143,6 +161,7 @@ export function useExercisePageData(id: string) {
 
       setDetail(nextDetail)
       syncLatestSetInputs(nextDetail, setWeightInput, setRepsInput)
+      await syncRestTimerNotification(nextDetail)
       didUndo = true
     })
 
