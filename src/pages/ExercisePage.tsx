@@ -73,7 +73,11 @@ export function ExercisePage() {
         },
         {
           label: '查看总结',
-          onSelect: () => navigate(`/summary/${detail.session.id}`, { state: backLinkState }),
+          onSelect: () =>
+            navigate(`/summary/${detail.session.id}`, {
+              state: backLinkState,
+              viewTransition: true,
+            }),
         },
       ]
     : []
@@ -144,7 +148,7 @@ export function ExercisePage() {
                 isFinalResting
                   ? () => void handleSkipCurrentRest()
                   : isCompleted
-                  ? () => navigate('/')
+                  ? () => navigate('/', { viewTransition: true })
                   : () => void handleCompleteCurrentSet()
               }
               transition={listSpringTransition}

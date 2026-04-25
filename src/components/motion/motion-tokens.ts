@@ -1,10 +1,3 @@
-export const pageSpringTransition = {
-  type: 'spring',
-  stiffness: 360,
-  damping: 34,
-  mass: 0.86,
-} as const
-
 export const listSpringTransition = {
   type: 'spring',
   stiffness: 420,

@@ -50,6 +50,7 @@ export function SchedulePage() {
           <Link
             to="/calendar"
             state={backLinkState}
+            viewTransition
             className="flex h-9 w-9 items-center justify-center rounded-xl border border-[var(--outline-variant)] text-[var(--on-surface-variant)] transition-colors hover:bg-[var(--on-surface-variant)]/5"
             aria-label="日历"
           >

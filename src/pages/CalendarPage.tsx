@@ -100,6 +100,7 @@ export function CalendarPage() {
           <p className="text-base font-semibold text-[var(--on-surface)]">还没有训练记录</p>
           <Link
             to={buildSummaryPath(todayDateKey)}
+            viewTransition
             className="mt-4 inline-flex h-10 items-center justify-center rounded-xl bg-[var(--surface-container)] px-4 text-sm font-medium text-[var(--on-surface)]"
           >
             去看今日总结

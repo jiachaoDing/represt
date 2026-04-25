@@ -44,6 +44,7 @@ export function TemplateCyclePreviewCard({
     <Link
       to="/templates/cycle"
       state={backLinkState}
+      viewTransition
       aria-label={isConfigured ? '编辑循环日程' : '设置循环日程'}
       className="mx-4 mt-4 block rounded-[1.25rem] border border-[var(--outline-variant)]/20 bg-[var(--surface)] p-4 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)] transition-colors hover:bg-[var(--surface-container)]/35"
     >

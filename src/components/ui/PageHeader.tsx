@@ -43,6 +43,7 @@ export function PageHeader({
         {backTo ? (
           <Link
             to={backTo}
+            viewTransition
             className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-[var(--on-surface)] transition-colors hover:bg-[var(--on-surface-variant)]/10"
             aria-label="返回"
           >
@@ -60,7 +61,7 @@ export function PageHeader({
               : 'flex',
           ].join(' ')}
         >
-          <h1 className="page-header-title truncate text-[22px] leading-8 font-bold tracking-normal text-[var(--on-surface)]">
+          <h1 className="truncate text-[22px] leading-8 font-bold tracking-normal text-[var(--on-surface)]">
             {title}
           </h1>
           {subtitle ? (

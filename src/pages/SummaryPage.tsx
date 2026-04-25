@@ -52,6 +52,7 @@ export function SummaryPage() {
       <Link
         to={calendarTo}
         state={backLinkState}
+        viewTransition
         className="mt-4 inline-flex h-10 items-center justify-center rounded-xl bg-[var(--surface-container)] px-4 text-sm font-medium text-[var(--on-surface)]"
       >
         打开日历

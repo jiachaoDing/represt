@@ -122,24 +122,16 @@ button:disabled {
   display: none;
 }
 
-.page-header-title {
-  view-transition-name: page-title;
-}
-
-.active-nav-pill {
-  view-transition-name: active-nav-pill;
-}
-
 ::view-transition-old(root),
 ::view-transition-new(root) {
-  animation-duration: 180ms;
-  animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
+  animation-duration: 240ms;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-::view-transition-old(page-title),
-::view-transition-new(page-title),
-::view-transition-old(active-nav-pill),
-::view-transition-new(active-nav-pill) {
-  animation-duration: 220ms;
-  animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 80ms;
+    animation-timing-function: linear;
+  }
 }

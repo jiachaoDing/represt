@@ -68,6 +68,7 @@ export function CalendarMonthGrid({
             <Link
               key={cell.dateKey}
               to={`/summary?date=${cell.dateKey}`}
+              viewTransition
               className={cellClassName}
               aria-label={`${cell.dateKey} 有训练记录`}
             >

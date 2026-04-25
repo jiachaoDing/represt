@@ -47,6 +47,7 @@ export function SummaryDateSwitcher({
           <Link
             to={calendarTo}
             state={backLinkState}
+            viewTransition
             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-[var(--on-surface-variant)] transition-colors hover:bg-[var(--surface-container)]"
             aria-label="日历"
           >

@@ -46,7 +46,11 @@ export function SessionSummaryOverview({
     return (
       <div className="mx-4 mt-6 space-y-4 text-center">
         <p className="text-[var(--on-surface-variant)]">没有找到这次训练。</p>
-        <Link to="/" className="inline-block rounded-full bg-[var(--primary)] px-6 py-3 text-sm font-medium text-[var(--on-primary)]">
+        <Link
+          to="/"
+          viewTransition
+          className="inline-block rounded-full bg-[var(--primary)] px-6 py-3 text-sm font-medium text-[var(--on-primary)]"
+        >
           返回训练安排
         </Link>
       </div>

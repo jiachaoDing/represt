@@ -102,7 +102,7 @@ export function AppLayout() {
                         <div className={[
                           'flex h-8 px-5 items-center justify-center rounded-full transition-colors duration-200',
                           isActive
-                            ? 'active-nav-pill bg-[var(--primary-container)] text-[var(--on-primary-container)]'
+                            ? 'bg-[var(--primary-container)] text-[var(--on-primary-container)]'
                             : 'text-[var(--on-surface-variant)] hover:bg-[var(--on-surface-variant)]/10'
                         ].join(' ')}>
                           {item.icon(isActive)}

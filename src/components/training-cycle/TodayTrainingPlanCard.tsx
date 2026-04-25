@@ -74,6 +74,7 @@ export function TodayTrainingPlanCard({
       <Link 
         to="/templates/cycle"
         state={backLinkState}
+        viewTransition
         className="flex-1 flex flex-col justify-center rounded-[1rem] p-3.5 hover:bg-[var(--on-surface)]/5 active:bg-[var(--on-surface)]/10 transition-colors"
       >
         <div className="min-w-0">
