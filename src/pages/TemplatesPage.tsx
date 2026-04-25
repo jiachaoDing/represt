@@ -4,7 +4,6 @@ import { TemplateCyclePreviewCard } from '../components/training-cycle/TemplateC
 import { PageHeader } from '../components/ui/PageHeader'
 import { OverflowMenu } from '../components/ui/OverflowMenu'
 import { ConfirmDialog } from '../components/ui/ConfirmDialog'
-import { Snackbar } from '../components/ui/Snackbar'
 import { TemplateExerciseList } from '../components/templates/TemplateExerciseList'
 import { TemplateNameSheet } from '../components/templates/TemplateNameSheet'
 import { TemplateSwitcher } from '../components/templates/TemplateSwitcher'
@@ -113,8 +112,6 @@ export function TemplatesPage() {
         onCancel={() => ui.setTemplateDeleteOpen(false)}
         onConfirm={() => void ui.handleConfirmDeleteTemplate()}
       />
-
-      <Snackbar message={ui.message} />
     </div>
   )
 }

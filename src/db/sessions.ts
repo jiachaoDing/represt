@@ -102,10 +102,6 @@ function createTemplateExerciseSnapshot(
   }
 }
 
-function isSamePlanValue<T>(left: T | null | undefined, right: T | null | undefined) {
-  return (left ?? null) === (right ?? null)
-}
-
 function deriveSessionStatus(
   exercises: Array<Pick<SessionExercise, 'completedSets' | 'targetSets' | 'restEndsAt'>>,
 ) {
@@ -172,9 +168,11 @@ async function getSessionRecordByDateKey(sessionDateKey: string) {
   return db.workoutSessions.where('sessionDateKey').equals(sessionDateKey).first()
 }
 
-async function getSessionExercises(sessionId: string) {
+async function getSessionExercises(sessionId: string, options?: { includeArchived?: boolean }) {
   const exercises = await db.sessionExercises.where('sessionId').equals(sessionId).toArray()
-  return exercises.sort((left, right) => left.order - right.order)
+  return exercises
+    .filter((exercise) => options?.includeArchived || !exercise.archivedAt)
+    .sort((left, right) => left.order - right.order)
 }
 
 async function getSessionSetRecords(sessionId: string) {
@@ -232,6 +230,7 @@ async function buildSessionExercisesFromTemplate(
     sourceTemplateSnapshot: createTemplateExerciseSnapshot(exercise),
     origin: 'template',
     removedFromTemplate: false,
+    archivedAt: null,
     name: exercise.name,
     targetSets: exercise.targetSets,
     defaultWeightKg: exercise.weightKg ?? null,
@@ -244,12 +243,78 @@ async function buildSessionExercisesFromTemplate(
   })) satisfies SessionExercise[]
 }
 
-async function maybeAutoImportTrainingCycleTemplate(session: WorkoutSession) {
-  if (session.sessionDateKey !== getTodaySessionDateKey()) {
+async function clearVisibleSessionPlan(sessionId: string, archivedAt: string) {
+  const exercises = await getSessionExercises(sessionId)
+
+  await Promise.all(
+    exercises.map((exercise) =>
+      exercise.completedSets > 0
+        ? db.sessionExercises.update(exercise.id, {
+            archivedAt,
+            restEndsAt: null,
+          })
+        : db.sessionExercises.delete(exercise.id),
+    ),
+  )
+}
+
+async function replaceVisibleSessionPlanFromTemplate(
+  session: WorkoutSession,
+  templateId: string | null,
+) {
+  const timestamp = nowIso()
+
+  if (!templateId) {
+    await db.transaction('rw', db.workoutSessions, db.sessionExercises, async () => {
+      await clearVisibleSessionPlan(session.id, timestamp)
+      await db.workoutSessions.update(session.id, {
+        autoImportedTemplateId: null,
+        autoImportedAt: timestamp,
+        lastSyncedTemplateUpdatedAt: null,
+        deletedTemplateExerciseIds: [],
+      })
+    })
+
+    return {
+      ...session,
+      autoImportedTemplateId: null,
+      autoImportedAt: timestamp,
+      lastSyncedTemplateUpdatedAt: null,
+      deletedTemplateExerciseIds: [],
+    } satisfies WorkoutSession
+  }
+
+  const template = await db.workoutTemplates.get(templateId)
+  if (!template) {
     return session
   }
 
-  if (session.autoImportedAt) {
+  const nextExercises = await buildSessionExercisesFromTemplate(session.id, templateId)
+
+  await db.transaction('rw', db.workoutSessions, db.sessionExercises, async () => {
+    await clearVisibleSessionPlan(session.id, timestamp)
+    if (nextExercises.length > 0) {
+      await db.sessionExercises.bulkAdd(nextExercises)
+    }
+    await db.workoutSessions.update(session.id, {
+      autoImportedTemplateId: templateId,
+      autoImportedAt: timestamp,
+      lastSyncedTemplateUpdatedAt: template.updatedAt,
+      deletedTemplateExerciseIds: [],
+    })
+  })
+
+  return {
+    ...session,
+    autoImportedTemplateId: templateId,
+    autoImportedAt: timestamp,
+    lastSyncedTemplateUpdatedAt: template.updatedAt,
+    deletedTemplateExerciseIds: [],
+  } satisfies WorkoutSession
+}
+
+async function maybeAutoImportTrainingCycleTemplate(session: WorkoutSession) {
+  if (session.sessionDateKey !== getTodaySessionDateKey()) {
     return session
   }
 
@@ -257,57 +322,15 @@ async function maybeAutoImportTrainingCycleTemplate(session: WorkoutSession) {
   const todayCycleDay = getTodayTrainingCycleDay(cycle)
   const templateId = todayCycleDay?.slot.templateId ?? null
 
-  if (!templateId) {
+  if (session.autoImportedAt && session.autoImportedTemplateId === templateId) {
     return session
   }
 
-  const [existingExercises, template] = await Promise.all([
-    getSessionExercises(session.id),
-    db.workoutTemplates.get(templateId),
-  ])
-
-  if (!template) {
+  if (!templateId && !session.autoImportedTemplateId && session.autoImportedAt) {
     return session
   }
 
-  const importedTemplateExerciseIds = new Set(
-    existingExercises
-      .map((exercise) => exercise.templateExerciseId)
-      .filter((templateExerciseId) => templateExerciseId !== null),
-  )
-  const templateExerciseIds = (
-    await db.templateExercises.where('templateId').equals(templateId).sortBy('order')
-  )
-    .map((exercise) => exercise.id)
-    .filter((templateExerciseId) => !importedTemplateExerciseIds.has(templateExerciseId))
-  const nextOrder =
-    existingExercises.reduce((maxOrder, exercise) => Math.max(maxOrder, exercise.order), -1) + 1
-  const nextExercises = await buildSessionExercisesFromTemplate(
-    session.id,
-    templateId,
-    nextOrder,
-    templateExerciseIds,
-  )
-  const autoImportedAt = nowIso()
-
-  await db.transaction('rw', db.workoutSessions, db.sessionExercises, async () => {
-    if (nextExercises.length > 0) {
-      await db.sessionExercises.bulkAdd(nextExercises)
-    }
-
-    await db.workoutSessions.update(session.id, {
-      autoImportedTemplateId: templateId,
-      autoImportedAt,
-      lastSyncedTemplateUpdatedAt: template.updatedAt,
-    })
-  })
-
-  return {
-    ...session,
-    autoImportedTemplateId: templateId,
-    autoImportedAt,
-    lastSyncedTemplateUpdatedAt: template.updatedAt,
-  } satisfies WorkoutSession
+  return replaceVisibleSessionPlanFromTemplate(session, templateId)
 }
 
 export async function getCurrentSession() {
@@ -382,7 +405,7 @@ export async function getSessionExerciseDetail(sessionExerciseId: string) {
 export async function getSessionSummaryDetail(sessionId: string) {
   const [session, exercises, setRecords] = await Promise.all([
     getSessionRecord(sessionId),
-    getSessionExercises(sessionId),
+    getSessionExercises(sessionId, { includeArchived: true }),
     getSessionSetRecords(sessionId),
   ])
 
@@ -400,10 +423,12 @@ export async function getSessionSummaryDetail(sessionId: string) {
 
   return {
     session: attachDerivedSessionStatus(session, exercises),
-    exercises: exercises.map((exercise) => ({
-      ...attachDerivedExerciseStatus(exercise),
-      setRecords: setRecordsByExerciseId.get(exercise.id) ?? [],
-    })),
+    exercises: exercises
+      .map((exercise) => ({
+        ...attachDerivedExerciseStatus(exercise),
+        setRecords: setRecordsByExerciseId.get(exercise.id) ?? [],
+      }))
+      .filter((exercise) => exercise.completedSets > 0 || exercise.setRecords.length > 0),
   } satisfies SessionSummaryDetail
 }
 
@@ -419,72 +444,6 @@ export async function getSessionSummaryDetailByDateKey(sessionDateKey: string) {
 export async function listSessionDateKeys() {
   const sessions = await db.workoutSessions.orderBy('sessionDateKey').toArray()
   return sessions.map((session) => session.sessionDateKey)
-}
-
-function getTemplatePlanUpdates(
-  exercise: SessionExercise,
-  nextSnapshot: SessionTemplateExerciseSnapshot,
-) {
-  const previousSnapshot = exercise.sourceTemplateSnapshot ?? {
-    name: exercise.name,
-    targetSets: exercise.targetSets,
-    defaultWeightKg: exercise.defaultWeightKg ?? null,
-    defaultReps: exercise.defaultReps ?? null,
-    restSeconds: exercise.restSeconds,
-    order: exercise.order,
-  }
-  const canUpdateUnstartedPlan = exercise.completedSets === 0
-  const updates: Partial<SessionExercise> = {
-    sourceTemplateSnapshot: nextSnapshot,
-    removedFromTemplate: false,
-  }
-  let changedPlan = false
-
-  if (exercise.name === previousSnapshot.name && exercise.name !== nextSnapshot.name) {
-    updates.name = nextSnapshot.name
-    changedPlan = true
-  }
-
-  if (
-    canUpdateUnstartedPlan &&
-    exercise.targetSets === previousSnapshot.targetSets &&
-    exercise.targetSets !== nextSnapshot.targetSets
-  ) {
-    updates.targetSets = nextSnapshot.targetSets
-    changedPlan = true
-  }
-
-  if (
-    canUpdateUnstartedPlan &&
-    exercise.restSeconds === previousSnapshot.restSeconds &&
-    exercise.restSeconds !== nextSnapshot.restSeconds
-  ) {
-    updates.restSeconds = nextSnapshot.restSeconds
-    changedPlan = true
-  }
-
-  if (
-    canUpdateUnstartedPlan &&
-    isSamePlanValue(exercise.defaultWeightKg, previousSnapshot.defaultWeightKg) &&
-    !isSamePlanValue(exercise.defaultWeightKg, nextSnapshot.defaultWeightKg)
-  ) {
-    updates.defaultWeightKg = nextSnapshot.defaultWeightKg ?? null
-    changedPlan = true
-  }
-
-  if (
-    canUpdateUnstartedPlan &&
-    isSamePlanValue(exercise.defaultReps, previousSnapshot.defaultReps) &&
-    !isSamePlanValue(exercise.defaultReps, nextSnapshot.defaultReps)
-  ) {
-    updates.defaultReps = nextSnapshot.defaultReps ?? null
-    changedPlan = true
-  }
-
-  return {
-    changedPlan,
-    updates,
-  }
 }
 
 export async function getSessionTemplateSyncStatus(
@@ -516,7 +475,7 @@ export async function syncSessionFromTemplate(sessionId: string): Promise<Templa
     throw new Error('只能同步今天自动安排的模板。')
   }
 
-  const [template, templateExercises, sessionExercises] = await Promise.all([
+  const [template, templateExercises, visibleExercises] = await Promise.all([
     db.workoutTemplates.get(templateId),
     db.templateExercises.where('templateId').equals(templateId).toArray(),
     getSessionExercises(sessionId),
@@ -526,98 +485,12 @@ export async function syncSessionFromTemplate(sessionId: string): Promise<Templa
     throw new Error('模板不存在。')
   }
 
-  const deletedTemplateExerciseIds = new Set(session.deletedTemplateExerciseIds ?? [])
-  const sourceTemplateExerciseIds = sessionExercises
-    .map((exercise) => exercise.templateExerciseId)
-    .filter((exerciseId): exerciseId is string => exerciseId !== null)
-  const sourceTemplateExercises = await db.templateExercises.bulkGet(sourceTemplateExerciseIds)
-  const sourceTemplateIdByExerciseId = new Map(
-    sourceTemplateExercises
-      .filter((exercise): exercise is TemplateExercise => exercise !== undefined)
-      .map((exercise) => [exercise.id, exercise.templateId]),
-  )
-  const templateExercisesById = new Map(templateExercises.map((exercise) => [exercise.id, exercise]))
-  const sessionExercisesByTemplateId = new Map<string, SessionExercise>()
-
-  for (const exercise of sessionExercises) {
-    if (exercise.templateExerciseId && !sessionExercisesByTemplateId.has(exercise.templateExerciseId)) {
-      sessionExercisesByTemplateId.set(exercise.templateExerciseId, exercise)
-    }
-  }
-
-  let addedCount = 0
-  let updatedCount = 0
-  let removedCount = 0
-  let nextOrder = sessionExercises.reduce((maxOrder, exercise) => Math.max(maxOrder, exercise.order), -1) + 1
-
-  await db.transaction('rw', db.workoutSessions, db.sessionExercises, async () => {
-    for (const templateExercise of templateExercises.sort((left, right) => left.order - right.order)) {
-      if (deletedTemplateExerciseIds.has(templateExercise.id)) {
-        continue
-      }
-
-      const currentExercise = sessionExercisesByTemplateId.get(templateExercise.id)
-      const nextSnapshot = createTemplateExerciseSnapshot(templateExercise)
-
-      if (!currentExercise) {
-        await db.sessionExercises.add({
-          id: crypto.randomUUID(),
-          sessionId,
-          templateExerciseId: templateExercise.id,
-          sourceTemplateId: templateId,
-          sourceTemplateSnapshot: nextSnapshot,
-          origin: 'template',
-          removedFromTemplate: false,
-          name: templateExercise.name,
-          targetSets: templateExercise.targetSets,
-          defaultWeightKg: templateExercise.weightKg ?? null,
-          defaultReps: templateExercise.reps ?? null,
-          completedSets: 0,
-          restSeconds: templateExercise.restSeconds,
-          order: nextOrder,
-          lastCompletedAt: null,
-          restEndsAt: null,
-        })
-        nextOrder += 1
-        addedCount += 1
-        continue
-      }
-
-      const { changedPlan, updates } = getTemplatePlanUpdates(currentExercise, nextSnapshot)
-      updates.sourceTemplateId = templateId
-      updates.origin = 'template'
-      await db.sessionExercises.update(currentExercise.id, updates)
-      if (changedPlan) {
-        updatedCount += 1
-      }
-    }
-
-    for (const exercise of sessionExercises) {
-      const sourceTemplateId =
-        exercise.sourceTemplateId ??
-        (exercise.templateExerciseId ? sourceTemplateIdByExerciseId.get(exercise.templateExerciseId) : null) ??
-        null
-
-      if (
-        exercise.templateExerciseId &&
-        sourceTemplateId === templateId &&
-        !templateExercisesById.has(exercise.templateExerciseId) &&
-        !exercise.removedFromTemplate
-      ) {
-        await db.sessionExercises.update(exercise.id, { removedFromTemplate: true })
-        removedCount += 1
-      }
-    }
-
-    await db.workoutSessions.update(sessionId, {
-      lastSyncedTemplateUpdatedAt: template.updatedAt,
-    })
-  })
+  await replaceVisibleSessionPlanFromTemplate(session, templateId)
 
   return {
-    addedCount,
-    updatedCount,
-    removedCount,
+    addedCount: templateExercises.length,
+    updatedCount: 0,
+    removedCount: visibleExercises.length,
   }
 }
 export async function addTemplateExercisesToSession(
@@ -674,6 +547,7 @@ export async function addTemporarySessionExercise(sessionId: string, input: Part
     sourceTemplateSnapshot: null,
     origin: 'manual',
     removedFromTemplate: false,
+    archivedAt: null,
     name: normalized.name,
     targetSets: normalized.targetSets,
     defaultWeightKg: normalized.defaultWeightKg,

@@ -1,6 +1,5 @@
 import { useState, type FormEvent } from 'react'
 
-import { useSnackbarMessage } from '../useSnackbarMessage'
 import {
   emptyTemplateExerciseDraft,
   toTemplateExerciseDraft,
@@ -35,7 +34,6 @@ export function useTemplatesPageUi({
   handleSaveTemplateName,
   setNewTemplateName,
 }: UseTemplatesPageUiOptions) {
-  const { message, setMessage } = useSnackbarMessage()
   const [editExerciseId, setEditExerciseId] = useState<string | null>(null)
   const [exerciseDraft, setExerciseDraft] = useState<TemplateExerciseDraft>(emptyTemplateExerciseDraft)
   const [isCreatingExercise, setIsCreatingExercise] = useState(false)
@@ -90,7 +88,6 @@ export function useTemplatesPageUi({
       const didCreate = await handleCreateTemplate()
       if (didCreate) {
         setTemplateSheetMode(null)
-        setMessage('模板已创建')
       }
       return
     }
@@ -99,7 +96,6 @@ export function useTemplatesPageUi({
       const didRename = await handleSaveTemplateName(currentTemplate.id, renameTemplateNameValue)
       if (didRename) {
         setTemplateSheetMode(null)
-        setMessage('模板名称已更新')
       }
     }
   }
@@ -114,7 +110,6 @@ export function useTemplatesPageUi({
       const didCreate = await handleCreateExercise(currentTemplate.id, exerciseDraft)
       if (didCreate) {
         closeExerciseEditor()
-        setMessage('动作已加入模板')
       }
       return
     }
@@ -126,7 +121,6 @@ export function useTemplatesPageUi({
     const didSave = await handleSaveExercise(currentTemplate.id, editExerciseId, exerciseDraft)
     if (didSave) {
       closeExerciseEditor()
-      setMessage('动作已更新')
     }
   }
 
@@ -140,7 +134,6 @@ export function useTemplatesPageUi({
       if (editExerciseId && exerciseIds.includes(editExerciseId)) {
         closeExerciseEditor()
       }
-      setMessage(`已删除 ${exerciseIds.length} 个动作`)
     }
     return didDelete
   }
@@ -155,7 +148,6 @@ export function useTemplatesPageUi({
       setTemplateDeleteOpen(false)
       setTemplateSheetMode(null)
       closeExerciseEditor()
-      setMessage('模板已删除')
     }
   }
 
@@ -169,7 +161,6 @@ export function useTemplatesPageUi({
     handleTemplateSubmit,
     isCreatingExercise,
     isExerciseEditorActive,
-    message,
     openCreateExerciseEditor,
     openEditExerciseEditor,
     openTemplateSheet,

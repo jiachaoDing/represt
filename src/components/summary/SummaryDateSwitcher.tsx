@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 
+import { AnimatedContentSwap } from '../motion/AnimatedContentSwap'
 import { useBackLinkState } from '../../hooks/useRouteBack'
 
 type SummaryDateSwitcherProps = {
@@ -37,7 +38,9 @@ export function SummaryDateSwitcher({
 
         <div className="min-w-0 flex-1 text-center">
           <p className="text-[11px] text-[var(--on-surface-variant)]">训练日期</p>
-          <p className="mt-1 truncate text-[15px] font-semibold text-[var(--on-surface)]">{dateLabel}</p>
+          <p className="mt-1 truncate text-[15px] font-semibold text-[var(--on-surface)]">
+            <AnimatedContentSwap contentKey={dateLabel}>{dateLabel}</AnimatedContentSwap>
+          </p>
         </div>
 
         <div className="flex justify-end gap-2">

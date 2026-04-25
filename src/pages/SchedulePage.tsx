@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom'
 import { TodayTrainingPlanCard } from '../components/training-cycle/TodayTrainingPlanCard'
 import { PageHeader } from '../components/ui/PageHeader'
 import { ConfirmDialog } from '../components/ui/ConfirmDialog'
-import { Snackbar } from '../components/ui/Snackbar'
 import { useNow } from '../hooks/useNow'
 import { useBackLinkState } from '../hooks/useRouteBack'
 import { useSchedulePageData } from '../hooks/pages/useSchedulePageData'
@@ -84,7 +83,7 @@ export function SchedulePage() {
                 {schedule.templateSyncStatus.templateName ?? '模板'} 有更新
               </p>
               <p className="mt-1 text-xs leading-5 text-[var(--on-surface-variant)]">
-                会添加新动作，并更新未开始的计划；已记录的训练不会被覆盖。
+                会按当前模板重建今日动作；已记录的组会保留到总结页。
               </p>
             </div>
             <button
@@ -169,8 +168,6 @@ export function SchedulePage() {
         }}
         onConfirm={() => void ui.confirmPendingTemplateImport()}
       />
-
-      <Snackbar message={ui.message} />
     </div>
   )
 }

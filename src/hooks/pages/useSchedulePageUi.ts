@@ -1,6 +1,5 @@
 import { useMemo, useState, type FormEvent } from 'react'
 
-import { useSnackbarMessage } from '../useSnackbarMessage'
 import type { TemplateSyncResult } from '../../db/sessions'
 import type { TemplateWithExercises } from '../../db/templates'
 
@@ -37,7 +36,6 @@ export function useSchedulePageUi({
   shouldConfirmContinueBeforeAddingExercise,
   templates,
 }: UseSchedulePageUiOptions) {
-  const { message, setMessage } = useSnackbarMessage()
   const [importSourceTemplateId, setImportSourceTemplateId] = useState<string | null>(null)
   const [isActionSheetOpen, setIsActionSheetOpen] = useState(false)
   const [isContinueDialogOpen, setIsContinueDialogOpen] = useState(false)
@@ -86,7 +84,6 @@ export function useSchedulePageUi({
       setPendingTemplateImportId(null)
       setPendingTemplateExerciseIds([])
       setIsTemplateSheetOpen(false)
-      setMessage(`已把 ${result.name} 的 ${result.count} 个动作加入今日训练`)
     }
   }
 
@@ -96,7 +93,6 @@ export function useSchedulePageUi({
     }
 
     if (selectedTemplateExerciseIds.length === 0) {
-      setMessage('至少选择 1 个动作')
       return
     }
 
@@ -122,7 +118,6 @@ export function useSchedulePageUi({
     if (didCreate) {
       setIsContinueDialogOpen(false)
       setIsCreateSheetOpen(false)
-      setMessage('动作已加入今日训练')
     }
   }
 
@@ -138,20 +133,11 @@ export function useSchedulePageUi({
 
   async function handleDeleteExercisesAction(sessionExerciseIds: string[]) {
     const didDelete = await handleDeleteExercises(sessionExerciseIds)
-    if (didDelete) {
-      setMessage(`已删除 ${sessionExerciseIds.length} 个动作`)
-    }
     return didDelete
   }
 
   async function handleSyncTemplateAction() {
-    const result = await handleSyncTemplate()
-    if (!result) {
-      return
-    }
-
-    const changedCount = result.addedCount + result.updatedCount + result.removedCount
-    setMessage(changedCount > 0 ? '已同步模板更新' : '模板已是最新')
+    await handleSyncTemplate()
   }
 
   return {
@@ -166,7 +152,6 @@ export function useSchedulePageUi({
     isContinueDialogOpen,
     isCreateSheetOpen,
     isTemplateSheetOpen,
-    message,
     openAddEntry,
     pendingTemplateExerciseIds,
     pendingTemplateImportConfirmation,

@@ -10,10 +10,8 @@ import { AnimatedContentSwap } from '../components/motion/AnimatedContentSwap'
 import { ExerciseRecordSheet } from '../components/exercise/ExerciseRecordSheet'
 import { OverflowMenu } from '../components/ui/OverflowMenu'
 import { PageHeader } from '../components/ui/PageHeader'
-import { Snackbar } from '../components/ui/Snackbar'
 import { useNow } from '../hooks/useNow'
 import { useBackLinkState } from '../hooks/useRouteBack'
-import { useSnackbarMessage } from '../hooks/useSnackbarMessage'
 import { useExercisePageData } from '../hooks/pages/useExercisePageData'
 import { listSpringTransition } from '../components/motion/motion-tokens'
 import { getRestTimerSnapshot, getRestTimerState } from '../lib/rest-timer'
@@ -39,22 +37,15 @@ export function ExercisePage() {
     setWeightInput,
     weightInput,
   } = useExercisePageData(id)
-  const { message, setMessage } = useSnackbarMessage()
   const [isRecordSheetOpen, setIsRecordSheetOpen] = useState(false)
   const backLinkState = useBackLinkState()
 
   async function handleCompleteCurrentSet() {
-    const didComplete = await handleCompleteSet()
-    if (didComplete && detail) {
-      setMessage(`已完成第 ${detail.exercise.completedSets + 1} 组`)
-    }
+    await handleCompleteSet()
   }
 
   async function handleSkipCurrentRest() {
-    const didSkip = await handleSkipRest()
-    if (didSkip) {
-      setMessage('已跳过休息')
-    }
+    await handleSkipRest()
   }
 
   async function handleSaveRecord(event: FormEvent<HTMLFormElement>) {
@@ -62,7 +53,6 @@ export function ExercisePage() {
     const didSave = await handleUpdateLatestSetRecord()
     if (didSave) {
       setIsRecordSheetOpen(false)
-      setMessage('最近一组已更新')
     }
   }
 
@@ -71,11 +61,7 @@ export function ExercisePage() {
       return
     }
 
-    const undoneSetNumber = detail.exercise.completedSets
-    const didUndo = await handleUndoLatestSet()
-    if (didUndo) {
-      setMessage(`已撤销第 ${undoneSetNumber} 组`)
-    }
+    await handleUndoLatestSet()
   }
 
   const menuItems = detail
@@ -242,8 +228,6 @@ export function ExercisePage() {
         onSubmit={handleSaveRecord}
         onWeightChange={setWeightInput}
       />
-
-      <Snackbar message={message} placement="top" />
     </div>
   )
 }

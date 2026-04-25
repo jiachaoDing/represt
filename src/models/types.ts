@@ -60,6 +60,7 @@ export interface SessionExercise {
   sourceTemplateSnapshot?: SessionTemplateExerciseSnapshot | null
   origin?: 'template' | 'manual'
   removedFromTemplate?: boolean
+  archivedAt?: string | null
   name: string
   targetSets: number
   defaultWeightKg?: number | null

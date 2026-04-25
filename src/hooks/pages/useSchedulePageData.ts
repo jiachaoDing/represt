@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 
 import {
   addTemplateExercisesToSession,
@@ -68,6 +69,7 @@ function hasImportedTemplateExercises(
 }
 
 export function useSchedulePageData() {
+  const location = useLocation()
   const [templates, setTemplates] = useState<TemplateWithExercises[]>([])
   const [trainingCycle, setTrainingCycle] = useState<TrainingCycle | null>(null)
   const [currentSession, setCurrentSession] = useState<WorkoutSessionWithExercises | null>(null)
@@ -155,6 +157,17 @@ export function useSchedulePageData() {
 
     void initialize()
   }, [fetchData, loadData])
+
+  useEffect(() => {
+    if (location.pathname !== '/' || isLoading) {
+      return
+    }
+
+    void loadData(selectedTemplateId).catch((loadError) => {
+      console.error(loadError)
+      setError('训练安排加载失败，请刷新页面后重试。')
+    })
+  }, [isLoading, loadData, location.pathname, selectedTemplateId])
 
   async function handleAddTemplateExercises(templateId: string, templateExerciseIds?: string[]) {
     if (!currentSession) {
