@@ -21,6 +21,7 @@ import {
   parseOptionalReps,
   parseOptionalWeightKg,
 } from '../../lib/input-parsers'
+import { triggerHaptic } from '../../lib/haptics'
 import type { TrainingCycle } from '../../models/types'
 
 type ScheduleExerciseDraft = {
@@ -134,6 +135,7 @@ export function useSchedulePageData() {
       setError(
         mutationError instanceof Error ? mutationError.message : '训练安排保存失败，请重试。',
       )
+      void triggerHaptic('error')
       return false
     } finally {
       setIsSubmitting(false)
@@ -263,12 +265,18 @@ export function useSchedulePageData() {
       return false
     }
 
-    return runMutation(async () => {
+    const didDelete = await runMutation(async () => {
       for (const sessionExerciseId of sessionExerciseIds) {
         await deletePendingSessionExercise(currentSession.id, sessionExerciseId)
       }
       await loadData(selectedTemplateId)
     })
+
+    if (didDelete) {
+      void triggerHaptic('warning')
+    }
+
+    return didDelete
   }
 
   async function handleSyncTemplate(): Promise<TemplateSyncResult | false> {

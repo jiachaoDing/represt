@@ -19,6 +19,7 @@ import { TemplateExerciseInlineEditor } from './TemplateExerciseInlineEditor'
 import type { TemplateExerciseListProps } from './template-exercise-list.types'
 import { getOrderedExercises, getReorderedExerciseIds } from './template-exercise-list.utils'
 import { useScrollToPendingExercise } from './useScrollToPendingExercise'
+import { triggerHaptic } from '../../lib/haptics'
 
 export function TemplateExerciseList({
   currentTemplate,
@@ -83,6 +84,7 @@ export function TemplateExerciseList({
   function handleDragStart(event: DragStartEvent) {
     setActiveExerciseId(String(event.active.id))
     setIsSorting(true)
+    void triggerHaptic('selection-start')
   }
 
   function handleDragCancel() {
@@ -115,7 +117,10 @@ export function TemplateExerciseList({
     void onReorder(nextOrderIds).then((didReorder) => {
       if (!didReorder) {
         setExerciseOrder(currentTemplate.exercises.map((exercise) => exercise.id))
+        return
       }
+
+      void triggerHaptic('selection-end')
     })
   }
 

@@ -10,6 +10,7 @@ import {
   reorderTrainingCycleSlots,
 } from '../../db/training-cycle'
 import { listTemplatesWithExercises, type TemplateWithExercises } from '../../db/templates'
+import { triggerHaptic } from '../../lib/haptics'
 import type { TrainingCycle } from '../../models/types'
 
 export function useTrainingCyclePageData() {
@@ -40,6 +41,7 @@ export function useTrainingCyclePageData() {
       setError(
         mutationError instanceof Error ? mutationError.message : '循环日程保存失败，请重试。',
       )
+      void triggerHaptic('error')
       return false
     } finally {
       setIsSubmitting(false)
@@ -70,10 +72,16 @@ export function useTrainingCyclePageData() {
   }
 
   async function handleRemoveSlot(slotId: string) {
-    return runMutation(async () => {
+    const didRemove = await runMutation(async () => {
       await removeTrainingCycleSlot(slotId)
       await loadData()
     })
+
+    if (didRemove) {
+      void triggerHaptic('warning')
+    }
+
+    return didRemove
   }
 
   async function handleAssignTemplate(slotId: string, templateId: string | null) {

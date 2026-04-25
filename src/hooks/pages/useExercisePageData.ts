@@ -13,6 +13,7 @@ import {
   parseOptionalWeightKg,
   toOptionalNumberString,
 } from '../../lib/input-parsers'
+import { triggerHaptic } from '../../lib/haptics'
 import { scheduleRestTimerNotification } from '../../native/training-notifications'
 
 function syncLatestSetInputs(
@@ -95,6 +96,7 @@ export function useExercisePageData(id: string) {
       setError(
         mutationError instanceof Error ? mutationError.message : '动作数据保存失败，请重试。',
       )
+      void triggerHaptic('error')
       return false
     } finally {
       setIsSubmitting(false)
@@ -122,6 +124,10 @@ export function useExercisePageData(id: string) {
       return false
     }
 
+    if (didComplete) {
+      void triggerHaptic('success')
+    }
+
     return didComplete
   }
 
@@ -130,7 +136,7 @@ export function useExercisePageData(id: string) {
       return false
     }
 
-    return runMutation(async () => {
+    const didSave = await runMutation(async () => {
       const latestSetRecord = await updateLatestSetRecordValues(detail.exercise.id, {
         weightKg: parseOptionalWeightKg(weightInput),
         reps: parseOptionalReps(repsInput),
@@ -147,6 +153,12 @@ export function useExercisePageData(id: string) {
         }
       })
     })
+
+    if (didSave) {
+      void triggerHaptic('success')
+    }
+
+    return didSave
   }
 
   async function handleUndoLatestSet() {

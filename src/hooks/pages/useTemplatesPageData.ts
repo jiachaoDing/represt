@@ -22,6 +22,7 @@ import {
   parseOptionalReps,
   parseOptionalWeightKg,
 } from '../../lib/input-parsers'
+import { triggerHaptic } from '../../lib/haptics'
 import type { TemplateExerciseDraft } from '../../lib/template-editor'
 import type { TrainingCycle } from '../../models/types'
 
@@ -59,6 +60,7 @@ export function useTemplatesPageData() {
     } catch (mutationError) {
       console.error(mutationError)
       setError('模板数据保存失败，请重试。')
+      void triggerHaptic('error')
       return false
     } finally {
       setIsSubmitting(false)
@@ -82,25 +84,43 @@ export function useTemplatesPageData() {
   }, [])
 
   async function handleCreateTemplate() {
-    return runMutation(async () => {
+    const didCreate = await runMutation(async () => {
       const template = await createTemplate(newTemplateName)
       setNewTemplateName('')
       await loadTemplates(template.id)
     })
+
+    if (didCreate) {
+      void triggerHaptic('success')
+    }
+
+    return didCreate
   }
 
   async function handleSaveTemplateName(templateId: string, name: string) {
-    return runMutation(async () => {
+    const didSave = await runMutation(async () => {
       await updateTemplateName(templateId, name)
       await loadTemplates(templateId)
     })
+
+    if (didSave) {
+      void triggerHaptic('success')
+    }
+
+    return didSave
   }
 
   async function handleDeleteTemplate(templateId: string) {
-    return runMutation(async () => {
+    const didDelete = await runMutation(async () => {
       await deleteTemplate(templateId)
       await loadTemplates()
     })
+
+    if (didDelete) {
+      void triggerHaptic('warning')
+    }
+
+    return didDelete
   }
 
   async function handleCreateExercise(templateId: string, draft: TemplateExerciseDraft) {
@@ -139,12 +159,18 @@ export function useTemplatesPageData() {
       return false
     }
 
-    return runMutation(async () => {
+    const didDelete = await runMutation(async () => {
       for (const exerciseId of exerciseIds) {
         await deleteTemplateExercise(exerciseId)
       }
       await loadTemplates(templateId)
     })
+
+    if (didDelete) {
+      void triggerHaptic('warning')
+    }
+
+    return didDelete
   }
 
   async function handleReorderExercises(templateId: string, orderedExerciseIds: string[]) {

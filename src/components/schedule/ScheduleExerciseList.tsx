@@ -18,6 +18,7 @@ import {
   verticalSortDropAnimation,
   verticalSortModifiers,
 } from '../dnd/vertical-sortable-motion'
+import { triggerHaptic } from '../../lib/haptics'
 import { ScheduleExerciseCard } from './ScheduleExerciseCard'
 import { SortableScheduleExerciseItem } from './SortableScheduleExerciseItem'
 
@@ -123,6 +124,7 @@ export function ScheduleExerciseList({
   function handleDragStart(event: DragStartEvent) {
     setActiveExerciseId(String(event.active.id))
     setIsSorting(true)
+    void triggerHaptic('selection-start')
   }
 
   function handleDragCancel() {
@@ -156,7 +158,10 @@ export function ScheduleExerciseList({
     void onReorder(nextOrderIds).then((didReorder) => {
       if (!didReorder) {
         setExerciseOrder(currentSession.exercises.map((exercise) => exercise.id))
+        return
       }
+
+      void triggerHaptic('selection-end')
     })
   }
 

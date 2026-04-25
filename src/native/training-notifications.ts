@@ -12,6 +12,7 @@ export type RestTimerNotificationInput = {
 }
 
 let isChannelReady = false
+let hasOpenedExactAlarmSetting = false
 
 function getRestTimerNotificationId(exerciseId: string) {
   let hash = 0
@@ -54,6 +55,20 @@ async function ensureRestTimerChannel() {
   isChannelReady = true
 }
 
+async function ensureExactAlarmSetting() {
+  try {
+    const currentSetting = await LocalNotifications.checkExactNotificationSetting()
+    if (currentSetting.exact_alarm === 'granted' || hasOpenedExactAlarmSetting) {
+      return
+    }
+
+    hasOpenedExactAlarmSetting = true
+    await LocalNotifications.changeExactNotificationSetting()
+  } catch (exactAlarmError) {
+    console.warn(exactAlarmError)
+  }
+}
+
 export async function cancelRestTimerNotification(exerciseId: string) {
   if (!isNativePluginAvailable('LocalNotifications')) {
     return
@@ -82,6 +97,7 @@ export async function scheduleRestTimerNotification(input: RestTimerNotification
   }
 
   await ensureRestTimerChannel()
+  await ensureExactAlarmSetting()
   await cancelRestTimerNotification(input.exerciseId)
 
   await LocalNotifications.schedule({

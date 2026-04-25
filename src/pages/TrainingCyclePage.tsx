@@ -9,6 +9,7 @@ import { TrainingCycleSlotSheet } from '../components/training-cycle/TrainingCyc
 import type { TrainingCycleSlotListItem } from '../components/training-cycle/training-cycle-page.types'
 import { getCycleSlotDateKey, getWeekdayLabel } from '../components/training-cycle/training-cycle-page-utils'
 import { useTrainingCyclePageData } from '../hooks/pages/useTrainingCyclePageData'
+import { triggerHaptic } from '../lib/haptics'
 import { getTemplateColor } from '../lib/template-color'
 import type { TrainingCycleSlot } from '../models/types'
 
@@ -117,6 +118,7 @@ export function TrainingCyclePage() {
   function handleDragStart(event: DragStartEvent) {
     setActiveSlotId(String(event.active.id))
     setIsSorting(true)
+    void triggerHaptic('selection-start')
   }
 
   function handleDragCancel() {
@@ -148,7 +150,10 @@ export function TrainingCyclePage() {
     void handleReorderSlots(nextOrderIds).then((didReorder) => {
       if (!didReorder) {
         setSlotOrder(trainingCycle.slots.map((slot) => slot.id))
+        return
       }
+
+      void triggerHaptic('selection-end')
     })
   }
 
