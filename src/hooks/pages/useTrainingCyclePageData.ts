@@ -7,6 +7,7 @@ import {
   getOrCreateTrainingCycle,
   getTodayTrainingCycleDay,
   removeTrainingCycleSlot,
+  reorderTrainingCycleSlots,
 } from '../../db/training-cycle'
 import { listTemplatesWithExercises, type TemplateWithExercises } from '../../db/templates'
 import type { TrainingCycle } from '../../models/types'
@@ -89,12 +90,20 @@ export function useTrainingCyclePageData() {
     })
   }
 
+  async function handleReorderSlots(orderedSlotIds: string[]) {
+    return runMutation(async () => {
+      await reorderTrainingCycleSlots(orderedSlotIds)
+      await loadData()
+    })
+  }
+
   return {
     error,
     handleAddSlot,
     handleAssignTemplate,
     handleCalibrateToday,
     handleRemoveSlot,
+    handleReorderSlots,
     isLoading,
     isSubmitting,
     templates,

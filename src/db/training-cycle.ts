@@ -202,6 +202,38 @@ export async function calibrateTrainingCycleToday(slotId: string) {
   })
 }
 
+export async function reorderTrainingCycleSlots(orderedSlotIds: string[]) {
+  const cycle = await getOrCreateTrainingCycle()
+
+  const orderedSlotIdSet = new Set(orderedSlotIds)
+  if (
+    cycle.slots.length !== orderedSlotIds.length ||
+    orderedSlotIdSet.size !== orderedSlotIds.length
+  ) {
+    return cycle
+  }
+
+  const slotMap = new Map(cycle.slots.map((slot) => [slot.id, slot]))
+  if (orderedSlotIds.some((slotId) => !slotMap.has(slotId))) {
+    return cycle
+  }
+
+  const anchorSlotId = cycle.slots[cycle.anchorIndex]?.id
+  const nextSlots = orderedSlotIds
+    .map((slotId) => slotMap.get(slotId))
+    .filter((slot): slot is TrainingCycleSlot => slot !== undefined)
+  const nextAnchorIndex = Math.max(
+    0,
+    nextSlots.findIndex((slot) => slot.id === anchorSlotId),
+  )
+
+  return saveTrainingCycle({
+    ...cycle,
+    slots: nextSlots,
+    anchorIndex: nextAnchorIndex,
+  })
+}
+
 export async function clearTemplateFromTrainingCycle(templateId: string) {
   const cycle = await getTrainingCycle()
   if (!cycle) {

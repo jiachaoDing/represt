@@ -1,11 +1,37 @@
 import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
+import {
+  DndContext,
+  DragOverlay,
+  MouseSensor,
+  TouchSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+  type DragStartEvent,
+} from '@dnd-kit/core'
+import {
+  SortableContext,
+  arrayMove,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 
 import { BottomSheet } from '../components/ui/BottomSheet'
 import { PageHeader } from '../components/ui/PageHeader'
 import { TrainingCyclePageLoading } from '../components/training-cycle/TrainingCyclePageLoading'
+import {
+  verticalSortDropAnimation,
+  verticalSortModifiers,
+  verticalSortTransition,
+} from '../components/dnd/vertical-sortable-motion'
+import type { TemplateWithExercises } from '../db/templates'
 import { useTrainingCyclePageData } from '../hooks/pages/useTrainingCyclePageData'
 import { addDaysToSessionDateKey, formatSessionDateKey } from '../lib/session-date-key'
 import { getTemplateColor } from '../lib/template-color'
+import type { TrainingCycleSlot } from '../models/types'
 
 type OptionIconProps = {
   children: ReactNode
@@ -59,6 +85,168 @@ function getWeekdayLabel(sessionDateKey: string) {
   return formatSessionDateKey(sessionDateKey, { weekday: 'short' })
 }
 
+type TrainingCycleSlotRowProps = {
+  color: ReturnType<typeof getTemplateColor> | null
+  index: number
+  isDragging?: boolean
+  isSorting?: boolean
+  isSubmitting: boolean
+  isToday: boolean
+  onCalibrateToday: (slotId: string) => void
+  onOpenSheet: (slotId: string) => void
+  slot: TrainingCycleSlot
+  template: TemplateWithExercises | null
+  weekdayLabel: string
+}
+
+function TrainingCycleSlotCard({
+  color,
+  isSorting = false,
+  isSubmitting,
+  onOpenSheet,
+  slot,
+  template,
+  weekdayLabel,
+  isToday,
+}: Omit<TrainingCycleSlotRowProps, 'index' | 'isDragging' | 'onCalibrateToday'>) {
+  return (
+    <button
+      type="button"
+      onClick={() => onOpenSheet(slot.id)}
+      disabled={isSubmitting || isSorting}
+      className={[
+        'flex flex-1 items-center justify-between rounded-3xl p-5 text-left transition-transform active:scale-[0.98] shadow-sm border border-transparent disabled:opacity-80',
+        template
+          ? ''
+          : 'bg-[var(--surface-container)] text-[var(--on-surface)] border-[var(--outline-variant)]/20',
+      ].join(' ')}
+      style={
+        template && color
+          ? { backgroundColor: color.soft, color: color.text, borderColor: 'rgba(0,0,0,0.05)' }
+          : {}
+      }
+    >
+      <div>
+        <h4 className="text-[17px] font-bold tracking-tight">
+          {template ? template.name : '休息日'}
+        </h4>
+        <p className="mt-1 text-[13px] font-medium opacity-70">
+          {template ? `${template.exercises.length} 个动作` : '放松恢复，为下次训练蓄力'}
+        </p>
+        <p className="mt-2 text-[12px] font-medium opacity-60">
+          {isToday ? '今天' : weekdayLabel}
+        </p>
+      </div>
+
+      <div className="ml-2 flex h-8 w-8 items-center justify-center rounded-full bg-black/5 opacity-50">
+        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
+        </svg>
+      </div>
+    </button>
+  )
+}
+
+function TrainingCycleSlotRow({
+  color,
+  index,
+  isDragging = false,
+  isSorting = false,
+  isSubmitting,
+  isToday,
+  onCalibrateToday,
+  onOpenSheet,
+  slot,
+  template,
+  weekdayLabel,
+}: TrainingCycleSlotRowProps) {
+  return (
+    <div className="relative flex gap-4 px-4 py-3">
+      <div className="relative z-10 flex w-12 shrink-0 flex-col items-center pt-2">
+        {isToday ? (
+          <button
+            type="button"
+            disabled={isSubmitting || isSorting}
+            onClick={() => onCalibrateToday(slot.id)}
+            className="relative flex h-12 w-12 items-center justify-center rounded-full transition-transform active:scale-95 disabled:opacity-60"
+            aria-label={`第 ${index + 1} 天，今天`}
+          >
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--primary)] text-sm font-bold text-[var(--on-primary)] ring-4 ring-[var(--primary)]/20 shadow-sm">
+              {index + 1}
+            </span>
+            <div className="absolute -bottom-6 whitespace-nowrap rounded-full bg-[var(--primary)] px-2 py-0.5 text-[10px] font-semibold text-[var(--on-primary)] shadow-sm">
+              今天
+            </div>
+          </button>
+        ) : (
+          <button
+            type="button"
+            disabled={isSubmitting || isSorting}
+            onClick={() => onCalibrateToday(slot.id)}
+            className="flex h-12 w-12 items-center justify-center rounded-full transition-colors active:scale-95 disabled:opacity-60"
+            aria-label={`将第 ${index + 1} 天校准为今天`}
+          >
+            <span className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-[var(--surface)] bg-[var(--surface-variant)] text-[11px] font-medium text-[var(--on-surface-variant)] shadow-sm">
+              {index + 1}
+            </span>
+          </button>
+        )}
+      </div>
+
+      <TrainingCycleSlotCard
+        color={color}
+        isSorting={isSorting}
+        isSubmitting={isSubmitting || isDragging}
+        isToday={isToday}
+        onOpenSheet={onOpenSheet}
+        slot={slot}
+        template={template}
+        weekdayLabel={weekdayLabel}
+      />
+    </div>
+  )
+}
+
+function SortableTrainingCycleSlotRow(props: TrainingCycleSlotRowProps) {
+  const {
+    attributes,
+    listeners,
+    setActivatorNodeRef,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id: props.slot.id,
+    disabled: props.isSubmitting,
+    transition: verticalSortTransition,
+  })
+  const style: CSSProperties = {
+    transform: isDragging ? undefined : CSS.Transform.toString(transform),
+    transition,
+    touchAction: 'manipulation',
+  }
+
+  return (
+    <div
+      ref={(element) => {
+        setNodeRef(element)
+        setActivatorNodeRef(element)
+      }}
+      style={style}
+      className={[
+        isDragging ? 'relative opacity-0 pointer-events-none' : 'relative',
+        props.isSubmitting ? 'cursor-default' : 'cursor-grab active:cursor-grabbing',
+      ].join(' ')}
+      aria-label={`长按拖动调整第 ${props.index + 1} 天顺序`}
+      {...attributes}
+      {...listeners}
+    >
+      <TrainingCycleSlotRow {...props} isDragging={isDragging} />
+    </div>
+  )
+}
+
 export function TrainingCyclePage() {
   const {
     error,
@@ -66,6 +254,7 @@ export function TrainingCyclePage() {
     handleAssignTemplate,
     handleCalibrateToday,
     handleRemoveSlot,
+    handleReorderSlots,
     isLoading,
     isSubmitting,
     templates,
@@ -75,6 +264,24 @@ export function TrainingCyclePage() {
   
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null)
   const [sheetOpen, setSheetOpen] = useState(false)
+  const [slotOrder, setSlotOrder] = useState<string[] | null>(null)
+  const [activeSlotId, setActiveSlotId] = useState<string | null>(null)
+  const [isSorting, setIsSorting] = useState(false)
+
+  const sensors = useSensors(
+    useSensor(MouseSensor, {
+      activationConstraint: {
+        delay: 320,
+        tolerance: 6,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 320,
+        tolerance: 8,
+      },
+    }),
+  )
 
   // When training cycle is empty, automatically close sheet
   useEffect(() => {
@@ -87,12 +294,38 @@ export function TrainingCyclePage() {
     () => new Map(templates.map((template, index) => [template.id, getTemplateColor(index)])),
     [templates],
   )
+  const orderedSlots = useMemo(() => {
+    const slots = trainingCycle?.slots ?? []
+    if (!slotOrder || slotOrder.length !== slots.length) {
+      return slots
+    }
+
+    const slotMap = new Map(slots.map((slot) => [slot.id, slot]))
+    const nextSlots = slotOrder
+      .map((slotId) => slotMap.get(slotId) ?? null)
+      .filter((slot): slot is TrainingCycleSlot => slot !== null)
+
+    return nextSlots.length === slots.length ? nextSlots : slots
+  }, [slotOrder, trainingCycle])
   
   const selectedSlot = trainingCycle?.slots.find((slot) => slot.id === selectedSlotId) ?? null
   const selectedIndex = trainingCycle?.slots.findIndex((slot) => slot.id === selectedSlotId) ?? 0
   const selectedTemplate = selectedSlot?.templateId
     ? templates.find((template) => template.id === selectedSlot.templateId) ?? null
     : null
+  const activeSlot =
+    activeSlotId === null
+      ? null
+      : orderedSlots.find((slot) => slot.id === activeSlotId) ?? null
+  const activeSlotIndex =
+    activeSlot === null ? -1 : orderedSlots.findIndex((slot) => slot.id === activeSlot.id)
+  const orderedAnchorIndex =
+    todayCycleDay === null
+      ? trainingCycle?.anchorIndex ?? 0
+      : Math.max(
+          0,
+          orderedSlots.findIndex((slot) => slot.id === todayCycleDay.slot.id),
+        )
 
   async function addSlot() {
     await handleAddSlot()
@@ -115,6 +348,67 @@ export function TrainingCyclePage() {
     }
   }
 
+  function openSlotSheet(slotId: string) {
+    setSelectedSlotId(slotId)
+    setSheetOpen(true)
+  }
+
+  function getSlotRenderData(slot: TrainingCycleSlot, index: number) {
+    const template = slot.templateId
+      ? templates.find((item) => item.id === slot.templateId) ?? null
+      : null
+    const color = template ? templateColorMap.get(template.id) ?? null : null
+    const isToday = todayCycleDay?.slot.id === slot.id
+    const slotDateKey = trainingCycle
+      ? getCycleSlotDateKey(trainingCycle.anchorDateKey, orderedAnchorIndex, index)
+      : ''
+
+    return {
+      color,
+      isToday,
+      template,
+      weekdayLabel: slotDateKey ? getWeekdayLabel(slotDateKey) : '',
+    }
+  }
+
+  function handleDragStart(event: DragStartEvent) {
+    setActiveSlotId(String(event.active.id))
+    setIsSorting(true)
+  }
+
+  function handleDragCancel() {
+    setActiveSlotId(null)
+    setIsSorting(false)
+  }
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+
+    setActiveSlotId(null)
+    setIsSorting(false)
+
+    if (!trainingCycle || !over || active.id === over.id) {
+      return
+    }
+
+    const oldIndex = orderedSlots.findIndex((slot) => slot.id === active.id)
+    const newIndex = orderedSlots.findIndex((slot) => slot.id === over.id)
+
+    if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex) {
+      return
+    }
+
+    const nextOrderIds = arrayMove(orderedSlots, oldIndex, newIndex).map((slot) => slot.id)
+
+    setSlotOrder(nextOrderIds)
+
+    void handleReorderSlots(nextOrderIds).then((didReorder) => {
+      if (!didReorder) {
+        setSlotOrder(trainingCycle.slots.map((slot) => slot.id))
+      }
+    })
+  }
+
   return (
     <div className="flex h-[calc(100vh-5rem-env(safe-area-inset-bottom))] min-h-0 flex-col bg-[var(--surface)]">
       <PageHeader
@@ -125,7 +419,7 @@ export function TrainingCyclePage() {
 
       {!isLoading && trainingCycle && trainingCycle.slots.length > 0 ? (
         <div className="mx-4 mt-1 rounded-full bg-[var(--surface-container)] px-3 py-2 text-center text-[12px] font-medium text-[var(--on-surface-variant)]">
-          点击左侧序号可设为今天
+          点击左侧序号可设为今天 · 长按拖动排序
         </div>
       ) : null}
 
@@ -143,94 +437,60 @@ export function TrainingCyclePage() {
           {/* Continuous Left Timeline */}
           <div className="absolute bottom-6 left-10 top-8 w-px bg-[var(--outline-variant)]/40" />
 
-          {trainingCycle.slots.map((slot, index) => {
-            const template = slot.templateId
-              ? templates.find((item) => item.id === slot.templateId) ?? null
-              : null
-            const color = template ? templateColorMap.get(template.id) ?? null : null
-            const isToday = todayCycleDay?.slot.id === slot.id
-            const slotDateKey = getCycleSlotDateKey(
-              trainingCycle.anchorDateKey,
-              trainingCycle.anchorIndex,
-              index,
-            )
-            const weekdayLabel = getWeekdayLabel(slotDateKey)
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            modifiers={verticalSortModifiers}
+            onDragStart={handleDragStart}
+            onDragCancel={handleDragCancel}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={orderedSlots.map((slot) => slot.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              {orderedSlots.map((slot, index) => {
+                const slotRenderData = getSlotRenderData(slot, index)
 
-            return (
-              <div key={slot.id} className="relative flex gap-4 px-4 py-3">
-                {/* Left Axis Node */}
-                <div className="relative z-10 flex w-12 shrink-0 flex-col items-center pt-2">
-                  {isToday ? (
-                    <button
-                      type="button"
-                      disabled={isSubmitting}
-                      onClick={() => void calibrateSlotToday(slot.id)}
-                      className="relative flex h-12 w-12 items-center justify-center rounded-full transition-transform active:scale-95 disabled:opacity-60"
-                      aria-label={`第 ${index + 1} 天，今天`}
-                    >
-                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--primary)] text-sm font-bold text-[var(--on-primary)] ring-4 ring-[var(--primary)]/20 shadow-sm">
-                        {index + 1}
-                      </span>
-                      <div className="absolute -bottom-6 whitespace-nowrap rounded-full bg-[var(--primary)] px-2 py-0.5 text-[10px] font-semibold text-[var(--on-primary)] shadow-sm">
-                        今天
-                      </div>
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      disabled={isSubmitting}
-                      onClick={() => void calibrateSlotToday(slot.id)}
-                      className="flex h-12 w-12 items-center justify-center rounded-full transition-colors active:scale-95 disabled:opacity-60"
-                      aria-label={`将第 ${index + 1} 天校准为今天`}
-                    >
-                      <span className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-[var(--surface)] bg-[var(--surface-variant)] text-[11px] font-medium text-[var(--on-surface-variant)] shadow-sm">
-                        {index + 1}
-                      </span>
-                    </button>
-                  )}
-                </div>
+                return (
+                  <SortableTrainingCycleSlotRow
+                    key={slot.id}
+                    index={index}
+                    isSorting={isSorting}
+                    isSubmitting={isSubmitting}
+                    onCalibrateToday={(slotId) => void calibrateSlotToday(slotId)}
+                    onOpenSheet={openSlotSheet}
+                    slot={slot}
+                    {...slotRenderData}
+                  />
+                )
+              })}
+            </SortableContext>
 
-                {/* Right Content Card */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedSlotId(slot.id)
-                    setSheetOpen(true)
-                  }}
-                  className={[
-                    'flex flex-1 items-center justify-between rounded-3xl p-5 text-left transition-transform active:scale-[0.98] shadow-sm border border-transparent',
-                    template
-                      ? '' // Managed by inline styles below
-                      : 'bg-[var(--surface-container)] text-[var(--on-surface)] border-[var(--outline-variant)]/20'
-                  ].join(' ')}
-                  style={
-                    template && color
-                      ? { backgroundColor: color.soft, color: color.text, borderColor: 'rgba(0,0,0,0.05)' }
-                      : {}
-                  }
-                >
-                  <div>
-                    <h4 className="text-[17px] font-bold tracking-tight">
-                      {template ? template.name : '休息日'}
-                    </h4>
-                    <p className="mt-1 text-[13px] font-medium opacity-70">
-                      {template ? `${template.exercises.length} 个动作` : '放松恢复，为下次训练蓄力'}
-                    </p>
-                    <p className="mt-2 text-[12px] font-medium opacity-60">
-                      {isToday ? '今天' : weekdayLabel}
-                    </p>
-                  </div>
-
-                  {/* Drag Handle or Click Indicator */}
-                  <div className="ml-2 flex h-8 w-8 items-center justify-center rounded-full bg-black/5 opacity-50">
-                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
-                </button>
-              </div>
-            )
-          })}
+            {activeSlot
+              ? createPortal(
+                  <DragOverlay
+                    adjustScale={false}
+                    dropAnimation={verticalSortDropAnimation}
+                    modifiers={verticalSortModifiers}
+                  >
+                    <div className="opacity-95">
+                      <TrainingCycleSlotRow
+                        index={activeSlotIndex}
+                        isDragging
+                        isSorting
+                        isSubmitting
+                        onCalibrateToday={(slotId) => void calibrateSlotToday(slotId)}
+                        onOpenSheet={openSlotSheet}
+                        slot={activeSlot}
+                        {...getSlotRenderData(activeSlot, activeSlotIndex)}
+                      />
+                    </div>
+                  </DragOverlay>,
+                  document.body,
+                )
+              : null}
+          </DndContext>
 
           <div className="relative flex gap-4 px-4 py-3">
             <div className="relative z-10 flex w-12 shrink-0 flex-col items-center pt-2">
