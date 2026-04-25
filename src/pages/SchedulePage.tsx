@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { TodayTrainingPlanCard } from '../components/training-cycle/TodayTrainingPlanCard'
@@ -20,6 +20,7 @@ export function SchedulePage() {
   const backLinkState = useBackLinkState()
   const schedule = useSchedulePageData()
   const ui = useSchedulePageUi(schedule)
+  const [batchDeleteOpen, setBatchDeleteOpen] = useState(false)
   const templateColorMap = useMemo(
     () => new Map(schedule.templates.map((template, index) => [template.id, getTemplateColor(index)])),
     [schedule.templates],
@@ -33,6 +34,10 @@ export function SchedulePage() {
   const completedSets =
     schedule.currentSession?.exercises.reduce((sum, exercise) => sum + exercise.completedSets, 0) ?? 0
   const totalSets = schedule.currentSession?.exercises.reduce((sum, exercise) => sum + exercise.targetSets, 0) ?? 0
+  const batchDeleteExerciseIds =
+    schedule.currentSession?.exercises
+      .filter((exercise) => exercise.status === 'pending' && exercise.completedSets === 0)
+      .map((exercise) => exercise.id) ?? []
   const importConfirmDescription = [
     ui.pendingTemplateImportConfirmation?.isDuplicateImport
       ? `“${ui.pendingTemplateImportConfirmation.templateName}”可能已加入过今日训练。`
@@ -76,6 +81,29 @@ export function SchedulePage() {
         />
       ) : null}
 
+      {!schedule.isLoading && schedule.templateSyncStatus.hasUpdates ? (
+        <div className="mx-4 mb-4 rounded-2xl border border-[var(--primary)]/20 bg-[var(--primary-container)]/20 px-4 py-3">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-[var(--on-surface)]">
+                {schedule.templateSyncStatus.templateName ?? '模板'} 有更新
+              </p>
+              <p className="mt-1 text-xs leading-5 text-[var(--on-surface-variant)]">
+                会添加新动作，并更新未开始的计划；已记录的训练不会被覆盖。
+              </p>
+            </div>
+            <button
+              type="button"
+              disabled={schedule.isSubmitting}
+              onClick={() => void ui.handleSyncTemplateAction()}
+              className="shrink-0 rounded-full bg-[var(--primary)] px-3 py-2 text-xs font-semibold text-[var(--on-primary)] transition-opacity disabled:opacity-50"
+            >
+              同步模板
+            </button>
+          </div>
+        </div>
+      ) : null}
+
       {schedule.error ? (
         <div className="mx-4 mt-4 rounded-xl bg-[var(--error-container)] px-4 py-3 text-sm text-[var(--on-error-container)]">
           {schedule.error}
@@ -91,6 +119,7 @@ export function SchedulePage() {
           now={now}
           onDelete={(exerciseId) => void ui.handleDeleteExerciseAction(exerciseId)}
           onOpenAdd={ui.openAddEntry}
+          onOpenBatchDelete={() => setBatchDeleteOpen(true)}
           onReorder={schedule.handleReorderExercises}
         />
       </section>
@@ -145,6 +174,22 @@ export function SchedulePage() {
           ui.setPendingTemplateExerciseIds([])
         }}
         onConfirm={() => void ui.confirmPendingTemplateImport()}
+      />
+
+      <ConfirmDialog
+        open={batchDeleteOpen}
+        title="批量删除动作？"
+        description={`将删除 ${batchDeleteExerciseIds.length} 个未开始的动作，已记录的动作会保留。`}
+        confirmLabel="删除"
+        danger
+        onCancel={() => setBatchDeleteOpen(false)}
+        onConfirm={() => {
+          void ui.handleDeleteExercisesAction(batchDeleteExerciseIds).then((didDelete) => {
+            if (didDelete) {
+              setBatchDeleteOpen(false)
+            }
+          })
+        }}
       />
 
       <Snackbar message={ui.message} />

@@ -20,7 +20,7 @@ class TrainReDatabase extends Dexie {
   constructor() {
     super('trainre')
 
-    this.version(8)
+    this.version(9)
       .stores({
         trainingCycles: 'id, updatedAt',
         workoutTemplates: 'id, name, updatedAt',

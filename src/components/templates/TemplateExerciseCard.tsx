@@ -74,6 +74,7 @@ export function TemplateExerciseCard({
       actionLabel="删除"
       disabled={isSubmitting || isDragging}
       onAction={() => onDelete(exercise.id)}
+      requireLongPress
     >
       {content}
     </SwipeActionItem>

@@ -1,4 +1,11 @@
-import type { SessionExercise, SessionStatus, SetRecord, WorkoutSession } from '../models/types'
+import type {
+  SessionExercise,
+  SessionStatus,
+  SessionTemplateExerciseSnapshot,
+  SetRecord,
+  TemplateExercise,
+  WorkoutSession,
+} from '../models/types'
 import { getTodaySessionDateKey } from '../lib/session-date-key'
 import { getRestEndsAt } from '../lib/rest-timer'
 import { deriveExerciseStatus, type DerivedExerciseStatus } from '../lib/session-display'
@@ -31,6 +38,17 @@ type SessionSummaryExercise = SessionExerciseWithStatus & {
 export type SessionSummaryDetail = {
   session: WorkoutSessionWithStatus
   exercises: SessionSummaryExercise[]
+}
+
+export type TemplateSyncStatus = {
+  hasUpdates: boolean
+  templateName: string | null
+}
+
+export type TemplateSyncResult = {
+  addedCount: number
+  updatedCount: number
+  removedCount: number
 }
 
 type SessionExerciseInput = {
@@ -69,6 +87,23 @@ function normalizeSessionExercise(input: Partial<SessionExerciseInput>) {
     defaultWeightKg: input.defaultWeightKg ?? null,
     defaultReps: input.defaultReps ?? null,
   }
+}
+
+function createTemplateExerciseSnapshot(
+  exercise: TemplateExercise,
+): SessionTemplateExerciseSnapshot {
+  return {
+    name: exercise.name,
+    targetSets: exercise.targetSets,
+    defaultWeightKg: exercise.weightKg ?? null,
+    defaultReps: exercise.reps ?? null,
+    restSeconds: exercise.restSeconds,
+    order: exercise.order,
+  }
+}
+
+function isSamePlanValue<T>(left: T | null | undefined, right: T | null | undefined) {
+  return (left ?? null) === (right ?? null)
 }
 
 function deriveSessionStatus(exercises: Array<Pick<SessionExercise, 'completedSets' | 'targetSets'>>) {
@@ -163,6 +198,8 @@ async function createSessionRecord() {
     createdAt: timestamp,
     autoImportedTemplateId: null,
     autoImportedAt: null,
+    lastSyncedTemplateUpdatedAt: null,
+    deletedTemplateExerciseIds: [],
   }
 
   await db.workoutSessions.add(session)
@@ -189,6 +226,10 @@ async function buildSessionExercisesFromTemplate(
     id: crypto.randomUUID(),
     sessionId,
     templateExerciseId: exercise.id,
+    sourceTemplateId: templateId,
+    sourceTemplateSnapshot: createTemplateExerciseSnapshot(exercise),
+    origin: 'template',
+    removedFromTemplate: false,
     name: exercise.name,
     targetSets: exercise.targetSets,
     defaultWeightKg: exercise.weightKg ?? null,
@@ -255,6 +296,7 @@ async function maybeAutoImportTrainingCycleTemplate(session: WorkoutSession) {
     await db.workoutSessions.update(session.id, {
       autoImportedTemplateId: templateId,
       autoImportedAt,
+      lastSyncedTemplateUpdatedAt: template.updatedAt,
     })
   })
 
@@ -262,6 +304,7 @@ async function maybeAutoImportTrainingCycleTemplate(session: WorkoutSession) {
     ...session,
     autoImportedTemplateId: templateId,
     autoImportedAt,
+    lastSyncedTemplateUpdatedAt: template.updatedAt,
   } satisfies WorkoutSession
 }
 
@@ -376,6 +419,205 @@ export async function listSessionDateKeys() {
   return sessions.map((session) => session.sessionDateKey)
 }
 
+function getTemplatePlanUpdates(
+  exercise: SessionExercise,
+  nextSnapshot: SessionTemplateExerciseSnapshot,
+) {
+  const previousSnapshot = exercise.sourceTemplateSnapshot ?? {
+    name: exercise.name,
+    targetSets: exercise.targetSets,
+    defaultWeightKg: exercise.defaultWeightKg ?? null,
+    defaultReps: exercise.defaultReps ?? null,
+    restSeconds: exercise.restSeconds,
+    order: exercise.order,
+  }
+  const canUpdateUnstartedPlan = exercise.completedSets === 0
+  const updates: Partial<SessionExercise> = {
+    sourceTemplateSnapshot: nextSnapshot,
+    removedFromTemplate: false,
+  }
+  let changedPlan = false
+
+  if (exercise.name === previousSnapshot.name && exercise.name !== nextSnapshot.name) {
+    updates.name = nextSnapshot.name
+    changedPlan = true
+  }
+
+  if (
+    canUpdateUnstartedPlan &&
+    exercise.targetSets === previousSnapshot.targetSets &&
+    exercise.targetSets !== nextSnapshot.targetSets
+  ) {
+    updates.targetSets = nextSnapshot.targetSets
+    changedPlan = true
+  }
+
+  if (
+    canUpdateUnstartedPlan &&
+    exercise.restSeconds === previousSnapshot.restSeconds &&
+    exercise.restSeconds !== nextSnapshot.restSeconds
+  ) {
+    updates.restSeconds = nextSnapshot.restSeconds
+    changedPlan = true
+  }
+
+  if (
+    canUpdateUnstartedPlan &&
+    isSamePlanValue(exercise.defaultWeightKg, previousSnapshot.defaultWeightKg) &&
+    !isSamePlanValue(exercise.defaultWeightKg, nextSnapshot.defaultWeightKg)
+  ) {
+    updates.defaultWeightKg = nextSnapshot.defaultWeightKg ?? null
+    changedPlan = true
+  }
+
+  if (
+    canUpdateUnstartedPlan &&
+    isSamePlanValue(exercise.defaultReps, previousSnapshot.defaultReps) &&
+    !isSamePlanValue(exercise.defaultReps, nextSnapshot.defaultReps)
+  ) {
+    updates.defaultReps = nextSnapshot.defaultReps ?? null
+    changedPlan = true
+  }
+
+  return {
+    changedPlan,
+    updates,
+  }
+}
+
+export async function getSessionTemplateSyncStatus(
+  sessionId: string,
+): Promise<TemplateSyncStatus> {
+  const session = await getSessionRecord(sessionId)
+  const templateId = session?.autoImportedTemplateId ?? null
+  if (!session || !templateId) {
+    return { hasUpdates: false, templateName: null }
+  }
+
+  const template = await db.workoutTemplates.get(templateId)
+  if (!template) {
+    return { hasUpdates: false, templateName: null }
+  }
+
+  const lastSyncedAt = session.lastSyncedTemplateUpdatedAt ?? session.autoImportedAt ?? session.createdAt
+
+  return {
+    hasUpdates: template.updatedAt > lastSyncedAt,
+    templateName: template.name,
+  }
+}
+
+export async function syncSessionFromTemplate(sessionId: string): Promise<TemplateSyncResult> {
+  const session = await getSessionRecord(sessionId)
+  const templateId = session?.autoImportedTemplateId ?? null
+  if (!session || session.sessionDateKey !== getTodaySessionDateKey() || !templateId) {
+    throw new Error('只能同步今天自动安排的模板。')
+  }
+
+  const [template, templateExercises, sessionExercises] = await Promise.all([
+    db.workoutTemplates.get(templateId),
+    db.templateExercises.where('templateId').equals(templateId).toArray(),
+    getSessionExercises(sessionId),
+  ])
+
+  if (!template) {
+    throw new Error('模板不存在。')
+  }
+
+  const deletedTemplateExerciseIds = new Set(session.deletedTemplateExerciseIds ?? [])
+  const sourceTemplateExerciseIds = sessionExercises
+    .map((exercise) => exercise.templateExerciseId)
+    .filter((exerciseId): exerciseId is string => exerciseId !== null)
+  const sourceTemplateExercises = await db.templateExercises.bulkGet(sourceTemplateExerciseIds)
+  const sourceTemplateIdByExerciseId = new Map(
+    sourceTemplateExercises
+      .filter((exercise): exercise is TemplateExercise => exercise !== undefined)
+      .map((exercise) => [exercise.id, exercise.templateId]),
+  )
+  const templateExercisesById = new Map(templateExercises.map((exercise) => [exercise.id, exercise]))
+  const sessionExercisesByTemplateId = new Map<string, SessionExercise>()
+
+  for (const exercise of sessionExercises) {
+    if (exercise.templateExerciseId && !sessionExercisesByTemplateId.has(exercise.templateExerciseId)) {
+      sessionExercisesByTemplateId.set(exercise.templateExerciseId, exercise)
+    }
+  }
+
+  let addedCount = 0
+  let updatedCount = 0
+  let removedCount = 0
+  let nextOrder = sessionExercises.reduce((maxOrder, exercise) => Math.max(maxOrder, exercise.order), -1) + 1
+
+  await db.transaction('rw', db.workoutSessions, db.sessionExercises, async () => {
+    for (const templateExercise of templateExercises.sort((left, right) => left.order - right.order)) {
+      if (deletedTemplateExerciseIds.has(templateExercise.id)) {
+        continue
+      }
+
+      const currentExercise = sessionExercisesByTemplateId.get(templateExercise.id)
+      const nextSnapshot = createTemplateExerciseSnapshot(templateExercise)
+
+      if (!currentExercise) {
+        await db.sessionExercises.add({
+          id: crypto.randomUUID(),
+          sessionId,
+          templateExerciseId: templateExercise.id,
+          sourceTemplateId: templateId,
+          sourceTemplateSnapshot: nextSnapshot,
+          origin: 'template',
+          removedFromTemplate: false,
+          name: templateExercise.name,
+          targetSets: templateExercise.targetSets,
+          defaultWeightKg: templateExercise.weightKg ?? null,
+          defaultReps: templateExercise.reps ?? null,
+          completedSets: 0,
+          restSeconds: templateExercise.restSeconds,
+          order: nextOrder,
+          lastCompletedAt: null,
+          restEndsAt: null,
+        })
+        nextOrder += 1
+        addedCount += 1
+        continue
+      }
+
+      const { changedPlan, updates } = getTemplatePlanUpdates(currentExercise, nextSnapshot)
+      updates.sourceTemplateId = templateId
+      updates.origin = 'template'
+      await db.sessionExercises.update(currentExercise.id, updates)
+      if (changedPlan) {
+        updatedCount += 1
+      }
+    }
+
+    for (const exercise of sessionExercises) {
+      const sourceTemplateId =
+        exercise.sourceTemplateId ??
+        (exercise.templateExerciseId ? sourceTemplateIdByExerciseId.get(exercise.templateExerciseId) : null) ??
+        null
+
+      if (
+        exercise.templateExerciseId &&
+        sourceTemplateId === templateId &&
+        !templateExercisesById.has(exercise.templateExerciseId) &&
+        !exercise.removedFromTemplate
+      ) {
+        await db.sessionExercises.update(exercise.id, { removedFromTemplate: true })
+        removedCount += 1
+      }
+    }
+
+    await db.workoutSessions.update(sessionId, {
+      lastSyncedTemplateUpdatedAt: template.updatedAt,
+    })
+  })
+
+  return {
+    addedCount,
+    updatedCount,
+    removedCount,
+  }
+}
 export async function addTemplateExercisesToSession(
   sessionId: string,
   templateId: string,
@@ -426,6 +668,10 @@ export async function addTemporarySessionExercise(sessionId: string, input: Part
     id: crypto.randomUUID(),
     sessionId,
     templateExerciseId: null,
+    sourceTemplateId: null,
+    sourceTemplateSnapshot: null,
+    origin: 'manual',
+    removedFromTemplate: false,
     name: normalized.name,
     targetSets: normalized.targetSets,
     defaultWeightKg: normalized.defaultWeightKg,
@@ -456,7 +702,16 @@ export async function deletePendingSessionExercise(sessionId: string, sessionExe
     throw new Error('只能删除未开始的动作。')
   }
 
-  await db.sessionExercises.delete(sessionExerciseId)
+  await db.transaction('rw', db.workoutSessions, db.sessionExercises, async () => {
+    if (sessionExercise.templateExerciseId) {
+      const deletedTemplateExerciseIds = Array.from(
+        new Set([...(session.deletedTemplateExerciseIds ?? []), sessionExercise.templateExerciseId]),
+      )
+      await db.workoutSessions.update(session.id, { deletedTemplateExerciseIds })
+    }
+
+    await db.sessionExercises.delete(sessionExerciseId)
+  })
 }
 
 export async function reorderSessionExercises(sessionId: string, orderedExerciseIds: string[]) {

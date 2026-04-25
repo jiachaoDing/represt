@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 
 import { TemplateCyclePreviewCard } from '../components/training-cycle/TemplateCyclePreviewCard'
 import { PageHeader } from '../components/ui/PageHeader'
@@ -15,6 +15,7 @@ import { getTemplateColor } from '../lib/template-color'
 export function TemplatesPage() {
   const templates = useTemplatesPageData()
   const ui = useTemplatesPageUi(templates)
+  const [batchDeleteOpen, setBatchDeleteOpen] = useState(false)
   const templateColorMap = useMemo(
     () => new Map(templates.templates.map((template, index) => [template.id, getTemplateColor(index)])),
     [templates.templates],
@@ -32,6 +33,7 @@ export function TemplatesPage() {
         },
       ]
     : []
+  const batchDeleteExerciseIds = templates.currentTemplate?.exercises.map((exercise) => exercise.id) ?? []
 
   return (
     <div className="pb-4">
@@ -81,6 +83,7 @@ export function TemplatesPage() {
           onDelete={(exerciseId) => void ui.handleDeleteExerciseAction(exerciseId)}
           onDraftChange={ui.setExerciseDraft}
           onEdit={ui.openEditExerciseEditor}
+          onOpenBatchDelete={() => setBatchDeleteOpen(true)}
           onReorder={(orderedExerciseIds) =>
             templates.currentTemplate
               ? templates.handleReorderExercises(templates.currentTemplate.id, orderedExerciseIds)
@@ -113,6 +116,22 @@ export function TemplatesPage() {
         danger
         onCancel={() => ui.setTemplateDeleteOpen(false)}
         onConfirm={() => void ui.handleConfirmDeleteTemplate()}
+      />
+
+      <ConfirmDialog
+        open={batchDeleteOpen && templates.currentTemplate !== null}
+        title="批量删除动作？"
+        description={`将删除当前模板中的 ${batchDeleteExerciseIds.length} 个动作。`}
+        confirmLabel="删除"
+        danger
+        onCancel={() => setBatchDeleteOpen(false)}
+        onConfirm={() => {
+          void ui.handleDeleteExercisesAction(batchDeleteExerciseIds).then((didDelete) => {
+            if (didDelete) {
+              setBatchDeleteOpen(false)
+            }
+          })
+        }}
       />
 
       <Snackbar message={ui.message} />

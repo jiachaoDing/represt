@@ -101,9 +101,12 @@ export function ScheduleExerciseCard({
   const cardState = getExerciseCardState(exercise, now, index)
   const content = (
     <div className="min-w-0 flex items-center justify-between">
-      <div className="flex flex-col">
+      <div className="flex min-w-0 flex-col">
         <p className={`truncate text-[16px] font-bold ${cardState.nameClassName}`}>{exercise.name}</p>
-        <p className={`mt-0.5 text-[12px] ${cardState.metaClassName}`}>{cardState.metaText}</p>
+        <p className={`mt-0.5 text-[12px] ${cardState.metaClassName}`}>
+          {cardState.metaText}
+          {exercise.removedFromTemplate ? ' · 模板中已移除' : ''}
+        </p>
       </div>
       <div className={`ml-2 shrink-0 text-[13px] ${cardState.statusClassName}`}>
         {cardState.statusText}

@@ -34,6 +34,7 @@ export function TemplateExerciseList({
   onDelete,
   onDraftChange,
   onEdit,
+  onOpenBatchDelete,
   onReorder,
   onScrollAnimationComplete,
   onSubmit,
@@ -45,13 +46,13 @@ export function TemplateExerciseList({
   const sensors = useSensors(
     useSensor(MouseSensor, {
       activationConstraint: {
-        delay: 180,
+        delay: 320,
         tolerance: 6,
       },
     }),
     useSensor(TouchSensor, {
       activationConstraint: {
-        delay: 220,
+        delay: 320,
         tolerance: 8,
       },
     }),
@@ -159,28 +160,52 @@ export function TemplateExerciseList({
       {!shouldShowEmptyHint ? (
         <div className="flex items-center justify-between px-2 pb-2">
           <div className="text-[12px] text-[var(--on-surface-variant)]">
-            左滑删除，长按卡片拖动排序
+            长按后横滑删除
           </div>
-          <button
-            type="button"
-            onClick={onCreate}
-            className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/10"
-            aria-label="添加动作"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              width="20"
-              height="20"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+          <div className="flex items-center gap-1">
+            {orderedExercises.length > 0 ? (
+              <button
+                type="button"
+                onClick={onOpenBatchDelete}
+                className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--error)] transition-colors hover:bg-[var(--error)]/10"
+                aria-label="批量删除动作"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  width="19"
+                  height="19"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <polyline points="3 6 5 6 21 6" />
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                </svg>
+              </button>
+            ) : null}
+            <button
+              type="button"
+              onClick={onCreate}
+              className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/10"
+              aria-label="添加动作"
             >
-              <line x1="12" y1="5" x2="12" y2="19" />
-              <line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-          </button>
+              <svg
+                viewBox="0 0 24 24"
+                width="20"
+                height="20"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+            </button>
+          </div>
         </div>
       ) : null}
 

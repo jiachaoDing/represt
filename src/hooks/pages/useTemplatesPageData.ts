@@ -141,6 +141,19 @@ export function useTemplatesPageData() {
     })
   }
 
+  async function handleDeleteExercises(templateId: string, exerciseIds: string[]) {
+    if (exerciseIds.length === 0) {
+      return false
+    }
+
+    return runMutation(async () => {
+      for (const exerciseId of exerciseIds) {
+        await deleteTemplateExercise(exerciseId)
+      }
+      await loadTemplates(templateId)
+    })
+  }
+
   async function handleReorderExercises(templateId: string, orderedExerciseIds: string[]) {
     return runMutation(async () => {
       await reorderTemplateExercises(templateId, orderedExerciseIds)
@@ -177,6 +190,7 @@ export function useTemplatesPageData() {
     handleCreateExercise,
     handleCreateTemplate,
     handleDeleteExercise,
+    handleDeleteExercises,
     handleDeleteTemplate,
     handleReorderExercises,
     handleSaveExercise,

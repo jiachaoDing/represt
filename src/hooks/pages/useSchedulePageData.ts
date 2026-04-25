@@ -6,7 +6,11 @@ import {
   deletePendingSessionExercise,
   getCurrentSession,
   getOrCreateTodaySession,
+  getSessionTemplateSyncStatus,
   reorderSessionExercises,
+  syncSessionFromTemplate,
+  type TemplateSyncResult,
+  type TemplateSyncStatus,
   type WorkoutSessionWithExercises,
 } from '../../db/sessions'
 import { getTodayTrainingCycleDay, getTrainingCycle } from '../../db/training-cycle'
@@ -67,6 +71,10 @@ export function useSchedulePageData() {
   const [templates, setTemplates] = useState<TemplateWithExercises[]>([])
   const [trainingCycle, setTrainingCycle] = useState<TrainingCycle | null>(null)
   const [currentSession, setCurrentSession] = useState<WorkoutSessionWithExercises | null>(null)
+  const [templateSyncStatus, setTemplateSyncStatus] = useState<TemplateSyncStatus>({
+    hasUpdates: false,
+    templateName: null,
+  })
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null)
   const [newExerciseDraft, setNewExerciseDraft] = useState<ScheduleExerciseDraft>(emptyExerciseDraft)
   const [isLoading, setIsLoading] = useState(true)
@@ -89,10 +97,14 @@ export function useSchedulePageData() {
 
   const loadData = useCallback(async (preferredTemplateId?: string | null) => {
     const { cycle, session, templateItems } = await fetchData()
+    const nextTemplateSyncStatus = session
+      ? await getSessionTemplateSyncStatus(session.id)
+      : { hasUpdates: false, templateName: null }
 
     setTemplates(templateItems)
     setTrainingCycle(cycle)
     setCurrentSession(session)
+    setTemplateSyncStatus(nextTemplateSyncStatus)
     setSelectedTemplateId((current) => {
       if (
         preferredTemplateId &&
@@ -244,6 +256,33 @@ export function useSchedulePageData() {
     })
   }
 
+  async function handleDeleteExercises(sessionExerciseIds: string[]) {
+    if (!currentSession || sessionExerciseIds.length === 0) {
+      return false
+    }
+
+    return runMutation(async () => {
+      for (const sessionExerciseId of sessionExerciseIds) {
+        await deletePendingSessionExercise(currentSession.id, sessionExerciseId)
+      }
+      await loadData(selectedTemplateId)
+    })
+  }
+
+  async function handleSyncTemplate(): Promise<TemplateSyncResult | false> {
+    if (!currentSession) {
+      return false
+    }
+
+    let result: TemplateSyncResult | false = false
+    const didSucceed = await runMutation(async () => {
+      result = await syncSessionFromTemplate(currentSession.id)
+      await loadData(selectedTemplateId)
+    })
+
+    return didSucceed ? result : false
+  }
+
   const todayCycleDay = getTodayTrainingCycleDay(trainingCycle)
   const todayTemplate =
     todayCycleDay?.slot.templateId
@@ -266,7 +305,9 @@ export function useSchedulePageData() {
     handleAddTemporaryExercise,
     handleAddTemplateExercises,
     handleDeleteExercise,
+    handleDeleteExercises,
     handleReorderExercises,
+    handleSyncTemplate,
     hasTemplates,
     getTemplateImportConfirmation,
     isLoading,
@@ -276,6 +317,7 @@ export function useSchedulePageData() {
     setNewExerciseDraft,
     setSelectedTemplateId,
     shouldConfirmContinueBeforeAddingExercise,
+    templateSyncStatus,
     todayCycleDay,
     todayTemplate,
     trainingCycle,

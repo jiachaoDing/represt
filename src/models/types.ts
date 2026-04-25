@@ -39,12 +39,27 @@ export interface WorkoutSession {
   createdAt: string
   autoImportedTemplateId?: string | null
   autoImportedAt?: string | null
+  lastSyncedTemplateUpdatedAt?: string | null
+  deletedTemplateExerciseIds?: string[]
+}
+
+export interface SessionTemplateExerciseSnapshot {
+  name: string
+  targetSets: number
+  defaultWeightKg?: number | null
+  defaultReps?: number | null
+  restSeconds: number
+  order: number
 }
 
 export interface SessionExercise {
   id: string
   sessionId: string
   templateExerciseId: string | null
+  sourceTemplateId?: string | null
+  sourceTemplateSnapshot?: SessionTemplateExerciseSnapshot | null
+  origin?: 'template' | 'manual'
+  removedFromTemplate?: boolean
   name: string
   targetSets: number
   defaultWeightKg?: number | null

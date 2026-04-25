@@ -16,6 +16,7 @@ export type TemplateExerciseListProps = {
   onCancelEditing: () => void
   onCreate: () => void
   onDelete: (exerciseId: string) => void
+  onOpenBatchDelete: () => void
   onDraftChange: (draft: TemplateExerciseDraft) => void
   onEdit: (exerciseId: string) => void
   onReorder: (orderedExerciseIds: string[]) => Promise<boolean>

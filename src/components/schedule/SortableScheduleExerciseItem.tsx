@@ -66,6 +66,7 @@ export function SortableScheduleExerciseItem({
         actionLabel="删除"
         disabled={!canDelete || isSorting || isSubmitting || isDragging}
         onAction={() => onDelete(exercise.id)}
+        requireLongPress
       >
         <ScheduleExerciseCard
           exercise={exercise}

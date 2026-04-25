@@ -1,6 +1,7 @@
 import { useMemo, useState, type FormEvent } from 'react'
 
 import { useSnackbarMessage } from '../useSnackbarMessage'
+import type { TemplateSyncResult } from '../../db/sessions'
 import type { TemplateWithExercises } from '../../db/templates'
 
 type TemplateImportConfirmation = {
@@ -20,6 +21,8 @@ type UseSchedulePageUiOptions = {
   ) => Promise<{ count: number; name: string } | null | false>
   handleAddTemporaryExercise: () => Promise<boolean>
   handleDeleteExercise: (sessionExerciseId: string) => Promise<boolean>
+  handleDeleteExercises: (sessionExerciseIds: string[]) => Promise<boolean>
+  handleSyncTemplate: () => Promise<TemplateSyncResult | false>
   hasTemplates: boolean
   shouldConfirmContinueBeforeAddingExercise: boolean
   templates: TemplateWithExercises[]
@@ -30,6 +33,8 @@ export function useSchedulePageUi({
   handleAddTemplateExercises,
   handleAddTemporaryExercise,
   handleDeleteExercise,
+  handleDeleteExercises,
+  handleSyncTemplate,
   hasTemplates,
   shouldConfirmContinueBeforeAddingExercise,
   templates,
@@ -140,12 +145,32 @@ export function useSchedulePageUi({
     }
   }
 
+  async function handleDeleteExercisesAction(sessionExerciseIds: string[]) {
+    const didDelete = await handleDeleteExercises(sessionExerciseIds)
+    if (didDelete) {
+      setMessage(`已删除 ${sessionExerciseIds.length} 个动作`)
+    }
+    return didDelete
+  }
+
+  async function handleSyncTemplateAction() {
+    const result = await handleSyncTemplate()
+    if (!result) {
+      return
+    }
+
+    const changedCount = result.addedCount + result.updatedCount + result.removedCount
+    setMessage(changedCount > 0 ? '已同步模板更新' : '模板已是最新')
+  }
+
   return {
     addExercise,
     confirmPendingTemplateImport,
     handleAddExercise,
     handleDeleteExerciseAction,
+    handleDeleteExercisesAction,
     handleImportTemplate,
+    handleSyncTemplateAction,
     importSourceTemplate,
     isActionSheetOpen,
     isContinueDialogOpen,
