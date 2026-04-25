@@ -72,11 +72,11 @@ export function AppLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--surface)] text-[var(--on-surface)] selection:bg-[var(--primary-container)] selection:text-[var(--on-primary-container)]">
-      <div className="mx-auto flex min-h-screen w-full max-w-[30rem] flex-col relative">
+    <div className="h-dvh overflow-hidden bg-[var(--surface)] text-[var(--on-surface)] selection:bg-[var(--primary-container)] selection:text-[var(--on-primary-container)]">
+      <div className="relative mx-auto flex h-full w-full max-w-[30rem] flex-col">
         <main
           className={[
-            'flex-1 px-4 pt-[max(0.75rem,env(safe-area-inset-top))]',
+            'min-h-0 flex-1 overflow-hidden px-4 pt-[max(0.75rem,env(safe-area-inset-top))]',
             hideNavigation
               ? 'pb-[max(1rem,env(safe-area-inset-bottom))]'
               : 'pb-[calc(5rem+env(safe-area-inset-bottom))]',

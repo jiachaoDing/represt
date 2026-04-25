@@ -167,7 +167,7 @@ export function PrimaryTabPanels() {
 
   return (
     <div
-      className="min-h-full overflow-x-hidden"
+      className="scrollbar-hide h-full overflow-x-hidden"
       onClickCapture={handleClickCapture}
       onPointerCancel={resetDragState}
       onPointerDown={handlePointerDown}
@@ -176,7 +176,7 @@ export function PrimaryTabPanels() {
       style={{ touchAction: 'pan-y' }}
     >
       <div
-        className="flex min-h-full w-full will-change-transform"
+        className="flex h-full w-full will-change-transform"
         style={{
           transform: `translateX(calc(${displayIndex * -100}% + ${dragOffset}px))`,
           transition: isDragging ? 'none' : 'transform 200ms cubic-bezier(0.2, 0, 0, 1)',
@@ -189,8 +189,11 @@ export function PrimaryTabPanels() {
             <section
               key={tab.pathname}
               aria-hidden={!isActive}
-              className="min-h-full w-full shrink-0"
-              style={{ pointerEvents: isActive ? 'auto' : 'none' }}
+              className="scrollbar-hide h-full w-full shrink-0 overflow-x-hidden overflow-y-auto"
+              style={{
+                pointerEvents: isActive ? 'auto' : 'none',
+                touchAction: 'pan-y',
+              }}
             >
               <Suspense fallback={null}>{tab.element}</Suspense>
             </section>

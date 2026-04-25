@@ -31,10 +31,9 @@ export function TemplateExerciseList({
   templatesCount,
   onCancelEditing,
   onCreate,
-  onDelete,
+  onDeleteSelected,
   onDraftChange,
   onEdit,
-  onOpenBatchDelete,
   onReorder,
   onScrollAnimationComplete,
   onSubmit,
@@ -42,6 +41,8 @@ export function TemplateExerciseList({
   const [exerciseOrder, setExerciseOrder] = useState<string[] | null>(null)
   const [activeExerciseId, setActiveExerciseId] = useState<string | null>(null)
   const [isSorting, setIsSorting] = useState(false)
+  const [isSelectionMode, setIsSelectionMode] = useState(false)
+  const [selectedExerciseIds, setSelectedExerciseIds] = useState<string[]>([])
 
   const sensors = useSensors(
     useSensor(MouseSensor, {
@@ -70,8 +71,11 @@ export function TemplateExerciseList({
     activeExercise === null
       ? -1
       : orderedExercises.findIndex((exercise) => exercise.id === activeExercise.id)
+  const exerciseIds = orderedExercises.map((exercise) => exercise.id)
+  const isAllSelected =
+    exerciseIds.length > 0 && exerciseIds.every((exerciseId) => selectedExerciseIds.includes(exerciseId))
   const { registerItemRef } = useScrollToPendingExercise({
-    exerciseIds: orderedExercises.map((exercise) => exercise.id),
+    exerciseIds,
     pendingScrollExerciseId,
     onScrollAnimationComplete,
   })
@@ -113,6 +117,38 @@ export function TemplateExerciseList({
         setExerciseOrder(currentTemplate.exercises.map((exercise) => exercise.id))
       }
     })
+  }
+
+  function openSelectionMode() {
+    closeExerciseEditorIfNeeded()
+    setSelectedExerciseIds([])
+    setIsSelectionMode(true)
+  }
+
+  function closeExerciseEditorIfNeeded() {
+    if (isCreatingExercise || editExerciseId !== null) {
+      onCancelEditing()
+    }
+  }
+
+  function closeSelectionMode() {
+    setSelectedExerciseIds([])
+    setIsSelectionMode(false)
+  }
+
+  function toggleSelectedExercise(exerciseId: string) {
+    setSelectedExerciseIds((current) =>
+      current.includes(exerciseId)
+        ? current.filter((selectedId) => selectedId !== exerciseId)
+        : [...current, exerciseId],
+    )
+  }
+
+  async function deleteSelectedExercises() {
+    const didDelete = await onDeleteSelected(selectedExerciseIds)
+    if (didDelete) {
+      closeSelectionMode()
+    }
   }
 
   if (isLoading) {
@@ -160,13 +196,38 @@ export function TemplateExerciseList({
       {!shouldShowEmptyHint ? (
         <div className="flex items-center justify-between px-2 pb-2">
           <div className="text-[12px] text-[var(--on-surface-variant)]">
-            长按后横滑删除
+            {isSelectionMode ? `已选择 ${selectedExerciseIds.length} 个` : '长按拖动排序'}
           </div>
           <div className="flex items-center gap-1">
-            {orderedExercises.length > 0 ? (
+            {isSelectionMode ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setSelectedExerciseIds(isAllSelected ? [] : exerciseIds)}
+                  className="rounded-full px-3 py-2 text-xs font-medium text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/10"
+                >
+                  {isAllSelected ? '取消全选' : '全选'}
+                </button>
+                <button
+                  type="button"
+                  onClick={closeSelectionMode}
+                  className="rounded-full px-3 py-2 text-xs font-medium text-[var(--on-surface-variant)] transition-colors hover:bg-[var(--on-surface-variant)]/10"
+                >
+                  取消
+                </button>
+                <button
+                  type="button"
+                  disabled={selectedExerciseIds.length === 0 || isSubmitting}
+                  onClick={() => void deleteSelectedExercises()}
+                  className="rounded-full px-3 py-2 text-xs font-medium text-[var(--error)] transition-colors hover:bg-[var(--error)]/10 disabled:opacity-40"
+                >
+                  删除
+                </button>
+              </>
+            ) : orderedExercises.length > 0 ? (
               <button
                 type="button"
-                onClick={onOpenBatchDelete}
+                onClick={openSelectionMode}
                 className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--error)] transition-colors hover:bg-[var(--error)]/10"
                 aria-label="批量删除动作"
               >
@@ -185,32 +246,34 @@ export function TemplateExerciseList({
                 </svg>
               </button>
             ) : null}
-            <button
-              type="button"
-              onClick={onCreate}
-              className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/10"
-              aria-label="添加动作"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                width="20"
-                height="20"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+            {!isSelectionMode ? (
+              <button
+                type="button"
+                onClick={onCreate}
+                className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/10"
+                aria-label="添加动作"
               >
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
-            </button>
+                <svg
+                  viewBox="0 0 24 24"
+                  width="20"
+                  height="20"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+              </button>
+            ) : null}
           </div>
         </div>
       ) : null}
 
       <AnimatedList className="flex flex-col gap-3">
-        {isCreatingExercise ? (
+        {isCreatingExercise && !isSelectionMode ? (
           <AnimatedListItem key="creating-exercise">
             <TemplateExerciseInlineEditor
               draft={draft}
@@ -249,11 +312,13 @@ export function TemplateExerciseList({
                 ) : (
                   <SortableTemplateExerciseItem
                     exercise={exercise}
+                    isSelected={selectedExerciseIds.includes(exercise.id)}
                     index={index}
+                    isSelectionMode={isSelectionMode}
                     isSorting={isSorting}
                     isSubmitting={isSubmitting}
-                    onDelete={onDelete}
                     onEdit={onEdit}
+                    onToggleSelected={toggleSelectedExercise}
                     registerItemRef={registerItemRef}
                   />
                 )}

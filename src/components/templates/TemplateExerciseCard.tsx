@@ -1,16 +1,15 @@
-import { SwipeActionItem } from '../ui/SwipeActionItem'
-
 import type { TemplateExerciseCardProps } from './template-exercise-list.types'
 
 export function TemplateExerciseCard({
   exercise,
   index,
   isDragging = false,
+  isSelected = false,
   isSubmitting,
-  onDelete,
   onEdit,
+  selectionMode = false,
 }: TemplateExerciseCardProps) {
-  const content = (
+  return (
     <div
       className={`rounded-[1.25rem] border border-[var(--outline-variant)]/20 bg-[var(--surface)] px-4 py-4 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)] transition-shadow duration-200 ${
         isDragging ? 'shadow-[0_10px_28px_-18px_rgba(0,0,0,0.35)]' : ''
@@ -18,12 +17,31 @@ export function TemplateExerciseCard({
     >
       <div className="flex items-center gap-3">
         <div
-          className={`flex w-6 shrink-0 justify-center text-[15px] font-bold text-[var(--on-surface)] transition-colors ${
-            isSubmitting ? 'opacity-40' : ''
-          }`}
+          className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[15px] font-bold transition-colors ${
+            selectionMode
+              ? isSelected
+                ? 'bg-[var(--primary)] text-[var(--on-primary)]'
+                : 'border border-[var(--outline)] text-transparent'
+              : 'text-[var(--on-surface)]'
+          } ${isSubmitting ? 'opacity-40' : ''}`}
           aria-hidden="true"
         >
-          {index + 1}
+          {selectionMode && isSelected ? (
+            <svg
+              viewBox="0 0 24 24"
+              width="16"
+              height="16"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          ) : (
+            index + 1
+          )}
         </div>
 
         <div className="min-w-0 flex-1 py-0.5">
@@ -38,7 +56,7 @@ export function TemplateExerciseCard({
           </div>
         </div>
 
-        {onEdit ? (
+        {onEdit && !selectionMode ? (
           <button
             type="button"
             onClick={() => onEdit(exercise.id)}
@@ -63,20 +81,5 @@ export function TemplateExerciseCard({
         ) : null}
       </div>
     </div>
-  )
-
-  if (!onDelete) {
-    return content
-  }
-
-  return (
-    <SwipeActionItem
-      actionLabel="删除"
-      disabled={isSubmitting || isDragging}
-      onAction={() => onDelete(exercise.id)}
-      requireLongPress
-    >
-      {content}
-    </SwipeActionItem>
   )
 }

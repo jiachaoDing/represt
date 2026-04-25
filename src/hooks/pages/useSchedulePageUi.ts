@@ -20,7 +20,6 @@ type UseSchedulePageUiOptions = {
     templateExerciseIds?: string[],
   ) => Promise<{ count: number; name: string } | null | false>
   handleAddTemporaryExercise: () => Promise<boolean>
-  handleDeleteExercise: (sessionExerciseId: string) => Promise<boolean>
   handleDeleteExercises: (sessionExerciseIds: string[]) => Promise<boolean>
   handleSyncTemplate: () => Promise<TemplateSyncResult | false>
   hasTemplates: boolean
@@ -32,7 +31,6 @@ export function useSchedulePageUi({
   getTemplateImportConfirmation,
   handleAddTemplateExercises,
   handleAddTemporaryExercise,
-  handleDeleteExercise,
   handleDeleteExercises,
   handleSyncTemplate,
   hasTemplates,
@@ -138,13 +136,6 @@ export function useSchedulePageUi({
     await addExercise()
   }
 
-  async function handleDeleteExerciseAction(sessionExerciseId: string) {
-    const didDelete = await handleDeleteExercise(sessionExerciseId)
-    if (didDelete) {
-      setMessage('动作已删除')
-    }
-  }
-
   async function handleDeleteExercisesAction(sessionExerciseIds: string[]) {
     const didDelete = await handleDeleteExercises(sessionExerciseIds)
     if (didDelete) {
@@ -167,7 +158,6 @@ export function useSchedulePageUi({
     addExercise,
     confirmPendingTemplateImport,
     handleAddExercise,
-    handleDeleteExerciseAction,
     handleDeleteExercisesAction,
     handleImportTemplate,
     handleSyncTemplateAction,

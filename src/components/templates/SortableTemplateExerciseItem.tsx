@@ -8,11 +8,13 @@ import type { SortableTemplateExerciseItemProps } from './template-exercise-list
 
 export function SortableTemplateExerciseItem({
   exercise,
+  isSelected,
   index,
+  isSelectionMode,
   isSorting,
   isSubmitting,
-  onDelete,
   onEdit,
+  onToggleSelected,
   registerItemRef,
 }: SortableTemplateExerciseItemProps) {
   const {
@@ -25,7 +27,7 @@ export function SortableTemplateExerciseItem({
     isDragging,
   } = useSortable({
     id: exercise.id,
-    disabled: isSubmitting,
+    disabled: isSubmitting || isSelectionMode,
     transition: verticalSortTransition,
   })
 
@@ -48,6 +50,7 @@ export function SortableTemplateExerciseItem({
         isSubmitting ? 'cursor-default' : 'cursor-grab active:cursor-grabbing',
       ].join(' ')}
       aria-label={`长按拖动调整“${exercise.name}”顺序`}
+      onClick={isSelectionMode ? () => onToggleSelected(exercise.id) : undefined}
       {...attributes}
       {...listeners}
     >
@@ -55,9 +58,10 @@ export function SortableTemplateExerciseItem({
         exercise={exercise}
         index={index}
         isDragging={isDragging}
+        isSelected={isSelected}
         isSubmitting={isSubmitting || isSorting}
-        onDelete={onDelete}
         onEdit={onEdit}
+        selectionMode={isSelectionMode}
       />
     </div>
   )

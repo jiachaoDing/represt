@@ -3,9 +3,7 @@ import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from
 import { BottomSheet } from '../components/ui/BottomSheet'
 import { ConfirmDialog } from '../components/ui/ConfirmDialog'
 import { PageHeader } from '../components/ui/PageHeader'
-import { Snackbar } from '../components/ui/Snackbar'
 import { TrainingCyclePageLoading } from '../components/training-cycle/TrainingCyclePageLoading'
-import { useSnackbarMessage } from '../hooks/useSnackbarMessage'
 import { useTrainingCyclePageData } from '../hooks/pages/useTrainingCyclePageData'
 import { addDaysToSessionDateKey, formatSessionDateKey } from '../lib/session-date-key'
 import { getTemplateColor } from '../lib/template-color'
@@ -76,7 +74,6 @@ export function TrainingCyclePage() {
     trainingCycle,
   } = useTrainingCyclePageData()
   
-  const { message, setMessage } = useSnackbarMessage()
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null)
   const [pendingDeleteSlotId, setPendingDeleteSlotId] = useState<string | null>(null)
   const [sheetOpen, setSheetOpen] = useState(false)
@@ -100,25 +97,16 @@ export function TrainingCyclePage() {
     : null
 
   async function addSlot() {
-    const didAdd = await handleAddSlot()
-    if (didAdd) {
-      setMessage('已添加一天，点击可配置')
-    }
+    await handleAddSlot()
   }
 
   async function assignTemplate(templateId: string | null) {
     if (!selectedSlot) return
-    const didAssign = await handleAssignTemplate(selectedSlot.id, templateId)
-    if (didAssign) {
-      setMessage(templateId ? '已更换模板' : '已设为休息日')
-    }
+    await handleAssignTemplate(selectedSlot.id, templateId)
   }
 
   async function calibrateSlotToday(slotId: string) {
-    const didCalibrate = await handleCalibrateToday(slotId)
-    if (didCalibrate) {
-      setMessage('已更新今日进度')
-    }
+    await handleCalibrateToday(slotId)
   }
 
   async function confirmDeleteSlot() {
@@ -126,7 +114,6 @@ export function TrainingCyclePage() {
     const didDelete = await handleRemoveSlot(pendingDeleteSlotId)
     if (didDelete) {
       setPendingDeleteSlotId(null)
-      setMessage('循环日已删除')
     }
   }
 
@@ -137,6 +124,12 @@ export function TrainingCyclePage() {
         subtitle={`当前循环：${trainingCycle?.slots.length || 0} 天`}
         backFallbackTo="/templates"
       />
+
+      {!isLoading && trainingCycle && trainingCycle.slots.length > 0 ? (
+        <div className="mx-4 mt-1 rounded-full bg-[var(--surface-container)] px-3 py-2 text-center text-[12px] font-medium text-[var(--on-surface-variant)]">
+          点击左侧序号可设为今天
+        </div>
+      ) : null}
 
       {error ? (
         <div className="mx-4 mt-4 rounded-xl bg-[var(--error-container)] px-4 py-3 text-sm text-[var(--on-error-container)]">
@@ -150,7 +143,7 @@ export function TrainingCyclePage() {
         ) : trainingCycle && trainingCycle.slots.length > 0 ? (
         <section className="relative mx-auto mt-4 max-w-lg pb-28">
           {/* Continuous Left Timeline */}
-          <div className="absolute bottom-6 left-[2.125rem] top-8 w-px bg-[var(--outline-variant)]/40" />
+          <div className="absolute bottom-6 left-10 top-8 w-px bg-[var(--outline-variant)]/40" />
 
           {trainingCycle.slots.map((slot, index) => {
             const template = slot.templateId
@@ -168,16 +161,18 @@ export function TrainingCyclePage() {
             return (
               <div key={slot.id} className="relative flex gap-4 px-4 py-3">
                 {/* Left Axis Node */}
-                <div className="relative z-10 flex w-10 shrink-0 flex-col items-center pt-[1.125rem]">
+                <div className="relative z-10 flex w-12 shrink-0 flex-col items-center pt-2">
                   {isToday ? (
                     <button
                       type="button"
                       disabled={isSubmitting}
                       onClick={() => void calibrateSlotToday(slot.id)}
-                      className="relative flex h-7 w-7 items-center justify-center rounded-full bg-[var(--primary)] text-sm font-bold text-[var(--on-primary)] ring-4 ring-[var(--primary)]/20 shadow-sm transition-transform active:scale-95 disabled:opacity-60"
+                      className="relative flex h-12 w-12 items-center justify-center rounded-full transition-transform active:scale-95 disabled:opacity-60"
                       aria-label={`第 ${index + 1} 天，今天`}
                     >
-                      {index + 1}
+                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--primary)] text-sm font-bold text-[var(--on-primary)] ring-4 ring-[var(--primary)]/20 shadow-sm">
+                        {index + 1}
+                      </span>
                       <div className="absolute -bottom-6 whitespace-nowrap rounded-full bg-[var(--primary)] px-2 py-0.5 text-[10px] font-semibold text-[var(--on-primary)] shadow-sm">
                         今天
                       </div>
@@ -187,10 +182,12 @@ export function TrainingCyclePage() {
                       type="button"
                       disabled={isSubmitting}
                       onClick={() => void calibrateSlotToday(slot.id)}
-                      className="flex h-[1.375rem] w-[1.375rem] items-center justify-center rounded-full border-2 border-[var(--surface)] bg-[var(--surface-variant)] text-[11px] font-medium text-[var(--on-surface-variant)] shadow-sm transition-transform active:scale-95 disabled:opacity-60"
+                      className="flex h-12 w-12 items-center justify-center rounded-full transition-colors active:scale-95 disabled:opacity-60"
                       aria-label={`将第 ${index + 1} 天校准为今天`}
                     >
-                      {index + 1}
+                      <span className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-[var(--surface)] bg-[var(--surface-variant)] text-[11px] font-medium text-[var(--on-surface-variant)] shadow-sm">
+                        {index + 1}
+                      </span>
                     </button>
                   )}
                 </div>
@@ -236,6 +233,34 @@ export function TrainingCyclePage() {
               </div>
             )
           })}
+
+          <div className="relative flex gap-4 px-4 py-3">
+            <div className="relative z-10 flex w-12 shrink-0 flex-col items-center pt-2">
+              <button
+                type="button"
+                onClick={() => void addSlot()}
+                disabled={isSubmitting}
+                className="flex h-12 w-12 items-center justify-center rounded-full transition-transform active:scale-95 disabled:opacity-60"
+                aria-label="添加一天"
+              >
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--primary)] text-[var(--on-primary)] shadow-[0_4px_12px_rgba(22,78,48,0.2)] ring-4 ring-[var(--primary)]/15">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                  </svg>
+                </span>
+              </button>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => void addSlot()}
+              disabled={isSubmitting}
+              className="flex min-h-14 flex-1 items-center rounded-3xl border border-dashed border-[var(--primary)]/30 bg-[var(--primary-container)]/20 px-5 text-left text-[var(--primary)] transition-transform active:scale-[0.98] disabled:opacity-60"
+            >
+              <span className="text-[15px] font-semibold">添加一天</span>
+            </button>
+          </div>
         </section>
         ) : (
         <section className="mx-4 mt-8 rounded-[1.5rem] border border-dashed border-[var(--outline-variant)] px-6 py-12 text-center text-[var(--on-surface-variant)]">
@@ -248,25 +273,20 @@ export function TrainingCyclePage() {
           <p className="mt-2 text-sm leading-relaxed">
             循环日程让你不再受限于固定的星期几。<br />添加几天作为一个周期，即可按照顺序不断循环。
           </p>
-        </section>
-        )}
-      </div>
-
-      <div className="shrink-0 pb-4 pt-3">
-        <div className="flex justify-center">
           <button
             type="button"
             onClick={() => void addSlot()}
-            className="flex h-12 items-center justify-center gap-2 rounded-full bg-[var(--primary)] px-6 text-[var(--on-primary)] shadow-[0_4px_12px_rgba(22,78,48,0.2)] transition-transform active:scale-95 tap-highlight-transparent"
-            aria-label="添加一天"
+            disabled={isSubmitting}
+            className="mx-auto mt-6 flex h-12 items-center justify-center gap-2 rounded-full bg-[var(--primary)] px-5 text-[var(--on-primary)] shadow-[0_4px_12px_rgba(22,78,48,0.2)] transition-transform active:scale-95 disabled:opacity-60"
           >
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19" />
-            <line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
             <span className="font-medium text-[15px]">添加一天</span>
           </button>
-        </div>
+        </section>
+        )}
       </div>
 
       {/* Edit Slot Bottom Sheet */}
@@ -379,7 +399,6 @@ export function TrainingCyclePage() {
         onConfirm={() => void confirmDeleteSlot()}
       />
 
-      <Snackbar message={message} placement="aboveFab" />
     </div>
   )
 }

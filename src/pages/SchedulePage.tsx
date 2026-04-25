@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 
 import { TodayTrainingPlanCard } from '../components/training-cycle/TodayTrainingPlanCard'
@@ -20,7 +20,6 @@ export function SchedulePage() {
   const backLinkState = useBackLinkState()
   const schedule = useSchedulePageData()
   const ui = useSchedulePageUi(schedule)
-  const [batchDeleteOpen, setBatchDeleteOpen] = useState(false)
   const templateColorMap = useMemo(
     () => new Map(schedule.templates.map((template, index) => [template.id, getTemplateColor(index)])),
     [schedule.templates],
@@ -34,10 +33,6 @@ export function SchedulePage() {
   const completedSets =
     schedule.currentSession?.exercises.reduce((sum, exercise) => sum + exercise.completedSets, 0) ?? 0
   const totalSets = schedule.currentSession?.exercises.reduce((sum, exercise) => sum + exercise.targetSets, 0) ?? 0
-  const batchDeleteExerciseIds =
-    schedule.currentSession?.exercises
-      .filter((exercise) => exercise.status === 'pending' && exercise.completedSets === 0)
-      .map((exercise) => exercise.id) ?? []
   const importConfirmDescription = [
     ui.pendingTemplateImportConfirmation?.isDuplicateImport
       ? `“${ui.pendingTemplateImportConfirmation.templateName}”可能已加入过今日训练。`
@@ -117,9 +112,8 @@ export function SchedulePage() {
           isLoading={schedule.isLoading}
           isSubmitting={schedule.isSubmitting}
           now={now}
-          onDelete={(exerciseId) => void ui.handleDeleteExerciseAction(exerciseId)}
           onOpenAdd={ui.openAddEntry}
-          onOpenBatchDelete={() => setBatchDeleteOpen(true)}
+          onDeleteSelected={ui.handleDeleteExercisesAction}
           onReorder={schedule.handleReorderExercises}
         />
       </section>
@@ -174,22 +168,6 @@ export function SchedulePage() {
           ui.setPendingTemplateExerciseIds([])
         }}
         onConfirm={() => void ui.confirmPendingTemplateImport()}
-      />
-
-      <ConfirmDialog
-        open={batchDeleteOpen}
-        title="批量删除动作？"
-        description={`将删除 ${batchDeleteExerciseIds.length} 个未开始的动作，已记录的动作会保留。`}
-        confirmLabel="删除"
-        danger
-        onCancel={() => setBatchDeleteOpen(false)}
-        onConfirm={() => {
-          void ui.handleDeleteExercisesAction(batchDeleteExerciseIds).then((didDelete) => {
-            if (didDelete) {
-              setBatchDeleteOpen(false)
-            }
-          })
-        }}
       />
 
       <Snackbar message={ui.message} />

@@ -27,9 +27,8 @@ type ScheduleExerciseListProps = {
   isLoading: boolean
   isSubmitting: boolean
   now: number
-  onDelete: (exerciseId: string) => void
   onOpenAdd: () => void
-  onOpenBatchDelete: () => void
+  onDeleteSelected: (exerciseIds: string[]) => Promise<boolean>
   onReorder: (orderedExerciseIds: string[]) => Promise<boolean>
 }
 
@@ -39,14 +38,15 @@ export function ScheduleExerciseList({
   isLoading,
   isSubmitting,
   now,
-  onDelete,
   onOpenAdd,
-  onOpenBatchDelete,
+  onDeleteSelected,
   onReorder,
 }: ScheduleExerciseListProps) {
   const [exerciseOrder, setExerciseOrder] = useState<string[] | null>(null)
   const [activeExerciseId, setActiveExerciseId] = useState<string | null>(null)
   const [isSorting, setIsSorting] = useState(false)
+  const [isSelectionMode, setIsSelectionMode] = useState(false)
+  const [selectedExerciseIds, setSelectedExerciseIds] = useState<string[]>([])
 
   const sensors = useSensors(
     useSensor(MouseSensor, {
@@ -88,6 +88,37 @@ export function ScheduleExerciseList({
   const deletableCount = orderedExercises.filter(
     (exercise) => exercise.status === 'pending' && exercise.completedSets === 0,
   ).length
+  const deletableExerciseIds = orderedExercises
+    .filter((exercise) => exercise.status === 'pending' && exercise.completedSets === 0)
+    .map((exercise) => exercise.id)
+  const isAllSelected =
+    deletableExerciseIds.length > 0 &&
+    deletableExerciseIds.every((exerciseId) => selectedExerciseIds.includes(exerciseId))
+
+  function openSelectionMode() {
+    setSelectedExerciseIds([])
+    setIsSelectionMode(true)
+  }
+
+  function closeSelectionMode() {
+    setSelectedExerciseIds([])
+    setIsSelectionMode(false)
+  }
+
+  function toggleSelectedExercise(exerciseId: string) {
+    setSelectedExerciseIds((current) =>
+      current.includes(exerciseId)
+        ? current.filter((selectedId) => selectedId !== exerciseId)
+        : [...current, exerciseId],
+    )
+  }
+
+  async function deleteSelectedExercises() {
+    const didDelete = await onDeleteSelected(selectedExerciseIds)
+    if (didDelete) {
+      closeSelectionMode()
+    }
+  }
 
   function handleDragStart(event: DragStartEvent) {
     setActiveExerciseId(String(event.active.id))
@@ -182,13 +213,38 @@ export function ScheduleExerciseList({
     <div className="flex flex-col gap-3 px-4">
       <div className="-mb-1 flex items-center justify-between px-2">
         <div className="text-[12px] text-[var(--on-surface-variant)]">
-          长按后横滑删除
+          {isSelectionMode ? `已选择 ${selectedExerciseIds.length} 个` : '长按拖动排序'}
         </div>
         <div className="flex items-center gap-1">
-          {deletableCount > 0 ? (
+          {isSelectionMode ? (
+            <>
+              <button
+                type="button"
+                onClick={() => setSelectedExerciseIds(isAllSelected ? [] : deletableExerciseIds)}
+                className="rounded-full px-3 py-2 text-xs font-medium text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/10"
+              >
+                {isAllSelected ? '取消全选' : '全选'}
+              </button>
+              <button
+                type="button"
+                onClick={closeSelectionMode}
+                className="rounded-full px-3 py-2 text-xs font-medium text-[var(--on-surface-variant)] transition-colors hover:bg-[var(--on-surface-variant)]/10"
+              >
+                取消
+              </button>
+              <button
+                type="button"
+                disabled={selectedExerciseIds.length === 0 || isSubmitting}
+                onClick={() => void deleteSelectedExercises()}
+                className="rounded-full px-3 py-2 text-xs font-medium text-[var(--error)] transition-colors hover:bg-[var(--error)]/10 disabled:opacity-40"
+              >
+                删除
+              </button>
+            </>
+          ) : deletableCount > 0 ? (
             <button
               type="button"
-              onClick={onOpenBatchDelete}
+              onClick={openSelectionMode}
               className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--error)] transition-colors hover:bg-[var(--error)]/10"
               aria-label="批量删除动作"
             >
@@ -207,26 +263,28 @@ export function ScheduleExerciseList({
               </svg>
             </button>
           ) : null}
-          <button
-            type="button"
-            onClick={onOpenAdd}
-            className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/10"
-            aria-label={hasTemplates ? '添加动作' : '新建动作'}
-          >
-            <svg
-              viewBox="0 0 24 24"
-              width="20"
-              height="20"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+          {!isSelectionMode ? (
+            <button
+              type="button"
+              onClick={onOpenAdd}
+              className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/10"
+              aria-label={hasTemplates ? '添加动作' : '新建动作'}
             >
-              <line x1="12" y1="5" x2="12" y2="19" />
-              <line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-          </button>
+              <svg
+                viewBox="0 0 24 24"
+                width="20"
+                height="20"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+            </button>
+          ) : null}
         </div>
       </div>
 
@@ -247,11 +305,13 @@ export function ScheduleExerciseList({
               <div key={exercise.id}>
                 <SortableScheduleExerciseItem
                   exercise={exercise}
+                  isSelected={selectedExerciseIds.includes(exercise.id)}
                   index={index}
+                  isSelectionMode={isSelectionMode}
                   isSorting={isSorting}
                   isSubmitting={isSubmitting}
                   now={now}
-                  onDelete={onDelete}
+                  onToggleSelected={toggleSelectedExercise}
                 />
               </div>
             ))}

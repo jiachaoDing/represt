@@ -10,9 +10,28 @@ type ScheduleExerciseCardProps = {
   href?: string
   index: number
   isDragging?: boolean
+  isSelected?: boolean
   isSubmitting: boolean
   linkState?: { backTo: string }
   now: number
+  selectionMode?: boolean
+}
+
+function SelectionMark({ checked }: { checked: boolean }) {
+  return checked ? (
+    <svg
+      viewBox="0 0 24 24"
+      width="16"
+      height="16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  ) : null
 }
 
 function getExerciseCardState(exercise: ScheduleExercise, now: number, index: number) {
@@ -94,11 +113,19 @@ export function ScheduleExerciseCard({
   href,
   index,
   isDragging = false,
+  isSelected = false,
   isSubmitting,
   linkState,
   now,
+  selectionMode = false,
 }: ScheduleExerciseCardProps) {
   const cardState = getExerciseCardState(exercise, now, index)
+  const handle = selectionMode ? <SelectionMark checked={isSelected} /> : cardState.handle
+  const handleClassName = selectionMode
+    ? isSelected
+      ? 'bg-[var(--primary)] text-[var(--on-primary)]'
+      : 'border border-[var(--outline)] bg-transparent text-transparent'
+    : cardState.handleClassName
   const content = (
     <div className="min-w-0 flex items-center justify-between">
       <div className="flex min-w-0 flex-col">
@@ -118,11 +145,11 @@ export function ScheduleExerciseCard({
     <div className="relative">
       <div
         className={`absolute left-4 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full transition-colors ${
-          cardState.handleClassName
+          handleClassName
         } ${isSubmitting ? 'opacity-40' : ''}`}
         aria-hidden="true"
       >
-        {cardState.handle}
+        {handle}
       </div>
 
       <div

@@ -134,13 +134,6 @@ export function useTemplatesPageData() {
     })
   }
 
-  async function handleDeleteExercise(templateId: string, exerciseId: string) {
-    return runMutation(async () => {
-      await deleteTemplateExercise(exerciseId)
-      await loadTemplates(templateId)
-    })
-  }
-
   async function handleDeleteExercises(templateId: string, exerciseIds: string[]) {
     if (exerciseIds.length === 0) {
       return false
@@ -189,7 +182,6 @@ export function useTemplatesPageData() {
     error,
     handleCreateExercise,
     handleCreateTemplate,
-    handleDeleteExercise,
     handleDeleteExercises,
     handleDeleteTemplate,
     handleReorderExercises,

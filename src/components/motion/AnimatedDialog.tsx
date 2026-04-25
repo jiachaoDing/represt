@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 
 import { dialogSpringTransition, quickEaseTransition } from './motion-tokens'
@@ -12,7 +13,7 @@ type AnimatedDialogProps = {
 export function AnimatedDialog({ children, onClose, open }: AnimatedDialogProps) {
   const reduceMotion = useReducedMotion()
 
-  return (
+  return createPortal(
     <AnimatePresence initial={false}>
       {open ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-6">
@@ -51,6 +52,7 @@ export function AnimatedDialog({ children, onClose, open }: AnimatedDialogProps)
           </motion.section>
         </div>
       ) : null}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   )
 }

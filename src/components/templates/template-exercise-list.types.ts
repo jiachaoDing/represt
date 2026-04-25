@@ -15,8 +15,7 @@ export type TemplateExerciseListProps = {
   templatesCount: number
   onCancelEditing: () => void
   onCreate: () => void
-  onDelete: (exerciseId: string) => void
-  onOpenBatchDelete: () => void
+  onDeleteSelected: (exerciseIds: string[]) => Promise<boolean>
   onDraftChange: (draft: TemplateExerciseDraft) => void
   onEdit: (exerciseId: string) => void
   onReorder: (orderedExerciseIds: string[]) => Promise<boolean>
@@ -28,17 +27,20 @@ export type TemplateExerciseCardProps = {
   exercise: TemplateExercise
   index: number
   isDragging?: boolean
+  isSelected?: boolean
   isSubmitting: boolean
-  onDelete?: (exerciseId: string) => void
+  selectionMode?: boolean
   onEdit?: (exerciseId: string) => void
 }
 
 export type SortableTemplateExerciseItemProps = {
   exercise: TemplateExercise
+  isSelected: boolean
   index: number
+  isSelectionMode: boolean
   isSorting: boolean
   isSubmitting: boolean
-  onDelete: (exerciseId: string) => void
   onEdit: (exerciseId: string) => void
+  onToggleSelected: (exerciseId: string) => void
   registerItemRef: (exerciseId: string, element: HTMLDivElement | null) => void
 }

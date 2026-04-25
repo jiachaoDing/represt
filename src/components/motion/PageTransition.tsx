@@ -140,14 +140,14 @@ export function PageTransition() {
   }
 
   return (
-    <div className="relative min-h-full overflow-x-hidden">
+    <div className="scrollbar-hide relative h-full overflow-x-hidden">
       <AnimatePresence initial={false} mode="popLayout">
         <motion.div
           key={location.pathname}
           initial={getInitialState(transitionState, shouldReduceMotion)}
           animate={getAnimateState(transitionState, shouldReduceMotion)}
           exit={getExitState(transitionState, shouldReduceMotion)}
-          className="min-h-full w-full will-change-transform"
+          className="scrollbar-hide h-full w-full overflow-x-hidden overflow-y-auto will-change-transform"
         >
           {outlet}
         </motion.div>

@@ -4,26 +4,29 @@ import { CSS } from '@dnd-kit/utilities'
 
 import type { WorkoutSessionWithExercises } from '../../db/sessions'
 import { useBackLinkState } from '../../hooks/useRouteBack'
-import { SwipeActionItem } from '../ui/SwipeActionItem'
 import { ScheduleExerciseCard } from './ScheduleExerciseCard'
 import { verticalSortTransition } from '../dnd/vertical-sortable-motion'
 
 type SortableScheduleExerciseItemProps = {
   exercise: WorkoutSessionWithExercises['exercises'][number]
+  isSelected: boolean
   index: number
+  isSelectionMode: boolean
   isSorting: boolean
   isSubmitting: boolean
   now: number
-  onDelete: (exerciseId: string) => void
+  onToggleSelected: (exerciseId: string) => void
 }
 
 export function SortableScheduleExerciseItem({
   exercise,
+  isSelected,
   index,
+  isSelectionMode,
   isSorting,
   isSubmitting,
   now,
-  onDelete,
+  onToggleSelected,
 }: SortableScheduleExerciseItemProps) {
   const backLinkState = useBackLinkState()
   const {
@@ -36,7 +39,7 @@ export function SortableScheduleExerciseItem({
     isDragging,
   } = useSortable({
     id: exercise.id,
-    disabled: isSubmitting,
+    disabled: isSubmitting || isSelectionMode,
     transition: verticalSortTransition,
   })
 
@@ -45,7 +48,7 @@ export function SortableScheduleExerciseItem({
     transition,
     touchAction: 'manipulation',
   }
-  const canDelete = exercise.status === 'pending' && exercise.completedSets === 0
+  const canSelect = exercise.status === 'pending' && exercise.completedSets === 0
 
   return (
     <div
@@ -59,25 +62,21 @@ export function SortableScheduleExerciseItem({
         isSubmitting ? 'cursor-default' : 'cursor-grab active:cursor-grabbing',
       ].join(' ')}
       aria-label={`长按拖动调整“${exercise.name}”顺序`}
+      onClick={isSelectionMode && canSelect ? () => onToggleSelected(exercise.id) : undefined}
       {...attributes}
       {...listeners}
     >
-      <SwipeActionItem
-        actionLabel="删除"
-        disabled={!canDelete || isSorting || isSubmitting || isDragging}
-        onAction={() => onDelete(exercise.id)}
-        requireLongPress
-      >
-        <ScheduleExerciseCard
-          exercise={exercise}
-          href={`/exercise/${exercise.id}`}
-          index={index}
-          isDragging={isDragging}
-          isSubmitting={isSubmitting || isSorting}
-          linkState={backLinkState}
-          now={now}
-        />
-      </SwipeActionItem>
+      <ScheduleExerciseCard
+        exercise={exercise}
+        href={isSelectionMode ? undefined : `/exercise/${exercise.id}`}
+        index={index}
+        isDragging={isDragging}
+        isSelected={isSelected}
+        isSubmitting={isSubmitting || isSorting}
+        linkState={backLinkState}
+        now={now}
+        selectionMode={isSelectionMode}
+      />
     </div>
   )
 }

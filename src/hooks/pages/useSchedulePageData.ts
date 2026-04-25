@@ -234,17 +234,6 @@ export function useSchedulePageData() {
     })
   }
 
-  async function handleDeleteExercise(sessionExerciseId: string) {
-    if (!currentSession) {
-      return false
-    }
-
-    return runMutation(async () => {
-      await deletePendingSessionExercise(currentSession.id, sessionExerciseId)
-      await loadData(selectedTemplateId)
-    })
-  }
-
   async function handleReorderExercises(orderedExerciseIds: string[]) {
     if (!currentSession) {
       return false
@@ -304,7 +293,6 @@ export function useSchedulePageData() {
     error,
     handleAddTemporaryExercise,
     handleAddTemplateExercises,
-    handleDeleteExercise,
     handleDeleteExercises,
     handleReorderExercises,
     handleSyncTemplate,

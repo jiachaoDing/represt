@@ -14,7 +14,6 @@ type UseTemplatesPageUiOptions = {
   currentTemplate: TemplateWithExercises | null
   handleCreateExercise: (templateId: string, draft: TemplateExerciseDraft) => Promise<boolean>
   handleCreateTemplate: () => Promise<boolean>
-  handleDeleteExercise: (templateId: string, exerciseId: string) => Promise<boolean>
   handleDeleteExercises: (templateId: string, exerciseIds: string[]) => Promise<boolean>
   handleDeleteTemplate: (templateId: string) => Promise<boolean>
   handleSaveExercise: (
@@ -29,7 +28,6 @@ type UseTemplatesPageUiOptions = {
 export function useTemplatesPageUi({
   currentTemplate,
   handleCreateExercise,
-  handleDeleteExercise,
   handleDeleteExercises,
   handleDeleteTemplate,
   handleCreateTemplate,
@@ -132,20 +130,6 @@ export function useTemplatesPageUi({
     }
   }
 
-  async function handleDeleteExerciseAction(exerciseId: string) {
-    if (!currentTemplate) {
-      return
-    }
-
-    const didDelete = await handleDeleteExercise(currentTemplate.id, exerciseId)
-    if (didDelete) {
-      if (editExerciseId === exerciseId) {
-        closeExerciseEditor()
-      }
-      setMessage('动作已删除')
-    }
-  }
-
   async function handleDeleteExercisesAction(exerciseIds: string[]) {
     if (!currentTemplate) {
       return false
@@ -179,7 +163,6 @@ export function useTemplatesPageUi({
     closeExerciseEditor,
     editExerciseId,
     exerciseDraft,
-    handleDeleteExerciseAction,
     handleDeleteExercisesAction,
     handleConfirmDeleteTemplate,
     handleExerciseSubmit,
