@@ -213,7 +213,9 @@ export function ScheduleExerciseList({
     <div className="flex flex-col gap-3 px-4">
       <div className="-mb-1 flex items-center justify-between px-2">
         <div className="text-[12px] text-[var(--on-surface-variant)]">
-          {isSelectionMode ? `已选择 ${selectedExerciseIds.length} 个` : '长按拖动排序'}
+          {isSelectionMode
+            ? `已选择 ${selectedExerciseIds.length} 个 · 仅未开始可删除`
+            : '长按拖动排序'}
         </div>
         <div className="flex items-center gap-1">
           {isSelectionMode ? (

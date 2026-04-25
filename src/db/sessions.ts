@@ -106,12 +106,14 @@ function isSamePlanValue<T>(left: T | null | undefined, right: T | null | undefi
   return (left ?? null) === (right ?? null)
 }
 
-function deriveSessionStatus(exercises: Array<Pick<SessionExercise, 'completedSets' | 'targetSets'>>) {
+function deriveSessionStatus(
+  exercises: Array<Pick<SessionExercise, 'completedSets' | 'targetSets' | 'restEndsAt'>>,
+) {
   if (exercises.length === 0) {
     return 'pending' satisfies SessionStatus
   }
 
-  if (exercises.every((exercise) => exercise.completedSets >= exercise.targetSets)) {
+  if (exercises.every((exercise) => deriveExerciseStatus(exercise) === 'completed')) {
     return 'completed' satisfies SessionStatus
   }
 
@@ -131,7 +133,7 @@ function attachDerivedExerciseStatus(exercise: SessionExercise) {
 
 function attachDerivedSessionStatus(
   session: WorkoutSession,
-  exercises: Array<Pick<SessionExercise, 'completedSets' | 'targetSets'>>,
+  exercises: Array<Pick<SessionExercise, 'completedSets' | 'targetSets' | 'restEndsAt'>>,
 ) {
   return {
     ...session,
@@ -749,7 +751,7 @@ export async function completeSessionExerciseSet(sessionExerciseId: string): Pro
         throw new Error('当前动作不存在。')
       }
 
-      if (deriveExerciseStatus(exercise) === 'completed') {
+      if (exercise.completedSets >= exercise.targetSets) {
         throw new Error('当前动作已完成，不能继续记录新的一组。')
       }
 
@@ -757,8 +759,7 @@ export async function completeSessionExerciseSet(sessionExerciseId: string): Pro
         ? await db.templateExercises.get(exercise.templateExerciseId)
         : null
       const nextCompletedSets = exercise.completedSets + 1
-      const restEndsAt =
-        nextCompletedSets >= exercise.targetSets ? null : getRestEndsAt(completedAt, exercise.restSeconds)
+      const restEndsAt = getRestEndsAt(completedAt, exercise.restSeconds)
 
       const setRecord: SetRecord = {
         id: crypto.randomUUID(),
@@ -835,6 +836,17 @@ export async function undoLatestSessionExerciseSet(sessionExerciseId: string): P
   }
 
   return deletedSetRecord
+}
+
+export async function skipSessionExerciseRest(sessionExerciseId: string) {
+  const exercise = await db.sessionExercises.get(sessionExerciseId)
+  if (!exercise) {
+    throw new Error('当前动作不存在。')
+  }
+
+  await db.sessionExercises.update(exercise.id, {
+    restEndsAt: null,
+  })
 }
 
 export async function updateLatestSetRecordValues(

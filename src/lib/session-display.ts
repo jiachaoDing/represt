@@ -16,9 +16,14 @@ export function getSessionStatusLabel(status: SessionStatus) {
 }
 
 export function deriveExerciseStatus(
-  exercise: Pick<SessionExercise, 'completedSets' | 'targetSets'>,
+  exercise: Pick<SessionExercise, 'completedSets' | 'targetSets'> & Partial<Pick<SessionExercise, 'restEndsAt'>>,
 ): DerivedExerciseStatus {
   if (exercise.completedSets >= exercise.targetSets) {
+    const restEndsAtMs = exercise.restEndsAt ? new Date(exercise.restEndsAt).getTime() : 0
+    if (restEndsAtMs > Date.now()) {
+      return 'active'
+    }
+
     return 'completed'
   }
 

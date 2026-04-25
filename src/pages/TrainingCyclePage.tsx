@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react'
 
 import { BottomSheet } from '../components/ui/BottomSheet'
-import { ConfirmDialog } from '../components/ui/ConfirmDialog'
 import { PageHeader } from '../components/ui/PageHeader'
 import { TrainingCyclePageLoading } from '../components/training-cycle/TrainingCyclePageLoading'
 import { useTrainingCyclePageData } from '../hooks/pages/useTrainingCyclePageData'
@@ -75,7 +74,6 @@ export function TrainingCyclePage() {
   } = useTrainingCyclePageData()
   
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null)
-  const [pendingDeleteSlotId, setPendingDeleteSlotId] = useState<string | null>(null)
   const [sheetOpen, setSheetOpen] = useState(false)
 
   // When training cycle is empty, automatically close sheet
@@ -109,11 +107,11 @@ export function TrainingCyclePage() {
     await handleCalibrateToday(slotId)
   }
 
-  async function confirmDeleteSlot() {
-    if (!pendingDeleteSlotId) return
-    const didDelete = await handleRemoveSlot(pendingDeleteSlotId)
+  async function deleteSlot(slotId: string | null) {
+    if (!slotId) return
+    const didDelete = await handleRemoveSlot(slotId)
     if (didDelete) {
-      setPendingDeleteSlotId(null)
+      setSelectedSlotId(null)
     }
   }
 
@@ -375,7 +373,7 @@ export function TrainingCyclePage() {
           <button
             type="button"
             onClick={() => {
-              setPendingDeleteSlotId(selectedSlotId)
+              void deleteSlot(selectedSlotId)
               setSheetOpen(false)
             }}
             disabled={isSubmitting}
@@ -388,16 +386,6 @@ export function TrainingCyclePage() {
           </button>
         </div>
       </BottomSheet>
-
-      <ConfirmDialog
-        open={pendingDeleteSlotId !== null}
-        title="删除这一天？"
-        description="删除后，已安排好的循环顺序将会发生改变，但不会影响历史训练记录。"
-        confirmLabel="删除"
-        danger
-        onCancel={() => setPendingDeleteSlotId(null)}
-        onConfirm={() => void confirmDeleteSlot()}
-      />
 
     </div>
   )

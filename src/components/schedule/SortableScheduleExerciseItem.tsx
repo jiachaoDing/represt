@@ -49,6 +49,13 @@ export function SortableScheduleExerciseItem({
     touchAction: 'manipulation',
   }
   const canSelect = exercise.status === 'pending' && exercise.completedSets === 0
+  const interactionClassName = isSelectionMode
+    ? canSelect
+      ? 'cursor-pointer'
+      : 'cursor-not-allowed'
+    : isSubmitting
+    ? 'cursor-default'
+    : 'cursor-grab active:cursor-grabbing'
 
   return (
     <div
@@ -59,7 +66,7 @@ export function SortableScheduleExerciseItem({
       style={style}
       className={[
         isDragging ? 'relative opacity-0 pointer-events-none' : 'relative',
-        isSubmitting ? 'cursor-default' : 'cursor-grab active:cursor-grabbing',
+        interactionClassName,
       ].join(' ')}
       aria-label={`长按拖动调整“${exercise.name}”顺序`}
       onClick={isSelectionMode && canSelect ? () => onToggleSelected(exercise.id) : undefined}
@@ -71,6 +78,7 @@ export function SortableScheduleExerciseItem({
         href={isSelectionMode ? undefined : `/exercise/${exercise.id}`}
         index={index}
         isDragging={isDragging}
+        isSelectable={canSelect}
         isSelected={isSelected}
         isSubmitting={isSubmitting || isSorting}
         linkState={backLinkState}

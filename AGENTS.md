@@ -27,6 +27,7 @@
 ## 4. 工具与环境约束
 
 - 当前环境中 `rg` 不可执行；用 PowerShell 的 `Get-ChildItem`、`Select-String`、`Get-Content -Encoding utf8` 查找和读取文件。
+- PowerShell 版本不支持用的 && 分隔符
 - 搜索范围尽量先缩到 `src` 或相关目录，避免全仓库无界扫描。
 - 编辑文件统一用小步 `apply_patch`。
 - 不要用脚本批量重写大量文件，除非用户明确要求。

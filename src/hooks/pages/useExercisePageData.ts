@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import {
   completeSessionExerciseSet,
   getSessionExerciseDetail,
+  skipSessionExerciseRest,
   undoLatestSessionExerciseSet,
   updateLatestSetRecordValues,
   type SessionExerciseDetail,
@@ -172,9 +173,23 @@ export function useExercisePageData(id: string) {
     return didUndo
   }
 
+  async function handleSkipRest() {
+    if (!detail) {
+      return false
+    }
+
+    return runMutation(async () => {
+      await skipSessionExerciseRest(detail.exercise.id)
+      const nextDetail = await getSessionExerciseDetail(detail.exercise.id)
+
+      setDetail(nextDetail)
+      await syncRestTimerNotification(nextDetail)
+    })
+  }
+
   const latestSetRecord = detail?.latestSetRecord ?? null
   const canCompleteSet =
-    detail !== null && detail.exercise.status !== 'completed' && !isSubmitting
+    detail !== null && detail.exercise.completedSets < detail.exercise.targetSets && !isSubmitting
   const canUndoLatestSet = latestSetRecord !== null && !isSubmitting
 
   return {
@@ -183,6 +198,7 @@ export function useExercisePageData(id: string) {
     detail,
     error,
     handleCompleteSet,
+    handleSkipRest,
     handleUndoLatestSet,
     handleUpdateLatestSetRecord,
     isLoading,

@@ -10,6 +10,7 @@ type ScheduleExerciseCardProps = {
   href?: string
   index: number
   isDragging?: boolean
+  isSelectable?: boolean
   isSelected?: boolean
   isSubmitting: boolean
   linkState?: { backTo: string }
@@ -17,7 +18,25 @@ type ScheduleExerciseCardProps = {
   selectionMode?: boolean
 }
 
-function SelectionMark({ checked }: { checked: boolean }) {
+function SelectionMark({ checked, disabled }: { checked: boolean; disabled: boolean }) {
+  if (disabled) {
+    return (
+      <svg
+        viewBox="0 0 24 24"
+        width="15"
+        height="15"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <circle cx="12" cy="12" r="8" />
+        <path d="m7 17 10-10" />
+      </svg>
+    )
+  }
+
   return checked ? (
     <svg
       viewBox="0 0 24 24"
@@ -113,6 +132,7 @@ export function ScheduleExerciseCard({
   href,
   index,
   isDragging = false,
+  isSelectable = true,
   isSelected = false,
   isSubmitting,
   linkState,
@@ -120,12 +140,21 @@ export function ScheduleExerciseCard({
   selectionMode = false,
 }: ScheduleExerciseCardProps) {
   const cardState = getExerciseCardState(exercise, now, index)
-  const handle = selectionMode ? <SelectionMark checked={isSelected} /> : cardState.handle
+  const isSelectionDisabled = selectionMode && !isSelectable
+  const handle = selectionMode
+    ? <SelectionMark checked={isSelected} disabled={isSelectionDisabled} />
+    : cardState.handle
   const handleClassName = selectionMode
-    ? isSelected
+    ? isSelectionDisabled
+      ? 'border border-[var(--outline-variant)] bg-[var(--surface-container)] text-[var(--outline)]'
+      : isSelected
       ? 'bg-[var(--primary)] text-[var(--on-primary)]'
       : 'border border-[var(--outline)] bg-transparent text-transparent'
     : cardState.handleClassName
+  const statusText = isSelectionDisabled ? '不可删除' : cardState.statusText
+  const statusClassName = isSelectionDisabled
+    ? 'text-[var(--outline)]'
+    : cardState.statusClassName
   const content = (
     <div className="min-w-0 flex items-center justify-between">
       <div className="flex min-w-0 flex-col">
@@ -135,8 +164,8 @@ export function ScheduleExerciseCard({
           {exercise.removedFromTemplate ? ' · 模板中已移除' : ''}
         </p>
       </div>
-      <div className={`ml-2 shrink-0 text-[13px] ${cardState.statusClassName}`}>
-        {cardState.statusText}
+      <div className={`ml-2 shrink-0 text-[13px] ${statusClassName}`}>
+        {statusText}
       </div>
     </div>
   )
@@ -155,7 +184,9 @@ export function ScheduleExerciseCard({
       <div
         className={`rounded-[1.25rem] pl-16 pr-4 py-4 transition-shadow duration-200 ${
           cardState.itemClassName
-        } ${isDragging ? 'shadow-[0_10px_28px_-18px_rgba(0,0,0,0.35)]' : ''}`}
+        } ${isSelectionDisabled ? 'opacity-50' : ''} ${
+          isDragging ? 'shadow-[0_10px_28px_-18px_rgba(0,0,0,0.35)]' : ''
+        }`}
       >
         {href ? (
           <Link

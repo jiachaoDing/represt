@@ -25,10 +25,12 @@ export function ExerciseHero({ detail, now }: ExerciseHeroProps) {
         {hero.value}
       </h2>
       
-      {/* Fake progress bar placeholder that looks like the design */}
       {hero.state === 'resting' && (
         <div className="mx-auto mt-8 h-2 w-[180px] overflow-hidden rounded-full bg-[var(--primary-container)]">
-          <div className="h-full w-1/3 rounded-full bg-[var(--primary)] transition-all duration-1000" />
+          <div
+            className="h-full origin-left rounded-full bg-[var(--primary)] will-change-transform"
+            style={{ transform: `scaleX(${hero.restRemainingRatio ?? 0})` }}
+          />
         </div>
       )}
     </section>
