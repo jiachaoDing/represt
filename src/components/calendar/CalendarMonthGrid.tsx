@@ -1,9 +1,8 @@
-import { Link } from 'react-router-dom'
-
 import type { CalendarDateCell } from '../../lib/session-date-key'
 
 type CalendarMonthGridProps = {
   cells: CalendarDateCell[]
+  onSelectDate: (dateKey: string) => void
   selectedDateKey: string
   sessionDateKeySet: Set<string>
 }
@@ -12,6 +11,7 @@ const weekLabels = ['日', '一', '二', '三', '四', '五', '六']
 
 export function CalendarMonthGrid({
   cells,
+  onSelectDate,
   selectedDateKey,
   sessionDateKeySet,
 }: CalendarMonthGridProps) {
@@ -33,7 +33,7 @@ export function CalendarMonthGrid({
           const hasSession = sessionDateKeySet.has(cell.dateKey)
           const isSelected = cell.dateKey === selectedDateKey
           const cellClassName = [
-            'flex aspect-square min-h-11 items-center justify-center rounded-2xl border text-[14px] font-medium transition-colors',
+            'flex aspect-square min-h-11 items-center justify-center rounded-2xl border p-0 text-[14px] font-medium transition-colors',
             cell.isCurrentMonth
               ? 'border-[var(--outline-variant)]/10 text-[var(--on-surface)]'
               : 'border-transparent text-[var(--outline)]/70',
@@ -52,28 +52,17 @@ export function CalendarMonthGrid({
             </div>
           )
 
-          if (!hasSession) {
-            return (
-              <div
-                key={cell.dateKey}
-                className={cellClassName}
-                aria-label={`${cell.dateKey} 无训练记录`}
-              >
-                {cellContent}
-              </div>
-            )
-          }
-
           return (
-            <Link
+            <button
               key={cell.dateKey}
-              to={`/summary?date=${cell.dateKey}`}
-              viewTransition
+              type="button"
+              onClick={() => onSelectDate(cell.dateKey)}
               className={cellClassName}
-              aria-label={`${cell.dateKey} 有训练记录`}
+              aria-pressed={isSelected}
+              aria-label={`${cell.dateKey} ${hasSession ? '有训练记录' : '无训练记录'}`}
             >
               {cellContent}
-            </Link>
+            </button>
           )
         })}
       </div>

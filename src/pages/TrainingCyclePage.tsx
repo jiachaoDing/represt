@@ -1,251 +1,16 @@
-import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react'
-import { createPortal } from 'react-dom'
-import {
-  DndContext,
-  DragOverlay,
-  MouseSensor,
-  TouchSensor,
-  closestCenter,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-  type DragStartEvent,
-} from '@dnd-kit/core'
-import {
-  SortableContext,
-  arrayMove,
-  useSortable,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable'
-import { CSS } from '@dnd-kit/utilities'
-
-import { BottomSheet } from '../components/ui/BottomSheet'
+import { useEffect, useMemo, useState } from 'react'
+import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core'
+import { arrayMove } from '@dnd-kit/sortable'
 import { PageHeader } from '../components/ui/PageHeader'
+import { TrainingCycleEmptyState } from '../components/training-cycle/TrainingCycleEmptyState'
 import { TrainingCyclePageLoading } from '../components/training-cycle/TrainingCyclePageLoading'
-import {
-  verticalSortDropAnimation,
-  verticalSortModifiers,
-  verticalSortTransition,
-} from '../components/dnd/vertical-sortable-motion'
-import type { TemplateWithExercises } from '../db/templates'
+import { TrainingCycleSlotList } from '../components/training-cycle/TrainingCycleSlotList'
+import { TrainingCycleSlotSheet } from '../components/training-cycle/TrainingCycleSlotSheet'
+import type { TrainingCycleSlotListItem } from '../components/training-cycle/training-cycle-page.types'
+import { getCycleSlotDateKey, getWeekdayLabel } from '../components/training-cycle/training-cycle-page-utils'
 import { useTrainingCyclePageData } from '../hooks/pages/useTrainingCyclePageData'
-import { addDaysToSessionDateKey, formatSessionDateKey } from '../lib/session-date-key'
 import { getTemplateColor } from '../lib/template-color'
 import type { TrainingCycleSlot } from '../models/types'
-
-type OptionIconProps = {
-  children: ReactNode
-  className?: string
-  style?: CSSProperties
-}
-
-function OptionIcon({ children, className = '', style }: OptionIconProps) {
-  return (
-    <span
-      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${className}`}
-      style={style}
-    >
-      {children}
-    </span>
-  )
-}
-
-function RestIcon() {
-  return (
-    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.4 15.2A8 8 0 0 1 8.8 3.6 8.5 8.5 0 1 0 20.4 15.2z" />
-    </svg>
-  )
-}
-
-function TemplateIcon() {
-  return (
-    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 7h12M6 12h12M6 17h8" />
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 7h.01M4 12h.01M4 17h.01" />
-    </svg>
-  )
-}
-
-function DeleteIcon() {
-  return (
-    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 7h12" />
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 7V5h4v2" />
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10l.5 8h7l.5-8" />
-    </svg>
-  )
-}
-
-function getCycleSlotDateKey(anchorDateKey: string, anchorIndex: number, slotIndex: number) {
-  return addDaysToSessionDateKey(anchorDateKey, slotIndex - anchorIndex)
-}
-
-function getWeekdayLabel(sessionDateKey: string) {
-  return formatSessionDateKey(sessionDateKey, { weekday: 'short' })
-}
-
-type TrainingCycleSlotRowProps = {
-  color: ReturnType<typeof getTemplateColor> | null
-  index: number
-  isDragging?: boolean
-  isSorting?: boolean
-  isSubmitting: boolean
-  isToday: boolean
-  onCalibrateToday: (slotId: string) => void
-  onOpenSheet: (slotId: string) => void
-  slot: TrainingCycleSlot
-  template: TemplateWithExercises | null
-  weekdayLabel: string
-}
-
-function TrainingCycleSlotCard({
-  color,
-  isSorting = false,
-  isSubmitting,
-  onOpenSheet,
-  slot,
-  template,
-  weekdayLabel,
-  isToday,
-}: Omit<TrainingCycleSlotRowProps, 'index' | 'isDragging' | 'onCalibrateToday'>) {
-  return (
-    <button
-      type="button"
-      onClick={() => onOpenSheet(slot.id)}
-      disabled={isSubmitting || isSorting}
-      className={[
-        'flex flex-1 items-center justify-between rounded-3xl p-5 text-left transition-transform active:scale-[0.98] shadow-sm border border-transparent disabled:opacity-80',
-        template
-          ? ''
-          : 'bg-[var(--surface-container)] text-[var(--on-surface)] border-[var(--outline-variant)]/20',
-      ].join(' ')}
-      style={
-        template && color
-          ? { backgroundColor: color.soft, color: color.text, borderColor: 'rgba(0,0,0,0.05)' }
-          : {}
-      }
-    >
-      <div>
-        <h4 className="text-[17px] font-bold tracking-tight">
-          {template ? template.name : '休息日'}
-        </h4>
-        <p className="mt-1 text-[13px] font-medium opacity-70">
-          {template ? `${template.exercises.length} 个动作` : '放松恢复，为下次训练蓄力'}
-        </p>
-        <p className="mt-2 text-[12px] font-medium opacity-60">
-          {isToday ? '今天' : weekdayLabel}
-        </p>
-      </div>
-
-      <div className="ml-2 flex h-8 w-8 items-center justify-center rounded-full bg-black/5 opacity-50">
-        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
-        </svg>
-      </div>
-    </button>
-  )
-}
-
-function TrainingCycleSlotRow({
-  color,
-  index,
-  isDragging = false,
-  isSorting = false,
-  isSubmitting,
-  isToday,
-  onCalibrateToday,
-  onOpenSheet,
-  slot,
-  template,
-  weekdayLabel,
-}: TrainingCycleSlotRowProps) {
-  return (
-    <div className="relative flex gap-4 px-4 py-3">
-      <div className="relative z-10 flex w-12 shrink-0 flex-col items-center pt-2">
-        {isToday ? (
-          <button
-            type="button"
-            disabled={isSubmitting || isSorting}
-            onClick={() => onCalibrateToday(slot.id)}
-            className="relative flex h-12 w-12 items-center justify-center rounded-full transition-transform active:scale-95 disabled:opacity-60"
-            aria-label={`第 ${index + 1} 天，今天`}
-          >
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--primary)] text-sm font-bold text-[var(--on-primary)] ring-4 ring-[var(--primary)]/20 shadow-sm">
-              {index + 1}
-            </span>
-            <div className="absolute -bottom-6 whitespace-nowrap rounded-full bg-[var(--primary)] px-2 py-0.5 text-[10px] font-semibold text-[var(--on-primary)] shadow-sm">
-              今天
-            </div>
-          </button>
-        ) : (
-          <button
-            type="button"
-            disabled={isSubmitting || isSorting}
-            onClick={() => onCalibrateToday(slot.id)}
-            className="flex h-12 w-12 items-center justify-center rounded-full transition-colors active:scale-95 disabled:opacity-60"
-            aria-label={`将第 ${index + 1} 天校准为今天`}
-          >
-            <span className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-[var(--surface)] bg-[var(--surface-variant)] text-[11px] font-medium text-[var(--on-surface-variant)] shadow-sm">
-              {index + 1}
-            </span>
-          </button>
-        )}
-      </div>
-
-      <TrainingCycleSlotCard
-        color={color}
-        isSorting={isSorting}
-        isSubmitting={isSubmitting || isDragging}
-        isToday={isToday}
-        onOpenSheet={onOpenSheet}
-        slot={slot}
-        template={template}
-        weekdayLabel={weekdayLabel}
-      />
-    </div>
-  )
-}
-
-function SortableTrainingCycleSlotRow(props: TrainingCycleSlotRowProps) {
-  const {
-    attributes,
-    listeners,
-    setActivatorNodeRef,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({
-    id: props.slot.id,
-    disabled: props.isSubmitting,
-    transition: verticalSortTransition,
-  })
-  const style: CSSProperties = {
-    transform: isDragging ? undefined : CSS.Transform.toString(transform),
-    transition,
-    touchAction: 'manipulation',
-  }
-
-  return (
-    <div
-      ref={(element) => {
-        setNodeRef(element)
-        setActivatorNodeRef(element)
-      }}
-      style={style}
-      className={[
-        isDragging ? 'relative opacity-0 pointer-events-none' : 'relative',
-        props.isSubmitting ? 'cursor-default' : 'cursor-grab active:cursor-grabbing',
-      ].join(' ')}
-      aria-label={`长按拖动调整第 ${props.index + 1} 天顺序`}
-      {...attributes}
-      {...listeners}
-    >
-      <TrainingCycleSlotRow {...props} isDragging={isDragging} />
-    </div>
-  )
-}
 
 export function TrainingCyclePage() {
   const {
@@ -261,29 +26,12 @@ export function TrainingCyclePage() {
     todayCycleDay,
     trainingCycle,
   } = useTrainingCyclePageData()
-  
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null)
   const [sheetOpen, setSheetOpen] = useState(false)
   const [slotOrder, setSlotOrder] = useState<string[] | null>(null)
   const [activeSlotId, setActiveSlotId] = useState<string | null>(null)
   const [isSorting, setIsSorting] = useState(false)
 
-  const sensors = useSensors(
-    useSensor(MouseSensor, {
-      activationConstraint: {
-        delay: 320,
-        tolerance: 6,
-      },
-    }),
-    useSensor(TouchSensor, {
-      activationConstraint: {
-        delay: 320,
-        tolerance: 8,
-      },
-    }),
-  )
-
-  // When training cycle is empty, automatically close sheet
   useEffect(() => {
     if (!trainingCycle || trainingCycle.slots.length === 0) {
       setSheetOpen(false)
@@ -307,18 +55,13 @@ export function TrainingCyclePage() {
 
     return nextSlots.length === slots.length ? nextSlots : slots
   }, [slotOrder, trainingCycle])
-  
+
   const selectedSlot = trainingCycle?.slots.find((slot) => slot.id === selectedSlotId) ?? null
   const selectedIndex = trainingCycle?.slots.findIndex((slot) => slot.id === selectedSlotId) ?? 0
   const selectedTemplate = selectedSlot?.templateId
     ? templates.find((template) => template.id === selectedSlot.templateId) ?? null
     : null
-  const activeSlot =
-    activeSlotId === null
-      ? null
-      : orderedSlots.find((slot) => slot.id === activeSlotId) ?? null
-  const activeSlotIndex =
-    activeSlot === null ? -1 : orderedSlots.findIndex((slot) => slot.id === activeSlot.id)
+
   const orderedAnchorIndex =
     todayCycleDay === null
       ? trainingCycle?.anchorIndex ?? 0
@@ -327,17 +70,35 @@ export function TrainingCyclePage() {
           orderedSlots.findIndex((slot) => slot.id === todayCycleDay.slot.id),
         )
 
-  async function addSlot() {
-    await handleAddSlot()
-  }
+  const orderedSlotItems = useMemo(() => {
+    return orderedSlots.map<TrainingCycleSlotListItem>((slot, index) => {
+      const template = slot.templateId
+        ? templates.find((item) => item.id === slot.templateId) ?? null
+        : null
+      const color = template ? templateColorMap.get(template.id) ?? null : null
+      const isToday = todayCycleDay?.slot.id === slot.id
+      const slotDateKey = trainingCycle
+        ? getCycleSlotDateKey(trainingCycle.anchorDateKey, orderedAnchorIndex, index)
+        : ''
+
+      return {
+        color,
+        index,
+        isToday,
+        slot,
+        template,
+        weekdayLabel: slotDateKey ? getWeekdayLabel(slotDateKey) : '',
+      }
+    })
+  }, [orderedAnchorIndex, orderedSlots, templateColorMap, templates, todayCycleDay, trainingCycle])
+  const activeSlotItem =
+    activeSlotId === null
+      ? null
+      : orderedSlotItems.find((item) => item.slot.id === activeSlotId) ?? null
 
   async function assignTemplate(templateId: string | null) {
     if (!selectedSlot) return
     await handleAssignTemplate(selectedSlot.id, templateId)
-  }
-
-  async function calibrateSlotToday(slotId: string) {
-    await handleCalibrateToday(slotId)
   }
 
   async function deleteSlot(slotId: string | null) {
@@ -351,24 +112,6 @@ export function TrainingCyclePage() {
   function openSlotSheet(slotId: string) {
     setSelectedSlotId(slotId)
     setSheetOpen(true)
-  }
-
-  function getSlotRenderData(slot: TrainingCycleSlot, index: number) {
-    const template = slot.templateId
-      ? templates.find((item) => item.id === slot.templateId) ?? null
-      : null
-    const color = template ? templateColorMap.get(template.id) ?? null : null
-    const isToday = todayCycleDay?.slot.id === slot.id
-    const slotDateKey = trainingCycle
-      ? getCycleSlotDateKey(trainingCycle.anchorDateKey, orderedAnchorIndex, index)
-      : ''
-
-    return {
-      color,
-      isToday,
-      template,
-      weekdayLabel: slotDateKey ? getWeekdayLabel(slotDateKey) : '',
-    }
   }
 
   function handleDragStart(event: DragStartEvent) {
@@ -433,220 +176,38 @@ export function TrainingCyclePage() {
         {isLoading ? (
           <TrainingCyclePageLoading showHeader={false} />
         ) : trainingCycle && trainingCycle.slots.length > 0 ? (
-        <section className="relative mx-auto mt-4 max-w-lg pb-28">
-          {/* Continuous Left Timeline */}
-          <div className="absolute bottom-6 left-10 top-8 w-px bg-[var(--outline-variant)]/40" />
-
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            modifiers={verticalSortModifiers}
-            onDragStart={handleDragStart}
+          <TrainingCycleSlotList
+            activeSlotItem={activeSlotItem}
+            isSorting={isSorting}
+            isSubmitting={isSubmitting}
+            onAddSlot={() => void handleAddSlot()}
+            onCalibrateToday={(slotId) => void handleCalibrateToday(slotId)}
             onDragCancel={handleDragCancel}
             onDragEnd={handleDragEnd}
-          >
-            <SortableContext
-              items={orderedSlots.map((slot) => slot.id)}
-              strategy={verticalListSortingStrategy}
-            >
-              {orderedSlots.map((slot, index) => {
-                const slotRenderData = getSlotRenderData(slot, index)
-
-                return (
-                  <SortableTrainingCycleSlotRow
-                    key={slot.id}
-                    index={index}
-                    isSorting={isSorting}
-                    isSubmitting={isSubmitting}
-                    onCalibrateToday={(slotId) => void calibrateSlotToday(slotId)}
-                    onOpenSheet={openSlotSheet}
-                    slot={slot}
-                    {...slotRenderData}
-                  />
-                )
-              })}
-            </SortableContext>
-
-            {activeSlot
-              ? createPortal(
-                  <DragOverlay
-                    adjustScale={false}
-                    dropAnimation={verticalSortDropAnimation}
-                    modifiers={verticalSortModifiers}
-                  >
-                    <div className="opacity-95">
-                      <TrainingCycleSlotRow
-                        index={activeSlotIndex}
-                        isDragging
-                        isSorting
-                        isSubmitting
-                        onCalibrateToday={(slotId) => void calibrateSlotToday(slotId)}
-                        onOpenSheet={openSlotSheet}
-                        slot={activeSlot}
-                        {...getSlotRenderData(activeSlot, activeSlotIndex)}
-                      />
-                    </div>
-                  </DragOverlay>,
-                  document.body,
-                )
-              : null}
-          </DndContext>
-
-          <div className="relative flex gap-4 px-4 py-3">
-            <div className="relative z-10 flex w-12 shrink-0 flex-col items-center pt-2">
-              <button
-                type="button"
-                onClick={() => void addSlot()}
-                disabled={isSubmitting}
-                className="flex h-12 w-12 items-center justify-center rounded-full transition-transform active:scale-95 disabled:opacity-60"
-                aria-label="添加一天"
-              >
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--primary)] text-[var(--on-primary)] shadow-[0_4px_12px_rgba(22,78,48,0.2)] ring-4 ring-[var(--primary)]/15">
-                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="12" y1="5" x2="12" y2="19" />
-                    <line x1="5" y1="12" x2="19" y2="12" />
-                  </svg>
-                </span>
-              </button>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => void addSlot()}
-              disabled={isSubmitting}
-              className="flex min-h-14 flex-1 items-center rounded-3xl border border-dashed border-[var(--primary)]/30 bg-[var(--primary-container)]/20 px-5 text-left text-[var(--primary)] transition-transform active:scale-[0.98] disabled:opacity-60"
-            >
-              <span className="text-[15px] font-semibold">添加一天</span>
-            </button>
-          </div>
-        </section>
+            onDragStart={handleDragStart}
+            onOpenSheet={openSlotSheet}
+            orderedSlotItems={orderedSlotItems}
+          />
         ) : (
-        <section className="mx-4 mt-8 rounded-[1.5rem] border border-dashed border-[var(--outline-variant)] px-6 py-12 text-center text-[var(--on-surface-variant)]">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[var(--surface-container)] mb-4">
-            <svg className="h-6 w-6 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-          </div>
-          <h3 className="text-[16px] font-semibold text-[var(--on-surface)]">开启你的循环日程</h3>
-          <p className="mt-2 text-sm leading-relaxed">
-            循环日程让你不再受限于固定的星期几。<br />添加几天作为一个周期，即可按照顺序不断循环。
-          </p>
-          <button
-            type="button"
-            onClick={() => void addSlot()}
-            disabled={isSubmitting}
-            className="mx-auto mt-6 flex h-12 items-center justify-center gap-2 rounded-full bg-[var(--primary)] px-5 text-[var(--on-primary)] shadow-[0_4px_12px_rgba(22,78,48,0.2)] transition-transform active:scale-95 disabled:opacity-60"
-          >
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19" />
-              <line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-            <span className="font-medium text-[15px]">添加一天</span>
-          </button>
-        </section>
+          <TrainingCycleEmptyState
+            isSubmitting={isSubmitting}
+            onAddSlot={() => void handleAddSlot()}
+          />
         )}
       </div>
 
-      {/* Edit Slot Bottom Sheet */}
-      <BottomSheet
-        open={sheetOpen}
+      <TrainingCycleSlotSheet
+        isSubmitting={isSubmitting}
+        onAssignTemplate={(templateId) => void assignTemplate(templateId)}
         onClose={() => setSheetOpen(false)}
-        title={`第 ${selectedIndex + 1} 天`}
-        description={selectedTemplate ? `当前选择：${selectedTemplate.name}` : '当前为休息日'}
-      >
-        <div className="grid gap-1">
-          {/* Rest Day Option */}
-          <button
-            type="button"
-            onClick={() => {
-              void assignTemplate(null)
-              setSheetOpen(false)
-            }}
-            disabled={isSubmitting}
-            className={[
-              'flex items-center justify-between rounded-[1rem] px-4 py-3 text-left transition-colors active:scale-[0.98]',
-              selectedTemplate === null
-                ? 'bg-[var(--surface-variant)] text-[var(--on-surface-variant)]'
-                : 'bg-transparent text-[var(--on-surface)]'
-            ].join(' ')}
-          >
-            <div className="flex items-center gap-3">
-              <OptionIcon className="bg-[var(--surface-container)] text-[var(--on-surface-variant)]">
-                <RestIcon />
-              </OptionIcon>
-              <span className="font-semibold">休息日</span>
-            </div>
-            {selectedTemplate === null && (
-              <svg className="h-5 w-5 text-[var(--primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
-              </svg>
-            )}
-          </button>
-
-          {/* Template Options */}
-          {templates.map((template) => {
-            const color = templateColorMap.get(template.id) ?? getTemplateColor(0)
-            const isActive = selectedTemplate?.id === template.id
-
-            return (
-              <button
-                key={template.id}
-                type="button"
-                onClick={() => {
-                  void assignTemplate(template.id)
-                  setSheetOpen(false)
-                }}
-                disabled={isSubmitting}
-                className={[
-                  'flex items-center justify-between rounded-[1rem] px-4 py-3 text-left transition-colors active:scale-[0.98]',
-                  isActive
-                    ? 'bg-[var(--primary-container)] text-[var(--on-primary-container)]'
-                    : 'bg-transparent text-[var(--on-surface)]'
-                ].join(' ')}
-              >
-                <div className="flex items-center gap-3">
-                  <OptionIcon
-                    className="shadow-sm"
-                    style={{ backgroundColor: color.soft, color: color.solid }}
-                  >
-                    <TemplateIcon />
-                  </OptionIcon>
-                  <div>
-                    <div className="font-semibold">{template.name}</div>
-                    <div className="text-[13px] font-medium opacity-70 mt-0.5">
-                      {template.exercises.length} 个动作
-                    </div>
-                  </div>
-                </div>
-                {isActive && (
-                  <svg className="h-5 w-5" style={{ color: color.solid }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
-                  </svg>
-                )}
-              </button>
-            )
-          })}
-
-          <div className="my-3 h-px bg-[var(--outline-variant)]/20" />
-
-          {/* Delete Slot Option */}
-          <button
-            type="button"
-            onClick={() => {
-              void deleteSlot(selectedSlotId)
-              setSheetOpen(false)
-            }}
-            disabled={isSubmitting}
-            className="flex items-center gap-3 rounded-[1rem] px-4 py-3.5 text-left text-[var(--error)] hover:bg-[var(--error-container)] transition-colors active:scale-[0.98]"
-          >
-            <OptionIcon className="bg-[var(--error-container)] text-[var(--error)]">
-              <DeleteIcon />
-            </OptionIcon>
-            <span className="font-medium">删除此天</span>
-          </button>
-        </div>
-      </BottomSheet>
-
+        onDeleteSlot={(slotId) => void deleteSlot(slotId)}
+        open={sheetOpen}
+        selectedIndex={selectedIndex}
+        selectedSlotId={selectedSlotId}
+        selectedTemplate={selectedTemplate}
+        templateColorMap={templateColorMap}
+        templates={templates}
+      />
     </div>
   )
 }
