@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import {
   DndContext,
   MouseSensor,
@@ -7,6 +7,7 @@ import {
   useSensor,
   useSensors,
   type DragEndEvent,
+  type DragOverEvent,
   type DragStartEvent,
 } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
@@ -44,6 +45,7 @@ export function TemplateExerciseList({
   const [isSorting, setIsSorting] = useState(false)
   const [isSelectionMode, setIsSelectionMode] = useState(false)
   const [selectedExerciseIds, setSelectedExerciseIds] = useState<string[]>([])
+  const lastDragOverIdRef = useRef<string | null>(null)
 
   const sensors = useSensors(
     useSensor(MouseSensor, {
@@ -84,12 +86,25 @@ export function TemplateExerciseList({
   function handleDragStart(event: DragStartEvent) {
     setActiveExerciseId(String(event.active.id))
     setIsSorting(true)
-    void triggerHaptic('selection-start')
+    lastDragOverIdRef.current = String(event.active.id)
+    void triggerHaptic('medium')
+  }
+
+  function handleDragOver(event: DragOverEvent) {
+    const overId = event.over ? String(event.over.id) : null
+    if (!overId || overId === String(event.active.id) || overId === lastDragOverIdRef.current) {
+      return
+    }
+
+    lastDragOverIdRef.current = overId
+    void triggerHaptic('light')
   }
 
   function handleDragCancel() {
     setActiveExerciseId(null)
     setIsSorting(false)
+    lastDragOverIdRef.current = null
+    void triggerHaptic('light')
   }
 
   function handleDragEnd(event: DragEndEvent) {
@@ -97,6 +112,8 @@ export function TemplateExerciseList({
 
     setActiveExerciseId(null)
     setIsSorting(false)
+    lastDragOverIdRef.current = null
+    void triggerHaptic('light')
 
     if (!currentTemplate || !over || active.id === over.id) {
       return
@@ -119,8 +136,6 @@ export function TemplateExerciseList({
         setExerciseOrder(currentTemplate.exercises.map((exercise) => exercise.id))
         return
       }
-
-      void triggerHaptic('selection-end')
     })
   }
 
@@ -296,6 +311,7 @@ export function TemplateExerciseList({
           collisionDetection={closestCenter}
           modifiers={verticalSortModifiers}
           onDragStart={handleDragStart}
+          onDragOver={handleDragOver}
           onDragCancel={handleDragCancel}
           onDragEnd={handleDragEnd}
         >

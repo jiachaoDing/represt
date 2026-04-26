@@ -6,6 +6,8 @@ type SessionExerciseSummaryListProps = {
   detail: SessionSummaryDetail | null
 }
 
+const maxDotCount = 10
+
 function formatNumber(value: number) {
   return Number.isInteger(value) ? String(value) : String(value).replace(/\.0$/, '')
 }
@@ -44,6 +46,27 @@ function getRecordSummary(setRecords: SetRecord[]) {
   }
 
   return parts.join(' · ')
+}
+
+function SetCompletionDots({ completedSets }: { completedSets: number }) {
+  if (completedSets <= 0) {
+    return null
+  }
+
+  const visibleDotCount = Math.min(completedSets, maxDotCount)
+
+  return (
+    <div className="mt-4 flex items-center gap-1.5">
+      {Array.from({ length: visibleDotCount }).map((_, index) => (
+        <span key={index} className="h-2.5 w-2.5 rounded-full bg-[var(--primary)]" />
+      ))}
+      {completedSets > maxDotCount ? (
+        <span className="ml-1 text-[12px] font-medium text-[var(--primary)]">
+          +{completedSets - maxDotCount}
+        </span>
+      ) : null}
+    </div>
+  )
 }
 
 export function SessionExerciseSummaryList({ detail }: SessionExerciseSummaryListProps) {
@@ -85,15 +108,14 @@ export function SessionExerciseSummaryList({ detail }: SessionExerciseSummaryLis
                     <h4 className="truncate text-[16px] font-bold text-[var(--on-surface)]">
                       {exercise.name}
                     </h4>
-                    <p className="mt-1 text-[13px] font-medium text-[var(--primary)]">
-                      {exercise.completedSets} 组完成
-                    </p>
                   </div>
 
                   <span className="shrink-0 rounded-full bg-[var(--primary-container)] px-3 py-1 text-[12px] font-semibold text-[var(--on-primary-container)]">
                     {exercise.completedSets} 组
                   </span>
                 </div>
+
+                <SetCompletionDots completedSets={exercise.completedSets} />
 
                 {recordSummary ? (
                   <p className="mt-3 text-[13px] leading-5 text-[var(--on-surface-variant)]">

@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
-import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import type { DragEndEvent, DragOverEvent, DragStartEvent } from '@dnd-kit/core'
 import { arrayMove } from '@dnd-kit/sortable'
 import { PageHeader } from '../components/ui/PageHeader'
 import { TrainingCycleEmptyState } from '../components/training-cycle/TrainingCycleEmptyState'
@@ -32,6 +32,7 @@ export function TrainingCyclePage() {
   const [slotOrder, setSlotOrder] = useState<string[] | null>(null)
   const [activeSlotId, setActiveSlotId] = useState<string | null>(null)
   const [isSorting, setIsSorting] = useState(false)
+  const lastDragOverIdRef = useRef<string | null>(null)
 
   useEffect(() => {
     if (!trainingCycle || trainingCycle.slots.length === 0) {
@@ -118,12 +119,25 @@ export function TrainingCyclePage() {
   function handleDragStart(event: DragStartEvent) {
     setActiveSlotId(String(event.active.id))
     setIsSorting(true)
-    void triggerHaptic('selection-start')
+    lastDragOverIdRef.current = String(event.active.id)
+    void triggerHaptic('medium')
+  }
+
+  function handleDragOver(event: DragOverEvent) {
+    const overId = event.over ? String(event.over.id) : null
+    if (!overId || overId === String(event.active.id) || overId === lastDragOverIdRef.current) {
+      return
+    }
+
+    lastDragOverIdRef.current = overId
+    void triggerHaptic('light')
   }
 
   function handleDragCancel() {
     setActiveSlotId(null)
     setIsSorting(false)
+    lastDragOverIdRef.current = null
+    void triggerHaptic('light')
   }
 
   function handleDragEnd(event: DragEndEvent) {
@@ -131,6 +145,8 @@ export function TrainingCyclePage() {
 
     setActiveSlotId(null)
     setIsSorting(false)
+    lastDragOverIdRef.current = null
+    void triggerHaptic('light')
 
     if (!trainingCycle || !over || active.id === over.id) {
       return
@@ -152,8 +168,6 @@ export function TrainingCyclePage() {
         setSlotOrder(trainingCycle.slots.map((slot) => slot.id))
         return
       }
-
-      void triggerHaptic('selection-end')
     })
   }
 
@@ -189,6 +203,7 @@ export function TrainingCyclePage() {
             onCalibrateToday={(slotId) => void handleCalibrateToday(slotId)}
             onDragCancel={handleDragCancel}
             onDragEnd={handleDragEnd}
+            onDragOver={handleDragOver}
             onDragStart={handleDragStart}
             onOpenSheet={openSlotSheet}
             orderedSlotItems={orderedSlotItems}

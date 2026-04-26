@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import {
   DndContext,
@@ -9,6 +9,7 @@ import {
   useSensor,
   useSensors,
   type DragEndEvent,
+  type DragOverEvent,
   type DragStartEvent,
 } from '@dnd-kit/core'
 import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable'
@@ -48,6 +49,7 @@ export function ScheduleExerciseList({
   const [isSorting, setIsSorting] = useState(false)
   const [isSelectionMode, setIsSelectionMode] = useState(false)
   const [selectedExerciseIds, setSelectedExerciseIds] = useState<string[]>([])
+  const lastDragOverIdRef = useRef<string | null>(null)
 
   const sensors = useSensors(
     useSensor(MouseSensor, {
@@ -124,12 +126,25 @@ export function ScheduleExerciseList({
   function handleDragStart(event: DragStartEvent) {
     setActiveExerciseId(String(event.active.id))
     setIsSorting(true)
-    void triggerHaptic('selection-start')
+    lastDragOverIdRef.current = String(event.active.id)
+    void triggerHaptic('medium')
+  }
+
+  function handleDragOver(event: DragOverEvent) {
+    const overId = event.over ? String(event.over.id) : null
+    if (!overId || overId === String(event.active.id) || overId === lastDragOverIdRef.current) {
+      return
+    }
+
+    lastDragOverIdRef.current = overId
+    void triggerHaptic('light')
   }
 
   function handleDragCancel() {
     setActiveExerciseId(null)
     setIsSorting(false)
+    lastDragOverIdRef.current = null
+    void triggerHaptic('light')
   }
 
   function handleDragEnd(event: DragEndEvent) {
@@ -137,6 +152,8 @@ export function ScheduleExerciseList({
 
     setActiveExerciseId(null)
     setIsSorting(false)
+    lastDragOverIdRef.current = null
+    void triggerHaptic('light')
 
     if (!currentSession || !over || active.id === over.id) {
       return
@@ -161,7 +178,6 @@ export function ScheduleExerciseList({
         return
       }
 
-      void triggerHaptic('selection-end')
     })
   }
 
@@ -300,6 +316,7 @@ export function ScheduleExerciseList({
         collisionDetection={closestCenter}
         modifiers={verticalSortModifiers}
         onDragStart={handleDragStart}
+        onDragOver={handleDragOver}
         onDragCancel={handleDragCancel}
         onDragEnd={handleDragEnd}
       >

@@ -9,6 +9,7 @@ import {
   useSensor,
   useSensors,
   type DragEndEvent,
+  type DragOverEvent,
   type DragStartEvent,
 } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
@@ -26,6 +27,7 @@ type TrainingCycleSlotListProps = {
   onCalibrateToday: (slotId: string) => void
   onDragCancel: () => void
   onDragEnd: (event: DragEndEvent) => void
+  onDragOver: (event: DragOverEvent) => void
   onDragStart: (event: DragStartEvent) => void
   onOpenSheet: (slotId: string) => void
   orderedSlotItems: TrainingCycleSlotListItem[]
@@ -39,6 +41,7 @@ export function TrainingCycleSlotList({
   onCalibrateToday,
   onDragCancel,
   onDragEnd,
+  onDragOver,
   onDragStart,
   onOpenSheet,
   orderedSlotItems,
@@ -67,6 +70,7 @@ export function TrainingCycleSlotList({
         collisionDetection={closestCenter}
         modifiers={verticalSortModifiers}
         onDragStart={onDragStart}
+        onDragOver={onDragOver}
         onDragCancel={onDragCancel}
         onDragEnd={onDragEnd}
       >
@@ -125,7 +129,7 @@ export function TrainingCycleSlotList({
             className="flex h-12 w-12 items-center justify-center rounded-full transition-transform active:scale-95 disabled:opacity-60"
             aria-label="添加一天"
           >
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--primary)] text-[var(--on-primary)] shadow-[0_4px_12px_rgba(22,78,48,0.2)] ring-4 ring-[var(--primary)]/15">
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--secondary-container)] text-[var(--on-secondary-container)] shadow-[0_4px_12px_rgba(0,0,0,0.08)] ring-4 ring-[var(--secondary)]/10">
               <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="12" y1="5" x2="12" y2="19" />
                 <line x1="5" y1="12" x2="19" y2="12" />

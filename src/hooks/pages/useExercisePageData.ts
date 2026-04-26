@@ -182,6 +182,10 @@ export function useExercisePageData(id: string) {
       return false
     }
 
+    if (didUndo) {
+      void triggerHaptic('light')
+    }
+
     return didUndo
   }
 
