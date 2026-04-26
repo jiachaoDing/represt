@@ -14,15 +14,8 @@ export function SessionSummaryOverview({
   emptyState,
   isLoading,
 }: SessionSummaryOverviewProps) {
-  const completedExerciseCount =
-    detail?.exercises.filter((exercise) => exercise.status === 'completed').length ?? 0
-  const totalExerciseCount = detail?.exercises.length ?? 0
   const completedSetCount =
     detail?.exercises.reduce((acc, exercise) => acc + exercise.completedSets, 0) ?? 0
-  const targetSetCount =
-    detail?.exercises.reduce((acc, exercise) => acc + exercise.targetSets, 0) ?? 0
-  const completionRate =
-    targetSetCount > 0 ? Math.min(100, Math.round((completedSetCount / targetSetCount) * 100)) : null
   const completedExerciseNames =
     detail?.exercises.filter((exercise) => exercise.completedSets > 0).map((exercise) => exercise.name) ?? []
   const exerciseNamePreview = completedExerciseNames.slice(0, 3).join('、')
@@ -73,25 +66,6 @@ export function SessionSummaryOverview({
         <span className="shrink-0 rounded-full bg-[var(--primary-container)] px-3 py-1 text-[12px] font-semibold text-[var(--on-primary-container)]">
           {getSessionStatusLabel(detail.session.status)}
         </span>
-      </div>
-
-      <div className="mt-5 grid grid-cols-3 gap-2">
-        <div className="rounded-2xl bg-[var(--surface-container)] px-3 py-3">
-          <p className="text-[11px] text-[var(--on-surface-variant)]">动作</p>
-          <p className="mt-1 text-[15px] font-bold text-[var(--on-surface)]">
-            {completedExerciseCount}/{totalExerciseCount}
-          </p>
-        </div>
-        <div className="rounded-2xl bg-[var(--surface-container)] px-3 py-3">
-          <p className="text-[11px] text-[var(--on-surface-variant)]">进度</p>
-          <p className="mt-1 text-[15px] font-bold text-[var(--on-surface)]">
-            {completionRate === null ? '已记录' : `${completionRate}%`}
-          </p>
-        </div>
-        <div className="rounded-2xl bg-[var(--surface-container)] px-3 py-3">
-          <p className="text-[11px] text-[var(--on-surface-variant)]">目标组</p>
-          <p className="mt-1 text-[15px] font-bold text-[var(--on-surface)]">{targetSetCount} 组</p>
-        </div>
       </div>
 
       <p className="mt-4 text-[13px] leading-5 text-[var(--on-surface-variant)]">{summaryText}</p>

@@ -5,6 +5,7 @@ import { CSS } from '@dnd-kit/utilities'
 import type { WorkoutSessionWithExercises } from '../../db/sessions'
 import { useBackLinkState } from '../../hooks/useRouteBack'
 import { ScheduleExerciseCard } from './ScheduleExerciseCard'
+import { usePrimaryTabLongPressSwipeLock } from '../layout/PrimaryTabSwipeContext'
 import { verticalSortTransition } from '../dnd/vertical-sortable-motion'
 
 type SortableScheduleExerciseItemProps = {
@@ -29,6 +30,7 @@ export function SortableScheduleExerciseItem({
   onToggleSelected,
 }: SortableScheduleExerciseItemProps) {
   const backLinkState = useBackLinkState()
+  const swipeLockHandlers = usePrimaryTabLongPressSwipeLock(isSubmitting || isSelectionMode)
   const {
     attributes,
     listeners,
@@ -64,6 +66,7 @@ export function SortableScheduleExerciseItem({
         setActivatorNodeRef(element)
       }}
       style={style}
+      {...swipeLockHandlers}
       className={[
         isDragging ? 'relative opacity-0 pointer-events-none' : 'relative',
         interactionClassName,

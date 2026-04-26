@@ -4,10 +4,21 @@ import {
   useEffect,
   useRef,
   useState,
-  type MouseEvent,
-  type PointerEvent,
+  type MouseEvent as ReactMouseEvent,
+  type PointerEvent as ReactPointerEvent,
 } from 'react'
+import {
+  animate,
+  motion,
+  useDragControls,
+  useMotionValue,
+  useReducedMotion,
+  type PanInfo,
+} from 'framer-motion'
 import { useLocation, useNavigate } from 'react-router-dom'
+
+import { quickEaseTransition } from '../motion/motion-tokens'
+import { PrimaryTabSwipeProvider, usePrimaryTabSwipeLock } from './PrimaryTabSwipeContext'
 
 const SchedulePage = lazy(() =>
   import('../../pages/SchedulePage').then((module) => ({ default: module.SchedulePage })),
@@ -27,6 +38,7 @@ const primaryTabs = [
 
 const PAGE_SWIPE_THRESHOLD = 72
 const PAGE_DRAG_TOLERANCE = 10
+const PAGE_SWIPE_VELOCITY = 520
 const EDGE_RESISTANCE = 0.22
 
 function getPrimaryTabIndex(pathname: string) {
@@ -38,124 +50,185 @@ export function isPrimaryTabPath(pathname: string) {
 }
 
 export function PrimaryTabPanels() {
+  return (
+    <PrimaryTabSwipeProvider>
+      <PrimaryTabPanelsContent />
+    </PrimaryTabSwipeProvider>
+  )
+}
+
+function PrimaryTabPanelsContent() {
   const location = useLocation()
   const navigate = useNavigate()
-  const activeIndex = getPrimaryTabIndex(location.pathname)
-  const [displayIndex, setDisplayIndex] = useState(activeIndex)
-  const [dragOffset, setDragOffset] = useState(0)
-  const [isDragging, setIsDragging] = useState(false)
+  const dragControls = useDragControls()
+  const reduceMotion = useReducedMotion()
+  const x = useMotionValue(0)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const trackAnimationRef = useRef<{ stop: () => void } | null>(null)
+  const didSwipeRef = useRef(false)
   const isPointerDownRef = useRef(false)
-  const isPageDraggingRef = useRef(false)
-  const isSwipeActionLockedRef = useRef(false)
-  const dragOffsetRef = useRef(0)
+  const isPageDragStartedRef = useRef(false)
   const startXRef = useRef(0)
   const startYRef = useRef(0)
-  const didSwipeRef = useRef(false)
+  const { isPrimaryTabSwipeDisabled, primaryTabSwipeDisabledRef } = usePrimaryTabSwipeLock()
+  const activeIndex = getPrimaryTabIndex(location.pathname)
+  const activeTabIndex = activeIndex === -1 ? 0 : activeIndex
+  const [displayIndex, setDisplayIndex] = useState(activeTabIndex)
+  const [containerWidth, setContainerWidth] = useState(0)
+  const [isDragging, setIsDragging] = useState(false)
 
   useEffect(() => {
-    if (activeIndex !== -1 && !isPointerDownRef.current) {
+    if (activeIndex !== -1 && !isDragging) {
       setDisplayIndex(activeIndex)
     }
-  }, [activeIndex])
+  }, [activeIndex, isDragging])
 
   useEffect(() => {
-    function handleSwipeActionLock(event: Event) {
-      isSwipeActionLockedRef.current = Boolean((event as CustomEvent<boolean>).detail)
+    const element = containerRef.current
+    if (!element) {
+      return
+    }
+    const observedElement = element
 
-      if (isSwipeActionLockedRef.current) {
-        isPageDraggingRef.current = false
-        dragOffsetRef.current = 0
-        setIsDragging(false)
-        setDragOffset(0)
-      }
+    function updateWidth() {
+      setContainerWidth(observedElement.clientWidth)
     }
 
-    window.addEventListener('trainre:swipe-action-lock', handleSwipeActionLock)
-    return () => window.removeEventListener('trainre:swipe-action-lock', handleSwipeActionLock)
+    updateWidth()
+    const observer = new ResizeObserver(updateWidth)
+    observer.observe(observedElement)
+    return () => observer.disconnect()
   }, [])
 
-  function resetDragState() {
+  useEffect(() => {
+    settleToIndex(displayIndex)
+  }, [containerWidth, displayIndex])
+
+  useEffect(() => {
+    if (isPrimaryTabSwipeDisabled) {
+      setIsDragging(false)
+      settleToIndex(activeTabIndex)
+    }
+  }, [activeTabIndex, isPrimaryTabSwipeDisabled])
+
+  useEffect(() => {
+    return () => trackAnimationRef.current?.stop()
+  }, [])
+
+  function resetPointerIntent() {
     isPointerDownRef.current = false
-    isPageDraggingRef.current = false
-    dragOffsetRef.current = 0
-    setIsDragging(false)
-    setDragOffset(0)
+    isPageDragStartedRef.current = false
   }
 
-  function getConstrainedOffset(deltaX: number) {
-    const isAtFirstTab = activeIndex <= 0
-    const isAtLastTab = activeIndex >= primaryTabs.length - 1
+  function getPageX(index: number) {
+    return -index * containerWidth
+  }
 
-    if ((isAtFirstTab && deltaX > 0) || (isAtLastTab && deltaX < 0)) {
-      return deltaX * EDGE_RESISTANCE
+  function settleToIndex(index: number) {
+    const targetX = getPageX(index)
+    trackAnimationRef.current?.stop()
+
+    if (reduceMotion || containerWidth === 0) {
+      x.set(targetX)
+      return
     }
 
-    return deltaX
+    trackAnimationRef.current = animate(x, targetX, quickEaseTransition)
   }
 
-  function handlePointerDown(event: PointerEvent<HTMLDivElement>) {
+  function isSwipeDisabled() {
+    return primaryTabSwipeDisabledRef.current
+  }
+
+  function handlePointerDown(event: ReactPointerEvent<HTMLDivElement>) {
     if (event.pointerType === 'mouse' && event.button !== 0) {
       return
     }
 
+    if (isSwipeDisabled() || containerWidth === 0) {
+      settleToIndex(activeTabIndex)
+      return
+    }
+
     isPointerDownRef.current = true
-    isPageDraggingRef.current = false
-    setDisplayIndex(activeIndex)
+    isPageDragStartedRef.current = false
     startXRef.current = event.clientX
     startYRef.current = event.clientY
     didSwipeRef.current = false
   }
 
-  function handlePointerMove(event: PointerEvent<HTMLDivElement>) {
-    if (!isPointerDownRef.current || isSwipeActionLockedRef.current) {
+  function handlePointerMove(event: ReactPointerEvent<HTMLDivElement>) {
+    if (!isPointerDownRef.current || isPageDragStartedRef.current) {
+      return
+    }
+
+    if (isSwipeDisabled() || containerWidth === 0) {
+      resetPointerIntent()
+      settleToIndex(activeTabIndex)
       return
     }
 
     const deltaX = event.clientX - startXRef.current
     const deltaY = event.clientY - startYRef.current
 
-    if (!isPageDraggingRef.current) {
-      if (Math.abs(deltaX) < PAGE_DRAG_TOLERANCE) {
-        return
-      }
-
-      if (Math.abs(deltaX) <= Math.abs(deltaY)) {
-        resetDragState()
-        return
-      }
-
-      isPageDraggingRef.current = true
-      setIsDragging(true)
-    }
-
-    didSwipeRef.current = true
-    dragOffsetRef.current = getConstrainedOffset(deltaX)
-    setDragOffset(dragOffsetRef.current)
-  }
-
-  function handlePointerUp() {
-    if (!isPageDraggingRef.current || isSwipeActionLockedRef.current) {
-      resetDragState()
+    if (Math.abs(deltaX) < PAGE_DRAG_TOLERANCE) {
       return
     }
 
-    const currentDragOffset = dragOffsetRef.current
-    const nextIndex =
-      currentDragOffset < -PAGE_SWIPE_THRESHOLD
-        ? Math.min(activeIndex + 1, primaryTabs.length - 1)
-        : currentDragOffset > PAGE_SWIPE_THRESHOLD
-          ? Math.max(activeIndex - 1, 0)
-          : activeIndex
+    if (Math.abs(deltaX) <= Math.abs(deltaY)) {
+      resetPointerIntent()
+      return
+    }
 
-    resetDragState()
+    isPageDragStartedRef.current = true
+    trackAnimationRef.current?.stop()
+    setDisplayIndex(activeTabIndex)
+    dragControls.start(event)
+  }
+
+  function handleDragStart() {
+    setIsDragging(true)
+    didSwipeRef.current = true
+  }
+
+  function handleDrag() {
+    if (isSwipeDisabled()) {
+      x.set(getPageX(activeTabIndex))
+    }
+  }
+
+  function handleDragEnd(
+    _: globalThis.MouseEvent | globalThis.TouchEvent | globalThis.PointerEvent,
+    info: PanInfo,
+  ) {
+    setIsDragging(false)
+    resetPointerIntent()
+
+    if (isSwipeDisabled()) {
+      setDisplayIndex(activeTabIndex)
+      settleToIndex(activeTabIndex)
+      return
+    }
+
+    const shouldMoveNext =
+      info.offset.x < -PAGE_SWIPE_THRESHOLD || info.velocity.x < -PAGE_SWIPE_VELOCITY
+    const shouldMovePrevious =
+      info.offset.x > PAGE_SWIPE_THRESHOLD || info.velocity.x > PAGE_SWIPE_VELOCITY
+    const nextIndex = shouldMoveNext
+      ? Math.min(activeTabIndex + 1, primaryTabs.length - 1)
+      : shouldMovePrevious
+        ? Math.max(activeTabIndex - 1, 0)
+        : activeTabIndex
+
     setDisplayIndex(nextIndex)
+    settleToIndex(nextIndex)
 
-    if (nextIndex !== activeIndex) {
+    if (nextIndex !== activeTabIndex) {
       navigate(primaryTabs[nextIndex].pathname)
     }
   }
 
-  function handleClickCapture(event: MouseEvent<HTMLDivElement>) {
+  function handleClickCapture(event: ReactMouseEvent<HTMLDivElement>) {
     if (!didSwipeRef.current) {
       return
     }
@@ -167,20 +240,31 @@ export function PrimaryTabPanels() {
 
   return (
     <div
+      ref={containerRef}
       className="scrollbar-hide h-full overflow-x-hidden"
       onClickCapture={handleClickCapture}
-      onPointerCancel={resetDragState}
+      onPointerCancel={resetPointerIntent}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerUp}
+      onPointerUp={resetPointerIntent}
       style={{ touchAction: 'pan-y' }}
     >
-      <div
-        className="flex h-full w-full will-change-transform"
-        style={{
-          transform: `translateX(calc(${displayIndex * -100}% + ${dragOffset}px))`,
-          transition: isDragging ? 'none' : 'transform 200ms cubic-bezier(0.2, 0, 0, 1)',
+      <motion.div
+        drag={isPrimaryTabSwipeDisabled ? false : 'x'}
+        dragControls={dragControls}
+        dragConstraints={{
+          left: -(primaryTabs.length - 1) * containerWidth,
+          right: 0,
         }}
+        dragDirectionLock
+        dragElastic={EDGE_RESISTANCE}
+        dragListener={false}
+        dragMomentum={false}
+        onDrag={handleDrag}
+        onDragEnd={handleDragEnd}
+        onDragStart={handleDragStart}
+        className="flex h-full w-full will-change-transform"
+        style={{ x }}
       >
         {primaryTabs.map((tab, index) => {
           const isActive = index === activeIndex
@@ -199,7 +283,7 @@ export function PrimaryTabPanels() {
             </section>
           )
         })}
-      </div>
+      </motion.div>
     </div>
   )
 }

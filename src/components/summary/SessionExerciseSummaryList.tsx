@@ -6,8 +6,6 @@ type SessionExerciseSummaryListProps = {
   detail: SessionSummaryDetail | null
 }
 
-const maxDotCount = 10
-
 function formatNumber(value: number) {
   return Number.isInteger(value) ? String(value) : String(value).replace(/\.0$/, '')
 }
@@ -46,48 +44,6 @@ function getRecordSummary(setRecords: SetRecord[]) {
   }
 
   return parts.join(' · ')
-}
-
-function SetProgressDots({
-  completedSets,
-  targetSets,
-}: {
-  completedSets: number
-  targetSets: number
-}) {
-  if (targetSets > maxDotCount) {
-    const progress = Math.min(100, Math.round((completedSets / targetSets) * 100))
-
-    return (
-      <div className="flex items-center gap-3">
-        <div className="h-2 flex-1 overflow-hidden rounded-full bg-[var(--surface-container)]">
-          <div className="h-full rounded-full bg-[var(--primary)]" style={{ width: `${progress}%` }} />
-        </div>
-        <span className="text-[12px] font-medium text-[var(--on-surface-variant)]">
-          {completedSets}/{targetSets}
-        </span>
-      </div>
-    )
-  }
-
-  return (
-    <div className="flex items-center gap-1.5">
-      {Array.from({ length: targetSets }).map((_, index) => (
-        <span
-          key={index}
-          className={[
-            'h-2.5 w-2.5 rounded-full',
-            index < completedSets ? 'bg-[var(--primary)]' : 'bg-[var(--surface-container)]',
-          ].join(' ')}
-        />
-      ))}
-      {completedSets > targetSets ? (
-        <span className="ml-1 text-[12px] font-medium text-[var(--primary)]">
-          +{completedSets - targetSets}
-        </span>
-      ) : null}
-    </div>
-  )
 }
 
 export function SessionExerciseSummaryList({ detail }: SessionExerciseSummaryListProps) {
@@ -135,15 +91,8 @@ export function SessionExerciseSummaryList({ detail }: SessionExerciseSummaryLis
                   </div>
 
                   <span className="shrink-0 rounded-full bg-[var(--primary-container)] px-3 py-1 text-[12px] font-semibold text-[var(--on-primary-container)]">
-                    {exercise.completedSets}/{exercise.targetSets} 组
+                    {exercise.completedSets} 组
                   </span>
-                </div>
-
-                <div className="mt-4">
-                  <SetProgressDots
-                    completedSets={exercise.completedSets}
-                    targetSets={exercise.targetSets}
-                  />
                 </div>
 
                 {recordSummary ? (

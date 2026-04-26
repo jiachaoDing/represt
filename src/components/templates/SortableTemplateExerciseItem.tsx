@@ -3,6 +3,7 @@ import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 
 import { verticalSortTransition } from '../dnd/vertical-sortable-motion'
+import { usePrimaryTabLongPressSwipeLock } from '../layout/PrimaryTabSwipeContext'
 import { TemplateExerciseCard } from './TemplateExerciseCard'
 import type { SortableTemplateExerciseItemProps } from './template-exercise-list.types'
 
@@ -17,6 +18,7 @@ export function SortableTemplateExerciseItem({
   onToggleSelected,
   registerItemRef,
 }: SortableTemplateExerciseItemProps) {
+  const swipeLockHandlers = usePrimaryTabLongPressSwipeLock(isSubmitting || isSelectionMode)
   const {
     attributes,
     listeners,
@@ -45,6 +47,7 @@ export function SortableTemplateExerciseItem({
         registerItemRef(exercise.id, element)
       }}
       style={style}
+      {...swipeLockHandlers}
       className={[
         isDragging ? 'relative opacity-0 pointer-events-none' : 'relative',
         isSubmitting ? 'cursor-default' : 'cursor-grab active:cursor-grabbing',

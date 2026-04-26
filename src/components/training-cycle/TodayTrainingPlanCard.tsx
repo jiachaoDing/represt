@@ -100,15 +100,12 @@ export function TodayTrainingPlanCard({
       {/* 垂直分割线 */}
       <div className="my-3 w-px bg-[var(--outline-variant)]/30" />
       
-      <Link 
-        to="/summary" 
-        className="flex w-[88px] shrink-0 flex-col items-center justify-center rounded-[1rem] p-2 hover:bg-[var(--on-surface)]/5 active:bg-[var(--on-surface)]/10 transition-colors"
-      >
+      <div className="flex w-[88px] shrink-0 flex-col items-center justify-center rounded-[1rem] p-2">
         <ProgressRing completed={completedSets} total={totalSets} />
         <span className="mt-2 text-[12px] font-medium text-[var(--on-surface-variant)]">
           {completedSets} / {totalSets} 组
         </span>
-      </Link>
+      </div>
     </section>
   )
 }
