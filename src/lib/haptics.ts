@@ -1,4 +1,8 @@
-import { isNativePluginAvailable } from '../native/capacitor-platform'
+import {
+  getCapacitorPlatform,
+  isNativeApp,
+  isNativePluginAvailable,
+} from '../native/capacitor-platform'
 
 export type HapticType =
   | 'light'
@@ -8,11 +12,19 @@ export type HapticType =
   | 'error'
 
 const webVibrationPatterns: Record<HapticType, number | number[]> = {
-  light: 8,
-  medium: 16,
-  success: [10, 30, 14],
-  warning: [18, 40, 18],
-  error: [28, 45, 28],
+  light: 18,
+  medium: 32,
+  success: [24, 32, 24],
+  warning: [34, 42, 34],
+  error: [44, 48, 44],
+}
+
+const androidVibrationDurations: Record<HapticType, number> = {
+  light: 18,
+  medium: 36,
+  success: 42,
+  warning: 52,
+  error: 64,
 }
 
 const hapticsEnabledStorageKey = 'trainre:haptics-enabled'
@@ -104,22 +116,34 @@ async function triggerNativeHaptic(type: HapticType) {
 
   if (type === 'success') {
     await Haptics.notification({ type: NotificationType.Success })
+    if (getCapacitorPlatform() === 'android') {
+      await Haptics.vibrate({ duration: androidVibrationDurations[type] })
+    }
     return
   }
 
   if (type === 'warning') {
     await Haptics.notification({ type: NotificationType.Warning })
+    if (getCapacitorPlatform() === 'android') {
+      await Haptics.vibrate({ duration: androidVibrationDurations[type] })
+    }
     return
   }
 
   if (type === 'error') {
     await Haptics.notification({ type: NotificationType.Error })
+    if (getCapacitorPlatform() === 'android') {
+      await Haptics.vibrate({ duration: androidVibrationDurations[type] })
+    }
     return
   }
 
   const style = type === 'medium' ? ImpactStyle.Medium : ImpactStyle.Light
 
   await Haptics.impact({ style })
+  if (getCapacitorPlatform() === 'android') {
+    await Haptics.vibrate({ duration: androidVibrationDurations[type] })
+  }
 }
 
 function triggerWebVibration(type: HapticType) {
@@ -143,7 +167,7 @@ export async function triggerHaptic(type: HapticType) {
     return
   }
 
-  if (isNativePluginAvailable('Haptics')) {
+  if (isNativeApp() || isNativePluginAvailable('Haptics')) {
     try {
       await triggerNativeHaptic(type)
       return

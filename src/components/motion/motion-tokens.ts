@@ -23,3 +23,10 @@ export const quickEaseTransition = {
   duration: 0.18,
   ease: [0.22, 1, 0.36, 1],
 } as const
+
+export const primaryTabSpringTransition = {
+  type: 'spring',
+  stiffness: 520,
+  damping: 42,
+  mass: 0.72,
+} as const

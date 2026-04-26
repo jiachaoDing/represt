@@ -2,8 +2,8 @@ import { useCallback, useEffect, useState } from 'react'
 
 import {
   getLocalReminderStatus,
-  openAppNotificationSettings,
   openExactAlarmSettings,
+  openStrongReminderSettings,
   requestLocalReminderPermission,
   scheduleRestTimerTestNotification,
   type ExactAlarmPermission,
@@ -34,6 +34,41 @@ function getExactAlarmLabel(permission: ExactAlarmPermission | null) {
   }
 
   return '无法检测'
+}
+
+function getCapabilityLabel(value: boolean | null | undefined) {
+  if (value === true) {
+    return '可用'
+  }
+
+  if (value === false) {
+    return '不可用'
+  }
+
+  return '无法检测'
+}
+
+function getChannelLabel(status: LocalReminderStatus | null) {
+  if (!status?.isStrongReminderChannelReady && !status?.isRestTimerChannelReady) {
+    return '未配置'
+  }
+
+  if (
+    status.restTimerChannelImportance !== null &&
+    status.restTimerChannelImportance < 4
+  ) {
+    return '需检查'
+  }
+
+  if (status.restTimerChannelSound === null && status.strongReminderChannelSound === null) {
+    return '需检查'
+  }
+
+  if (status.restTimerChannelVibration === false) {
+    return '需检查'
+  }
+
+  return '已配置'
 }
 
 function StatusRow({ label, value }: { label: string; value: string }) {
@@ -112,8 +147,10 @@ export function LocalReminderSettings({ open }: LocalReminderSettingsProps) {
   }
 
   const isAvailable = Boolean(status?.isLocalNotificationsAvailable)
-  const channelLabel = status?.isRestTimerChannelReady ? '已配置' : '未配置'
+  const channelLabel = getChannelLabel(status)
   const exactAlarmLabel = getExactAlarmLabel(status?.exactAlarmPermission ?? null)
+  const strongReminderLabel = getCapabilityLabel(status?.isStrongReminderAvailable)
+  const fullScreenLabel = getCapabilityLabel(status?.strongReminderCanUseFullScreenIntent)
 
   return (
     <section className="rounded-[1.25rem] border border-[var(--outline-variant)]/20 bg-[var(--surface)] px-5 py-4 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)]">
@@ -121,21 +158,23 @@ export function LocalReminderSettings({ open }: LocalReminderSettingsProps) {
         <div>
           <p className="text-sm font-semibold text-[var(--on-surface)]">训练提醒诊断</p>
           <p className="mt-1 text-xs leading-5 text-[var(--on-surface-variant)]">
-            用于休息计时结束提醒。App 不能强制顶部横幅，横幅、锁屏、声音和准时程度受系统、勿扰、省电和厂商 ROM 控制。
+            App 会尽量使用闹钟级本地提醒。顶部弹窗、锁屏显示、声音和准时程度仍受系统、勿扰、省电、锁屏通知、通知类别和厂商 ROM 控制。
           </p>
         </div>
 
         <div className="space-y-2 rounded-xl border border-[var(--outline-variant)] px-3 py-3">
           <StatusRow label="通知权限" value={getDisplayPermissionLabel(status)} />
           <StatusRow label="精确提醒" value={exactAlarmLabel} />
-          <StatusRow label="休息提醒渠道" value={channelLabel} />
+          <StatusRow label="强提醒方案" value={strongReminderLabel} />
+          <StatusRow label="强提醒渠道" value={channelLabel} />
+          <StatusRow label="全屏提醒能力" value={fullScreenLabel} />
         </div>
 
         <p className="text-xs leading-5 text-[var(--on-surface-variant)]">
-          如不弹横幅，请到系统通知类别中检查横幅/悬浮通知、锁屏通知、声音，并将省电策略设为无限制，必要时允许自启动。
+          如不弹横幅，请打开强提醒类别设置，检查悬浮通知、声音、震动和锁屏显示，并将省电策略设为无限制。
         </p>
         <p className="text-xs leading-5 text-[var(--on-surface-variant)]">
-          Android 8+ 通知渠道创建后，重要性、声音等只能在系统设置里调整。
+          Android 14+ 会限制全屏提醒授权；未开放时仍会发送高重要性本地提醒。
         </p>
 
         {notice ? (
@@ -173,15 +212,15 @@ export function LocalReminderSettings({ open }: LocalReminderSettingsProps) {
             打开精确提醒设置
           </ActionButton>
           <ActionButton
-            disabled={busyAction !== null}
+            disabled={!status?.isStrongReminderAvailable || busyAction !== null}
             onClick={() =>
               void runAction('app-settings', async () => {
-                const result = await openAppNotificationSettings()
+                const result = await openStrongReminderSettings()
                 setNotice(result.message)
               })
             }
           >
-            打开通知设置
+            打开强提醒设置
           </ActionButton>
           <ActionButton
             disabled={!isAvailable || busyAction !== null}
@@ -191,8 +230,8 @@ export function LocalReminderSettings({ open }: LocalReminderSettingsProps) {
                 if (result.scheduled) {
                   setNotice(
                     result.exactAlarmPermission === 'denied'
-                      ? '已安排 10 秒测试提醒；精确提醒未开启时可能延迟。'
-                      : '已安排 10 秒测试提醒。',
+                      ? '已安排 10 秒强提醒测试；精确提醒未开启时可能延迟。'
+                      : '已安排 10 秒强提醒测试。',
                   )
                   return
                 }
@@ -205,7 +244,7 @@ export function LocalReminderSettings({ open }: LocalReminderSettingsProps) {
               })
             }
           >
-            发送 10 秒测试提醒
+            发送 10 秒强提醒测试
           </ActionButton>
         </div>
       </div>

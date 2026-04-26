@@ -1,11 +1,40 @@
 import { LocalNotifications } from '@capacitor/local-notifications'
-import type { PermissionState } from '@capacitor/core'
+import { registerPlugin, type PermissionState } from '@capacitor/core'
 
 import { isNativeApp, isNativePluginAvailable } from './capacitor-platform'
 
-const REST_TIMER_CHANNEL_ID = 'trainre-rest-timer'
+const OLD_REST_TIMER_CHANNEL_ID = 'trainre-rest-timer'
+const REST_TIMER_CHANNEL_ID = 'trainre-rest-timer-alarm-v3'
+const REST_TIMER_FALLBACK_CHANNEL_ID = 'trainre-rest-timer-local'
 const REST_TIMER_NOTIFICATION_GROUP = 'trainre-rest-timers'
 const TEST_REST_TIMER_NOTIFICATION_ID = 910001
+
+type RestTimerAlarmStatus = {
+  available: boolean
+  channelId: string
+  canScheduleExactAlarms: boolean
+  canUseFullScreenIntent: boolean
+  channelReady: boolean
+  channelImportance: number | null
+  channelVibration: boolean | null
+  channelSound: string | null
+}
+
+type RestTimerAlarmPlugin = {
+  status: () => Promise<RestTimerAlarmStatus>
+  schedule: (input: {
+    id: number
+    title: string
+    body: string
+    triggerAt: number
+    path?: string
+  }) => Promise<{ scheduled: boolean }>
+  cancel: (input: { id: number }) => Promise<void>
+  openExactAlarmSettings: () => Promise<void>
+  openChannelSettings: () => Promise<void>
+}
+
+const RestTimerAlarm = registerPlugin<RestTimerAlarmPlugin>('RestTimerAlarm')
 
 export type RestTimerNotificationInput = {
   exerciseId: string
@@ -26,6 +55,11 @@ export type LocalReminderStatus = {
   restTimerChannelImportance: number | null
   restTimerChannelVibration: boolean | null
   restTimerChannelSound: string | null
+  isStrongReminderAvailable: boolean
+  isStrongReminderChannelReady: boolean
+  strongReminderCanScheduleExactAlarms: boolean | null
+  strongReminderCanUseFullScreenIntent: boolean | null
+  strongReminderChannelSound: string | null
 }
 
 export type RestTimerScheduleResult = {
@@ -45,6 +79,23 @@ function getRestTimerNotificationId(exerciseId: string) {
   }
 
   return Math.abs(hash) + 10000
+}
+
+function isRestTimerAlarmAvailable() {
+  return isNativeApp()
+}
+
+async function getStrongReminderStatus(): Promise<RestTimerAlarmStatus | null> {
+  if (!isRestTimerAlarmAvailable()) {
+    return null
+  }
+
+  try {
+    return await RestTimerAlarm.status()
+  } catch (alarmStatusError) {
+    console.warn(alarmStatusError)
+    return null
+  }
 }
 
 async function ensureNotificationPermission() {
@@ -98,12 +149,23 @@ async function ensureRestTimerChannel() {
   }
 
   hasTriedRestTimerChannel = true
+  const strongStatus = await getStrongReminderStatus()
+  if (strongStatus?.channelReady) {
+    isChannelReady = true
+    return
+  }
+
   try {
+    try {
+      await LocalNotifications.deleteChannel({ id: OLD_REST_TIMER_CHANNEL_ID })
+    } catch (deleteOldChannelError) {
+      console.warn(deleteOldChannelError)
+    }
+
     await LocalNotifications.createChannel({
-      id: REST_TIMER_CHANNEL_ID,
-      name: '训练间歇提醒',
-      description: '动作休息结束时提醒继续训练',
-      // Android 8+ channel importance, sound and vibration are user-owned after first creation.
+      id: REST_TIMER_FALLBACK_CHANNEL_ID,
+      name: '休息结束提醒',
+      description: '休息倒计时结束时提醒继续训练',
       importance: 4,
       visibility: 1,
       vibration: true,
@@ -127,7 +189,9 @@ async function getRestTimerChannelStatus() {
 
   try {
     const result = await LocalNotifications.listChannels()
-    const channel = result.channels.find(({ id }) => id === REST_TIMER_CHANNEL_ID)
+    const channel = result.channels.find(
+      ({ id }) => id === REST_TIMER_CHANNEL_ID || id === REST_TIMER_FALLBACK_CHANNEL_ID,
+    )
 
     return {
       isReady: Boolean(channel) || isChannelReady,
@@ -153,10 +217,11 @@ export async function getLocalReminderStatus(): Promise<LocalReminderStatus> {
     await ensureRestTimerChannel()
   }
 
-  const [displayPermission, exactAlarmPermission, channelStatus] = await Promise.all([
+  const [displayPermission, exactAlarmPermission, channelStatus, strongStatus] = await Promise.all([
     checkDisplayPermission(),
     checkExactAlarmPermission(),
     getRestTimerChannelStatus(),
+    getStrongReminderStatus(),
   ])
 
   return {
@@ -170,6 +235,11 @@ export async function getLocalReminderStatus(): Promise<LocalReminderStatus> {
     restTimerChannelImportance: channelStatus.importance,
     restTimerChannelVibration: channelStatus.vibration,
     restTimerChannelSound: channelStatus.sound,
+    isStrongReminderAvailable: Boolean(strongStatus?.available),
+    isStrongReminderChannelReady: Boolean(strongStatus?.channelReady),
+    strongReminderCanScheduleExactAlarms: strongStatus?.canScheduleExactAlarms ?? null,
+    strongReminderCanUseFullScreenIntent: strongStatus?.canUseFullScreenIntent ?? null,
+    strongReminderChannelSound: strongStatus?.channelSound ?? null,
   }
 }
 
@@ -204,6 +274,29 @@ export async function openExactAlarmSettings() {
   return 'unknown' satisfies ExactAlarmPermission
 }
 
+export async function openStrongReminderSettings() {
+  if (!isRestTimerAlarmAvailable()) {
+    return {
+      didOpen: false,
+      message: '当前环境无法直接打开强提醒类别设置。',
+    }
+  }
+
+  try {
+    await RestTimerAlarm.openChannelSettings()
+    return {
+      didOpen: true,
+      message: '已打开强提醒类别设置，请检查悬浮通知、声音、震动和锁屏显示。',
+    }
+  } catch (settingsError) {
+    console.warn(settingsError)
+    return {
+      didOpen: false,
+      message: '无法打开强提醒类别设置，请从系统通知设置中进入。',
+    }
+  }
+}
+
 export async function openAppNotificationSettings() {
   return {
     didOpen: false,
@@ -212,13 +305,53 @@ export async function openAppNotificationSettings() {
 }
 
 export async function cancelRestTimerNotification(exerciseId: string) {
-  if (!isNativePluginAvailable('LocalNotifications')) {
-    return
+  const notificationId = getRestTimerNotificationId(exerciseId)
+
+  if (isRestTimerAlarmAvailable()) {
+    try {
+      await RestTimerAlarm.cancel({ id: notificationId })
+    } catch (alarmCancelError) {
+      console.warn(alarmCancelError)
+    }
   }
 
-  await LocalNotifications.cancel({
-    notifications: [{ id: getRestTimerNotificationId(exerciseId) }],
-  })
+  if (isNativePluginAvailable('LocalNotifications')) {
+    await LocalNotifications.cancel({
+      notifications: [{ id: notificationId }],
+    })
+  }
+}
+
+async function scheduleStrongRestTimerAlarm({
+  id,
+  title,
+  body,
+  notifyAt,
+  path,
+}: {
+  id: number
+  title: string
+  body: string
+  notifyAt: Date
+  path?: string
+}) {
+  if (!isRestTimerAlarmAvailable()) {
+    return false
+  }
+
+  try {
+    const result = await RestTimerAlarm.schedule({
+      id,
+      title,
+      body,
+      triggerAt: notifyAt.getTime(),
+      path,
+    })
+    return result.scheduled
+  } catch (alarmScheduleError) {
+    console.warn(alarmScheduleError)
+    return false
+  }
 }
 
 export async function scheduleRestTimerNotification(
@@ -251,24 +384,39 @@ export async function scheduleRestTimerNotification(
   await ensureRestTimerChannel()
   const exactAlarmPermission = await checkExactAlarmPermission()
   await cancelRestTimerNotification(input.exerciseId)
+  const notificationId = getRestTimerNotificationId(input.exerciseId)
+  const title = '休息结束'
+  const body = `${input.exerciseName} 可以继续下一组`
+  const path = `/exercise/${input.exerciseId}`
+
+  const didScheduleStrongAlarm = await scheduleStrongRestTimerAlarm({
+    id: notificationId,
+    title,
+    body,
+    notifyAt,
+    path,
+  })
+  if (didScheduleStrongAlarm) {
+    return { scheduled: true, exactAlarmPermission }
+  }
 
   await LocalNotifications.schedule({
     notifications: [
       {
-        id: getRestTimerNotificationId(input.exerciseId),
-        title: '休息结束',
-        body: `${input.exerciseName} 可以继续下一组`,
+        id: notificationId,
+        title,
+        body,
         schedule: {
           at: notifyAt,
           allowWhileIdle: true,
         },
-        channelId: REST_TIMER_CHANNEL_ID,
+        channelId: REST_TIMER_FALLBACK_CHANNEL_ID,
         group: REST_TIMER_NOTIFICATION_GROUP,
         autoCancel: true,
         extra: {
           type: 'exercise-rest-ended',
           exerciseId: input.exerciseId,
-          path: `/exercise/${input.exerciseId}`,
+          path,
         },
       },
     ],
@@ -296,6 +444,24 @@ export async function scheduleRestTimerTestNotification(): Promise<RestTimerSche
   await LocalNotifications.cancel({
     notifications: [{ id: TEST_REST_TIMER_NOTIFICATION_ID }],
   })
+  if (isRestTimerAlarmAvailable()) {
+    try {
+      await RestTimerAlarm.cancel({ id: TEST_REST_TIMER_NOTIFICATION_ID })
+    } catch (alarmCancelError) {
+      console.warn(alarmCancelError)
+    }
+  }
+
+  const notifyAt = new Date(Date.now() + 10_000)
+  const didScheduleStrongAlarm = await scheduleStrongRestTimerAlarm({
+    id: TEST_REST_TIMER_NOTIFICATION_ID,
+    title: '训练提醒测试',
+    body: '如果看到这条提醒，休息计时强提醒可以显示。',
+    notifyAt,
+  })
+  if (didScheduleStrongAlarm) {
+    return { scheduled: true, exactAlarmPermission }
+  }
 
   await LocalNotifications.schedule({
     notifications: [
@@ -304,10 +470,10 @@ export async function scheduleRestTimerTestNotification(): Promise<RestTimerSche
         title: '训练提醒测试',
         body: '如果看到这条提醒，休息计时提醒可以显示。',
         schedule: {
-          at: new Date(Date.now() + 10_000),
+          at: notifyAt,
           allowWhileIdle: true,
         },
-        channelId: REST_TIMER_CHANNEL_ID,
+        channelId: REST_TIMER_FALLBACK_CHANNEL_ID,
         group: REST_TIMER_NOTIFICATION_GROUP,
         autoCancel: true,
         extra: {

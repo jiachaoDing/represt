@@ -1,6 +1,8 @@
 import {
   lazy,
   Suspense,
+  startTransition,
+  useCallback,
   useEffect,
   useRef,
   useState,
@@ -17,7 +19,7 @@ import {
 } from 'framer-motion'
 import { useLocation, useNavigate } from 'react-router-dom'
 
-import { quickEaseTransition } from '../motion/motion-tokens'
+import { primaryTabSpringTransition } from '../motion/motion-tokens'
 import { usePrimaryTabSwipeLock } from './PrimaryTabSwipeContext'
 import { PrimaryTabSwipeProvider } from './PrimaryTabSwipeProvider'
 
@@ -37,13 +39,30 @@ const primaryTabs = [
   { pathname: '/summary', element: <SummaryPage /> },
 ]
 
-const PAGE_SWIPE_THRESHOLD = 72
-const PAGE_DRAG_TOLERANCE = 10
-const PAGE_SWIPE_VELOCITY = 520
-const EDGE_RESISTANCE = 0.22
+const PAGE_DRAG_TOLERANCE = 6
+const PAGE_DIRECTION_LOCK_DISTANCE = 14
+const PAGE_VERTICAL_INTENT_RATIO = 1.2
+const PAGE_SWIPE_DISTANCE_RATIO = 0.16
+const PAGE_MIN_SWIPE_THRESHOLD = 48
+const PAGE_MAX_SWIPE_THRESHOLD = 88
+const PAGE_SWIPE_VELOCITY = 460
+const PAGE_VELOCITY_PROJECTION = 0.16
+const EDGE_RESISTANCE = 0.18
 
 function getPrimaryTabIndex(pathname: string) {
   return primaryTabs.findIndex((tab) => tab.pathname === pathname)
+}
+
+function clamp(value: number, min: number, max: number) {
+  return Math.min(Math.max(value, min), max)
+}
+
+function getSwipeThreshold(containerWidth: number) {
+  return clamp(
+    containerWidth * PAGE_SWIPE_DISTANCE_RATIO,
+    PAGE_MIN_SWIPE_THRESHOLD,
+    PAGE_MAX_SWIPE_THRESHOLD,
+  )
 }
 
 export function PrimaryTabPanels() {
@@ -62,6 +81,7 @@ function PrimaryTabPanelsContent() {
   const x = useMotionValue(0)
   const containerRef = useRef<HTMLDivElement>(null)
   const trackAnimationRef = useRef<{ stop: () => void } | null>(null)
+  const settleTargetXRef = useRef<number | null>(null)
   const didSwipeRef = useRef(false)
   const isPointerDownRef = useRef(false)
   const isPageDragStartedRef = useRef(false)
@@ -70,15 +90,7 @@ function PrimaryTabPanelsContent() {
   const { isPrimaryTabSwipeDisabled, primaryTabSwipeDisabledRef } = usePrimaryTabSwipeLock()
   const activeIndex = getPrimaryTabIndex(location.pathname)
   const activeTabIndex = activeIndex === -1 ? 0 : activeIndex
-  const [displayIndex, setDisplayIndex] = useState(activeTabIndex)
   const [containerWidth, setContainerWidth] = useState(0)
-  const [isDragging, setIsDragging] = useState(false)
-
-  useEffect(() => {
-    if (activeIndex !== -1 && !isDragging) {
-      setDisplayIndex(activeIndex)
-    }
-  }, [activeIndex, isDragging])
 
   useEffect(() => {
     const element = containerRef.current
@@ -98,17 +110,6 @@ function PrimaryTabPanelsContent() {
   }, [])
 
   useEffect(() => {
-    settleToIndex(displayIndex)
-  }, [containerWidth, displayIndex])
-
-  useEffect(() => {
-    if (isPrimaryTabSwipeDisabled) {
-      setIsDragging(false)
-      settleToIndex(activeTabIndex)
-    }
-  }, [activeTabIndex, isPrimaryTabSwipeDisabled])
-
-  useEffect(() => {
     return () => trackAnimationRef.current?.stop()
   }, [])
 
@@ -117,21 +118,34 @@ function PrimaryTabPanelsContent() {
     isPageDragStartedRef.current = false
   }
 
-  function getPageX(index: number) {
-    return -index * containerWidth
-  }
+  const settleToIndex = useCallback((index: number) => {
+    const targetX = -index * containerWidth
+    const currentX = x.get()
 
-  function settleToIndex(index: number) {
-    const targetX = getPageX(index)
+    if (settleTargetXRef.current === targetX && Math.abs(currentX - targetX) > 0.5) {
+      return
+    }
+
     trackAnimationRef.current?.stop()
+    settleTargetXRef.current = targetX
 
-    if (reduceMotion || containerWidth === 0) {
+    if (reduceMotion || containerWidth === 0 || Math.abs(currentX - targetX) <= 0.5) {
       x.set(targetX)
       return
     }
 
-    trackAnimationRef.current = animate(x, targetX, quickEaseTransition)
-  }
+    trackAnimationRef.current = animate(x, targetX, primaryTabSpringTransition)
+  }, [containerWidth, reduceMotion, x])
+
+  useEffect(() => {
+    settleToIndex(activeTabIndex)
+  }, [activeTabIndex, containerWidth, settleToIndex])
+
+  useEffect(() => {
+    if (isPrimaryTabSwipeDisabled) {
+      settleToIndex(activeTabIndex)
+    }
+  }, [activeTabIndex, isPrimaryTabSwipeDisabled, settleToIndex])
 
   function isSwipeDisabled() {
     return primaryTabSwipeDisabledRef.current
@@ -167,30 +181,36 @@ function PrimaryTabPanelsContent() {
 
     const deltaX = event.clientX - startXRef.current
     const deltaY = event.clientY - startYRef.current
+    const absX = Math.abs(deltaX)
+    const absY = Math.abs(deltaY)
 
-    if (Math.abs(deltaX) < PAGE_DRAG_TOLERANCE) {
+    if (absX < PAGE_DRAG_TOLERANCE && absY < PAGE_DRAG_TOLERANCE) {
       return
     }
 
-    if (Math.abs(deltaX) <= Math.abs(deltaY)) {
+    if (absY >= PAGE_DIRECTION_LOCK_DISTANCE && absY > absX * PAGE_VERTICAL_INTENT_RATIO) {
       resetPointerIntent()
+      return
+    }
+
+    if (absX < PAGE_DRAG_TOLERANCE || absY > absX * PAGE_VERTICAL_INTENT_RATIO) {
       return
     }
 
     isPageDragStartedRef.current = true
     trackAnimationRef.current?.stop()
-    setDisplayIndex(activeTabIndex)
+    settleTargetXRef.current = null
     dragControls.start(event)
   }
 
   function handleDragStart() {
-    setIsDragging(true)
+    settleTargetXRef.current = null
     didSwipeRef.current = true
   }
 
   function handleDrag() {
     if (isSwipeDisabled()) {
-      x.set(getPageX(activeTabIndex))
+      x.set(-activeTabIndex * containerWidth)
     }
   }
 
@@ -198,30 +218,31 @@ function PrimaryTabPanelsContent() {
     _: globalThis.MouseEvent | globalThis.TouchEvent | globalThis.PointerEvent,
     info: PanInfo,
   ) {
-    setIsDragging(false)
     resetPointerIntent()
 
     if (isSwipeDisabled()) {
-      setDisplayIndex(activeTabIndex)
       settleToIndex(activeTabIndex)
       return
     }
 
+    const swipeThreshold = getSwipeThreshold(containerWidth)
+    const projectedOffset = info.offset.x + info.velocity.x * PAGE_VELOCITY_PROJECTION
     const shouldMoveNext =
-      info.offset.x < -PAGE_SWIPE_THRESHOLD || info.velocity.x < -PAGE_SWIPE_VELOCITY
+      projectedOffset < -swipeThreshold || info.velocity.x < -PAGE_SWIPE_VELOCITY
     const shouldMovePrevious =
-      info.offset.x > PAGE_SWIPE_THRESHOLD || info.velocity.x > PAGE_SWIPE_VELOCITY
+      projectedOffset > swipeThreshold || info.velocity.x > PAGE_SWIPE_VELOCITY
     const nextIndex = shouldMoveNext
       ? Math.min(activeTabIndex + 1, primaryTabs.length - 1)
       : shouldMovePrevious
         ? Math.max(activeTabIndex - 1, 0)
         : activeTabIndex
 
-    setDisplayIndex(nextIndex)
     settleToIndex(nextIndex)
 
     if (nextIndex !== activeTabIndex) {
-      navigate(primaryTabs[nextIndex].pathname)
+      startTransition(() => {
+        navigate(primaryTabs[nextIndex].pathname)
+      })
     }
   }
 
@@ -265,6 +286,7 @@ function PrimaryTabPanelsContent() {
       >
         {primaryTabs.map((tab, index) => {
           const isActive = index === activeIndex
+          const isNearby = Math.abs(index - activeTabIndex) <= 1
 
           return (
             <section
@@ -272,11 +294,12 @@ function PrimaryTabPanelsContent() {
               aria-hidden={!isActive}
               className="scrollbar-hide h-full w-full shrink-0 overflow-x-hidden overflow-y-auto"
               style={{
+                contain: 'layout paint',
                 pointerEvents: isActive ? 'auto' : 'none',
                 touchAction: 'pan-y',
               }}
             >
-              <Suspense fallback={null}>{tab.element}</Suspense>
+              {isNearby ? <Suspense fallback={null}>{tab.element}</Suspense> : null}
             </section>
           )
         })}

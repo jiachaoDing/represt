@@ -1,6 +1,7 @@
 import { LocalReminderSettings } from '../components/settings/LocalReminderSettings'
 import { PageHeader } from '../components/ui/PageHeader'
 import { useHapticsPreference } from '../hooks/useHapticsPreference'
+import { triggerHaptic } from '../lib/haptics'
 
 function HapticsSettingsCard() {
   const { isEnabled, setIsEnabled } = useHapticsPreference()
@@ -33,6 +34,14 @@ function HapticsSettingsCard() {
           />
         </button>
       </div>
+      <button
+        type="button"
+        disabled={!isEnabled}
+        onClick={() => void triggerHaptic('success')}
+        className="mt-4 rounded-full px-4 py-2 text-sm font-semibold text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/10 disabled:opacity-40"
+      >
+        测试触感反馈
+      </button>
     </section>
   )
 }
