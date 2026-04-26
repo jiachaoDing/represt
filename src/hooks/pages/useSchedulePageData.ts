@@ -165,10 +165,16 @@ export function useSchedulePageData() {
       return
     }
 
-    void loadData(selectedTemplateId).catch((loadError) => {
-      console.error(loadError)
-      setError('训练安排加载失败，请刷新页面后重试。')
-    })
+    async function refreshData() {
+      try {
+        await loadData(selectedTemplateId)
+      } catch (loadError) {
+        console.error(loadError)
+        setError('训练安排加载失败，请刷新页面后重试。')
+      }
+    }
+
+    void refreshData()
   }, [isLoading, loadData, location.pathname, selectedTemplateId])
 
   async function handleAddTemplateExercises(templateId: string, templateExerciseIds?: string[]) {

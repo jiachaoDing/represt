@@ -25,14 +25,18 @@ export function ExerciseHero({ detail, now }: ExerciseHeroProps) {
         {hero.value}
       </h2>
       
-      {hero.state === 'resting' && (
-        <div className="mx-auto mt-8 h-2 w-[180px] overflow-hidden rounded-full bg-[var(--primary-container)]">
-          <div
-            className="h-full origin-left rounded-full bg-[var(--primary)] will-change-transform"
-            style={{ transform: `scaleX(${hero.restRemainingRatio ?? 0})` }}
-          />
-        </div>
-      )}
+      <div
+        className={[
+          'mx-auto mt-8 h-2 w-[180px] overflow-hidden rounded-full bg-[var(--primary-container)]',
+          hero.state === 'resting' ? 'opacity-100' : 'opacity-0',
+        ].join(' ')}
+        aria-hidden={hero.state !== 'resting'}
+      >
+        <div
+          className="h-full origin-left rounded-full bg-[var(--primary)] will-change-transform"
+          style={{ transform: `scaleX(${hero.restRemainingRatio ?? 0})` }}
+        />
+      </div>
     </section>
   )
 }

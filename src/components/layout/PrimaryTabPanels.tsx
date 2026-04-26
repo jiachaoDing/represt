@@ -18,7 +18,8 @@ import {
 import { useLocation, useNavigate } from 'react-router-dom'
 
 import { quickEaseTransition } from '../motion/motion-tokens'
-import { PrimaryTabSwipeProvider, usePrimaryTabSwipeLock } from './PrimaryTabSwipeContext'
+import { usePrimaryTabSwipeLock } from './PrimaryTabSwipeContext'
+import { PrimaryTabSwipeProvider } from './PrimaryTabSwipeProvider'
 
 const SchedulePage = lazy(() =>
   import('../../pages/SchedulePage').then((module) => ({ default: module.SchedulePage })),
@@ -43,10 +44,6 @@ const EDGE_RESISTANCE = 0.22
 
 function getPrimaryTabIndex(pathname: string) {
   return primaryTabs.findIndex((tab) => tab.pathname === pathname)
-}
-
-export function isPrimaryTabPath(pathname: string) {
-  return getPrimaryTabIndex(pathname) !== -1
 }
 
 export function PrimaryTabPanels() {

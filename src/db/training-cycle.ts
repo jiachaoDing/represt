@@ -52,14 +52,16 @@ export async function getTrainingCycle() {
 }
 
 export async function getOrCreateTrainingCycle() {
-  const current = await getTrainingCycle()
-  if (current) {
-    return current
-  }
+  return db.transaction('rw', db.trainingCycles, async () => {
+    const current = await db.trainingCycles.get(TRAINING_CYCLE_ID)
+    if (current) {
+      return withNormalizedAnchorIndex(current)
+    }
 
-  const nextCycle = createEmptyTrainingCycle()
-  await db.trainingCycles.add(nextCycle)
-  return nextCycle
+    const nextCycle = createEmptyTrainingCycle()
+    await db.trainingCycles.add(nextCycle)
+    return nextCycle
+  })
 }
 
 export function getTrainingCycleDayForDate(cycle: TrainingCycle | null, sessionDateKey: string) {

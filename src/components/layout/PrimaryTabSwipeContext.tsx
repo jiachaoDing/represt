@@ -1,14 +1,10 @@
 import {
   createContext,
-  useCallback,
   useContext,
-  useMemo,
   useRef,
-  useState,
   type Dispatch,
   type MutableRefObject,
   type PointerEvent,
-  type PropsWithChildren,
   type SetStateAction,
 } from 'react'
 
@@ -23,41 +19,11 @@ const noopPrimaryTabSwipeDisabledRef: MutableRefObject<boolean> = { current: fal
 const PRIMARY_TAB_SWIPE_LOCK_DELAY = 320
 const PRIMARY_TAB_SWIPE_LOCK_TOLERANCE = 8
 
-const PrimaryTabSwipeContext = createContext<PrimaryTabSwipeContextValue>({
+export const PrimaryTabSwipeContext = createContext<PrimaryTabSwipeContextValue>({
   isPrimaryTabSwipeDisabled: false,
   primaryTabSwipeDisabledRef: noopPrimaryTabSwipeDisabledRef,
   setPrimaryTabSwipeDisabled: noopSetPrimaryTabSwipeDisabled,
 })
-
-export function PrimaryTabSwipeProvider({ children }: PropsWithChildren) {
-  const [isPrimaryTabSwipeDisabled, setPrimaryTabSwipeDisabled] = useState(false)
-  const primaryTabSwipeDisabledRef = useRef(false)
-  const setPrimaryTabSwipeDisabledValue = useCallback<Dispatch<SetStateAction<boolean>>>(
-    (nextValue) => {
-      setPrimaryTabSwipeDisabled((currentValue) => {
-        const resolvedValue =
-          typeof nextValue === 'function' ? nextValue(currentValue) : nextValue
-        primaryTabSwipeDisabledRef.current = resolvedValue
-        return resolvedValue
-      })
-    },
-    [],
-  )
-  const value = useMemo(
-    () => ({
-      isPrimaryTabSwipeDisabled,
-      primaryTabSwipeDisabledRef,
-      setPrimaryTabSwipeDisabled: setPrimaryTabSwipeDisabledValue,
-    }),
-    [isPrimaryTabSwipeDisabled, setPrimaryTabSwipeDisabledValue],
-  )
-
-  return (
-    <PrimaryTabSwipeContext.Provider value={value}>
-      {children}
-    </PrimaryTabSwipeContext.Provider>
-  )
-}
 
 export function usePrimaryTabSwipeLock() {
   return useContext(PrimaryTabSwipeContext)

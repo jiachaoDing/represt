@@ -1,6 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import type { DragEndEvent, DragOverEvent, DragStartEvent } from '@dnd-kit/core'
 import { arrayMove } from '@dnd-kit/sortable'
+import { Link } from 'react-router-dom'
+
 import { PageHeader } from '../components/ui/PageHeader'
 import { TrainingCycleEmptyState } from '../components/training-cycle/TrainingCycleEmptyState'
 import { TrainingCyclePageLoading } from '../components/training-cycle/TrainingCyclePageLoading'
@@ -9,6 +11,7 @@ import { TrainingCycleSlotSheet } from '../components/training-cycle/TrainingCyc
 import type { TrainingCycleSlotListItem } from '../components/training-cycle/training-cycle-page.types'
 import { getCycleSlotDateKey, getWeekdayLabel } from '../components/training-cycle/training-cycle-page-utils'
 import { useTrainingCyclePageData } from '../hooks/pages/useTrainingCyclePageData'
+import { useBackLinkState } from '../hooks/useRouteBack'
 import { triggerHaptic } from '../lib/haptics'
 import { getTemplateColor } from '../lib/template-color'
 import type { TrainingCycleSlot } from '../models/types'
@@ -33,12 +36,7 @@ export function TrainingCyclePage() {
   const [activeSlotId, setActiveSlotId] = useState<string | null>(null)
   const [isSorting, setIsSorting] = useState(false)
   const lastDragOverIdRef = useRef<string | null>(null)
-
-  useEffect(() => {
-    if (!trainingCycle || trainingCycle.slots.length === 0) {
-      setSheetOpen(false)
-    }
-  }, [trainingCycle])
+  const backLinkState = useBackLinkState()
 
   const templateColorMap = useMemo(
     () => new Map(templates.map((template, index) => [template.id, getTemplateColor(index)])),
@@ -63,6 +61,7 @@ export function TrainingCyclePage() {
   const selectedTemplate = selectedSlot?.templateId
     ? templates.find((template) => template.id === selectedSlot.templateId) ?? null
     : null
+  const isSlotSheetOpen = sheetOpen && Boolean(trainingCycle && trainingCycle.slots.length > 0)
 
   const orderedAnchorIndex =
     todayCycleDay === null
@@ -177,6 +176,22 @@ export function TrainingCyclePage() {
         title="循环日程"
         subtitle={`当前循环：${trainingCycle?.slots.length || 0} 天`}
         backFallbackTo="/templates"
+        actions={
+          <Link
+            to="/calendar"
+            state={backLinkState}
+            viewTransition
+            className="flex h-9 w-9 items-center justify-center rounded-xl border border-[var(--outline-variant)] text-[var(--on-surface-variant)] transition-colors hover:bg-[var(--on-surface-variant)]/5"
+            aria-label="日历"
+          >
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+              <line x1="16" y1="2" x2="16" y2="6" />
+              <line x1="8" y1="2" x2="8" y2="6" />
+              <line x1="3" y1="10" x2="21" y2="10" />
+            </svg>
+          </Link>
+        }
       />
 
       {!isLoading && trainingCycle && trainingCycle.slots.length > 0 ? (
@@ -221,7 +236,7 @@ export function TrainingCyclePage() {
         onAssignTemplate={(templateId) => void assignTemplate(templateId)}
         onClose={() => setSheetOpen(false)}
         onDeleteSlot={(slotId) => void deleteSlot(slotId)}
-        open={sheetOpen}
+        open={isSlotSheetOpen}
         selectedIndex={selectedIndex}
         selectedSlotId={selectedSlotId}
         selectedTemplate={selectedTemplate}

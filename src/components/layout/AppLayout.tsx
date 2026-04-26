@@ -49,7 +49,9 @@ export function AppLayout() {
   const location = useLocation()
   const navigate = useNavigate()
   const hideNavigation =
-    location.pathname.startsWith('/exercise/') || location.pathname.startsWith('/calendar')
+    location.pathname.startsWith('/exercise/') ||
+    location.pathname.startsWith('/calendar') ||
+    location.pathname.startsWith('/settings')
 
   function handleNavigationClick(event: MouseEvent<HTMLAnchorElement>, to: string) {
     if (

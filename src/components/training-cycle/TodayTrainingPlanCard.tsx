@@ -84,6 +84,11 @@ export function TodayTrainingPlanCard({
           <h2 className="mt-1.5 text-[18px] font-bold text-[var(--on-surface)] leading-tight">
             {!isConfigured ? '未设置循环日程' : todayTemplateName ? todayTemplateName : '休息日'}
           </h2>
+          {!isConfigured ? (
+            <p className="mt-1 text-[12px] font-medium text-[var(--primary)]">
+              点击设置循环
+            </p>
+          ) : null}
         </div>
 
         {isConfigured && cycle ? (

@@ -1,4 +1,4 @@
-import type { FormEvent } from 'react'
+import { useEffect, useRef, type FormEvent } from 'react'
 
 import { ExerciseNameInput } from '../exercise/ExerciseNameInput'
 import type { TemplateExerciseDraft } from '../../lib/template-editor'
@@ -20,10 +20,28 @@ export function TemplateExerciseInlineEditor({
   onDraftChange,
   onSubmit,
 }: TemplateExerciseInlineEditorProps) {
+  const formRef = useRef<HTMLFormElement>(null)
+
+  useEffect(() => {
+    const element = formRef.current
+    if (!element) {
+      return
+    }
+
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    window.requestAnimationFrame(() => {
+      element.scrollIntoView({
+        behavior: reduceMotion ? 'auto' : 'smooth',
+        block: 'nearest',
+      })
+    })
+  }, [])
+
   return (
     <form
+      ref={formRef}
       onSubmit={onSubmit}
-      className="rounded-[1.25rem] border border-[var(--outline-variant)]/30 bg-[var(--surface)] p-4 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)]"
+      className="scroll-mb-[calc(6rem+env(safe-area-inset-bottom))] rounded-[1.25rem] border border-[var(--outline-variant)]/30 bg-[var(--surface)] p-4 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)]"
     >
       <div className="space-y-4">
         <div className="block">

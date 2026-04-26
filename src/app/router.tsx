@@ -1,43 +1,22 @@
-import { lazy, Suspense, type ReactNode } from 'react'
+import { Suspense, type ReactNode } from 'react'
 import { createBrowserRouter } from 'react-router-dom'
 
 import { AppLayout } from '../components/layout/AppLayout'
 import { ExercisePageLoading } from '../components/exercise/ExercisePageLoading'
 import { TrainingCyclePageLoading } from '../components/training-cycle/TrainingCyclePageLoading'
-
-const loadCalendarPage = () => import('../pages/CalendarPage')
-const loadExercisePage = () => import('../pages/ExercisePage')
-const loadSchedulePage = () => import('../pages/SchedulePage')
-const loadSummaryPage = () => import('../pages/SummaryPage')
-const loadTrainingCyclePage = () => import('../pages/TrainingCyclePage')
-const loadTemplatesPage = () => import('../pages/TemplatesPage')
-
-const CalendarPage = lazy(() =>
-  loadCalendarPage().then((module) => ({ default: module.CalendarPage })),
-)
-const ExercisePage = lazy(() =>
-  loadExercisePage().then((module) => ({ default: module.ExercisePage })),
-)
-const SchedulePage = lazy(() =>
-  loadSchedulePage().then((module) => ({ default: module.SchedulePage })),
-)
-const SummaryPage = lazy(() =>
-  loadSummaryPage().then((module) => ({ default: module.SummaryPage })),
-)
-const TrainingCyclePage = lazy(() =>
-  loadTrainingCyclePage().then((module) => ({ default: module.TrainingCyclePage })),
-)
-const TemplatesPage = lazy(() =>
-  loadTemplatesPage().then((module) => ({ default: module.TemplatesPage })),
-)
+import {
+  CalendarPage,
+  ExercisePage,
+  SchedulePage,
+  SettingsPage,
+  SummaryPage,
+  TemplatesPage,
+  TrainingCyclePage,
+} from './route-components'
+export { preloadPrimaryRouteModules } from './route-loaders'
 
 function lazyRoute(element: ReactNode, fallback: ReactNode = null) {
   return <Suspense fallback={fallback}>{element}</Suspense>
-}
-
-export function preloadPrimaryRouteModules() {
-  void loadTemplatesPage()
-  void loadSummaryPage()
 }
 
 export const router = createBrowserRouter([
@@ -64,6 +43,11 @@ export const router = createBrowserRouter([
         path: 'templates/cycle',
         element: lazyRoute(<TrainingCyclePage />, <TrainingCyclePageLoading />),
         handle: { title: '循环日程' },
+      },
+      {
+        path: 'settings',
+        element: lazyRoute(<SettingsPage />),
+        handle: { title: '设置' },
       },
       {
         path: 'summary',
