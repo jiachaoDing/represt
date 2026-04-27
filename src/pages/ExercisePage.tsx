@@ -1,5 +1,6 @@
 import { useNavigate, useParams } from 'react-router-dom'
 import { useState, type FormEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 
 import { ExerciseHero } from '../components/exercise/ExerciseHero'
@@ -17,6 +18,7 @@ import { listSpringTransition } from '../components/motion/motion-tokens'
 import { getRestTimerSnapshot, getRestTimerState } from '../lib/rest-timer'
 
 export function ExercisePage() {
+  const { t } = useTranslation()
   const { id = 'unknown' } = useParams()
   const navigate = useNavigate()
   const now = useNow(16)
@@ -67,12 +69,12 @@ export function ExercisePage() {
   const menuItems = detail
     ? [
         {
-          label: '撤销上组完成',
+          label: t('exercise.undoLatestSet'),
           disabled: !canUndoLatestSet,
           onSelect: () => void handleUndoPreviousSetCompletion(),
         },
         {
-          label: '查看总结',
+          label: t('exercise.viewSummary'),
           onSelect: () =>
             navigate(`/summary/${detail.session.id}`, {
               state: backLinkState,
@@ -94,11 +96,14 @@ export function ExercisePage() {
   return (
     <div className="relative flex min-h-full flex-col pb-4">
       <PageHeader
-        title={detail?.exercise.name ?? '动作页'}
+        title={detail?.exercise.name ?? t('exercise.pageTitle')}
         subtitle={
           detail
-            ? `进度: ${Math.min(detail.exercise.completedSets + 1, detail.exercise.targetSets)} / ${detail.exercise.targetSets} 组`
-            : '专注当前动作'
+            ? t('exercise.subtitle', {
+                current: Math.min(detail.exercise.completedSets + 1, detail.exercise.targetSets),
+                total: detail.exercise.targetSets,
+              })
+            : t('exercise.subtitleFallback')
         }
         backFallbackTo="/"
         actions={menuItems.length > 0 ? <OverflowMenu items={menuItems} /> : undefined}
@@ -116,8 +121,8 @@ export function ExercisePage() {
 
       {!isLoading && !detail ? (
         <div className="mx-4 mt-6 rounded-xl border border-dashed border-[var(--outline)] px-5 py-8 text-center">
-          <p className="text-base font-semibold text-[var(--on-surface)]">这个动作不存在</p>
-          <p className="mt-2 text-sm text-[var(--on-surface-variant)]">返回安排页重新选择动作。</p>
+          <p className="text-base font-semibold text-[var(--on-surface)]">{t('exercise.notFoundTitle')}</p>
+          <p className="mt-2 text-sm text-[var(--on-surface-variant)]">{t('exercise.notFoundDescription')}</p>
         </div>
       ) : null}
 
@@ -178,7 +183,7 @@ export function ExercisePage() {
                         <path d="M5 12h14" />
                         <path d="m12 5 7 7-7 7" />
                       </svg>
-                      <span>跳过休息</span>
+                      <span>{t('exercise.skipRest')}</span>
                     </>
                   ) : isCompleted ? (
                     <>
@@ -194,7 +199,7 @@ export function ExercisePage() {
                       >
                         <polyline points="9 18 15 12 9 6" />
                       </svg>
-                      <span>选择其他动作</span>
+                      <span>{t('exercise.chooseOtherExercise')}</span>
                     </>
                   ) : (
                     <>
@@ -211,7 +216,7 @@ export function ExercisePage() {
                         <path d="M5 12h14" />
                         <path d="m12 5 7 7-7 7" />
                       </svg>
-                      <span>完成第 {detail.exercise.completedSets + 1} 组</span>
+                      <span>{t('exercise.completeSet', { setNumber: detail.exercise.completedSets + 1 })}</span>
                     </>
                   )}
                 </span>

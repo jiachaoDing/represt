@@ -1,6 +1,7 @@
 import { useEffect, type PropsWithChildren, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 
 import { quickEaseTransition, sheetSpringTransition } from './motion-tokens'
 
@@ -20,6 +21,7 @@ export function AnimatedSheet({
   open,
   title,
 }: AnimatedSheetProps) {
+  const { t } = useTranslation()
   const reduceMotion = useReducedMotion()
 
   useEffect(() => {
@@ -46,7 +48,7 @@ export function AnimatedSheet({
           <motion.button
             key="sheet-backdrop"
             type="button"
-            aria-label="关闭弹层"
+            aria-label={t('common.closeSheet')}
             onClick={onClose}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1, transition: quickEaseTransition }}
@@ -86,6 +88,7 @@ export function AnimatedSheet({
                 <button
                   type="button"
                   onClick={onClose}
+                  aria-label={t('common.close')}
                   className="inline-flex h-10 w-10 items-center justify-center rounded-full text-[var(--on-surface-variant)] transition-colors hover:bg-[var(--on-surface)]/10"
                 >
                   <svg

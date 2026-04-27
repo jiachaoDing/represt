@@ -1,8 +1,10 @@
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
 import { useBackLinkState } from '../../hooks/useRouteBack'
 
 export function SettingsButton() {
+  const { t } = useTranslation()
   const backLinkState = useBackLinkState()
 
   return (
@@ -11,7 +13,7 @@ export function SettingsButton() {
       state={backLinkState}
       viewTransition
       className="flex h-11 w-11 items-center justify-center text-[var(--on-surface-variant)] transition-colors hover:text-[var(--on-surface)]"
-      aria-label="设置"
+      aria-label={t('settings.title')}
     >
       <svg
         viewBox="0 0 24 24"

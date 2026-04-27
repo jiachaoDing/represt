@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">TrainRe</string>
+    <string name="title_activity_main">TrainRe</string>
+    <string name="package_name">com.trainre.app</string>
+    <string name="custom_url_scheme">com.trainre.app</string>
+    <string name="rest_timer_channel_name">Rest finished strong reminders</string>
+    <string name="rest_timer_channel_description">Use alarm-level local reminders when the rest countdown ends</string>
+    <string name="rest_timer_default_title">Rest finished</string>
+    <string name="rest_timer_default_body">Ready for the next set</string>
+</resources>

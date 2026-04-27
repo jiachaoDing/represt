@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 
@@ -29,6 +30,7 @@ export function SortableScheduleExerciseItem({
   now,
   onToggleSelected,
 }: SortableScheduleExerciseItemProps) {
+  const { t } = useTranslation()
   const backLinkState = useBackLinkState()
   const swipeLockHandlers = usePrimaryTabLongPressSwipeLock(isSubmitting || isSelectionMode)
   const {
@@ -71,7 +73,7 @@ export function SortableScheduleExerciseItem({
         isDragging ? 'relative opacity-0 pointer-events-none' : 'relative',
         interactionClassName,
       ].join(' ')}
-      aria-label={`长按拖动调整“${exercise.name}”顺序`}
+      aria-label={t('templates.dragExercise', { name: exercise.name })}
       onClick={isSelectionMode && canSelect ? () => onToggleSelected(exercise.id) : undefined}
       {...attributes}
       {...listeners}

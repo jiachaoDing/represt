@@ -1,6 +1,8 @@
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
-import { deriveExerciseStatus, getExerciseRestLabel } from '../../lib/session-display'
+import { deriveExerciseStatus } from '../../lib/session-display'
+import { formatDuration, getRestTimerSnapshot, getRestTimerState } from '../../lib/rest-timer'
 import type { WorkoutSessionWithExercises } from '../../db/sessions'
 
 type ScheduleExercise = WorkoutSessionWithExercises['exercises'][number]
@@ -53,10 +55,15 @@ function SelectionMark({ checked, disabled }: { checked: boolean; disabled: bool
   ) : null
 }
 
-function getExerciseCardState(exercise: ScheduleExercise, now: number, index: number) {
+function getExerciseCardState(
+  exercise: ScheduleExercise,
+  now: number,
+  index: number,
+  t: ReturnType<typeof useTranslation>['t'],
+) {
   const status = deriveExerciseStatus(exercise)
-  const restLabel = getExerciseRestLabel(exercise, now)
-  const isReady = status === 'active' && restLabel === '可继续下一组'
+  const restSnapshot = getRestTimerSnapshot(getRestTimerState(exercise), now)
+  const isReady = status === 'active' && restSnapshot.status === 'ready'
   const isResting = status === 'active' && !isReady
 
   if (status === 'completed') {
@@ -79,8 +86,8 @@ function getExerciseCardState(exercise: ScheduleExercise, now: number, index: nu
       itemClassName: 'border border-[var(--outline-variant)]/30 bg-[var(--surface)] opacity-70',
       nameClassName: 'text-[var(--on-surface-variant)] line-through',
       metaClassName: 'text-[var(--outline)]',
-      metaText: `${exercise.completedSets} / ${exercise.targetSets} 组`,
-      statusText: '已完成 >',
+      metaText: t('schedule.progressSets', { completed: exercise.completedSets, total: exercise.targetSets }),
+      statusText: t('schedule.completed'),
       statusClassName: 'text-[var(--outline)]',
     }
   }
@@ -93,8 +100,8 @@ function getExerciseCardState(exercise: ScheduleExercise, now: number, index: nu
         'border border-[var(--primary)]/30 bg-[var(--primary-container)]/10 shadow-[0_2px_8px_-4px_rgba(22,78,48,0.15)]',
       nameClassName: 'text-[var(--on-surface)]',
       metaClassName: 'text-[var(--on-surface-variant)]',
-      metaText: `${exercise.completedSets} / ${exercise.targetSets} 组`,
-      statusText: '可继续下一组 >',
+      metaText: t('schedule.progressSets', { completed: exercise.completedSets, total: exercise.targetSets }),
+      statusText: t('schedule.ready'),
       statusClassName: 'text-[var(--primary)] font-medium',
     }
   }
@@ -107,8 +114,8 @@ function getExerciseCardState(exercise: ScheduleExercise, now: number, index: nu
         'border border-[#F59E0B]/30 bg-[#FFFBEB] shadow-[0_2px_8px_-4px_rgba(245,158,11,0.15)]',
       nameClassName: 'text-[var(--on-surface)]',
       metaClassName: 'text-[var(--on-surface-variant)]',
-      metaText: `${exercise.completedSets} / ${exercise.targetSets} 组`,
-      statusText: `休息中 · ${restLabel.replace('倒计时 ', '')} >`,
+      metaText: t('schedule.progressSets', { completed: exercise.completedSets, total: exercise.targetSets }),
+      statusText: t('schedule.resting', { time: formatDuration(restSnapshot.remainingSeconds) }),
       statusClassName: 'text-[#D97706] font-medium',
     }
   }
@@ -121,8 +128,8 @@ function getExerciseCardState(exercise: ScheduleExercise, now: number, index: nu
       'border border-[var(--outline-variant)]/30 bg-[var(--surface)] shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)]',
     nameClassName: 'text-[var(--on-surface)]',
     metaClassName: 'text-[var(--on-surface-variant)]',
-    metaText: `${exercise.completedSets} / ${exercise.targetSets} 组`,
-    statusText: '未开始 >',
+    metaText: t('schedule.progressSets', { completed: exercise.completedSets, total: exercise.targetSets }),
+    statusText: t('schedule.notStarted'),
     statusClassName: 'text-[var(--outline)]',
   }
 }
@@ -139,7 +146,8 @@ export function ScheduleExerciseCard({
   now,
   selectionMode = false,
 }: ScheduleExerciseCardProps) {
-  const cardState = getExerciseCardState(exercise, now, index)
+  const { t } = useTranslation()
+  const cardState = getExerciseCardState(exercise, now, index, t)
   const isSelectionDisabled = selectionMode && !isSelectable
   const handle = selectionMode
     ? <SelectionMark checked={isSelected} disabled={isSelectionDisabled} />
@@ -151,7 +159,7 @@ export function ScheduleExerciseCard({
       ? 'bg-[var(--primary)] text-[var(--on-primary)]'
       : 'border border-[var(--outline)] bg-transparent text-transparent'
     : cardState.handleClassName
-  const statusText = isSelectionDisabled ? '不可删除' : cardState.statusText
+  const statusText = isSelectionDisabled ? t('schedule.notDeletable') : cardState.statusText
   const statusClassName = isSelectionDisabled
     ? 'text-[var(--outline)]'
     : cardState.statusClassName

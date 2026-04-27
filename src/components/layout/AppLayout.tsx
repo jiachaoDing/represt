@@ -1,4 +1,5 @@
 import type { MouseEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 
 import { PageTransition } from '../motion/PageTransition'
@@ -6,7 +7,7 @@ import { PageTransition } from '../motion/PageTransition'
 const navigationItems = [
   { 
     to: '/', 
-    label: '训练', 
+    labelKey: 'nav.schedule', 
     end: true,
     icon: (isActive: boolean) => (
       <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth={isActive ? "2.5" : "2"} strokeLinecap="round" strokeLinejoin="round">
@@ -18,7 +19,7 @@ const navigationItems = [
   },
   { 
     to: '/templates', 
-    label: '模板', 
+    labelKey: 'nav.templates', 
     end: false,
     icon: (isActive: boolean) => (
       <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth={isActive ? "2.5" : "2"} strokeLinecap="round" strokeLinejoin="round">
@@ -33,7 +34,7 @@ const navigationItems = [
   },
   { 
     to: '/summary', 
-    label: '总结', 
+    labelKey: 'nav.summary', 
     end: false,
     icon: (isActive: boolean) => (
       <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth={isActive ? "2.5" : "2"} strokeLinecap="round" strokeLinejoin="round">
@@ -46,6 +47,7 @@ const navigationItems = [
 ]
 
 export function AppLayout() {
+  const { t } = useTranslation()
   const location = useLocation()
   const navigate = useNavigate()
   const hideNavigation =
@@ -113,7 +115,7 @@ export function AppLayout() {
                           'text-xs font-medium tracking-wide transition-colors duration-200',
                           isActive ? 'text-[var(--on-surface)]' : 'text-[var(--on-surface-variant)]'
                         ].join(' ')}>
-                          {item.label}
+                          {t(item.labelKey)}
                         </span>
                       </>
                     )}

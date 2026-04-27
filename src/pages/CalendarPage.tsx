@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link, useSearchParams } from 'react-router-dom'
 
 import { CalendarMonthGrid } from '../components/calendar/CalendarMonthGrid'
@@ -22,6 +23,7 @@ function buildSummaryPath(dateKey: string) {
 }
 
 export function CalendarPage() {
+  const { i18n, t } = useTranslation()
   const [searchParams, setSearchParams] = useSearchParams()
   const todayDateKey = getTodaySessionDateKey()
   const selectedDateKey = useMemo(() => {
@@ -56,7 +58,7 @@ export function CalendarPage() {
       } catch (loadError) {
         if (!isCancelled) {
           console.error(loadError)
-          setDetailError('日程信息加载失败，请稍后重试。')
+          setDetailError(t('calendar.contextLoadFailed'))
         }
       }
     }
@@ -66,7 +68,7 @@ export function CalendarPage() {
     return () => {
       isCancelled = true
     }
-  }, [])
+  }, [t])
 
   useEffect(() => {
     let isCancelled = false
@@ -83,7 +85,7 @@ export function CalendarPage() {
       } catch (loadError) {
         if (!isCancelled) {
           console.error(loadError)
-          setDetailError('这天的训练详情加载失败，请稍后重试。')
+          setDetailError(t('calendar.detailLoadFailed'))
           setSelectedSummary(null)
         }
       } finally {
@@ -98,29 +100,33 @@ export function CalendarPage() {
     return () => {
       isCancelled = true
     }
-  }, [selectedDateKey])
+  }, [selectedDateKey, t])
   const monthLabel = formatSessionDateKey(visibleMonthDateKey, {
     year: 'numeric',
     month: 'long',
-  })
+  }, i18n.resolvedLanguage)
   const selectedDateLabel = formatSessionDateKey(selectedDateKey, {
     month: 'long',
     day: 'numeric',
     weekday: 'short',
-  })
+  }, i18n.resolvedLanguage)
   const selectedFullDateLabel = formatSessionDateKey(selectedDateKey, {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
     weekday: 'long',
-  })
+  }, i18n.resolvedLanguage)
   const visibleMonthSessionCount = useMemo(() => {
     const visibleMonthPrefix = visibleMonthDateKey.slice(0, 7)
     return sessionDateKeys.filter((dateKey) => dateKey.startsWith(visibleMonthPrefix)).length
   }, [sessionDateKeys, visibleMonthDateKey])
   const selectedDateDistance = diffSessionDateKeys(selectedDateKey, todayDateKey)
   const selectedDateTone =
-    selectedDateDistance === 0 ? '今天' : selectedDateDistance > 0 ? '未来日期' : '历史日期'
+    selectedDateDistance === 0
+      ? t('calendar.today')
+      : selectedDateDistance > 0
+        ? t('calendar.futureDate')
+        : t('calendar.pastDate')
   const selectedDateHasSession = sessionDateKeySet.has(selectedDateKey)
   const selectedCycleDay = getTrainingCycleDayForDate(trainingCycle, selectedDateKey)
   const recordedTemplate = selectedSummary?.session.autoImportedTemplateId
@@ -135,19 +141,19 @@ export function CalendarPage() {
     selectedSummary?.exercises.filter((exercise) => exercise.completedSets > 0).length ?? 0
   const selectedTemplateLabel = selectedSummary
     ? recordedTemplate?.name ??
-      (selectedSummary.session.autoImportedTemplateId ? '模板已删除' : '手动安排')
-    : plannedTemplate?.name ?? (selectedCycleDay ? '休息日' : '未设置循环')
+      (selectedSummary.session.autoImportedTemplateId ? t('calendar.deletedTemplate') : t('calendar.manualPlan'))
+    : plannedTemplate?.name ?? (selectedCycleDay ? t('calendar.restDay') : t('calendar.cycleNotSet'))
   const selectedDateSummary = selectedDateHasSession
     ? completedSetCount > 0
-      ? `已完成 ${completedSetCount} 组，来自 ${completedExerciseCount} 个动作。`
-      : '这天已有训练记录，还没有完成组。'
+      ? t('calendar.completedSummary', { completedSetCount, completedExerciseCount })
+      : t('calendar.recordedNoSets')
     : selectedDateDistance > 0
       ? plannedTemplate
-        ? `预计训练：${plannedTemplate.exercises.length} 个动作。`
+        ? t('calendar.plannedSummary', { exerciseCount: plannedTemplate.exercises.length })
         : selectedCycleDay
-          ? '循环日程安排为休息日。'
-          : '这天还没有训练记录。'
-      : '这天没有训练记录。'
+          ? t('calendar.plannedRest')
+          : t('calendar.noRecord')
+      : t('calendar.noRecord')
   const calendarCells = useMemo(
     () => getMonthCalendarDateCells(visibleMonthDateKey),
     [visibleMonthDateKey],
@@ -164,7 +170,7 @@ export function CalendarPage() {
   return (
     <div className="pb-4">
       <PageHeader
-        title="训练日历"
+        title={t('calendar.title')}
         subtitle={selectedDateLabel}
         backFallbackTo={buildSummaryPath(selectedDateKey)}
       />
@@ -175,7 +181,7 @@ export function CalendarPage() {
             type="button"
             onClick={() => setVisibleMonthDateKey(addMonthsToSessionDateKey(visibleMonthDateKey, -1))}
             className="flex h-10 w-10 items-center justify-center rounded-xl text-[var(--on-surface)] transition-colors hover:bg-[var(--surface-container)]"
-            aria-label="上个月"
+            aria-label={t('calendar.previousMonth')}
           >
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M15 18l-6-6 6-6" />
@@ -183,7 +189,7 @@ export function CalendarPage() {
           </button>
 
           <div className="text-center">
-            <p className="text-[11px] text-[var(--on-surface-variant)]">月份</p>
+            <p className="text-[11px] text-[var(--on-surface-variant)]">{t('calendar.month')}</p>
             <p className="mt-1 text-[15px] font-semibold text-[var(--on-surface)]">{monthLabel}</p>
           </div>
 
@@ -191,7 +197,7 @@ export function CalendarPage() {
             type="button"
             onClick={() => setVisibleMonthDateKey(addMonthsToSessionDateKey(visibleMonthDateKey, 1))}
             className="flex h-10 w-10 items-center justify-center rounded-xl text-[var(--on-surface)] transition-colors hover:bg-[var(--surface-container)]"
-            aria-label="下个月"
+            aria-label={t('calendar.nextMonth')}
           >
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 18l6-6-6-6" />
@@ -235,25 +241,25 @@ export function CalendarPage() {
               </h2>
             </div>
             <span className="shrink-0 rounded-full bg-[var(--surface-container)] px-3 py-1 text-[12px] font-semibold text-[var(--on-surface-variant)]">
-              本月 {visibleMonthSessionCount} 天
+              {t('calendar.daysInMonth', { count: visibleMonthSessionCount })}
             </span>
           </div>
 
           <p className="mt-3 text-[13px] leading-5 text-[var(--on-surface-variant)]">
-            {isSelectedSummaryLoading ? '正在加载这天的训练信息。' : selectedDateSummary}
+            {isSelectedSummaryLoading ? t('calendar.loadingDay') : selectedDateSummary}
           </p>
 
           <div className="mt-4 grid grid-cols-2 gap-2">
             <div className="rounded-2xl bg-[var(--surface-container)] px-3 py-3">
-              <p className="text-[11px] text-[var(--on-surface-variant)]">模板</p>
+              <p className="text-[11px] text-[var(--on-surface-variant)]">{t('calendar.template')}</p>
               <p className="mt-1 truncate text-[15px] font-bold text-[var(--on-surface)]">
                 {selectedTemplateLabel}
               </p>
             </div>
             <div className="rounded-2xl bg-[var(--surface-container)] px-3 py-3">
-              <p className="text-[11px] text-[var(--on-surface-variant)]">完成组数</p>
+              <p className="text-[11px] text-[var(--on-surface-variant)]">{t('calendar.completedSets')}</p>
               <p className="mt-1 text-[15px] font-bold text-[var(--on-surface)]">
-                {isSelectedSummaryLoading ? '...' : `${completedSetCount} 组`}
+                {isSelectedSummaryLoading ? '...' : t('common.sets', { value: completedSetCount })}
               </p>
             </div>
           </div>
@@ -263,7 +269,7 @@ export function CalendarPage() {
             viewTransition
             className="mt-4 inline-flex h-10 items-center justify-center rounded-xl bg-[var(--surface-container)] px-4 text-sm font-medium text-[var(--on-surface)] transition-colors hover:bg-[var(--outline-variant)]/20"
           >
-            查看这天总结
+            {t('calendar.viewDaySummary')}
           </Link>
         </section>
       ) : null}

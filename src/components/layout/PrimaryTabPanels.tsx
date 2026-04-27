@@ -4,7 +4,7 @@ import {
   startTransition,
   useCallback,
   useEffect,
-  useState,
+  useSyncExternalStore,
   type PropsWithChildren,
 } from 'react'
 import useEmblaCarousel from 'embla-carousel-react'
@@ -55,7 +55,6 @@ function PrimaryTabPanelsContent() {
   const { isPrimaryTabSwipeDisabled } = usePrimaryTabSwipeLock()
   const activeIndex = getPrimaryTabIndex(location.pathname)
   const activeTabIndex = activeIndex === -1 ? 0 : activeIndex
-  const [selectedIndex, setSelectedIndex] = useState(activeTabIndex)
   const [emblaRef, emblaApi] = useEmblaCarousel({
     align: 'start',
     containScroll: false,
@@ -66,13 +65,36 @@ function PrimaryTabPanelsContent() {
     startIndex: activeTabIndex,
     watchDrag: !isPrimaryTabSwipeDisabled,
   })
+  const subscribeSelectedIndex = useCallback(
+    (onStoreChange: () => void) => {
+      if (!emblaApi) {
+        return () => {}
+      }
+
+      emblaApi.on('select', onStoreChange)
+      emblaApi.on('reInit', onStoreChange)
+      return () => {
+        emblaApi.off('select', onStoreChange)
+        emblaApi.off('reInit', onStoreChange)
+      }
+    },
+    [emblaApi],
+  )
+  const getSelectedIndex = useCallback(
+    () => emblaApi?.selectedScrollSnap() ?? activeTabIndex,
+    [activeTabIndex, emblaApi],
+  )
+  const selectedIndex = useSyncExternalStore(
+    subscribeSelectedIndex,
+    getSelectedIndex,
+    getSelectedIndex,
+  )
 
   useEffect(() => {
     if (!emblaApi) {
       return
     }
 
-    setSelectedIndex(activeTabIndex)
     emblaApi.scrollTo(activeTabIndex, shouldReduceMotion)
   }, [activeTabIndex, emblaApi, shouldReduceMotion])
 
@@ -90,7 +112,6 @@ function PrimaryTabPanelsContent() {
     }
 
     const nextIndex = emblaApi.selectedScrollSnap()
-    setSelectedIndex(nextIndex)
 
     if (nextIndex === activeTabIndex) {
       return

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import type { SessionSummaryDetail } from '../../db/sessions'
 import type { SetRecord } from '../../models/types'
@@ -12,9 +13,9 @@ function formatNumber(value: number) {
   return Number.isInteger(value) ? String(value) : String(value).replace(/\.0$/, '')
 }
 
-function formatSetRecordValue(setRecord: SetRecord) {
+function formatSetRecordValue(setRecord: SetRecord, t: ReturnType<typeof useTranslation>['t']) {
   if (setRecord.weightKg === null && setRecord.reps === null) {
-    return '已完成'
+    return t('summary.completedValue')
   }
 
   if (setRecord.weightKg !== null && setRecord.reps !== null) {
@@ -25,10 +26,10 @@ function formatSetRecordValue(setRecord: SetRecord) {
     return `${formatNumber(setRecord.weightKg)}kg`
   }
 
-  return `${setRecord.reps} 次`
+  return t('common.reps', { value: setRecord.reps })
 }
 
-function getRecordSummary(setRecords: SetRecord[]) {
+function getRecordSummary(setRecords: SetRecord[], t: ReturnType<typeof useTranslation>['t']) {
   const weights = setRecords
     .map((setRecord) => setRecord.weightKg)
     .filter((weightKg): weightKg is number => weightKg !== null)
@@ -38,11 +39,11 @@ function getRecordSummary(setRecords: SetRecord[]) {
   const parts: string[] = []
 
   if (weights.length > 0) {
-    parts.push(`最高 ${formatNumber(Math.max(...weights))}kg`)
+    parts.push(t('summary.highestWeight', { weight: formatNumber(Math.max(...weights)) }))
   }
 
   if (reps.length > 0) {
-    parts.push(`共 ${reps.reduce((acc, repCount) => acc + repCount, 0)} 次`)
+    parts.push(t('summary.totalReps', { reps: reps.reduce((acc, repCount) => acc + repCount, 0) }))
   }
 
   return parts.join(' · ')
@@ -70,6 +71,8 @@ function SetCompletionDots({ completedSets }: { completedSets: number }) {
 }
 
 export function SessionExerciseSummaryList({ detail }: SessionExerciseSummaryListProps) {
+  const { t } = useTranslation()
+
   if (!detail) {
     return null
   }
@@ -78,7 +81,7 @@ export function SessionExerciseSummaryList({ detail }: SessionExerciseSummaryLis
     return (
       <div className="mx-4 mt-8">
         <p className="text-[var(--on-surface-variant)]">
-          还没有训练记录。完成一组后，这里会生成训练总结。
+          {t('summary.emptyTitle')}。{t('summary.emptyDescription')}
         </p>
       </div>
     )
@@ -87,15 +90,15 @@ export function SessionExerciseSummaryList({ detail }: SessionExerciseSummaryLis
   return (
     <section className="mt-6">
       <div className="mb-3 flex items-center justify-between px-4">
-        <h2 className="text-[16px] font-bold text-[var(--on-surface)]">动作完成</h2>
+        <h2 className="text-[16px] font-bold text-[var(--on-surface)]">{t('summary.exerciseCompleted')}</h2>
         <span className="text-[12px] font-medium text-[var(--on-surface-variant)]">
-          {detail.exercises.length} 个动作
+          {t('summary.exerciseCount', { count: detail.exercises.length })}
         </span>
       </div>
 
       <div className="flex flex-col gap-3 px-4">
         {detail.exercises.map((exercise) => {
-          const recordSummary = getRecordSummary(exercise.setRecords)
+          const recordSummary = getRecordSummary(exercise.setRecords, t)
 
           return (
             <details
@@ -111,7 +114,7 @@ export function SessionExerciseSummaryList({ detail }: SessionExerciseSummaryLis
                   </div>
 
                   <span className="shrink-0 rounded-full bg-[var(--primary-container)] px-3 py-1 text-[12px] font-semibold text-[var(--on-primary-container)]">
-                    {exercise.completedSets} 组
+                    {t('common.sets', { value: exercise.completedSets })}
                   </span>
                 </div>
 
@@ -130,16 +133,16 @@ export function SessionExerciseSummaryList({ detail }: SessionExerciseSummaryLis
                     {exercise.setRecords.map((setRecord) => (
                       <div key={setRecord.id} className="flex items-center text-[14px]">
                         <div className="w-14 text-[var(--on-surface-variant)]">
-                          第 {setRecord.setNumber} 组
+                          {t('summary.setNumber', { setNumber: setRecord.setNumber })}
                         </div>
                         <div className="flex-1 pl-4 font-medium text-[var(--on-surface)]">
-                          {formatSetRecordValue(setRecord)}
+                          {formatSetRecordValue(setRecord, t)}
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-[13px] text-[var(--on-surface-variant)]">还没有完成组记录</p>
+                  <p className="text-[13px] text-[var(--on-surface-variant)]">{t('summary.noCompletedSets')}</p>
                 )}
               </div>
             </details>
@@ -152,7 +155,7 @@ export function SessionExerciseSummaryList({ detail }: SessionExerciseSummaryLis
           to="/" 
           className="inline-flex h-12 w-full max-w-[200px] items-center justify-center rounded-xl bg-[var(--surface-container)] text-[15px] font-medium text-[var(--on-surface)] transition-colors tap-highlight-transparent active:scale-[0.98]"
         >
-          返回今日安排
+          {t('summary.backToSchedule')}
         </Link>
       </div>
     </section>

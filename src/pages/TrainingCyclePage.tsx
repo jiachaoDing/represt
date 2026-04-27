@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from 'react'
 import type { DragEndEvent, DragOverEvent, DragStartEvent } from '@dnd-kit/core'
 import { arrayMove } from '@dnd-kit/sortable'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
 import { PageHeader } from '../components/ui/PageHeader'
@@ -17,6 +18,7 @@ import { getTemplateColor } from '../lib/template-color'
 import type { TrainingCycleSlot } from '../models/types'
 
 export function TrainingCyclePage() {
+  const { t } = useTranslation()
   const {
     error,
     handleAddSlot,
@@ -173,8 +175,8 @@ export function TrainingCyclePage() {
   return (
     <div className="flex h-[calc(100vh-5rem-env(safe-area-inset-bottom))] min-h-0 flex-col bg-[var(--surface)]">
       <PageHeader
-        title="循环日程"
-        subtitle={`当前循环：${trainingCycle?.slots.length || 0} 天`}
+        title={t('trainingCycle.title')}
+        subtitle={t('trainingCycle.currentCycleDays', { days: trainingCycle?.slots.length || 0 })}
         backFallbackTo="/templates"
         actions={
           <Link
@@ -182,7 +184,7 @@ export function TrainingCyclePage() {
             state={backLinkState}
             viewTransition
             className="flex h-9 w-9 items-center justify-center rounded-xl border border-[var(--outline-variant)] text-[var(--on-surface-variant)] transition-colors hover:bg-[var(--on-surface-variant)]/5"
-            aria-label="日历"
+            aria-label={t('trainingCycle.calendar')}
           >
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
@@ -196,7 +198,7 @@ export function TrainingCyclePage() {
 
       {!isLoading && trainingCycle && trainingCycle.slots.length > 0 ? (
         <div className="mx-4 mt-1 rounded-full bg-[var(--surface-container)] px-3 py-2 text-center text-[12px] font-medium text-[var(--on-surface-variant)]">
-          点击左侧序号可设为今天 · 长按拖动排序
+          {t('trainingCycle.interactionHint')}
         </div>
       ) : null}
 

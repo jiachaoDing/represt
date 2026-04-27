@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+
 import { BottomSheet } from '../ui/BottomSheet'
 import type { TemplateWithExercises } from '../../db/templates'
 
@@ -18,8 +20,10 @@ export function ScheduleActionSheet({
   onCreateExercise,
   onSelectTemplate,
 }: ScheduleActionSheetProps) {
+  const { t } = useTranslation()
+
   return (
-    <BottomSheet open={isOpen} title="添加动作" onClose={onClose}>
+    <BottomSheet open={isOpen} title={t('schedule.addExercise')} onClose={onClose}>
       <div className="space-y-1">
         {hasTemplates
           ? templates.map((template) => (
@@ -30,10 +34,10 @@ export function ScheduleActionSheet({
                 className="flex w-full items-center justify-between rounded-xl px-4 py-4 text-left transition-colors hover:bg-[var(--surface-container)]"
               >
                 <span className="text-base font-medium text-[var(--on-surface)]">
-                  导入 {template.name}
+                  {t('schedule.importTemplate', { name: template.name })}
                 </span>
                 <span className="text-sm text-[var(--on-surface-variant)]">
-                  {template.exercises.length} 个动作
+                  {t('summary.exerciseCount', { count: template.exercises.length })}
                 </span>
               </button>
             ))
@@ -58,7 +62,7 @@ export function ScheduleActionSheet({
             <line x1="12" y1="5" x2="12" y2="19" />
             <line x1="5" y1="12" x2="19" y2="12" />
           </svg>
-          <span className="text-base font-medium text-[var(--on-surface)]">手动新建动作</span>
+          <span className="text-base font-medium text-[var(--on-surface)]">{t('schedule.manualNewExercise')}</span>
         </button>
       </div>
     </BottomSheet>

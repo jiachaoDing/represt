@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
 import { useBackLinkState } from '../../hooks/useRouteBack'
@@ -13,16 +14,19 @@ type TemplateCyclePreviewCardProps = {
   templateId: string | null
 }
 
-function getNextTrainingLabel(daysUntil: number | null) {
+function getNextTrainingLabel(
+  daysUntil: number | null,
+  t: ReturnType<typeof useTranslation>['t'],
+) {
   if (daysUntil === null) {
-    return '未加入循环'
+    return t('trainingCycle.notInCycle')
   }
 
   if (daysUntil === 0) {
-    return '今天'
+    return t('trainingCycle.today')
   }
 
-  return `${daysUntil} 天后`
+  return t('trainingCycle.daysUntil', { days: daysUntil })
 }
 
 export function TemplateCyclePreviewCard({
@@ -32,31 +36,34 @@ export function TemplateCyclePreviewCard({
   getTemplateColor,
   templateId,
 }: TemplateCyclePreviewCardProps) {
+  const { t } = useTranslation()
   const isConfigured = (cycle?.slots.length ?? 0) > 0
   const backLinkState = useBackLinkState()
   const previewTitle = !isConfigured
-    ? '还没有设置循环'
+    ? t('trainingCycle.cycleNotSet')
     : templateId
-      ? getNextTrainingLabel(daysUntil)
-      : '已设置循环'
+      ? getNextTrainingLabel(daysUntil, t)
+      : t('trainingCycle.cycleSet')
 
   return (
     <Link
       to="/templates/cycle"
       state={backLinkState}
       viewTransition
-      aria-label={isConfigured ? '编辑循环日程' : '设置循环日程'}
+      aria-label={isConfigured ? t('trainingCycle.editCycle') : t('trainingCycle.setCycle')}
       className="mx-4 mt-4 block rounded-[1.25rem] border border-[var(--outline-variant)]/20 bg-[var(--surface)] p-4 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)] transition-colors hover:bg-[var(--surface-container)]/35"
     >
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-[12px] text-[var(--on-surface-variant)]">下次训练</p>
+          <p className="text-[12px] text-[var(--on-surface-variant)]">
+            {t('trainingCycle.nextTraining')}
+          </p>
           <p className="mt-1 text-[17px] font-semibold text-[var(--on-surface)]">
             {previewTitle}
           </p>
           {!isConfigured ? (
             <p className="mt-2 text-sm text-[var(--on-surface-variant)]">
-              设置好后，训练页会按当天循环自动加入模板。
+              {t('trainingCycle.autoImportHint')}
             </p>
           ) : null}
         </div>
@@ -75,9 +82,11 @@ export function TemplateCyclePreviewCard({
         )}
 
         <div className="text-right text-[12px] text-[var(--on-surface-variant)]">
-          <p>{isConfigured ? '循环预览' : '循环日程'}</p>
+          <p>{isConfigured ? t('trainingCycle.cyclePreview') : t('trainingCycle.title')}</p>
           <p className="mt-1">
-            {isConfigured && cycle ? `${cycle.slots.length} 天` : '未初始化'}
+            {isConfigured && cycle
+              ? t('trainingCycle.currentCycleDays', { days: cycle.slots.length })
+              : t('trainingCycle.uninitialized')}
           </p>
         </div>
       </div>

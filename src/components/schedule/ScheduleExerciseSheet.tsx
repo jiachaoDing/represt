@@ -1,4 +1,5 @@
 import type { FormEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { ExerciseNameInput } from '../exercise/ExerciseNameInput'
 import { BottomSheet } from '../ui/BottomSheet'
@@ -28,26 +29,28 @@ export function ScheduleExerciseSheet({
   onDraftChange,
   onSubmit,
 }: ScheduleExerciseSheetProps) {
+  const { t } = useTranslation()
+
   return (
-    <BottomSheet open={isOpen} title="手动新建动作" onClose={onClose}>
+    <BottomSheet open={isOpen} title={t('schedule.manualNewExercise')} onClose={onClose}>
       <form className="mt-2 space-y-5" onSubmit={onSubmit}>
         <div className="block">
           <span className="mb-1 ml-1 block text-xs font-medium text-[var(--on-surface-variant)]">
-            动作名称
+            {t('templates.exerciseName')}
           </span>
           <ExerciseNameInput
             value={draft.name}
             disabled={isSubmitting}
             onChange={(name) => onDraftChange({ ...draft, name })}
             className="w-full rounded-none border-b border-[var(--on-surface)] bg-[var(--surface-container)] px-4 py-3 text-base text-[var(--on-surface)] outline-none transition-all focus:border-b-2 focus:border-[var(--primary)]"
-            placeholder="例如：杠铃卧推"
+            placeholder={t('templates.exercisePlaceholder')}
           />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <label className="block">
             <span className="mb-1 ml-1 block text-xs font-medium text-[var(--on-surface-variant)]">
-              组数
+              {t('templates.defaultSets')}
             </span>
             <input
               type="number"
@@ -62,7 +65,7 @@ export function ScheduleExerciseSheet({
 
           <label className="block">
             <span className="mb-1 ml-1 block text-xs font-medium text-[var(--on-surface-variant)]">
-              休息秒数
+              {t('templates.restSeconds')}
             </span>
             <input
               type="number"
@@ -79,7 +82,7 @@ export function ScheduleExerciseSheet({
         <div className="grid grid-cols-2 gap-4">
           <label className="block">
             <span className="mb-1 ml-1 block text-xs font-medium text-[var(--on-surface-variant)]">
-              默认重量 (kg)
+              {t('templates.defaultWeight')}
             </span>
             <input
               type="number"
@@ -90,13 +93,13 @@ export function ScheduleExerciseSheet({
               disabled={isSubmitting}
               onChange={(event) => onDraftChange({ ...draft, weightKg: event.target.value })}
               className="w-full rounded-none border-b border-[var(--on-surface)] bg-[var(--surface-container)] px-4 py-3 text-base text-[var(--on-surface)] outline-none transition-all focus:border-b-2 focus:border-[var(--primary)]"
-              placeholder="可选"
+              placeholder={t('templates.optional')}
             />
           </label>
 
           <label className="block">
             <span className="mb-1 ml-1 block text-xs font-medium text-[var(--on-surface-variant)]">
-              默认次数
+              {t('templates.defaultReps')}
             </span>
             <input
               type="number"
@@ -106,7 +109,7 @@ export function ScheduleExerciseSheet({
               disabled={isSubmitting}
               onChange={(event) => onDraftChange({ ...draft, reps: event.target.value })}
               className="w-full rounded-none border-b border-[var(--on-surface)] bg-[var(--surface-container)] px-4 py-3 text-base text-[var(--on-surface)] outline-none transition-all focus:border-b-2 focus:border-[var(--primary)]"
-              placeholder="可选"
+              placeholder={t('templates.optional')}
             />
           </label>
         </div>
@@ -117,7 +120,7 @@ export function ScheduleExerciseSheet({
             disabled={isSubmitting || !draft.name.trim()}
             className="w-full rounded-full bg-[var(--primary)] px-6 py-3.5 text-sm font-medium text-[var(--on-primary)] transition-opacity disabled:opacity-40"
           >
-            添加到今日训练
+            {t('schedule.addToToday')}
           </button>
         </div>
       </form>

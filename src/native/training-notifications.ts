@@ -1,6 +1,7 @@
 import { LocalNotifications } from '@capacitor/local-notifications'
 import { registerPlugin, type PermissionState } from '@capacitor/core'
 
+import i18n from '../i18n'
 import { isNativeApp, isNativePluginAvailable } from './capacitor-platform'
 
 const OLD_REST_TIMER_CHANNEL_ID = 'trainre-rest-timer'
@@ -169,8 +170,8 @@ async function ensureRestTimerChannel() {
 
     await LocalNotifications.createChannel({
       id: REST_TIMER_FALLBACK_CHANNEL_ID,
-      name: '休息结束提醒',
-      description: '休息倒计时结束时提醒继续训练',
+      name: i18n.t('notification.channelName'),
+      description: i18n.t('notification.channelDescription'),
       importance: 4,
       visibility: 1,
       vibration: true,
@@ -297,7 +298,7 @@ export async function openStrongReminderSettings() {
   if (!isRestTimerAlarmAvailable()) {
     return {
       didOpen: false,
-      message: '当前环境无法直接打开强提醒类别设置。',
+      message: i18n.t('notification.strongSettingsUnavailable'),
     }
   }
 
@@ -305,13 +306,13 @@ export async function openStrongReminderSettings() {
     await RestTimerAlarm.openChannelSettings()
     return {
       didOpen: true,
-      message: '已打开强提醒类别设置，请检查悬浮通知、声音、震动和锁屏显示。',
+      message: i18n.t('notification.strongSettingsOpened'),
     }
   } catch (settingsError) {
     console.warn(settingsError)
     return {
       didOpen: false,
-      message: '无法打开强提醒类别设置，请从系统通知设置中进入。',
+      message: i18n.t('notification.strongSettingsFailed'),
     }
   }
 }
@@ -319,7 +320,7 @@ export async function openStrongReminderSettings() {
 export async function openAppNotificationSettings() {
   return {
     didOpen: false,
-    message: '当前 Capacitor 插件未提供直接打开 App 通知设置的能力，请从系统设置里进入。',
+    message: i18n.t('notification.appSettingsUnavailable'),
   }
 }
 
@@ -404,8 +405,8 @@ export async function scheduleRestTimerNotification(
   const exactAlarmPermission = await checkExactAlarmPermission()
   await cancelRestTimerNotification(input.exerciseId)
   const notificationId = getRestTimerNotificationId(input.exerciseId)
-  const title = '休息结束'
-  const body = `${input.exerciseName} 可以继续下一组`
+  const title = i18n.t('notification.restEndedTitle')
+  const body = i18n.t('notification.restEndedBody', { exerciseName: input.exerciseName })
   const path = `/exercise/${input.exerciseId}`
 
   const didScheduleStrongAlarm = await scheduleStrongRestTimerAlarm({
@@ -474,8 +475,8 @@ export async function scheduleRestTimerTestNotification(): Promise<RestTimerSche
   const notifyAt = new Date(Date.now() + 10_000)
   const didScheduleStrongAlarm = await scheduleStrongRestTimerAlarm({
     id: TEST_REST_TIMER_NOTIFICATION_ID,
-    title: '训练提醒测试',
-    body: '如果看到这条提醒，休息计时强提醒可以显示。',
+    title: i18n.t('notification.testTitle'),
+    body: i18n.t('notification.strongTestBody'),
     notifyAt,
   })
   if (didScheduleStrongAlarm) {
@@ -486,8 +487,8 @@ export async function scheduleRestTimerTestNotification(): Promise<RestTimerSche
     notifications: [
       {
         id: TEST_REST_TIMER_NOTIFICATION_ID,
-        title: '训练提醒测试',
-        body: '如果看到这条提醒，休息计时提醒可以显示。',
+        title: i18n.t('notification.testTitle'),
+        body: i18n.t('notification.localTestBody'),
         schedule: {
           at: notifyAt,
           allowWhileIdle: true,

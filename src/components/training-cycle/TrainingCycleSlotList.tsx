@@ -1,4 +1,5 @@
 import { createPortal } from 'react-dom'
+import { useTranslation } from 'react-i18next'
 
 import {
   DndContext,
@@ -46,6 +47,7 @@ export function TrainingCycleSlotList({
   onOpenSheet,
   orderedSlotItems,
 }: TrainingCycleSlotListProps) {
+  const { t } = useTranslation()
   const sensors = useSensors(
     useSensor(MouseSensor, {
       activationConstraint: {
@@ -127,7 +129,7 @@ export function TrainingCycleSlotList({
             onClick={onAddSlot}
             disabled={isSubmitting}
             className="flex h-12 w-12 items-center justify-center rounded-full transition-transform active:scale-95 disabled:opacity-60"
-            aria-label="添加一天"
+            aria-label={t('trainingCycle.addDay')}
           >
             <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--secondary-container)] text-[var(--on-secondary-container)] shadow-[0_4px_12px_rgba(0,0,0,0.08)] ring-4 ring-[var(--secondary)]/10">
               <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -144,7 +146,7 @@ export function TrainingCycleSlotList({
           disabled={isSubmitting}
           className="flex min-h-14 flex-1 items-center rounded-3xl border border-dashed border-[var(--primary)]/30 bg-[var(--primary-container)]/20 px-5 text-left text-[var(--primary)] transition-transform active:scale-[0.98] disabled:opacity-60"
         >
-          <span className="text-[15px] font-semibold">添加一天</span>
+          <span className="text-[15px] font-semibold">{t('trainingCycle.addDay')}</span>
         </button>
       </div>
     </section>

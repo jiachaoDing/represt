@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+
 import type { TemplateWithExercises } from '../../db/templates'
 
 type TemplateSwitcherProps = {
@@ -15,6 +17,8 @@ export function TemplateSwitcher({
   onCreate,
   onSelect,
 }: TemplateSwitcherProps) {
+  const { t } = useTranslation()
+
   return (
     <div className="-mx-4 mt-2 overflow-x-auto px-4 scrollbar-hide">
       <div className="flex w-max items-center gap-2 pb-2">
@@ -57,7 +61,7 @@ export function TemplateSwitcher({
             <line x1="12" y1="5" x2="12" y2="19" />
             <line x1="5" y1="12" x2="19" y2="12" />
           </svg>
-          新增
+          {t('common.add')}
         </button>
       </div>
     </div>

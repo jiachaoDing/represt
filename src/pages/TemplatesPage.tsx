@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { TemplateCyclePreviewCard } from '../components/training-cycle/TemplateCyclePreviewCard'
 import { PageHeader } from '../components/ui/PageHeader'
@@ -12,6 +13,7 @@ import { useTemplatesPageUi } from '../hooks/pages/useTemplatesPageUi'
 import { getTemplateColor } from '../lib/template-color'
 
 export function TemplatesPage() {
+  const { t } = useTranslation()
   const templates = useTemplatesPageData()
   const ui = useTemplatesPageUi(templates)
   const templateColorMap = useMemo(
@@ -21,11 +23,11 @@ export function TemplatesPage() {
   const menuItems = templates.currentTemplate
     ? [
         {
-          label: '编辑名称',
+          label: t('templates.editName'),
           onSelect: () => ui.openTemplateSheet('rename'),
         },
         {
-          label: '删除模板',
+          label: t('templates.deleteTemplate'),
           danger: true,
           onSelect: () => ui.setTemplateDeleteOpen(true),
         },
@@ -34,7 +36,7 @@ export function TemplatesPage() {
   return (
     <div className="pb-4">
       <PageHeader
-        title="模板管理"
+        title={t('templates.title')}
         titleAlign="center"
         actions={menuItems.length > 0 ? <OverflowMenu items={menuItems} /> : undefined}
       />
@@ -103,11 +105,11 @@ export function TemplatesPage() {
 
       <ConfirmDialog
         open={ui.templateDeleteOpen && templates.currentTemplate !== null}
-        title="删除模板？"
+        title={t('templates.deleteTitle')}
         description={
-          templates.currentTemplate ? `确定删除“${templates.currentTemplate.name}”吗？该操作无法恢复。` : ''
+          templates.currentTemplate ? t('templates.deleteDescription', { name: templates.currentTemplate.name }) : ''
         }
-        confirmLabel="删除"
+        confirmLabel={t('common.delete')}
         danger
         onCancel={() => ui.setTemplateDeleteOpen(false)}
         onConfirm={() => void ui.handleConfirmDeleteTemplate()}

@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { createPortal } from 'react-dom'
 import {
   DndContext,
@@ -44,6 +45,7 @@ export function ScheduleExerciseList({
   onDeleteSelected,
   onReorder,
 }: ScheduleExerciseListProps) {
+  const { t } = useTranslation()
   const [exerciseOrder, setExerciseOrder] = useState<string[] | null>(null)
   const [activeExerciseId, setActiveExerciseId] = useState<string | null>(null)
   const [isSorting, setIsSorting] = useState(false)
@@ -197,13 +199,13 @@ export function ScheduleExerciseList({
   if (!currentSession || currentSession.exercises.length === 0) {
     return (
       <div className="mx-4 rounded-2xl border border-dashed border-[var(--outline)] px-5 py-10 text-center">
-        <p className="text-sm font-medium text-[var(--on-surface-variant)]">今天还没有动作</p>
+        <p className="text-sm font-medium text-[var(--on-surface-variant)]">{t('schedule.noExercisesToday')}</p>
         <button
           type="button"
           onClick={onOpenAdd}
           className="mt-4 text-sm font-medium text-[var(--primary)]"
         >
-          {hasTemplates ? '添加动作' : '新建动作'}
+          {hasTemplates ? t('schedule.addExercise') : t('schedule.newExercise')}
         </button>
       </div>
     )
@@ -235,8 +237,8 @@ export function ScheduleExerciseList({
       <div className="-mb-1 flex items-center justify-between px-2">
         <div className="text-[12px] text-[var(--on-surface-variant)]">
           {isSelectionMode
-            ? `已选择 ${selectedExerciseIds.length} 个 · 仅未开始可删除`
-            : '长按拖动排序'}
+            ? t('schedule.selectedDeletableCount', { count: selectedExerciseIds.length })
+            : t('templates.longPressSort')}
         </div>
         <div className="flex items-center gap-1">
           {isSelectionMode ? (
@@ -246,14 +248,14 @@ export function ScheduleExerciseList({
                 onClick={() => setSelectedExerciseIds(isAllSelected ? [] : deletableExerciseIds)}
                 className="rounded-full px-3 py-2 text-xs font-medium text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/10"
               >
-                {isAllSelected ? '取消全选' : '全选'}
+                {isAllSelected ? t('templates.clearAll') : t('templates.selectAll')}
               </button>
               <button
                 type="button"
                 onClick={closeSelectionMode}
                 className="rounded-full px-3 py-2 text-xs font-medium text-[var(--on-surface-variant)] transition-colors hover:bg-[var(--on-surface-variant)]/10"
               >
-                取消
+                {t('common.cancel')}
               </button>
               <button
                 type="button"
@@ -261,7 +263,7 @@ export function ScheduleExerciseList({
                 onClick={() => void deleteSelectedExercises()}
                 className="rounded-full px-3 py-2 text-xs font-medium text-[var(--error)] transition-colors hover:bg-[var(--error)]/10 disabled:opacity-40"
               >
-                删除
+                {t('common.delete')}
               </button>
             </>
           ) : deletableCount > 0 ? (
@@ -269,7 +271,7 @@ export function ScheduleExerciseList({
               type="button"
               onClick={openSelectionMode}
               className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--error)] transition-colors hover:bg-[var(--error)]/10"
-              aria-label="批量删除动作"
+              aria-label={t('templates.bulkDeleteExercise')}
             >
               <svg
                 viewBox="0 0 24 24"
@@ -291,7 +293,7 @@ export function ScheduleExerciseList({
               type="button"
               onClick={onOpenAdd}
               className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/10"
-              aria-label={hasTemplates ? '添加动作' : '新建动作'}
+              aria-label={hasTemplates ? t('schedule.addExercise') : t('schedule.newExercise')}
             >
               <svg
                 viewBox="0 0 24 24"

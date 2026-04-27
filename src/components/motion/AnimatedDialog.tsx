@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 
 import { dialogSpringTransition, quickEaseTransition } from './motion-tokens'
 
@@ -11,6 +12,7 @@ type AnimatedDialogProps = {
 }
 
 export function AnimatedDialog({ children, onClose, open }: AnimatedDialogProps) {
+  const { t } = useTranslation()
   const reduceMotion = useReducedMotion()
 
   return createPortal(
@@ -20,7 +22,7 @@ export function AnimatedDialog({ children, onClose, open }: AnimatedDialogProps)
           <motion.button
             key="dialog-backdrop"
             type="button"
-            aria-label="关闭对话框"
+            aria-label={t('common.closeDialog')}
             onClick={onClose}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1, transition: quickEaseTransition }}

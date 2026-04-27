@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { TodayTrainingPlanCard } from '../components/training-cycle/TodayTrainingPlanCard'
 import { PageHeader } from '../components/ui/PageHeader'
@@ -14,6 +15,7 @@ import { ScheduleExerciseSheet } from '../components/schedule/ScheduleExerciseSh
 import { ScheduleTemplateImportSheet } from '../components/schedule/ScheduleTemplateImportSheet'
 
 export function SchedulePage() {
+  const { i18n, t } = useTranslation()
   const now = useNow()
   const schedule = useSchedulePageData()
   const ui = useSchedulePageUi(schedule)
@@ -22,7 +24,7 @@ export function SchedulePage() {
     [schedule.templates],
   )
 
-  const todayStr = new Intl.DateTimeFormat('zh-CN', {
+  const todayStr = new Intl.DateTimeFormat(i18n.resolvedLanguage, {
     month: 'long',
     day: 'numeric',
     weekday: 'short',
@@ -32,9 +34,9 @@ export function SchedulePage() {
   const totalSets = schedule.currentSession?.exercises.reduce((sum, exercise) => sum + exercise.targetSets, 0) ?? 0
   const importConfirmDescription = [
     ui.pendingTemplateImportConfirmation?.isDuplicateImport
-      ? `“${ui.pendingTemplateImportConfirmation.templateName}”可能已加入过今日训练。`
+      ? t('schedule.duplicateImport', { name: ui.pendingTemplateImportConfirmation.templateName })
       : null,
-    ui.pendingTemplateImportConfirmation?.willContinueCompletedSession ? '会更新今日训练总结。' : null,
+    ui.pendingTemplateImportConfirmation?.willContinueCompletedSession ? t('schedule.willUpdateSummary') : null,
   ]
     .filter(Boolean)
     .join(' ')
@@ -64,10 +66,10 @@ export function SchedulePage() {
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <p className="text-sm font-semibold text-[var(--on-surface)]">
-                {schedule.templateSyncStatus.templateName ?? '模板'} 有更新
+                {t('schedule.templateUpdatedTitle', { name: schedule.templateSyncStatus.templateName ?? t('common.templateFallback') })}
               </p>
               <p className="mt-1 text-xs leading-5 text-[var(--on-surface-variant)]">
-                会按当前模板重建今日动作；已记录的组会保留到总结页。
+                {t('schedule.templateUpdatedDescription')}
               </p>
             </div>
             <button
@@ -76,7 +78,7 @@ export function SchedulePage() {
               onClick={() => void ui.handleSyncTemplateAction()}
               className="shrink-0 rounded-full bg-[var(--primary)] px-3 py-2 text-xs font-semibold text-[var(--on-primary)] transition-opacity disabled:opacity-50"
             >
-              同步模板
+              {t('schedule.syncTemplate')}
             </button>
           </div>
         </div>
@@ -134,18 +136,18 @@ export function SchedulePage() {
 
       <ConfirmDialog
         open={ui.isContinueDialogOpen}
-        title="继续今日训练？"
-        description="会更新今日训练总结。"
-        confirmLabel="继续"
+        title={t('schedule.continueTodayTitle')}
+        description={t('schedule.willUpdateSummary')}
+        confirmLabel={t('common.continue')}
         onCancel={() => ui.setIsContinueDialogOpen(false)}
         onConfirm={() => void ui.addExercise()}
       />
 
       <ConfirmDialog
         open={ui.pendingTemplateImportConfirmation !== null}
-        title="加入这组动作？"
+        title={t('schedule.importConfirmTitle')}
         description={importConfirmDescription}
-        confirmLabel="继续"
+        confirmLabel={t('common.continue')}
         onCancel={() => {
           ui.setPendingTemplateImportId(null)
           ui.setPendingTemplateExerciseIds([])

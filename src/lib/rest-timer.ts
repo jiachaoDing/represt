@@ -40,7 +40,7 @@ export function getRestTimerSnapshot(timer: RestTimerState, now = Date.now()) {
       status: 'idle' as const,
       remainingSeconds: 0,
       remainingMs: 0,
-      label: '未启动',
+      label: 'idle',
     }
   }
 
@@ -51,7 +51,7 @@ export function getRestTimerSnapshot(timer: RestTimerState, now = Date.now()) {
       status: 'ready' as const,
       remainingSeconds: 0,
       remainingMs: 0,
-      label: '可继续下一组',
+      label: 'ready',
     }
   }
 
@@ -61,6 +61,6 @@ export function getRestTimerSnapshot(timer: RestTimerState, now = Date.now()) {
     status: 'running' as const,
     remainingSeconds,
     remainingMs,
-    label: `剩余 ${formatDuration(remainingSeconds)}`,
+    label: `remaining ${formatDuration(remainingSeconds)}`,
   }
 }

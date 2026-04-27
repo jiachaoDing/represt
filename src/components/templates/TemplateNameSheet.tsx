@@ -1,4 +1,5 @@
 import type { FormEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { BottomSheet } from '../ui/BottomSheet'
 
@@ -27,18 +28,19 @@ export function TemplateNameSheet({
   onRenameNameChange,
   onSubmit,
 }: TemplateNameSheetProps) {
+  const { t } = useTranslation()
   const value = mode === 'create' ? createName : renameName
 
   return (
     <BottomSheet
       open={isOpen}
-      title={mode === 'create' ? '新增模板' : '编辑名称'}
+      title={mode === 'create' ? t('templates.newTemplate') : t('templates.editName')}
       onClose={onClose}
     >
       <form className="mt-2 space-y-5" onSubmit={onSubmit}>
         <label className="block">
           <span className="mb-1 ml-1 block text-xs font-medium text-[var(--on-surface-variant)]">
-            模板名称
+            {t('templates.templateName')}
           </span>
           <input
             value={value}
@@ -49,7 +51,7 @@ export function TemplateNameSheet({
                 : onRenameNameChange(event.target.value)
             }
             className="w-full rounded-none border-b border-[var(--on-surface)] bg-[var(--surface-container)] px-4 py-3 text-base text-[var(--on-surface)] outline-none transition-all focus:border-b-2 focus:border-[var(--primary)]"
-            placeholder="例如：推胸日"
+            placeholder={t('templates.templatePlaceholder')}
           />
         </label>
 
@@ -59,7 +61,7 @@ export function TemplateNameSheet({
             disabled={isSubmitting || !value.trim()}
             className="w-full rounded-full bg-[var(--primary)] px-6 py-3.5 text-sm font-medium text-[var(--on-primary)] transition-opacity disabled:opacity-40"
           >
-            {mode === 'create' ? '创建模板' : '保存'}
+            {mode === 'create' ? t('templates.createTemplate') : t('common.save')}
           </button>
         </div>
       </form>

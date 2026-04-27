@@ -144,10 +144,10 @@ public class RestTimerAlarmPlugin extends Plugin {
 
         NotificationChannel channel = new NotificationChannel(
             RestTimerAlarmConstants.CHANNEL_ID,
-            "休息结束强提醒",
+            context.getString(R.string.rest_timer_channel_name),
             NotificationManager.IMPORTANCE_HIGH
         );
-        channel.setDescription("休息倒计时结束时尽量使用闹钟级本地提醒");
+        channel.setDescription(context.getString(R.string.rest_timer_channel_description));
         channel.setLockscreenVisibility(android.app.Notification.VISIBILITY_PUBLIC);
         channel.enableVibration(true);
         channel.setVibrationPattern(new long[] { 0, 350, 120, 350 });
@@ -206,8 +206,8 @@ public class RestTimerAlarmPlugin extends Plugin {
         Intent intent = new Intent(context, RestTimerAlarmReceiver.class)
             .setAction(RestTimerAlarmConstants.ACTION_ALARM)
             .putExtra(RestTimerAlarmConstants.EXTRA_ID, id)
-            .putExtra(RestTimerAlarmConstants.EXTRA_TITLE, call.getString("title", "休息结束"))
-            .putExtra(RestTimerAlarmConstants.EXTRA_BODY, call.getString("body", "可以继续下一组"))
+            .putExtra(RestTimerAlarmConstants.EXTRA_TITLE, call.getString("title", context.getString(R.string.rest_timer_default_title)))
+            .putExtra(RestTimerAlarmConstants.EXTRA_BODY, call.getString("body", context.getString(R.string.rest_timer_default_body)))
             .putExtra(RestTimerAlarmConstants.EXTRA_PATH, call.getString("path"));
 
         return PendingIntent.getBroadcast(context, id, intent, intentFlag | pendingIntentFlags());

@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+
 import type { TrainingCycleSlotRowProps } from './training-cycle-page.types'
 
 function TrainingCycleSlotCard({
@@ -10,6 +12,8 @@ function TrainingCycleSlotCard({
   weekdayLabel,
   isToday,
 }: Omit<TrainingCycleSlotRowProps, 'index' | 'isDragging' | 'onCalibrateToday'>) {
+  const { t } = useTranslation()
+
   return (
     <button
       type="button"
@@ -29,13 +33,15 @@ function TrainingCycleSlotCard({
     >
       <div>
         <h4 className="text-[17px] font-bold tracking-tight">
-          {template ? template.name : '休息日'}
+          {template ? template.name : t('trainingCycle.restDay')}
         </h4>
         <p className="mt-1 text-[13px] font-medium opacity-70">
-          {template ? `${template.exercises.length} 个动作` : '放松恢复，为下次训练蓄力'}
+          {template
+            ? t('trainingCycle.exerciseCount', { count: template.exercises.length })
+            : t('trainingCycle.restDescription')}
         </p>
         <p className="mt-2 text-[12px] font-medium opacity-60">
-          {isToday ? '今天' : weekdayLabel}
+          {isToday ? t('trainingCycle.today') : weekdayLabel}
         </p>
       </div>
 
@@ -61,6 +67,8 @@ export function TrainingCycleSlotRow({
   template,
   weekdayLabel,
 }: TrainingCycleSlotRowProps) {
+  const { t } = useTranslation()
+
   return (
     <div className="relative flex gap-4 px-4 py-3">
       <div className="relative z-10 flex w-12 shrink-0 flex-col items-center pt-2">
@@ -70,13 +78,13 @@ export function TrainingCycleSlotRow({
             disabled={isSubmitting || isSorting}
             onClick={() => onCalibrateToday(slot.id)}
             className="relative flex h-12 w-12 items-center justify-center rounded-full transition-transform active:scale-95 disabled:opacity-60"
-            aria-label={`第 ${index + 1} 天，今天`}
+            aria-label={`${t('trainingCycle.dayNumber', { dayNumber: index + 1 })}，${t('trainingCycle.today')}`}
           >
             <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--primary)] text-sm font-bold text-[var(--on-primary)] ring-4 ring-[var(--primary)]/20 shadow-sm">
               {index + 1}
             </span>
             <div className="absolute -bottom-6 whitespace-nowrap rounded-full bg-[var(--primary)] px-2 py-0.5 text-[10px] font-semibold text-[var(--on-primary)] shadow-sm">
-              今天
+              {t('trainingCycle.today')}
             </div>
           </button>
         ) : (
@@ -85,7 +93,7 @@ export function TrainingCycleSlotRow({
             disabled={isSubmitting || isSorting}
             onClick={() => onCalibrateToday(slot.id)}
             className="flex h-12 w-12 items-center justify-center rounded-full transition-colors active:scale-95 disabled:opacity-60"
-            aria-label={`将第 ${index + 1} 天校准为今天`}
+            aria-label={t('trainingCycle.setDayAsToday', { dayNumber: index + 1 })}
           >
             <span className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-[var(--surface)] bg-[var(--surface-variant)] text-[11px] font-medium text-[var(--on-surface-variant)] shadow-sm">
               {index + 1}

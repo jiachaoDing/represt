@@ -1,18 +1,19 @@
 import { getRestTimerSnapshot, getRestTimerState } from './rest-timer'
+import i18n from '../i18n'
 import type { SessionExercise, SessionStatus } from '../models/types'
 
 export type DerivedExerciseStatus = 'pending' | 'active' | 'completed'
 
 export function getSessionStatusLabel(status: SessionStatus) {
   if (status === 'active') {
-    return '进行中'
+    return i18n.t('status.active')
   }
 
   if (status === 'completed') {
-    return '已完成'
+    return i18n.t('status.completed')
   }
 
-  return '未开始'
+  return i18n.t('status.pending')
 }
 
 export function deriveExerciseStatus(
@@ -36,40 +37,40 @@ export function deriveExerciseStatus(
 
 export function getExerciseStatusLabel(status: DerivedExerciseStatus) {
   if (status === 'active') {
-    return '进行中'
+    return i18n.t('status.active')
   }
 
   if (status === 'completed') {
-    return '已完成'
+    return i18n.t('status.completed')
   }
 
-  return '未开始'
+  return i18n.t('status.pending')
 }
 
 export function getExerciseRestLabel(exercise: SessionExercise, now: number) {
   if (deriveExerciseStatus(exercise) === 'completed') {
-    return '已完成'
+    return i18n.t('status.completed')
   }
 
   return getRestTimerSnapshot(getRestTimerState(exercise), now).label
 }
 
-export function getCompletedAtLabel(completedAt: string) {
+export function getCompletedAtLabel(completedAt: string, locale = 'zh-CN') {
   const completedAtDate = new Date(completedAt)
   if (Number.isNaN(completedAtDate.getTime())) {
-    return '时间未知'
+    return i18n.t('common.unknownTime')
   }
 
-  return completedAtDate.toLocaleTimeString('zh-CN', {
+  return completedAtDate.toLocaleTimeString(locale, {
     hour: '2-digit',
     minute: '2-digit',
   })
 }
 
 export function getWeightLabel(weightKg: number | null) {
-  return weightKg === null ? '未补录' : `${weightKg} kg`
+  return weightKg === null ? i18n.t('exercise.missingRecord') : i18n.t('common.kg', { value: weightKg })
 }
 
 export function getRepsLabel(reps: number | null) {
-  return reps === null ? '未补录' : `${reps} 次`
+  return reps === null ? i18n.t('exercise.missingRecord') : i18n.t('common.reps', { value: reps })
 }

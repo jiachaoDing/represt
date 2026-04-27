@@ -1,4 +1,5 @@
 import { motion, useReducedMotion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 
 import { PageHeader } from '../ui/PageHeader'
 import { quickEaseTransition } from '../motion/motion-tokens'
@@ -69,13 +70,19 @@ function TrainingCycleLoadingBody() {
 }
 
 export function TrainingCyclePageLoading({ showHeader = true }: TrainingCyclePageLoadingProps) {
+  const { t } = useTranslation()
+
   if (!showHeader) {
     return <TrainingCycleLoadingBody />
   }
 
   return (
     <div className="flex h-[calc(100vh-5rem-env(safe-area-inset-bottom))] min-h-0 flex-col bg-[var(--surface)]">
-      <PageHeader title="循环日程" subtitle="正在载入日程" backFallbackTo="/templates" />
+      <PageHeader
+        title={t('trainingCycle.title')}
+        subtitle={t('trainingCycle.loadingSubtitle')}
+        backFallbackTo="/templates"
+      />
       <div className="min-h-0 flex-1 overflow-y-auto">
         <TrainingCycleLoadingBody />
       </div>

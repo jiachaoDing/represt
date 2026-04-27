@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+
 import { BottomSheet } from '../ui/BottomSheet'
 import type { TemplateWithExercises } from '../../db/templates'
 import { getTemplateColor, type TemplateColor } from '../../lib/template-color'
@@ -28,12 +30,18 @@ export function TrainingCycleSlotSheet({
   templateColorMap,
   templates,
 }: TrainingCycleSlotSheetProps) {
+  const { t } = useTranslation()
+
   return (
     <BottomSheet
       open={open}
       onClose={onClose}
-      title={`第 ${selectedIndex + 1} 天`}
-      description={selectedTemplate ? `当前选择：${selectedTemplate.name}` : '当前为休息日'}
+      title={t('trainingCycle.dayNumber', { dayNumber: selectedIndex + 1 })}
+      description={
+        selectedTemplate
+          ? t('trainingCycle.currentSelection', { name: selectedTemplate.name })
+          : t('trainingCycle.currentRestDay')
+      }
     >
       <div className="grid gap-1">
         <button
@@ -54,7 +62,7 @@ export function TrainingCycleSlotSheet({
             <OptionIcon className="bg-[var(--surface-container)] text-[var(--on-surface-variant)]">
               <RestIcon />
             </OptionIcon>
-            <span className="font-semibold">休息日</span>
+            <span className="font-semibold">{t('trainingCycle.restDay')}</span>
           </div>
           {selectedTemplate === null && (
             <svg className="h-5 w-5 text-[var(--primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -93,7 +101,7 @@ export function TrainingCycleSlotSheet({
                 <div>
                   <div className="font-semibold">{template.name}</div>
                   <div className="text-[13px] font-medium opacity-70 mt-0.5">
-                    {template.exercises.length} 个动作
+                    {t('trainingCycle.exerciseCount', { count: template.exercises.length })}
                   </div>
                 </div>
               </div>
@@ -120,7 +128,7 @@ export function TrainingCycleSlotSheet({
           <OptionIcon className="bg-[var(--error-container)] text-[var(--error)]">
             <DeleteIcon />
           </OptionIcon>
-          <span className="font-medium">删除此天</span>
+          <span className="font-medium">{t('trainingCycle.deleteDay')}</span>
         </button>
       </div>
     </BottomSheet>

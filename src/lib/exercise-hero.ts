@@ -1,3 +1,5 @@
+import type { TFunction } from 'i18next'
+
 import { formatDuration, getRestTimerSnapshot, getRestTimerState } from './rest-timer'
 import type { SessionExerciseDetail } from '../db/sessions'
 
@@ -26,6 +28,7 @@ export function getExerciseHeroTone(state: ExerciseHeroState) {
 export function getExerciseHeroData(
   detail: SessionExerciseDetail | null,
   now: number,
+  t: TFunction,
 ): ExerciseHeroData | null {
   if (!detail) {
     return null
@@ -37,36 +40,36 @@ export function getExerciseHeroData(
     const restTotalMs = Math.max(1, detail.exercise.restSeconds * 1000)
 
     return {
-      label: '休息中',
+      label: t('exercise.resting'),
       restRemainingRatio: Math.min(1, Math.max(0, restSnapshot.remainingMs / restTotalMs)),
       state: 'resting',
-      supporting: '倒计时结束后继续下一组。',
+      supporting: '',
       value: formatDuration(restSnapshot.remainingSeconds),
     }
   }
 
   if (detail.exercise.completedSets >= detail.exercise.targetSets) {
     return {
-      label: '动作完成',
+      label: t('exercise.completed'),
       state: 'completed',
-      supporting: '已达到目标组数。',
+      supporting: '',
       value: `${detail.exercise.targetSets}/${detail.exercise.targetSets}`,
     }
   }
 
   if (restSnapshot.status === 'ready') {
     return {
-      label: '可继续下一组',
+      label: t('exercise.ready'),
       state: 'ready',
-      supporting: '休息已结束。',
+      supporting: '',
       value: '00:00',
     }
   }
 
   return {
-    label: '待完成当前组',
+    label: t('exercise.pending'),
     state: 'counting',
-    supporting: '点击按钮记录当前组。',
-    value: `第 ${detail.exercise.completedSets + 1} 组`,
+    supporting: '',
+    value: t('exercise.currentSet', { setNumber: detail.exercise.completedSets + 1 }),
   }
 }

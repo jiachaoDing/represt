@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
 import { AnimatedContentSwap } from '../motion/AnimatedContentSwap'
@@ -18,6 +19,7 @@ export function SummaryDateSwitcher({
   onNext,
   onPrevious,
 }: SummaryDateSwitcherProps) {
+  const { t } = useTranslation()
   const backLinkState = useBackLinkState()
 
   return (
@@ -28,7 +30,7 @@ export function SummaryDateSwitcher({
             type="button"
             onClick={onPrevious}
             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-[var(--on-surface)] transition-colors hover:bg-[var(--surface-container)]"
-            aria-label="上一天"
+            aria-label={t('summary.previousDay')}
           >
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M15 18l-6-6 6-6" />
@@ -37,7 +39,7 @@ export function SummaryDateSwitcher({
         </div>
 
         <div className="min-w-0 flex-1 text-center">
-          <p className="text-[11px] text-[var(--on-surface-variant)]">训练日期</p>
+          <p className="text-[11px] text-[var(--on-surface-variant)]">{t('summary.dateLabel')}</p>
           <p className="mt-1 truncate text-[15px] font-semibold text-[var(--on-surface)]">
             <AnimatedContentSwap contentKey={dateLabel}>{dateLabel}</AnimatedContentSwap>
           </p>
@@ -49,7 +51,7 @@ export function SummaryDateSwitcher({
             state={backLinkState}
             viewTransition
             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-[var(--on-surface-variant)] transition-colors hover:bg-[var(--surface-container)]"
-            aria-label="日历"
+            aria-label={t('summary.calendar')}
           >
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
@@ -64,7 +66,7 @@ export function SummaryDateSwitcher({
             disabled={!canGoNext}
             onClick={onNext}
             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-[var(--on-surface)] transition-colors hover:bg-[var(--surface-container)] disabled:opacity-30"
-            aria-label="下一天"
+            aria-label={t('summary.nextDay')}
           >
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 18l6-6-6-6" />

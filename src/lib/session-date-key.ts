@@ -52,13 +52,14 @@ export function isSessionDateKey(sessionDateKey: string | null | undefined): ses
 export function formatSessionDateKey(
   sessionDateKey: string,
   options: SessionDateFormatOptions,
+  locale = 'zh-CN',
 ) {
   const date = parseSessionDateKey(sessionDateKey)
   if (!date) {
     return sessionDateKey
   }
 
-  return new Intl.DateTimeFormat('zh-CN', options).format(date)
+  return new Intl.DateTimeFormat(locale, options).format(date)
 }
 
 export function addDaysToSessionDateKey(sessionDateKey: string, amount: number) {

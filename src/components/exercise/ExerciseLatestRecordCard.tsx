@@ -1,4 +1,5 @@
-import { getRepsLabel, getWeightLabel } from '../../lib/session-display'
+import { useTranslation } from 'react-i18next'
+
 import type { SetRecord } from '../../models/types'
 
 type ExerciseLatestRecordCardProps = {
@@ -10,18 +11,21 @@ export function ExerciseLatestRecordCard({
   latestSetRecord,
   onEdit,
 }: ExerciseLatestRecordCardProps) {
+  const { t } = useTranslation()
+
   return (
     <section className="px-5 py-5">
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <p className="text-[13px] text-[var(--on-surface-variant)]">上一组记录</p>
+          <p className="text-[13px] text-[var(--on-surface-variant)]">{t('exercise.latestRecord')}</p>
           {latestSetRecord ? (
             <p className="mt-1.5 text-[15px] font-medium text-[var(--on-surface)]">
-              第 {latestSetRecord.setNumber} 组 · {getWeightLabel(latestSetRecord.weightKg)} ·{' '}
-              {getRepsLabel(latestSetRecord.reps)}
+              {t('summary.setNumber', { setNumber: latestSetRecord.setNumber })} ·{' '}
+              {latestSetRecord.weightKg === null ? t('exercise.missingRecord') : t('common.kg', { value: latestSetRecord.weightKg })} ·{' '}
+              {latestSetRecord.reps === null ? t('exercise.missingRecord') : t('common.reps', { value: latestSetRecord.reps })}
             </p>
           ) : (
-            <p className="mt-1.5 text-[15px] text-[var(--outline)]">没有记录</p>
+            <p className="mt-1.5 text-[15px] text-[var(--outline)]">{t('exercise.noRecord')}</p>
           )}
         </div>
         <button
@@ -30,7 +34,7 @@ export function ExerciseLatestRecordCard({
           onClick={onEdit}
           className="shrink-0 px-3 py-2 text-[14px] font-medium text-[#F59E0B] transition-opacity hover:opacity-80 disabled:opacity-35"
         >
-          补录
+          {t('exercise.editRecord')}
         </button>
       </div>
     </section>

@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { findExerciseNameSuggestions } from '../../lib/exercise-dictionary'
 
@@ -17,8 +18,12 @@ export function ExerciseNameInput({
   placeholder,
   value,
 }: ExerciseNameInputProps) {
+  const { t } = useTranslation('exercises')
   const [isFocused, setIsFocused] = useState(false)
-  const suggestions = useMemo(() => findExerciseNameSuggestions(value), [value])
+  const suggestions = useMemo(
+    () => findExerciseNameSuggestions(value, t),
+    [t, value],
+  )
   const shouldShowSuggestions = isFocused && suggestions.length > 0
 
   return (

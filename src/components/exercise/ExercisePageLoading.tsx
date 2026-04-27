@@ -1,4 +1,5 @@
 import { motion, useReducedMotion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 
 import { PageHeader } from '../ui/PageHeader'
 import { quickEaseTransition } from '../motion/motion-tokens'
@@ -14,12 +15,13 @@ const skeletonItems = [
 ]
 
 export function ExercisePageLoading({ showHeader = true }: ExercisePageLoadingProps) {
+  const { t } = useTranslation()
   const reduceMotion = useReducedMotion()
 
   return (
     <div className="relative flex min-h-full flex-col pb-4">
       {showHeader ? (
-        <PageHeader title="动作页" subtitle="正在载入动作" backFallbackTo="/" />
+        <PageHeader title={t('exercise.pageTitle')} subtitle={t('exercise.loadingSubtitle')} backFallbackTo="/" />
       ) : null}
 
       <motion.div

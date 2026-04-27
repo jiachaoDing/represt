@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
 import { useBackLinkState } from '../../hooks/useRouteBack'
@@ -65,6 +66,7 @@ export function TodayTrainingPlanCard({
   completedSets,
   totalSets,
 }: TodayTrainingPlanCardProps) {
+  const { t } = useTranslation()
   void didAutoImportToday
   const isConfigured = (cycle?.slots.length ?? 0) > 0
   const backLinkState = useBackLinkState()
@@ -79,14 +81,18 @@ export function TodayTrainingPlanCard({
       >
         <div className="min-w-0">
           <p className="text-[11px] font-medium tracking-[0.08em] text-[var(--on-surface-variant)] uppercase">
-            今日计划
+            {t('trainingCycle.todayPlan')}
           </p>
           <h2 className="mt-1.5 text-[18px] font-bold text-[var(--on-surface)] leading-tight">
-            {!isConfigured ? '未设置循环日程' : todayTemplateName ? todayTemplateName : '休息日'}
+            {!isConfigured
+              ? t('trainingCycle.noCycleSchedule')
+              : todayTemplateName
+                ? todayTemplateName
+                : t('trainingCycle.restDay')}
           </h2>
           {!isConfigured ? (
             <p className="mt-1 text-[12px] font-medium text-[var(--primary)]">
-              点击设置循环
+              {t('trainingCycle.tapToSetCycle')}
             </p>
           ) : null}
         </div>
@@ -102,13 +108,12 @@ export function TodayTrainingPlanCard({
         ) : null}
       </Link>
       
-      {/* 垂直分割线 */}
       <div className="my-3 w-px bg-[var(--outline-variant)]/30" />
       
       <div className="flex w-[88px] shrink-0 flex-col items-center justify-center rounded-[1rem] p-2">
         <ProgressRing completed={completedSets} total={totalSets} />
         <span className="mt-2 text-[12px] font-medium text-[var(--on-surface-variant)]">
-          {completedSets} / {totalSets} 组
+          {t('trainingCycle.completedSets', { completed: completedSets, total: totalSets })}
         </span>
       </div>
     </section>

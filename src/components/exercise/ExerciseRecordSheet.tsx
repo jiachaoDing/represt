@@ -1,4 +1,5 @@
 import type { FormEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { BottomSheet } from '../ui/BottomSheet'
 import { getCompletedAtLabel } from '../../lib/session-display'
@@ -29,21 +30,23 @@ export function ExerciseRecordSheet({
   onSubmit,
   onWeightChange,
 }: ExerciseRecordSheetProps) {
+  const { i18n, t } = useTranslation()
+
   return (
-    <BottomSheet open={isOpen} title="补录上一组" onClose={onClose}>
+    <BottomSheet open={isOpen} title={t('exercise.recordSheetTitle')} onClose={onClose}>
       {latestSetRecord ? (
         <div className="mt-2 space-y-5">
           <div className="mb-2 flex gap-4">
             <div className="flex-1 rounded-xl bg-[var(--surface-container)] px-4 py-3">
-              <p className="text-xs font-medium text-[var(--on-surface-variant)]">组序号</p>
+              <p className="text-xs font-medium text-[var(--on-surface-variant)]">{t('exercise.setIndex')}</p>
               <p className="mt-1 text-sm font-medium text-[var(--on-surface)]">
-                第 {latestSetRecord.setNumber} 组
+                {t('summary.setNumber', { setNumber: latestSetRecord.setNumber })}
               </p>
             </div>
             <div className="flex-1 rounded-xl bg-[var(--surface-container)] px-4 py-3">
-              <p className="text-xs font-medium text-[var(--on-surface-variant)]">完成时间</p>
+              <p className="text-xs font-medium text-[var(--on-surface-variant)]">{t('exercise.completedAt')}</p>
               <p className="mt-1 text-sm font-medium text-[var(--on-surface)]">
-                {getCompletedAtLabel(latestSetRecord.completedAt)}
+                {getCompletedAtLabel(latestSetRecord.completedAt, i18n.resolvedLanguage)}
               </p>
             </div>
           </div>
@@ -52,7 +55,7 @@ export function ExerciseRecordSheet({
             <div className="grid grid-cols-2 gap-4">
               <label className="block">
                 <span className="mb-1 ml-1 block text-xs font-medium text-[var(--on-surface-variant)]">
-                  重量 (kg)
+                  {t('exercise.weightKg')}
                 </span>
                 <input
                   type="number"
@@ -68,7 +71,7 @@ export function ExerciseRecordSheet({
 
               <label className="block">
                 <span className="mb-1 ml-1 block text-xs font-medium text-[var(--on-surface-variant)]">
-                  次数
+                  {t('exercise.reps')}
                 </span>
                 <input
                   type="number"
@@ -88,13 +91,13 @@ export function ExerciseRecordSheet({
                 disabled={isSubmitting}
                 className="w-full rounded-full bg-[var(--primary)] px-6 py-3.5 text-sm font-medium text-[var(--on-primary)] transition-opacity disabled:opacity-40"
               >
-                保存记录
+                {t('exercise.saveRecord')}
               </button>
             </div>
           </form>
         </div>
       ) : (
-        <p className="mt-2 text-sm text-[var(--on-surface-variant)]">还没有组记录。</p>
+        <p className="mt-2 text-sm text-[var(--on-surface-variant)]">{t('exercise.noSetRecord')}</p>
       )}
     </BottomSheet>
   )

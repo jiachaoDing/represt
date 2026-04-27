@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 
 import { SessionExerciseSummaryList } from '../components/summary/SessionExerciseSummaryList'
@@ -19,6 +20,7 @@ function buildSummarySearch(dateKey: string) {
 }
 
 export function SummaryPage() {
+  const { i18n, t } = useTranslation()
   const { sessionId } = useParams()
   const [searchParams, setSearchParams] = useSearchParams()
   const backLinkState = useBackLinkState()
@@ -41,13 +43,13 @@ export function SummaryPage() {
     month: 'long',
     day: 'numeric',
     weekday: 'short',
-  })
+  }, i18n.resolvedLanguage)
   const calendarTo = `/calendar${buildSummarySearch(selectedDateKey)}`
   const emptyState = isDateMode ? (
     <div className="mx-4 mt-6 rounded-[1.25rem] border border-dashed border-[var(--outline-variant)]/40 bg-[var(--surface)] px-5 py-8 text-center">
-      <p className="text-base font-semibold text-[var(--on-surface)]">还没有训练记录</p>
+      <p className="text-base font-semibold text-[var(--on-surface)]">{t('summary.emptyTitle')}</p>
       <p className="mt-2 text-sm leading-5 text-[var(--on-surface-variant)]">
-        完成一组后，这里会生成训练总结。
+        {t('summary.emptyDescription')}
       </p>
       <Link
         to={calendarTo}
@@ -55,7 +57,7 @@ export function SummaryPage() {
         viewTransition
         className="mt-4 inline-flex h-10 items-center justify-center rounded-xl bg-[var(--surface-container)] px-4 text-sm font-medium text-[var(--on-surface)]"
       >
-        打开日历
+        {t('summary.openCalendar')}
       </Link>
     </div>
   ) : undefined
@@ -64,16 +66,16 @@ export function SummaryPage() {
     <div className="pb-4">
       {!isDateMode ? (
         <PageHeader
-          title="训练详情"
+          title={t('summary.detailTitle')}
           titleAlign="center"
           backFallbackTo="/summary"
           subtitle={
             detail
               ? formatSessionDateKey(detail.session.sessionDateKey, {
-                  month: 'long',
-                  day: 'numeric',
-                  weekday: 'short',
-                })
+                month: 'long',
+                day: 'numeric',
+                weekday: 'short',
+                }, i18n.resolvedLanguage)
               : undefined
           }
         />

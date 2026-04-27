@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { useResolvedBackTo } from '../../hooks/useRouteBack'
 
@@ -19,6 +20,7 @@ export function PageHeader({
   title,
   titleAlign = 'start',
 }: PageHeaderProps) {
+  const { t } = useTranslation()
   const [scrolled, setScrolled] = useState(false)
   const backTo = useResolvedBackTo(backFallbackTo)
   const useFloatingTitle = !backTo && titleAlign !== 'start'
@@ -45,7 +47,7 @@ export function PageHeader({
             to={backTo}
             viewTransition
             className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-[var(--on-surface)] transition-colors hover:bg-[var(--on-surface-variant)]/10"
-            aria-label="返回"
+            aria-label={t('common.back')}
           >
             <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M19 12H5M12 19l-7-7 7-7"/>

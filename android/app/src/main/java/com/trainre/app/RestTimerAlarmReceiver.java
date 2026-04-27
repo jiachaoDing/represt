@@ -32,9 +32,9 @@ public class RestTimerAlarmReceiver extends BroadcastReceiver {
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, RestTimerAlarmConstants.CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_stat_trainre_notification)
-            .setContentTitle(title != null ? title : "休息结束")
-            .setContentText(body != null ? body : "可以继续下一组")
-            .setStyle(new NotificationCompat.BigTextStyle().bigText(body != null ? body : "可以继续下一组"))
+            .setContentTitle(title != null ? title : context.getString(R.string.rest_timer_default_title))
+            .setContentText(body != null ? body : context.getString(R.string.rest_timer_default_body))
+            .setStyle(new NotificationCompat.BigTextStyle().bigText(body != null ? body : context.getString(R.string.rest_timer_default_body)))
             .setContentIntent(contentIntent)
             .setAutoCancel(true)
             .setCategory(NotificationCompat.CATEGORY_ALARM)

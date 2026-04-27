@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+
 import { getExerciseHeroData, getExerciseHeroTone } from '../../lib/exercise-hero'
 import type { SessionExerciseDetail } from '../../db/sessions'
 
@@ -7,7 +9,8 @@ type ExerciseHeroProps = {
 }
 
 export function ExerciseHero({ detail, now }: ExerciseHeroProps) {
-  const hero = getExerciseHeroData(detail, now)
+  const { t } = useTranslation()
+  const hero = getExerciseHeroData(detail, now, t)
 
   if (!hero) {
     return null

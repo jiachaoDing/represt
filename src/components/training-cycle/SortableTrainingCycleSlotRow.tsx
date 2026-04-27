@@ -1,12 +1,14 @@
 import type { CSSProperties } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import { useTranslation } from 'react-i18next'
 
 import { verticalSortTransition } from '../dnd/vertical-sortable-motion'
 import { TrainingCycleSlotRow } from './TrainingCycleSlotRow'
 import type { TrainingCycleSlotRowProps } from './training-cycle-page.types'
 
 export function SortableTrainingCycleSlotRow(props: TrainingCycleSlotRowProps) {
+  const { t } = useTranslation()
   const {
     attributes,
     listeners,
@@ -37,7 +39,7 @@ export function SortableTrainingCycleSlotRow(props: TrainingCycleSlotRowProps) {
         isDragging ? 'relative opacity-0 pointer-events-none' : 'relative',
         props.isSubmitting ? 'cursor-default' : 'cursor-grab active:cursor-grabbing',
       ].join(' ')}
-      aria-label={`长按拖动调整第 ${props.index + 1} 天顺序`}
+      aria-label={t('trainingCycle.dragDay', { dayNumber: props.index + 1 })}
       {...attributes}
       {...listeners}
     >

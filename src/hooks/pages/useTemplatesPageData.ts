@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import {
   createTemplate,
@@ -27,6 +28,7 @@ import type { TemplateExerciseDraft } from '../../lib/template-editor'
 import type { TrainingCycle } from '../../models/types'
 
 export function useTemplatesPageData() {
+  const { t } = useTranslation()
   const [templates, setTemplates] = useState<TemplateWithExercises[]>([])
   const [trainingCycle, setTrainingCycle] = useState<TrainingCycle | null>(null)
   const [newTemplateName, setNewTemplateName] = useState('')
@@ -59,7 +61,7 @@ export function useTemplatesPageData() {
       return true
     } catch (mutationError) {
       console.error(mutationError)
-      setError('模板数据保存失败，请重试。')
+      setError(t('templates.saveFailed'))
       void triggerHaptic('error')
       return false
     } finally {
@@ -74,18 +76,18 @@ export function useTemplatesPageData() {
         await loadTemplates()
       } catch (loadError) {
         console.error(loadError)
-        setError('模板数据加载失败，请刷新页面后重试。')
+        setError(t('templates.loadFailed'))
       } finally {
         setIsLoading(false)
       }
     }
 
     void initialize()
-  }, [])
+  }, [t])
 
   async function handleCreateTemplate() {
     const didCreate = await runMutation(async () => {
-      const template = await createTemplate(newTemplateName)
+      const template = await createTemplate(newTemplateName || t('common.unnamedTemplate'))
       setNewTemplateName('')
       await loadTemplates(template.id)
     })
@@ -99,7 +101,7 @@ export function useTemplatesPageData() {
 
   async function handleSaveTemplateName(templateId: string, name: string) {
     const didSave = await runMutation(async () => {
-      await updateTemplateName(templateId, name)
+      await updateTemplateName(templateId, name || t('common.unnamedTemplate'))
       await loadTemplates(templateId)
     })
 
@@ -126,7 +128,7 @@ export function useTemplatesPageData() {
   async function handleCreateExercise(templateId: string, draft: TemplateExerciseDraft) {
     return runMutation(async () => {
       const exercise = await createTemplateExercise(templateId, {
-        name: draft.name,
+        name: draft.name || t('common.unnamedExercise'),
         targetSets: parseIntegerInput(draft.targetSets),
         restSeconds: parseIntegerInput(draft.restSeconds),
         weightKg: parseOptionalWeightKg(draft.weightKg),
@@ -144,7 +146,7 @@ export function useTemplatesPageData() {
   ) {
     return runMutation(async () => {
       await updateTemplateExercise(exerciseId, {
-        name: draft.name,
+        name: draft.name || t('common.unnamedExercise'),
         targetSets: parseIntegerInput(draft.targetSets),
         restSeconds: parseIntegerInput(draft.restSeconds),
         weightKg: parseOptionalWeightKg(draft.weightKg),

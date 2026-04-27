@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+
 import type { TemplateExerciseCardProps } from './template-exercise-list.types'
 
 export function TemplateExerciseCard({
@@ -9,6 +11,8 @@ export function TemplateExerciseCard({
   onEdit,
   selectionMode = false,
 }: TemplateExerciseCardProps) {
+  const { t } = useTranslation()
+
   return (
     <div
       className={`rounded-[1.25rem] border border-[var(--outline-variant)]/20 bg-[var(--surface)] px-4 py-4 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)] transition-shadow duration-200 ${
@@ -49,10 +53,10 @@ export function TemplateExerciseCard({
             {exercise.name}
           </div>
           <div className="mt-2 flex flex-wrap gap-y-1 text-[13px] text-[var(--on-surface-variant)]">
-            <span className="w-14 shrink-0">{exercise.targetSets} 组</span>
-            <span className="w-16 shrink-0">{exercise.restSeconds} 秒</span>
-            <span className="w-20 shrink-0">{exercise.weightKg ? `${exercise.weightKg} kg` : '重量 -'}</span>
-            <span className="shrink-0">{exercise.reps ? `${exercise.reps} 次` : '次数 -'}</span>
+            <span className="w-14 shrink-0">{t('common.sets', { value: exercise.targetSets })}</span>
+            <span className="w-16 shrink-0">{t('common.seconds', { value: exercise.restSeconds })}</span>
+            <span className="w-20 shrink-0">{exercise.weightKg ? t('common.kg', { value: exercise.weightKg }) : t('templates.weightEmpty')}</span>
+            <span className="shrink-0">{exercise.reps ? t('common.reps', { value: exercise.reps }) : t('templates.repsEmpty')}</span>
           </div>
         </div>
 
@@ -62,7 +66,7 @@ export function TemplateExerciseCard({
             onClick={() => onEdit(exercise.id)}
             disabled={isSubmitting}
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-[var(--on-surface-variant)] transition-colors hover:bg-[var(--surface-container)] disabled:opacity-40"
-            aria-label={`编辑${exercise.name}`}
+            aria-label={t('templates.editExercise', { name: exercise.name })}
           >
             <svg
               viewBox="0 0 24 24"

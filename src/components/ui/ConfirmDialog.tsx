@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+
 import { AnimatedDialog } from '../motion/AnimatedDialog'
 
 type ConfirmDialogProps = {
@@ -19,6 +21,8 @@ export function ConfirmDialog({
   open,
   title,
 }: ConfirmDialogProps) {
+  const { t } = useTranslation()
+
   return (
     <AnimatedDialog open={open} onClose={onCancel}>
       <section className="w-full max-w-[20rem] rounded-[28px] bg-[var(--surface-container)] p-6 shadow-2xl">
@@ -30,7 +34,7 @@ export function ConfirmDialog({
             onClick={onCancel}
             className="rounded-full px-4 py-2.5 text-sm font-medium text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/10 tap-highlight-transparent"
           >
-            取消
+            {t('common.cancel')}
           </button>
           <button
             type="button"

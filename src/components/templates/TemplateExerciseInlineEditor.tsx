@@ -1,4 +1,5 @@
 import { useEffect, useRef, type FormEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { ExerciseNameInput } from '../exercise/ExerciseNameInput'
 import type { TemplateExerciseDraft } from '../../lib/template-editor'
@@ -20,6 +21,7 @@ export function TemplateExerciseInlineEditor({
   onDraftChange,
   onSubmit,
 }: TemplateExerciseInlineEditorProps) {
+  const { t } = useTranslation()
   const formRef = useRef<HTMLFormElement>(null)
 
   useEffect(() => {
@@ -46,21 +48,21 @@ export function TemplateExerciseInlineEditor({
       <div className="space-y-4">
         <div className="block">
           <span className="mb-1 ml-1 block text-xs font-medium text-[var(--on-surface-variant)]">
-            动作名称
+            {t('templates.exerciseName')}
           </span>
           <ExerciseNameInput
             value={draft.name}
             disabled={isSubmitting}
             onChange={(name) => onDraftChange({ ...draft, name })}
             className="w-full rounded-xl bg-[var(--surface-container)] px-4 py-3 text-base text-[var(--on-surface)] outline-none ring-1 ring-transparent transition-all focus:ring-[var(--primary)]"
-            placeholder="例如：杠铃卧推"
+            placeholder={t('templates.exercisePlaceholder')}
           />
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <label className="block">
             <span className="mb-1 ml-1 block text-xs font-medium text-[var(--on-surface-variant)]">
-              默认组数
+              {t('templates.defaultSets')}
             </span>
             <input
               type="number"
@@ -75,7 +77,7 @@ export function TemplateExerciseInlineEditor({
 
           <label className="block">
             <span className="mb-1 ml-1 block text-xs font-medium text-[var(--on-surface-variant)]">
-              休息秒数
+              {t('templates.restSeconds')}
             </span>
             <input
               type="number"
@@ -92,7 +94,7 @@ export function TemplateExerciseInlineEditor({
         <div className="grid grid-cols-2 gap-3">
           <label className="block">
             <span className="mb-1 ml-1 block text-xs font-medium text-[var(--on-surface-variant)]">
-              默认重量 (kg)
+              {t('templates.defaultWeight')}
             </span>
             <input
               type="number"
@@ -103,13 +105,13 @@ export function TemplateExerciseInlineEditor({
               disabled={isSubmitting}
               onChange={(event) => onDraftChange({ ...draft, weightKg: event.target.value })}
               className="w-full rounded-xl bg-[var(--surface-container)] px-4 py-3 text-base text-[var(--on-surface)] outline-none ring-1 ring-transparent transition-all focus:ring-[var(--primary)]"
-              placeholder="可选"
+              placeholder={t('templates.optional')}
             />
           </label>
 
           <label className="block">
             <span className="mb-1 ml-1 block text-xs font-medium text-[var(--on-surface-variant)]">
-              默认次数
+              {t('templates.defaultReps')}
             </span>
             <input
               type="number"
@@ -119,7 +121,7 @@ export function TemplateExerciseInlineEditor({
               disabled={isSubmitting}
               onChange={(event) => onDraftChange({ ...draft, reps: event.target.value })}
               className="w-full rounded-xl bg-[var(--surface-container)] px-4 py-3 text-base text-[var(--on-surface)] outline-none ring-1 ring-transparent transition-all focus:ring-[var(--primary)]"
-              placeholder="可选"
+              placeholder={t('templates.optional')}
             />
           </label>
         </div>
@@ -131,14 +133,14 @@ export function TemplateExerciseInlineEditor({
             disabled={isSubmitting}
             className="inline-flex h-10 items-center justify-center rounded-xl bg-[var(--surface-container)] px-4 text-sm font-medium text-[var(--on-surface)] transition-opacity disabled:opacity-40"
           >
-            取消
+            {t('common.cancel')}
           </button>
           <button
             type="submit"
             disabled={isSubmitting || !draft.name.trim()}
             className="inline-flex h-10 items-center justify-center rounded-xl bg-[var(--primary)] px-4 text-sm font-medium text-[var(--on-primary)] transition-opacity disabled:opacity-40"
           >
-            {isEditing ? '保存' : '添加'}
+            {isEditing ? t('common.save') : t('common.add')}
           </button>
         </div>
       </div>

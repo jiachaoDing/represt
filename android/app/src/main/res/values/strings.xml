@@ -2,6 +2,10 @@
 <resources>
     <string name="app_name">训练间歇记录器</string>
     <string name="title_activity_main">训练间歇记录器</string>
+    <string name="rest_timer_channel_name">休息结束强提醒</string>
+    <string name="rest_timer_channel_description">休息倒计时结束时尽量使用闹钟级本地提醒</string>
+    <string name="rest_timer_default_title">休息结束</string>
+    <string name="rest_timer_default_body">可以继续下一组</string>
     <string name="package_name">com.trainre.app</string>
     <string name="custom_url_scheme">com.trainre.app</string>
 </resources>

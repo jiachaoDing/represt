@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+
 import { BottomSheet } from '../ui/BottomSheet'
 import type { TemplateWithExercises } from '../../db/templates'
 
@@ -20,12 +22,14 @@ export function ScheduleTemplateImportSheet({
   onSubmit,
   onToggleExercise,
 }: ScheduleTemplateImportSheetProps) {
+  const { t } = useTranslation()
+
   return (
-    <BottomSheet open={isOpen && template !== null} title={template?.name ?? '模板'} onClose={onClose}>
+    <BottomSheet open={isOpen && template !== null} title={template?.name ?? t('common.templateFallback')} onClose={onClose}>
       {template ? (
         <div className="space-y-4">
           <p className="px-1 text-sm text-[var(--on-surface-variant)]">
-            选择要导入的动作 ({selectedExerciseIds.length} / {template.exercises.length})
+            {t('schedule.importSelection', { selected: selectedExerciseIds.length, total: template.exercises.length })}
           </p>
 
           <div className="-mx-2 max-h-[50vh] space-y-1 overflow-y-auto px-2">
@@ -57,7 +61,7 @@ export function ScheduleTemplateImportSheet({
                 <div className="min-w-0 flex-1">
                   <p className="text-base text-[var(--on-surface)]">{exercise.name}</p>
                   <p className="mt-0.5 text-xs text-[var(--on-surface-variant)]">
-                    {exercise.targetSets} 组 · 休息 {exercise.restSeconds} 秒
+                    {t('schedule.restMeta', { sets: exercise.targetSets, seconds: exercise.restSeconds })}
                   </p>
                 </div>
               </label>
@@ -65,7 +69,7 @@ export function ScheduleTemplateImportSheet({
           </div>
 
           {selectedExerciseIds.length === 0 ? (
-            <p className="text-sm text-[var(--error)]">至少选择 1 个动作</p>
+            <p className="text-sm text-[var(--error)]">{t('schedule.atLeastOneExercise')}</p>
           ) : null}
 
           <div className="pt-2">
@@ -75,7 +79,7 @@ export function ScheduleTemplateImportSheet({
               onClick={onSubmit}
               className="w-full rounded-full bg-[var(--primary)] px-6 py-3.5 text-sm font-medium text-[var(--on-primary)] transition-opacity disabled:opacity-40"
             >
-              加入今日训练
+              {t('schedule.joinToday')}
             </button>
           </div>
         </div>

@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+
 import type { CalendarDateCell } from '../../lib/session-date-key'
 
 type CalendarMonthGridProps = {
@@ -7,14 +9,19 @@ type CalendarMonthGridProps = {
   sessionDateKeySet: Set<string>
 }
 
-const weekLabels = ['日', '一', '二', '三', '四', '五', '六']
-
 export function CalendarMonthGrid({
   cells,
   onSelectDate,
   selectedDateKey,
   sessionDateKeySet,
 }: CalendarMonthGridProps) {
+  const { i18n, t } = useTranslation()
+  const weekLabels = Array.from({ length: 7 }, (_, day) =>
+    new Intl.DateTimeFormat(i18n.resolvedLanguage, { weekday: 'short' }).format(
+      new Date(2024, 0, day),
+    ),
+  )
+
   return (
     <section className="mx-4 mt-4 rounded-[1.5rem] border border-[var(--outline-variant)]/20 bg-[var(--surface)] p-4 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)]">
       <div className="mb-3 grid grid-cols-7 gap-2">
@@ -59,7 +66,7 @@ export function CalendarMonthGrid({
               onClick={() => onSelectDate(cell.dateKey)}
               className={cellClassName}
               aria-pressed={isSelected}
-              aria-label={`${cell.dateKey} ${hasSession ? '有训练记录' : '无训练记录'}`}
+              aria-label={`${cell.dateKey} ${hasSession ? t('calendar.hasSession') : t('calendar.noSession')}`}
             >
               {cellContent}
             </button>

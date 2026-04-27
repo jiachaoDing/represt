@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 type OverflowMenuItem = {
   danger?: boolean
@@ -12,6 +13,7 @@ type OverflowMenuProps = {
 }
 
 export function OverflowMenu({ items }: OverflowMenuProps) {
+  const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement | null>(null)
 
@@ -35,7 +37,7 @@ export function OverflowMenu({ items }: OverflowMenuProps) {
       <button
         type="button"
         aria-expanded={open}
-        aria-label="更多操作"
+        aria-label={t('common.moreActions')}
         onClick={() => setOpen((current) => !current)}
         className="flex h-10 w-10 items-center justify-center rounded-full text-[var(--on-surface-variant)] transition-colors hover:bg-[var(--on-surface-variant)]/10 tap-highlight-transparent"
       >

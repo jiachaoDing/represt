@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   DndContext,
   MouseSensor,
@@ -40,6 +41,7 @@ export function TemplateExerciseList({
   onScrollAnimationComplete,
   onSubmit,
 }: TemplateExerciseListProps) {
+  const { t } = useTranslation()
   const [exerciseOrder, setExerciseOrder] = useState<string[] | null>(null)
   const [activeExerciseId, setActiveExerciseId] = useState<string | null>(null)
   const [isSorting, setIsSorting] = useState(false)
@@ -187,7 +189,7 @@ export function TemplateExerciseList({
   if (templatesCount === 0) {
     return (
       <div className="mx-4 mt-6 rounded-xl border border-dashed border-[var(--outline)] px-5 py-8 text-center">
-        <p className="text-sm font-medium text-[var(--on-surface-variant)]">还没有模板</p>
+        <p className="text-sm font-medium text-[var(--on-surface-variant)]">{t('templates.noTemplates')}</p>
       </div>
     )
   }
@@ -202,13 +204,13 @@ export function TemplateExerciseList({
     <div className="mt-4 px-4">
       {shouldShowEmptyHint ? (
         <div className="rounded-xl border border-dashed border-[var(--outline)] px-5 py-8 text-center">
-          <p className="text-sm font-medium text-[var(--on-surface-variant)]">这个模板还没有动作</p>
+          <p className="text-sm font-medium text-[var(--on-surface-variant)]">{t('templates.emptyTemplate')}</p>
           <button
             type="button"
             onClick={onCreate}
             className="mt-4 inline-flex items-center text-sm font-medium text-[var(--primary)]"
           >
-            添加动作
+            {t('templates.addExercise')}
           </button>
         </div>
       ) : null}
@@ -216,7 +218,7 @@ export function TemplateExerciseList({
       {!shouldShowEmptyHint ? (
         <div className="flex items-center justify-between px-2 pb-2">
           <div className="text-[12px] text-[var(--on-surface-variant)]">
-            {isSelectionMode ? `已选择 ${selectedExerciseIds.length} 个` : '长按拖动排序'}
+            {isSelectionMode ? t('templates.selectedCount', { count: selectedExerciseIds.length }) : t('templates.longPressSort')}
           </div>
           <div className="flex items-center gap-1">
             {isSelectionMode ? (
@@ -226,14 +228,14 @@ export function TemplateExerciseList({
                   onClick={() => setSelectedExerciseIds(isAllSelected ? [] : exerciseIds)}
                   className="rounded-full px-3 py-2 text-xs font-medium text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/10"
                 >
-                  {isAllSelected ? '取消全选' : '全选'}
+                  {isAllSelected ? t('templates.clearAll') : t('templates.selectAll')}
                 </button>
                 <button
                   type="button"
                   onClick={closeSelectionMode}
                   className="rounded-full px-3 py-2 text-xs font-medium text-[var(--on-surface-variant)] transition-colors hover:bg-[var(--on-surface-variant)]/10"
                 >
-                  取消
+                  {t('common.cancel')}
                 </button>
                 <button
                   type="button"
@@ -241,7 +243,7 @@ export function TemplateExerciseList({
                   onClick={() => void deleteSelectedExercises()}
                   className="rounded-full px-3 py-2 text-xs font-medium text-[var(--error)] transition-colors hover:bg-[var(--error)]/10 disabled:opacity-40"
                 >
-                  删除
+                  {t('common.delete')}
                 </button>
               </>
             ) : orderedExercises.length > 0 ? (
@@ -249,7 +251,7 @@ export function TemplateExerciseList({
                 type="button"
                 onClick={openSelectionMode}
                 className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--error)] transition-colors hover:bg-[var(--error)]/10"
-                aria-label="批量删除动作"
+                aria-label={t('templates.bulkDeleteExercise')}
               >
                 <svg
                   viewBox="0 0 24 24"
@@ -271,7 +273,7 @@ export function TemplateExerciseList({
                 type="button"
                 onClick={onCreate}
                 className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/10"
-                aria-label="添加动作"
+                aria-label={t('templates.addExercise')}
               >
                 <svg
                   viewBox="0 0 24 24"
