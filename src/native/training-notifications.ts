@@ -68,6 +68,11 @@ export type RestTimerScheduleResult = {
   exactAlarmPermission: ExactAlarmPermission
 }
 
+export type RestTimerPermissionPrepareResult = {
+  displayPermission: PermissionState | 'unknown'
+  exactAlarmPermission: ExactAlarmPermission
+}
+
 let isChannelReady = false
 let hasTriedRestTimerChannel = false
 
@@ -272,6 +277,20 @@ export async function openExactAlarmSettings() {
   }
 
   return 'unknown' satisfies ExactAlarmPermission
+}
+
+export async function prepareRestTimerReminderPermissions(): Promise<RestTimerPermissionPrepareResult> {
+  const displayPermission = await requestLocalReminderPermission()
+  let exactAlarmPermission = await checkExactAlarmPermission()
+
+  if (exactAlarmPermission !== 'granted') {
+    exactAlarmPermission = await openExactAlarmSettings()
+  }
+
+  return {
+    displayPermission,
+    exactAlarmPermission,
+  }
 }
 
 export async function openStrongReminderSettings() {

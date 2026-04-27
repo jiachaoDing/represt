@@ -14,7 +14,10 @@ import {
   toOptionalNumberString,
 } from '../../lib/input-parsers'
 import { triggerHaptic } from '../../lib/haptics'
-import { scheduleRestTimerNotification } from '../../native/training-notifications'
+import {
+  prepareRestTimerReminderPermissions,
+  scheduleRestTimerNotification,
+} from '../../native/training-notifications'
 
 function syncLatestSetInputs(
   detail: SessionExerciseDetail | null,
@@ -38,6 +41,14 @@ async function syncRestTimerNotification(detail: SessionExerciseDetail | null) {
     })
   } catch (notificationError) {
     console.warn(notificationError)
+  }
+}
+
+async function prepareRestTimerReminder() {
+  try {
+    await prepareRestTimerReminderPermissions()
+  } catch (permissionError) {
+    console.warn(permissionError)
   }
 }
 
@@ -111,6 +122,7 @@ export function useExercisePageData(id: string) {
     let didComplete = false
 
     const didSucceed = await runMutation(async () => {
+      await prepareRestTimerReminder()
       await completeSessionExerciseSet(detail.exercise.id)
       const nextDetail = await getSessionExerciseDetail(detail.exercise.id)
 
