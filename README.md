@@ -91,11 +91,18 @@ public/
 - 训练总时长统计
 - 训练中直接编辑长期模板
 
-## PWA 图标说明
+## 图标生成
 
-当前使用的是占位 SVG 图标：
+图标源文件优先使用 `assets/logo.png`，没有 PNG 时使用 `assets/logo.svg`。
 
-- `public/icon.svg`
-- `public/icon-maskable.svg`
+修改图标后运行：
 
-后续上线前建议替换为正式的 `192x192` 和 `512x512` PNG 图标，以获得更完整的安装体验。
+```bash
+npm run assets:generate
+```
+
+该命令会更新 PWA 图标、Android launcher 图标和 Android 启动图。安卓打包前可直接运行：
+
+```bash
+npm run android:sync
+```

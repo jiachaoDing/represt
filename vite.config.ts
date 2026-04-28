@@ -13,7 +13,7 @@ export default defineConfig({
         enabled: true,
         suppressWarnings: true,
       },
-      includeAssets: ['icon.svg', 'icon-maskable.svg'],
+      includeAssets: ['icon.png', 'icon-maskable.png'],
       manifest: {
         name: '训练间歇记录器',
         short_name: '训练间歇',
@@ -25,15 +25,15 @@ export default defineConfig({
         scope: '/',
         icons: [
           {
-            src: '/icon.svg',
-            sizes: 'any',
-            type: 'image/svg+xml',
+            src: '/icon.png',
+            sizes: '512x512',
+            type: 'image/png',
             purpose: 'any',
           },
           {
-            src: '/icon-maskable.svg',
-            sizes: 'any',
-            type: 'image/svg+xml',
+            src: '/icon-maskable.png',
+            sizes: '512x512',
+            type: 'image/png',
             purpose: 'maskable',
           },
         ],

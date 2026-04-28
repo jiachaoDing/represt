@@ -16,6 +16,7 @@ dev-dist
 *.tsbuildinfo
 .vite
 coverage
+.asset-work
 *.apk
 *.aab
 *.ap_
