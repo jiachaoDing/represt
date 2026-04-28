@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 
 import { TodayTrainingPlanCard } from '../components/training-cycle/TodayTrainingPlanCard'
 import { PageHeader } from '../components/ui/PageHeader'
@@ -16,6 +17,7 @@ import { ScheduleTemplateImportSheet } from '../components/schedule/ScheduleTemp
 
 export function SchedulePage() {
   const { i18n, t } = useTranslation()
+  const navigate = useNavigate()
   const now = useNow()
   const schedule = useSchedulePageData()
   const ui = useSchedulePageUi(schedule)
@@ -32,6 +34,12 @@ export function SchedulePage() {
   const completedSets =
     schedule.currentSession?.exercises.reduce((sum, exercise) => sum + exercise.completedSets, 0) ?? 0
   const totalSets = schedule.currentSession?.exercises.reduce((sum, exercise) => sum + exercise.targetSets, 0) ?? 0
+  const isStarterState =
+    !schedule.isLoading &&
+    schedule.currentSession !== null &&
+    schedule.currentSession.exercises.length === 0 &&
+    completedSets === 0 &&
+    (schedule.trainingCycle?.slots.length ?? 0) === 0
   const importConfirmDescription = [
     ui.pendingTemplateImportConfirmation?.isDuplicateImport
       ? t('schedule.duplicateImport', { name: ui.pendingTemplateImportConfirmation.templateName })
@@ -58,6 +66,9 @@ export function SchedulePage() {
           todayTemplateName={schedule.todayTemplate?.name ?? null}
           completedSets={completedSets}
           totalSets={totalSets}
+          isStarterState={isStarterState}
+          onChooseTemplate={() => navigate('/templates/starter')}
+          onCreateExercise={ui.openAddEntry}
         />
       ) : null}
 
@@ -90,18 +101,20 @@ export function SchedulePage() {
         </div>
       ) : null}
 
-      <section className="mt-2">
-        <ScheduleExerciseList
-          currentSession={schedule.currentSession}
-          hasTemplates={schedule.hasTemplates}
-          isLoading={schedule.isLoading}
-          isSubmitting={schedule.isSubmitting}
-          now={now}
-          onOpenAdd={ui.openAddEntry}
-          onDeleteSelected={ui.handleDeleteExercisesAction}
-          onReorder={schedule.handleReorderExercises}
-        />
-      </section>
+      {schedule.isLoading || !isStarterState ? (
+        <section className="mt-2">
+          <ScheduleExerciseList
+            currentSession={schedule.currentSession}
+            hasTemplates={schedule.hasTemplates}
+            isLoading={schedule.isLoading}
+            isSubmitting={schedule.isSubmitting}
+            now={now}
+            onOpenAdd={ui.openAddEntry}
+            onDeleteSelected={ui.handleDeleteExercisesAction}
+            onReorder={schedule.handleReorderExercises}
+          />
+        </section>
+      ) : null}
 
       <ScheduleActionSheet
         hasTemplates={schedule.hasTemplates}

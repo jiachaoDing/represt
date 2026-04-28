@@ -1,4 +1,5 @@
 import type { TemplateExercise, WorkoutTemplate } from '../models/types'
+import i18n from '../i18n'
 import { db } from './app-db'
 import { clearTemplateFromTrainingCycle } from './training-cycle'
 
@@ -14,36 +15,78 @@ type TemplateExerciseInput = {
   reps?: number | null
 }
 
-const TEMPLATE_SEED_KEY = 'trainre.templates.seeded.v1'
+const TEMPLATE_SEED_KEY = 'trainre.templates.seeded.v2'
 let ensureTemplateSeedPromise: Promise<void> | null = null
 
-const demoTemplates: Array<{
-  name: string
-  exercises: TemplateExerciseInput[]
+const demoTemplateBlueprints: Array<{
+  nameKey: string
+  exercises: Array<Omit<TemplateExerciseInput, 'name'> & { exerciseId: string }>
 }> = [
   {
-    name: '拉力日',
+    nameKey: 'push',
     exercises: [
-      { name: '引体向上', targetSets: 4, restSeconds: 150 },
-      { name: '坐姿划船', targetSets: 4, restSeconds: 150 },
-      { name: '罗马尼亚硬拉', targetSets: 3, restSeconds: 150 },
-      { name: '高位下拉', targetSets: 3, restSeconds: 90 },
-      { name: '面拉', targetSets: 3, restSeconds: 90 },
-      { name: '悬垂举腿', targetSets: 3, restSeconds: 90 },
+      { exerciseId: 'barbellBenchPress', targetSets: 4, restSeconds: 150 },
+      { exerciseId: 'dumbbellShoulderPress', targetSets: 3, restSeconds: 120 },
+      { exerciseId: 'dip', targetSets: 3, restSeconds: 120 },
+      { exerciseId: 'tricepsPushdown', targetSets: 3, restSeconds: 90 },
     ],
   },
   {
-    name: '推力日',
+    nameKey: 'pull',
     exercises: [
-      { name: '双杠臂屈伸', targetSets: 4, restSeconds: 150 },
-      { name: '卧推', targetSets: 4, restSeconds: 150 },
-      { name: '深蹲', targetSets: 4, restSeconds: 150 },
-      { name: '哑铃坐姿肩推', targetSets: 3, restSeconds: 90 },
-      { name: '俯卧撑', targetSets: 3, restSeconds: 90 },
-      { name: '平板支撑', targetSets: 3, restSeconds: 90 },
+      { exerciseId: 'pullUp', targetSets: 4, restSeconds: 150 },
+      { exerciseId: 'seatedRow', targetSets: 4, restSeconds: 120 },
+      { exerciseId: 'latPulldown', targetSets: 3, restSeconds: 120 },
+      { exerciseId: 'facePull', targetSets: 3, restSeconds: 90 },
+    ],
+  },
+  {
+    nameKey: 'legs',
+    exercises: [
+      { exerciseId: 'barbellSquat', targetSets: 4, restSeconds: 150 },
+      { exerciseId: 'romanianDeadlift', targetSets: 3, restSeconds: 150 },
+      { exerciseId: 'legExtension', targetSets: 3, restSeconds: 90 },
+      { exerciseId: 'legCurl', targetSets: 3, restSeconds: 90 },
+    ],
+  },
+  {
+    nameKey: 'upper',
+    exercises: [
+      { exerciseId: 'barbellBenchPress', targetSets: 3, restSeconds: 150 },
+      { exerciseId: 'barbellRow', targetSets: 3, restSeconds: 150 },
+      { exerciseId: 'barbellOverheadPress', targetSets: 3, restSeconds: 120 },
+      { exerciseId: 'latPulldown', targetSets: 3, restSeconds: 120 },
+    ],
+  },
+  {
+    nameKey: 'lower',
+    exercises: [
+      { exerciseId: 'barbellSquat', targetSets: 4, restSeconds: 150 },
+      { exerciseId: 'deadlift', targetSets: 3, restSeconds: 150 },
+      { exerciseId: 'lunge', targetSets: 3, restSeconds: 90 },
+      { exerciseId: 'standingCalfRaise', targetSets: 3, restSeconds: 90 },
+    ],
+  },
+  {
+    nameKey: 'fullBody',
+    exercises: [
+      { exerciseId: 'barbellSquat', targetSets: 3, restSeconds: 150 },
+      { exerciseId: 'barbellBenchPress', targetSets: 3, restSeconds: 150 },
+      { exerciseId: 'seatedRow', targetSets: 3, restSeconds: 120 },
+      { exerciseId: 'plank', targetSets: 3, restSeconds: 60 },
     ],
   },
 ]
+
+function getLocalizedSeedTemplates() {
+  return demoTemplateBlueprints.map((template) => ({
+    name: i18n.t(`templates.seed.${template.nameKey}`),
+    exercises: template.exercises.map((exercise) => ({
+      ...exercise,
+      name: i18n.t(`names.${exercise.exerciseId}`, { ns: 'exercises' }),
+    })),
+  }))
+}
 
 function nowIso() {
   return new Date().toISOString()
@@ -85,6 +128,7 @@ export async function ensureTemplateSeedData() {
     }
 
     const timestamp = nowIso()
+    const demoTemplates = getLocalizedSeedTemplates()
     const templates = demoTemplates.map((template) => ({
       id: crypto.randomUUID(),
       name: template.name,
@@ -96,7 +140,11 @@ export async function ensureTemplateSeedData() {
       demoTemplates[templateIndex].exercises.map((exercise, order) => ({
         id: crypto.randomUUID(),
         templateId: template.id,
-        ...exercise,
+        name: exercise.name,
+        targetSets: exercise.targetSets,
+        restSeconds: exercise.restSeconds,
+        weightKg: exercise.weightKg,
+        reps: exercise.reps,
         order,
       })),
     )

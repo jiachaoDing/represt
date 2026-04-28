@@ -12,6 +12,13 @@ export function ExerciseLatestRecordCard({
   onEdit,
 }: ExerciseLatestRecordCardProps) {
   const { t } = useTranslation()
+  const latestRecordParts = latestSetRecord
+    ? [
+        t('summary.setNumber', { setNumber: latestSetRecord.setNumber }),
+        latestSetRecord.weightKg === null ? null : t('common.kg', { value: latestSetRecord.weightKg }),
+        latestSetRecord.reps === null ? null : t('common.reps', { value: latestSetRecord.reps }),
+      ].filter((part): part is string => part !== null)
+    : []
 
   return (
     <section className="px-5 py-5">
@@ -20,9 +27,7 @@ export function ExerciseLatestRecordCard({
           <p className="text-[13px] text-[var(--on-surface-variant)]">{t('exercise.latestRecord')}</p>
           {latestSetRecord ? (
             <p className="mt-1.5 text-[15px] font-medium text-[var(--on-surface)]">
-              {t('summary.setNumber', { setNumber: latestSetRecord.setNumber })} ·{' '}
-              {latestSetRecord.weightKg === null ? t('exercise.missingRecord') : t('common.kg', { value: latestSetRecord.weightKg })} ·{' '}
-              {latestSetRecord.reps === null ? t('exercise.missingRecord') : t('common.reps', { value: latestSetRecord.reps })}
+              {latestRecordParts.join(' · ')}
             </p>
           ) : (
             <p className="mt-1.5 text-[15px] text-[var(--outline)]">{t('exercise.noRecord')}</p>

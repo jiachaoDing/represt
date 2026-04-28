@@ -14,6 +14,9 @@ type TodayTrainingPlanCardProps = {
   todayTemplateName: string | null
   completedSets: number
   totalSets: number
+  isStarterState?: boolean
+  onChooseTemplate?: () => void
+  onCreateExercise?: () => void
 }
 
 function ProgressRing({ completed, total }: { completed: number; total: number }) {
@@ -65,11 +68,62 @@ export function TodayTrainingPlanCard({
   todayTemplateName,
   completedSets,
   totalSets,
+  isStarterState = false,
+  onChooseTemplate,
+  onCreateExercise,
 }: TodayTrainingPlanCardProps) {
   const { t } = useTranslation()
   void didAutoImportToday
   const isConfigured = (cycle?.slots.length ?? 0) > 0
   const backLinkState = useBackLinkState()
+
+  if (isStarterState) {
+    return (
+      <section className="mx-4 mb-5 mt-2 rounded-[1.25rem] border border-[var(--outline-variant)]/20 bg-[var(--surface)] p-5 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)]">
+        <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-[var(--on-surface-variant)]">
+          {t('trainingCycle.todayPlan')}
+        </p>
+        <div className="mt-2 min-w-0">
+          <h2 className="text-[24px] font-bold leading-tight text-[var(--on-surface)]">
+            {t('schedule.starterTitle')}
+          </h2>
+          <p className="mt-1 max-w-[18rem] text-sm leading-5 text-[var(--on-surface-variant)]">
+            {t('schedule.starterDescription')}
+          </p>
+        </div>
+
+        <div className="mt-5">
+          <button
+            type="button"
+            onClick={onChooseTemplate}
+            className="min-h-12 w-full rounded-full bg-[var(--primary)] px-5 text-sm font-semibold text-[var(--on-primary)] transition-opacity disabled:opacity-40"
+            disabled={!onChooseTemplate}
+          >
+            {t('schedule.chooseTemplate')}
+          </button>
+        </div>
+
+        <div className="mt-3 flex items-center justify-center gap-5">
+          <button
+            type="button"
+            onClick={onCreateExercise}
+            className="min-h-10 text-sm font-semibold text-[var(--primary)] disabled:opacity-40"
+            disabled={!onCreateExercise}
+          >
+            {t('schedule.addExercise')}
+          </button>
+          <Link
+            to="/templates/cycle"
+            state={backLinkState}
+            viewTransition
+            className="flex min-h-10 items-center text-sm font-semibold text-[var(--primary)]"
+          >
+            {t('trainingCycle.setCycle')}
+          </Link>
+        </div>
+      </section>
+    )
+  }
 
   return (
     <section className="mx-4 mb-6 mt-2 rounded-[1.25rem] border border-[var(--outline-variant)]/20 bg-[var(--surface)] p-1.5 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)] flex items-stretch">

@@ -6,6 +6,7 @@ import {
   loadSchedulePage,
   loadSettingsPage,
   loadSummaryPage,
+  loadStarterTemplatePage,
   loadTemplatesPage,
   loadTrainingCyclePage,
 } from './route-loaders'
@@ -24,6 +25,9 @@ export const SettingsPage = lazy(() =>
 )
 export const SummaryPage = lazy(() =>
   loadSummaryPage().then((module) => ({ default: module.SummaryPage })),
+)
+export const StarterTemplatePage = lazy(() =>
+  loadStarterTemplatePage().then((module) => ({ default: module.StarterTemplatePage })),
 )
 export const TrainingCyclePage = lazy(() =>
   loadTrainingCyclePage().then((module) => ({ default: module.TrainingCyclePage })),

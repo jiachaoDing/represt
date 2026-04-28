@@ -9,6 +9,7 @@ import {
   ExercisePage,
   SchedulePage,
   SettingsPage,
+  StarterTemplatePage,
   SummaryPage,
   TemplatesPage,
   TrainingCyclePage,
@@ -38,6 +39,11 @@ export const router = createBrowserRouter([
         path: 'templates',
         element: lazyRoute(<TemplatesPage />),
         handle: { titleKey: 'routes.templates' },
+      },
+      {
+        path: 'templates/starter',
+        element: lazyRoute(<StarterTemplatePage />),
+        handle: { titleKey: 'routes.starterTemplate' },
       },
       {
         path: 'templates/cycle',

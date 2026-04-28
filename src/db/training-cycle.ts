@@ -141,6 +141,25 @@ export async function addTrainingCycleSlot() {
   })
 }
 
+export async function setTrainRestTrainingCycle(templateId: string) {
+  return saveTrainingCycle({
+    id: TRAINING_CYCLE_ID,
+    slots: [
+      {
+        id: crypto.randomUUID(),
+        templateId,
+      },
+      {
+        id: crypto.randomUUID(),
+        templateId: null,
+      },
+    ],
+    anchorDateKey: getTodaySessionDateKey(),
+    anchorIndex: 0,
+    updatedAt: nowIso(),
+  })
+}
+
 export async function removeTrainingCycleSlot(slotId: string) {
   const cycle = await getOrCreateTrainingCycle()
   const slotIndex = cycle.slots.findIndex((slot) => slot.id === slotId)

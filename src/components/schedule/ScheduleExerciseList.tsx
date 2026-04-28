@@ -198,7 +198,7 @@ export function ScheduleExerciseList({
 
   if (!currentSession || currentSession.exercises.length === 0) {
     return (
-      <div className="mx-4 rounded-2xl border border-dashed border-[var(--outline)] px-5 py-10 text-center">
+      <div className="mx-4 rounded-2xl border border-dashed border-[var(--outline)] px-5 py-8 text-center">
         <p className="text-sm font-medium text-[var(--on-surface-variant)]">{t('schedule.noExercisesToday')}</p>
         <button
           type="button"

@@ -8,7 +8,7 @@ import { ExerciseLatestRecordCard } from '../components/exercise/ExerciseLatestR
 import { ExerciseMetaGrid } from '../components/exercise/ExerciseMetaGrid'
 import { ExercisePageLoading } from '../components/exercise/ExercisePageLoading'
 import { AnimatedContentSwap } from '../components/motion/AnimatedContentSwap'
-import { ExerciseRecordSheet } from '../components/exercise/ExerciseRecordSheet'
+import { ExerciseRecordInlineCard } from '../components/exercise/ExerciseRecordInlineCard'
 import { OverflowMenu } from '../components/ui/OverflowMenu'
 import { PageHeader } from '../components/ui/PageHeader'
 import { useNow } from '../hooks/useNow'
@@ -39,7 +39,7 @@ export function ExercisePage() {
     setWeightInput,
     weightInput,
   } = useExercisePageData(id)
-  const [isRecordSheetOpen, setIsRecordSheetOpen] = useState(false)
+  const [isRecordFormOpen, setIsRecordFormOpen] = useState(false)
   const backLinkState = useBackLinkState()
 
   async function handleCompleteCurrentSet() {
@@ -54,7 +54,7 @@ export function ExercisePage() {
     event.preventDefault()
     const didSave = await handleUpdateLatestSetRecord()
     if (didSave) {
-      setIsRecordSheetOpen(false)
+      setIsRecordFormOpen(false)
     }
   }
 
@@ -135,7 +135,7 @@ export function ExercisePage() {
             
             <ExerciseLatestRecordCard
               latestSetRecord={latestSetRecord}
-              onEdit={() => setIsRecordSheetOpen(true)}
+              onEdit={() => setIsRecordFormOpen(true)}
             />
             
             <ExerciseMetaGrid
@@ -143,6 +143,19 @@ export function ExercisePage() {
               restSeconds={detail.exercise.restSeconds}
             />
           </div>
+
+          {isRecordFormOpen ? (
+            <ExerciseRecordInlineCard
+              isSubmitting={isSubmitting}
+              latestSetRecord={latestSetRecord}
+              repsInput={repsInput}
+              weightInput={weightInput}
+              onCancel={() => setIsRecordFormOpen(false)}
+              onRepsChange={setRepsInput}
+              onSubmit={handleSaveRecord}
+              onWeightChange={setWeightInput}
+            />
+          ) : null}
 
           <div className="mt-4 flex flex-1 items-center justify-center px-4 py-8">
             <motion.button
@@ -226,17 +239,6 @@ export function ExercisePage() {
         </>
       ) : null}
 
-      <ExerciseRecordSheet
-        isOpen={isRecordSheetOpen}
-        isSubmitting={isSubmitting}
-        latestSetRecord={latestSetRecord}
-        repsInput={repsInput}
-        weightInput={weightInput}
-        onClose={() => setIsRecordSheetOpen(false)}
-        onRepsChange={setRepsInput}
-        onSubmit={handleSaveRecord}
-        onWeightChange={setWeightInput}
-      />
     </div>
   )
 }
