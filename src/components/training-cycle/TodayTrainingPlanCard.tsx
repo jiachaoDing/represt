@@ -1,3 +1,4 @@
+import { ArrowUpRight } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
@@ -79,7 +80,7 @@ export function TodayTrainingPlanCard({
 
   if (isStarterState) {
     return (
-      <section className="mx-4 mb-5 mt-2 rounded-[1.25rem] border border-[var(--outline-variant)]/20 bg-[var(--surface)] p-5 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)]">
+      <section className="mx-auto w-full max-w-sm px-8 py-6 text-center">
         <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-[var(--on-surface-variant)]">
           {t('trainingCycle.todayPlan')}
         </p>
@@ -87,7 +88,7 @@ export function TodayTrainingPlanCard({
           <h2 className="text-[24px] font-bold leading-tight text-[var(--on-surface)]">
             {t('schedule.starterTitle')}
           </h2>
-          <p className="mt-1 max-w-[18rem] text-sm leading-5 text-[var(--on-surface-variant)]">
+          <p className="mx-auto mt-1 max-w-[18rem] text-sm leading-5 text-[var(--on-surface-variant)]">
             {t('schedule.starterDescription')}
           </p>
         </div>
@@ -131,8 +132,15 @@ export function TodayTrainingPlanCard({
         to="/templates/cycle"
         state={backLinkState}
         viewTransition
-        className="flex-1 flex flex-col justify-center rounded-[1rem] p-3.5 hover:bg-[var(--on-surface)]/5 active:bg-[var(--on-surface)]/10 transition-colors"
+        className="group relative flex-1 flex flex-col justify-center rounded-[1rem] p-3.5 pr-9 hover:bg-[var(--on-surface)]/5 active:bg-[var(--on-surface)]/10 transition-colors"
       >
+        <span
+          className="absolute right-2.5 top-2.5 flex h-7 w-7 items-center justify-center rounded-full border border-[var(--outline-variant)]/20 bg-[var(--surface-container)]/60 text-[var(--primary)] opacity-60 transition-opacity group-active:opacity-80"
+          aria-hidden="true"
+        >
+          <ArrowUpRight size={14} strokeWidth={2.25} />
+        </span>
+
         <div className="min-w-0">
           <p className="text-[11px] font-medium tracking-[0.08em] text-[var(--on-surface-variant)] uppercase">
             {t('trainingCycle.todayPlan')}

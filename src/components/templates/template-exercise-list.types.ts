@@ -12,12 +12,14 @@ export type TemplateExerciseListProps = {
   isLoading: boolean
   isSubmitting: boolean
   pendingScrollExerciseId: string | null
+  templates: TemplateWithExercises[]
   templatesCount: number
   onCancelEditing: () => void
   onCreate: () => void
   onDeleteSelected: (exerciseIds: string[]) => Promise<boolean>
   onDraftChange: (draft: TemplateExerciseDraft) => void
   onEdit: (exerciseId: string) => void
+  onImport: (exerciseIds: string[]) => Promise<boolean>
   onReorder: (orderedExerciseIds: string[]) => Promise<boolean>
   onScrollAnimationComplete: () => void
   onSubmit: (event: FormEvent<HTMLFormElement>) => void

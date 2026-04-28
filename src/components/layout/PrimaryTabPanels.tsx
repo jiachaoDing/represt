@@ -7,6 +7,7 @@ import {
   useSyncExternalStore,
   type PropsWithChildren,
 } from 'react'
+import type { EmblaCarouselType } from 'embla-carousel'
 import useEmblaCarousel from 'embla-carousel-react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { useLocation, useNavigate } from 'react-router-dom'
@@ -35,6 +36,7 @@ const PRIMARY_TAB_CONTENT_TRANSITION = {
   duration: 0.18,
   ease: [0.22, 1, 0.36, 1],
 } as const
+const PRIMARY_TAB_SWIPE_LOCK_SELECTOR = '[data-primary-tab-swipe-lock="true"]'
 
 function getPrimaryTabIndex(pathname: string) {
   return primaryTabs.findIndex((tab) => tab.pathname === pathname)
@@ -52,9 +54,22 @@ function PrimaryTabPanelsContent() {
   const location = useLocation()
   const navigate = useNavigate()
   const shouldReduceMotion = useReducedMotion() === true
-  const { isPrimaryTabSwipeDisabled } = usePrimaryTabSwipeLock()
+  const { isPrimaryTabSwipeDisabled, primaryTabSwipeDisabledRef } = usePrimaryTabSwipeLock()
   const activeIndex = getPrimaryTabIndex(location.pathname)
   const activeTabIndex = activeIndex === -1 ? 0 : activeIndex
+  const watchDrag = useCallback(
+    (_emblaApi: EmblaCarouselType, event: MouseEvent | TouchEvent) => {
+      if (primaryTabSwipeDisabledRef.current) {
+        return false
+      }
+
+      return !(
+        event.target instanceof Element &&
+        event.target.closest(PRIMARY_TAB_SWIPE_LOCK_SELECTOR)
+      )
+    },
+    [primaryTabSwipeDisabledRef],
+  )
   const [emblaRef, emblaApi] = useEmblaCarousel({
     align: 'start',
     containScroll: false,
@@ -63,7 +78,7 @@ function PrimaryTabPanelsContent() {
     duration: shouldReduceMotion ? 0 : PRIMARY_TAB_SNAP_DURATION,
     skipSnaps: false,
     startIndex: activeTabIndex,
-    watchDrag: !isPrimaryTabSwipeDisabled,
+    watchDrag,
   })
   const subscribeSelectedIndex = useCallback(
     (onStoreChange: () => void) => {
@@ -135,7 +150,7 @@ function PrimaryTabPanelsContent() {
 
   return (
     <div ref={emblaRef} className="scrollbar-hide h-full overflow-hidden">
-      <div className="flex h-full touch-pan-y">
+      <div className="flex h-full">
         {primaryTabs.map((tab, index) => {
           const isActive = index === activeIndex
           const isNearby = Math.abs(index - activeTabIndex) <= 1
@@ -170,7 +185,6 @@ function PrimaryTabPanel({
       style={{
         contain: 'layout paint',
         pointerEvents: isActive ? 'auto' : 'none',
-        touchAction: 'pan-y',
         transformOrigin: 'center center',
         willChange: 'transform, opacity',
       }}

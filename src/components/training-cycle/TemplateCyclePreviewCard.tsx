@@ -1,3 +1,4 @@
+import { ArrowUpRight } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
@@ -51,8 +52,15 @@ export function TemplateCyclePreviewCard({
       state={backLinkState}
       viewTransition
       aria-label={isConfigured ? t('trainingCycle.editCycle') : t('trainingCycle.setCycle')}
-      className="mx-4 mt-4 block rounded-[1.25rem] border border-[var(--outline-variant)]/20 bg-[var(--surface)] p-4 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)] transition-colors hover:bg-[var(--surface-container)]/35"
+      className="group relative mx-4 mt-4 block rounded-[1.25rem] border border-[var(--outline-variant)]/20 bg-[var(--surface)] p-4 pr-12 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)] transition-colors hover:bg-[var(--surface-container)]/35"
     >
+      <span
+        className="absolute right-2.5 top-2.5 flex h-7 w-7 items-center justify-center rounded-full border border-[var(--outline-variant)]/20 bg-[var(--surface-container)]/60 text-[var(--primary)] opacity-60 transition-opacity group-active:opacity-80"
+        aria-hidden="true"
+      >
+        <ArrowUpRight size={14} strokeWidth={2.25} />
+      </span>
+
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <p className="text-[12px] text-[var(--on-surface-variant)]">

@@ -17,6 +17,7 @@ import { AnimatedList, AnimatedListItem } from '../motion/AnimatedList'
 import { verticalSortModifiers } from '../dnd/vertical-sortable-motion'
 import { SortableTemplateExerciseItem } from './SortableTemplateExerciseItem'
 import { TemplateExerciseDragOverlay } from './TemplateExerciseDragOverlay'
+import { TemplateExerciseImportSheet } from './TemplateExerciseImportSheet'
 import { TemplateExerciseInlineEditor } from './TemplateExerciseInlineEditor'
 import type { TemplateExerciseListProps } from './template-exercise-list.types'
 import { getOrderedExercises, getReorderedExerciseIds } from './template-exercise-list.utils'
@@ -31,12 +32,14 @@ export function TemplateExerciseList({
   isLoading,
   isSubmitting,
   pendingScrollExerciseId,
+  templates,
   templatesCount,
   onCancelEditing,
   onCreate,
   onDeleteSelected,
   onDraftChange,
   onEdit,
+  onImport,
   onReorder,
   onScrollAnimationComplete,
   onSubmit,
@@ -46,7 +49,9 @@ export function TemplateExerciseList({
   const [activeExerciseId, setActiveExerciseId] = useState<string | null>(null)
   const [isSorting, setIsSorting] = useState(false)
   const [isSelectionMode, setIsSelectionMode] = useState(false)
+  const [isImportSheetOpen, setIsImportSheetOpen] = useState(false)
   const [selectedExerciseIds, setSelectedExerciseIds] = useState<string[]>([])
+  const [selectedImportExerciseIds, setSelectedImportExerciseIds] = useState<string[]>([])
   const lastDragOverIdRef = useRef<string | null>(null)
 
   const sensors = useSensors(
@@ -77,6 +82,15 @@ export function TemplateExerciseList({
       ? -1
       : orderedExercises.findIndex((exercise) => exercise.id === activeExercise.id)
   const exerciseIds = orderedExercises.map((exercise) => exercise.id)
+  const sourceTemplates = useMemo(
+    () =>
+      currentTemplate
+        ? templates.filter(
+            (template) => template.id !== currentTemplate.id && template.exercises.length > 0,
+          )
+        : [],
+    [currentTemplate, templates],
+  )
   const isAllSelected =
     exerciseIds.length > 0 && exerciseIds.every((exerciseId) => selectedExerciseIds.includes(exerciseId))
   const { registerItemRef } = useScrollToPendingExercise({
@@ -158,8 +172,26 @@ export function TemplateExerciseList({
     setIsSelectionMode(false)
   }
 
+  function openImportSheet() {
+    setSelectedImportExerciseIds([])
+    setIsImportSheetOpen(true)
+  }
+
+  function closeImportSheet() {
+    setSelectedImportExerciseIds([])
+    setIsImportSheetOpen(false)
+  }
+
   function toggleSelectedExercise(exerciseId: string) {
     setSelectedExerciseIds((current) =>
+      current.includes(exerciseId)
+        ? current.filter((selectedId) => selectedId !== exerciseId)
+        : [...current, exerciseId],
+    )
+  }
+
+  function toggleImportExercise(exerciseId: string) {
+    setSelectedImportExerciseIds((current) =>
       current.includes(exerciseId)
         ? current.filter((selectedId) => selectedId !== exerciseId)
         : [...current, exerciseId],
@@ -170,6 +202,13 @@ export function TemplateExerciseList({
     const didDelete = await onDeleteSelected(selectedExerciseIds)
     if (didDelete) {
       closeSelectionMode()
+    }
+  }
+
+  async function importSelectedExercises() {
+    const didImport = await onImport(selectedImportExerciseIds)
+    if (didImport) {
+      closeImportSheet()
     }
   }
 
@@ -322,6 +361,7 @@ export function TemplateExerciseList({
               isSubmitting={isSubmitting}
               onCancel={onCancelEditing}
               onDraftChange={onDraftChange}
+              onImportClick={sourceTemplates.length > 0 ? openImportSheet : undefined}
               onSubmit={onSubmit}
             />
           </AnimatedListItem>
@@ -374,6 +414,16 @@ export function TemplateExerciseList({
           />
         </DndContext>
       </AnimatedList>
+
+      <TemplateExerciseImportSheet
+        isOpen={isImportSheetOpen}
+        isSubmitting={isSubmitting}
+        selectedExerciseIds={selectedImportExerciseIds}
+        sourceTemplates={sourceTemplates}
+        onClose={closeImportSheet}
+        onSubmit={() => void importSelectedExercises()}
+        onToggleExercise={toggleImportExercise}
+      />
     </div>
   )
 }

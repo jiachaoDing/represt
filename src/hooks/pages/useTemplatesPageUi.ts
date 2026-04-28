@@ -15,6 +15,7 @@ type UseTemplatesPageUiOptions = {
   handleCreateTemplate: () => Promise<boolean>
   handleDeleteExercises: (templateId: string, exerciseIds: string[]) => Promise<boolean>
   handleDeleteTemplate: (templateId: string) => Promise<boolean>
+  handleImportExercises: (templateId: string, exerciseIds: string[]) => Promise<boolean>
   handleSaveExercise: (
     templateId: string,
     exerciseId: string,
@@ -30,6 +31,7 @@ export function useTemplatesPageUi({
   handleDeleteExercises,
   handleDeleteTemplate,
   handleCreateTemplate,
+  handleImportExercises,
   handleSaveExercise,
   handleSaveTemplateName,
   setNewTemplateName,
@@ -138,6 +140,18 @@ export function useTemplatesPageUi({
     return didDelete
   }
 
+  async function handleImportExercisesAction(exerciseIds: string[]) {
+    if (!currentTemplate) {
+      return false
+    }
+
+    const didImport = await handleImportExercises(currentTemplate.id, exerciseIds)
+    if (didImport) {
+      closeExerciseEditor()
+    }
+    return didImport
+  }
+
   async function handleConfirmDeleteTemplate() {
     if (!currentTemplate) {
       return
@@ -158,6 +172,7 @@ export function useTemplatesPageUi({
     handleDeleteExercisesAction,
     handleConfirmDeleteTemplate,
     handleExerciseSubmit,
+    handleImportExercisesAction,
     handleTemplateSubmit,
     isCreatingExercise,
     isExerciseEditorActive,

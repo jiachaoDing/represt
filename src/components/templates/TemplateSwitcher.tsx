@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 
 import type { TemplateWithExercises } from '../../db/templates'
+import { getTemplateColor } from '../../lib/template-color'
 
 type TemplateSwitcherProps = {
   isSubmitting: boolean
@@ -20,27 +21,11 @@ export function TemplateSwitcher({
   const { t } = useTranslation()
 
   return (
-    <div className="-mx-4 mt-2 overflow-x-auto px-4 scrollbar-hide">
+    <div
+      className="-mx-4 mt-2 overflow-x-auto px-4 scrollbar-hide"
+      data-primary-tab-swipe-lock="true"
+    >
       <div className="flex w-max items-center gap-2 pb-2">
-        {templates.map((template) => {
-          const isSelected = template.id === selectedTemplateId
-          return (
-            <button
-              key={template.id}
-              type="button"
-              onClick={() => onSelect(template.id)}
-              disabled={isSubmitting}
-              className={[
-                'flex h-8 items-center justify-center rounded-lg px-4 text-sm font-medium whitespace-nowrap transition-colors tap-highlight-transparent',
-                isSelected
-                  ? 'bg-[var(--primary-container)] text-[var(--on-primary-container)]'
-                  : 'border border-[var(--outline)] text-[var(--on-surface-variant)] hover:bg-[var(--surface-container)]',
-              ].join(' ')}
-            >
-              {template.name}
-            </button>
-          )
-        })}
         <button
           type="button"
           onClick={onCreate}
@@ -63,6 +48,34 @@ export function TemplateSwitcher({
           </svg>
           {t('common.add')}
         </button>
+        {templates.map((template, index) => {
+          const isSelected = template.id === selectedTemplateId
+          const color = getTemplateColor(index)
+          return (
+            <button
+              key={template.id}
+              type="button"
+              onClick={() => onSelect(template.id)}
+              disabled={isSubmitting}
+              className={[
+                'flex h-8 items-center justify-center rounded-lg px-4 text-sm font-medium whitespace-nowrap transition-colors tap-highlight-transparent',
+                isSelected ? 'border-2' : 'border',
+                isSelected ? '' : 'hover:opacity-90',
+              ].join(' ')}
+              style={{
+                backgroundColor: isSelected
+                  ? `color-mix(in srgb, ${color.soft} 78%, transparent)`
+                  : `color-mix(in srgb, ${color.soft} 36%, transparent)`,
+                borderColor: isSelected
+                  ? color.solid
+                  : `color-mix(in srgb, ${color.solid} 46%, transparent)`,
+                color: isSelected ? color.text : color.solid,
+              }}
+            >
+              {template.name}
+            </button>
+          )
+        })}
       </div>
     </div>
   )

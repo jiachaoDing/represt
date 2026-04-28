@@ -6,6 +6,7 @@ import {
   createTemplateExercise,
   deleteTemplate,
   deleteTemplateExercise,
+  importTemplateExercises,
   listTemplatesWithExercises,
   reorderTemplateExercises,
   updateTemplateExercise,
@@ -139,6 +140,20 @@ export function useTemplatesPageData() {
     })
   }
 
+  async function handleImportExercises(templateId: string, exerciseIds: string[]) {
+    const didImport = await runMutation(async () => {
+      const importedExercises = await importTemplateExercises(templateId, exerciseIds)
+      setLastCreatedExerciseId(importedExercises.at(-1)?.id ?? null)
+      await loadTemplates(templateId)
+    })
+
+    if (didImport) {
+      void triggerHaptic('success')
+    }
+
+    return didImport
+  }
+
   async function handleSaveExercise(
     templateId: string,
     exerciseId: string,
@@ -212,6 +227,7 @@ export function useTemplatesPageData() {
     handleCreateTemplate,
     handleDeleteExercises,
     handleDeleteTemplate,
+    handleImportExercises,
     handleReorderExercises,
     handleSaveExercise,
     handleSaveTemplateName,

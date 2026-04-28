@@ -75,12 +75,14 @@ export function TemplatesPage() {
           isLoading={templates.isLoading}
           isSubmitting={templates.isSubmitting}
           pendingScrollExerciseId={templates.lastCreatedExerciseId}
+          templates={templates.templates}
           templatesCount={templates.templates.length}
           onCancelEditing={ui.closeExerciseEditor}
           onCreate={ui.openCreateExerciseEditor}
           onDeleteSelected={ui.handleDeleteExercisesAction}
           onDraftChange={ui.setExerciseDraft}
           onEdit={ui.openEditExerciseEditor}
+          onImport={ui.handleImportExercisesAction}
           onReorder={(orderedExerciseIds) =>
             templates.currentTemplate
               ? templates.handleReorderExercises(templates.currentTemplate.id, orderedExerciseIds)

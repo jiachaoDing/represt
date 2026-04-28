@@ -58,18 +58,20 @@ export function SchedulePage() {
       />
 
       {!schedule.isLoading ? (
-        <TodayTrainingPlanCard
-          cycle={schedule.trainingCycle}
-          currentIndex={schedule.todayCycleDay?.index ?? null}
-          didAutoImportToday={schedule.didAutoImportToday}
-          getTemplateColor={(templateId) => templateColorMap.get(templateId) ?? null}
-          todayTemplateName={schedule.todayTemplate?.name ?? null}
-          completedSets={completedSets}
-          totalSets={totalSets}
-          isStarterState={isStarterState}
-          onChooseTemplate={() => navigate('/templates/starter')}
-          onCreateExercise={ui.openAddEntry}
-        />
+        <div className={isStarterState ? 'flex min-h-[calc(100vh-13rem-env(safe-area-inset-bottom))] items-center' : ''}>
+          <TodayTrainingPlanCard
+            cycle={schedule.trainingCycle}
+            currentIndex={schedule.todayCycleDay?.index ?? null}
+            didAutoImportToday={schedule.didAutoImportToday}
+            getTemplateColor={(templateId) => templateColorMap.get(templateId) ?? null}
+            todayTemplateName={schedule.todayTemplate?.name ?? null}
+            completedSets={completedSets}
+            totalSets={totalSets}
+            isStarterState={isStarterState}
+            onChooseTemplate={() => navigate('/templates/starter')}
+            onCreateExercise={ui.openAddEntry}
+          />
+        </div>
       ) : null}
 
       {!schedule.isLoading && schedule.templateSyncStatus.hasUpdates ? (

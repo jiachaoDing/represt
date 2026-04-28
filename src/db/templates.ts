@@ -236,6 +236,45 @@ export async function createTemplateExercise(templateId: string, input: Partial<
   return exercise
 }
 
+export async function importTemplateExercises(targetTemplateId: string, sourceExerciseIds: string[]) {
+  if (sourceExerciseIds.length === 0) {
+    return []
+  }
+
+  const sourceExercises = (await db.templateExercises.bulkGet(sourceExerciseIds)).filter(
+    (exercise): exercise is TemplateExercise =>
+      exercise !== undefined && exercise.templateId !== targetTemplateId,
+  )
+
+  if (sourceExercises.length === 0) {
+    return []
+  }
+
+  const sourceExerciseMap = new Map(sourceExercises.map((exercise) => [exercise.id, exercise]))
+  const orderedSourceExercises = sourceExerciseIds
+    .map((exerciseId) => sourceExerciseMap.get(exerciseId) ?? null)
+    .filter((exercise): exercise is TemplateExercise => exercise !== null)
+  const targetExercises = await db.templateExercises.where('templateId').equals(targetTemplateId).toArray()
+  const nextOrder = targetExercises.reduce((maxOrder, exercise) => Math.max(maxOrder, exercise.order), -1) + 1
+  const importedExercises = orderedSourceExercises.map((exercise, index) => ({
+    id: crypto.randomUUID(),
+    templateId: targetTemplateId,
+    name: exercise.name,
+    targetSets: exercise.targetSets,
+    restSeconds: exercise.restSeconds,
+    weightKg: exercise.weightKg ?? null,
+    reps: exercise.reps ?? null,
+    order: nextOrder + index,
+  }))
+
+  await db.transaction('rw', db.templateExercises, db.workoutTemplates, async () => {
+    await db.templateExercises.bulkAdd(importedExercises)
+    await touchTemplate(targetTemplateId)
+  })
+
+  return importedExercises
+}
+
 export async function updateTemplateExercise(
   exerciseId: string,
   input: Partial<TemplateExerciseInput>,

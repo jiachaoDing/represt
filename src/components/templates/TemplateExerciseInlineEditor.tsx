@@ -1,4 +1,5 @@
 import { useEffect, useRef, type FormEvent } from 'react'
+import { CopyPlus } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { ExerciseNameInput } from '../exercise/ExerciseNameInput'
@@ -10,6 +11,7 @@ type TemplateExerciseInlineEditorProps = {
   isSubmitting: boolean
   onCancel: () => void
   onDraftChange: (draft: TemplateExerciseDraft) => void
+  onImportClick?: () => void
   onSubmit: (event: FormEvent<HTMLFormElement>) => void
 }
 
@@ -19,6 +21,7 @@ export function TemplateExerciseInlineEditor({
   isSubmitting,
   onCancel,
   onDraftChange,
+  onImportClick,
   onSubmit,
 }: TemplateExerciseInlineEditorProps) {
   const { t } = useTranslation()
@@ -126,22 +129,37 @@ export function TemplateExerciseInlineEditor({
           </label>
         </div>
 
-        <div className="flex items-center justify-end gap-2 pt-1">
-          <button
-            type="button"
-            onClick={onCancel}
-            disabled={isSubmitting}
-            className="inline-flex h-10 items-center justify-center rounded-xl bg-[var(--surface-container)] px-4 text-sm font-medium text-[var(--on-surface)] transition-opacity disabled:opacity-40"
-          >
-            {t('common.cancel')}
-          </button>
-          <button
-            type="submit"
-            disabled={isSubmitting || !draft.name.trim()}
-            className="inline-flex h-10 items-center justify-center rounded-xl bg-[var(--primary)] px-4 text-sm font-medium text-[var(--on-primary)] transition-opacity disabled:opacity-40"
-          >
-            {isEditing ? t('common.save') : t('common.add')}
-          </button>
+        <div className="flex items-center justify-between gap-2 pt-1">
+          {!isEditing && onImportClick ? (
+            <button
+              type="button"
+              onClick={onImportClick}
+              disabled={isSubmitting}
+              className="inline-flex h-10 items-center gap-2 rounded-xl px-2 text-sm font-medium text-[var(--primary)] transition-opacity disabled:opacity-40"
+            >
+              <CopyPlus size={17} strokeWidth={2.2} aria-hidden="true" />
+              <span>{t('templates.importExercise')}</span>
+            </button>
+          ) : (
+            <span />
+          )}
+          <div className="flex items-center justify-end gap-2">
+            <button
+              type="button"
+              onClick={onCancel}
+              disabled={isSubmitting}
+              className="inline-flex h-10 items-center justify-center rounded-xl bg-[var(--surface-container)] px-4 text-sm font-medium text-[var(--on-surface)] transition-opacity disabled:opacity-40"
+            >
+              {t('common.cancel')}
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting || !draft.name.trim()}
+              className="inline-flex h-10 items-center justify-center rounded-xl bg-[var(--primary)] px-4 text-sm font-medium text-[var(--on-primary)] transition-opacity disabled:opacity-40"
+            >
+              {isEditing ? t('common.save') : t('common.add')}
+            </button>
+          </div>
         </div>
       </div>
     </form>
