@@ -6,6 +6,7 @@ import { useHapticsPreference } from '../hooks/useHapticsPreference'
 import { useLanguagePreference } from '../i18n/useLanguagePreference'
 import type { LanguagePreference } from '../i18n/languages'
 import { triggerHaptic } from '../lib/haptics'
+import { useThemePreference, type ThemePreference } from '../lib/theme'
 
 function HapticsSettingsCard() {
   const { t } = useTranslation()
@@ -90,6 +91,45 @@ function LanguageSettingsCard() {
   )
 }
 
+function ThemeSettingsCard() {
+  const { t } = useTranslation()
+  const { preference, setPreference } = useThemePreference()
+  const options: Array<{ value: ThemePreference; label: string }> = [
+    { value: 'system', label: t('settings.theme.system') },
+    { value: 'light', label: t('settings.theme.light') },
+    { value: 'dark', label: t('settings.theme.dark') },
+  ]
+
+  return (
+    <section className="rounded-[1.25rem] border border-[var(--outline-variant)]/20 bg-[var(--surface)] px-5 py-4 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)]">
+      <div>
+        <p className="text-[15px] font-semibold text-[var(--on-surface)]">{t('settings.theme.title')}</p>
+        <p className="mt-1 text-[13px] leading-5 text-[var(--on-surface-variant)]">
+          {t('settings.theme.subtitle')}
+        </p>
+      </div>
+      <div className="mt-4 grid grid-cols-3 gap-2">
+        {options.map((option) => (
+          <button
+            key={option.value}
+            type="button"
+            aria-pressed={preference === option.value}
+            onClick={() => setPreference(option.value)}
+            className={[
+              'min-h-10 rounded-full px-3 py-2 text-xs font-semibold transition-colors',
+              preference === option.value
+                ? 'bg-[var(--primary)] text-[var(--on-primary)]'
+                : 'border border-[var(--outline-variant)] text-[var(--on-surface)]',
+            ].join(' ')}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+    </section>
+  )
+}
+
 export function SettingsPage() {
   const { t } = useTranslation()
 
@@ -99,6 +139,7 @@ export function SettingsPage() {
 
       <div className="mx-4 mt-4 space-y-3">
         <LanguageSettingsCard />
+        <ThemeSettingsCard />
         <HapticsSettingsCard />
         <LocalReminderSettings open />
       </div>

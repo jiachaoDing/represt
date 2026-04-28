@@ -53,6 +53,13 @@ const common = {
       zhCN: '简体中文',
       en: 'English',
     },
+    theme: {
+      title: '外观',
+      subtitle: '选择日间、夜间，或跟随系统外观',
+      system: '跟随系统',
+      light: '日间',
+      dark: '夜间',
+    },
     haptics: {
       title: '触感反馈',
       description: '完成、保存、撤销和危险操作时短促反馈',
@@ -217,7 +224,7 @@ const common = {
     addToToday: '添加到今日训练',
     joinToday: '加入今日训练',
     noExercisesToday: '今天还没有动作',
-    selectedDeletableCount: '已选择 {{count}} 个 · 仅未开始可删除',
+    selectedDeletableCount: '已选择 {{count}} 个',
     notDeletable: '不可删除',
     completed: '已完成 >',
     ready: '可继续下一组 >',

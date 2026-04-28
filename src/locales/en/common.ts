@@ -53,6 +53,13 @@ const common = {
       zhCN: '简体中文',
       en: 'English',
     },
+    theme: {
+      title: 'Appearance',
+      subtitle: 'Choose light, dark, or follow the system appearance',
+      system: 'System',
+      light: 'Light',
+      dark: 'Dark',
+    },
     haptics: {
       title: 'Haptics',
       description: 'Short feedback for completion, save, undo, and dangerous actions',
@@ -217,7 +224,7 @@ const common = {
     addToToday: 'Add to today',
     joinToday: 'Add to today',
     noExercisesToday: 'No exercises today',
-    selectedDeletableCount: '{{count}} selected · only not-started exercises can be deleted',
+    selectedDeletableCount: '{{count}} selected',
     notDeletable: 'Cannot delete',
     completed: 'Completed >',
     ready: 'Ready for next set >',

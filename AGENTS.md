@@ -45,6 +45,7 @@
 ## 5.1 国际化原则
 
 - 新增或修改用户可见 UI 文案时，默认走现有 i18n 资源，不要在组件、hook、service 或 native adapter 中硬编码中文/英文文案。
+- 新增按钮时，优先使用简洁、易懂、跨语言辨识度高的图标表达操作，减少多语言文案长度带来的换行和拥挤；图标按钮必须保留 i18n 化的 `aria-label`。
 - 通用文案放在 `src/locales/*/common.ts`；独立领域的大型词表或资源使用单独 namespace 文件，例如动作词典使用 `src/locales/*/exercises.ts`。
 - i18n key 使用稳定语义名，不使用中文原文当 key；动态内容使用 i18next 插值。
 - 不为国际化改造迁移 Dexie 旧数据；历史模板、训练记录、快照名称保持原样。
@@ -128,6 +129,14 @@
   - `overflow-hidden`
   - 合理的圆角和阴影裁切
   - 避免和 `position: fixed`/`sticky` 的父子关系冲突
+
+## 13.1 颜色与主题 token 原则
+
+- 涉及颜色的代码实现，默认使用语义化主题 token，例如 `--surface`、`--on-surface`、`--primary`、`--primary-container`、`--on-primary-container`、`--tertiary`、`--error`、`--template-1-container`。
+- 组件、页面、hook 和业务逻辑里不要直接写死 hex、rgb、rgba 或 Tailwind 固定色名来表达业务颜色；应使用 `var(--token-name)` 或已有 token 组合。
+- 如果需要新增一种语义颜色，先在 `src/styles/global.css` 中定义日间和夜间 token，再在组件中引用，不要只在单个组件里临时写颜色。
+- 模板色、状态色、强调色、容器色和容器上的文字色都应成组定义 token，例如 `--template-1` / `--template-1-container` / `--on-template-1-container`。
+- 透明度、阴影和边框可以基于语义 token 做轻量叠加；如果颜色本身承载状态含义，应抽成 token。
 
 ## 14. 输出风格
 

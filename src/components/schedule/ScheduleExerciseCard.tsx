@@ -109,14 +109,14 @@ function getExerciseCardState(
   if (isResting) {
     return {
       handle: index + 1,
-      handleClassName: 'bg-[#F59E0B] text-white font-bold text-sm',
+      handleClassName: 'bg-[var(--tertiary)] text-[var(--on-tertiary)] font-bold text-sm',
       itemClassName:
-        'border border-[#F59E0B]/30 bg-[#FFFBEB] shadow-[0_2px_8px_-4px_rgba(245,158,11,0.15)]',
-      nameClassName: 'text-[var(--on-surface)]',
-      metaClassName: 'text-[var(--on-surface-variant)]',
+        'border border-[var(--tertiary)]/40 bg-[var(--tertiary-container)] shadow-[0_2px_8px_-4px_rgba(182,141,64,0.18)]',
+      nameClassName: 'text-[var(--on-tertiary-container)]',
+      metaClassName: 'text-[var(--on-tertiary-container)]',
       metaText: t('schedule.progressSets', { completed: exercise.completedSets, total: exercise.targetSets }),
       statusText: t('schedule.resting', { time: formatDuration(restSnapshot.remainingSeconds) }),
-      statusClassName: 'text-[#D97706] font-medium',
+      statusClassName: 'text-[var(--tertiary)] font-medium',
     }
   }
 

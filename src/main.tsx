@@ -4,6 +4,9 @@ import App from './app/App.tsx'
 import './app/pwa.ts'
 import './i18n'
 import './styles/global.css'
+import { applyStoredThemePreference } from './lib/theme.ts'
+
+applyStoredThemePreference()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

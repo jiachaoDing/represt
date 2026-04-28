@@ -235,7 +235,7 @@ export function ScheduleExerciseList({
   return (
     <div className="flex flex-col gap-3 px-4">
       <div className="-mb-1 flex items-center justify-between px-2">
-        <div className="text-[12px] text-[var(--on-surface-variant)]">
+        <div className={`text-[12px] text-[var(--on-surface-variant)] ${isSelectionMode ? 'whitespace-nowrap' : ''}`}>
           {isSelectionMode
             ? t('schedule.selectedDeletableCount', { count: selectedExerciseIds.length })
             : t('templates.longPressSort')}
@@ -246,24 +246,43 @@ export function ScheduleExerciseList({
               <button
                 type="button"
                 onClick={() => setSelectedExerciseIds(isAllSelected ? [] : deletableExerciseIds)}
-                className="rounded-full px-3 py-2 text-xs font-medium text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/10"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/10"
+                aria-label={isAllSelected ? t('templates.clearAll') : t('templates.selectAll')}
               >
-                {isAllSelected ? t('templates.clearAll') : t('templates.selectAll')}
+                {isAllSelected ? (
+                  <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M8 12h8" />
+                    <circle cx="12" cy="12" r="9" />
+                  </svg>
+                ) : (
+                  <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="m9 12 2 2 4-5" />
+                    <circle cx="12" cy="12" r="9" />
+                  </svg>
+                )}
               </button>
               <button
                 type="button"
                 onClick={closeSelectionMode}
-                className="rounded-full px-3 py-2 text-xs font-medium text-[var(--on-surface-variant)] transition-colors hover:bg-[var(--on-surface-variant)]/10"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[var(--on-surface-variant)] transition-colors hover:bg-[var(--on-surface-variant)]/10"
+                aria-label={t('common.cancel')}
               >
-                {t('common.cancel')}
+                <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M18 6 6 18" />
+                  <path d="m6 6 12 12" />
+                </svg>
               </button>
               <button
                 type="button"
                 disabled={selectedExerciseIds.length === 0 || isSubmitting}
                 onClick={() => void deleteSelectedExercises()}
-                className="rounded-full px-3 py-2 text-xs font-medium text-[var(--error)] transition-colors hover:bg-[var(--error)]/10 disabled:opacity-40"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[var(--error)] transition-colors hover:bg-[var(--error)]/10 disabled:opacity-40"
+                aria-label={t('common.delete')}
               >
-                {t('common.delete')}
+                <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <polyline points="3 6 5 6 21 6" />
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                </svg>
               </button>
             </>
           ) : deletableCount > 0 ? (

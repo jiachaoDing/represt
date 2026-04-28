@@ -39,11 +39,22 @@ export function SummaryPage() {
     setSearchParams({ date: dateKey })
   }
 
-  const dateLabel = formatSessionDateKey(selectedDateKey, {
-    month: 'long',
-    day: 'numeric',
-    weekday: 'short',
-  }, i18n.resolvedLanguage)
+  const dateLabels = {
+    compact: formatSessionDateKey(selectedDateKey, {
+      month: 'short',
+      day: 'numeric',
+    }, i18n.resolvedLanguage),
+    full: formatSessionDateKey(selectedDateKey, {
+      month: 'long',
+      day: 'numeric',
+      weekday: 'short',
+    }, i18n.resolvedLanguage),
+    short: formatSessionDateKey(selectedDateKey, {
+      month: 'short',
+      day: 'numeric',
+      weekday: 'short',
+    }, i18n.resolvedLanguage),
+  }
   const calendarTo = `/calendar${buildSummarySearch(selectedDateKey)}`
   const emptyState = isDateMode ? (
     <div className="mx-4 mt-6 rounded-[1.25rem] border border-dashed border-[var(--outline-variant)]/40 bg-[var(--surface)] px-5 py-8 text-center">
@@ -83,7 +94,7 @@ export function SummaryPage() {
 
       {isDateMode ? (
         <SummaryDateSwitcher
-          dateLabel={dateLabel}
+          dateLabels={dateLabels}
           calendarTo={calendarTo}
           canGoNext={selectedDateKey < todayDateKey}
           onPrevious={() => updateSelectedDate(addDaysToSessionDateKey(selectedDateKey, -1))}
