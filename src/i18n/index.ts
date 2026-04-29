@@ -2,9 +2,13 @@ import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
 
 import enCommon from '../locales/en/common'
+import enEquipment from '../locales/en/equipment'
 import enExercises from '../locales/en/exercises'
+import enMuscles from '../locales/en/muscles'
 import zhCNCommon from '../locales/zh-CN/common'
+import zhCNEquipment from '../locales/zh-CN/equipment'
 import zhCNExercises from '../locales/zh-CN/exercises'
+import zhCNMuscles from '../locales/zh-CN/muscles'
 import { defaultLanguage, resolveLanguagePreference } from './languages'
 import { getSafeInitialLanguagePreference } from './storage'
 
@@ -15,8 +19,18 @@ void i18n.use(initReactI18next).init({
   fallbackLng: defaultLanguage,
   supportedLngs: ['zh-CN', 'en'],
   resources: {
-    'zh-CN': { common: zhCNCommon, exercises: zhCNExercises },
-    en: { common: enCommon, exercises: enExercises },
+    'zh-CN': {
+      common: zhCNCommon,
+      equipment: zhCNEquipment,
+      exercises: zhCNExercises,
+      muscles: zhCNMuscles,
+    },
+    en: {
+      common: enCommon,
+      equipment: enEquipment,
+      exercises: enExercises,
+      muscles: enMuscles,
+    },
   },
   defaultNS: 'common',
   interpolation: {

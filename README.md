@@ -53,9 +53,16 @@ src/
   pages/        训练安排、动作、模板、总结页面
   styles/       全局样式与 Tailwind 入口
 public/
-  icon.svg
-  icon-maskable.svg
+  favicon.svg
+  icon.png
+  icon-maskable.png
+assets/
+  logo.png
+scripts/
+  generate-assets.mjs
 ```
+
+图标更新流程见 [docs/update-icons.md](docs/update-icons.md)。
 
 ## 当前已实现能力
 
@@ -90,19 +97,3 @@ public/
 
 - 训练总时长统计
 - 训练中直接编辑长期模板
-
-## 图标生成
-
-图标源文件优先使用 `assets/logo.png`，没有 PNG 时使用 `assets/logo.svg`。
-
-修改图标后运行：
-
-```bash
-npm run assets:generate
-```
-
-该命令会更新 PWA 图标、Android launcher 图标和 Android 启动图。安卓打包前可直接运行：
-
-```bash
-npm run android:sync
-```
