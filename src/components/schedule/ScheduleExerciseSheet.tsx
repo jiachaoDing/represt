@@ -6,6 +6,7 @@ import { BottomSheet } from '../ui/BottomSheet'
 
 type ScheduleExerciseDraft = {
   name: string
+  catalogExerciseId: string | null
   targetSets: string
   restSeconds: string
   weightKg: string
@@ -41,7 +42,7 @@ export function ScheduleExerciseSheet({
           <ExerciseNameInput
             value={draft.name}
             disabled={isSubmitting}
-            onChange={(name) => onDraftChange({ ...draft, name })}
+            onChange={(nameValue) => onDraftChange({ ...draft, ...nameValue })}
             className="w-full rounded-none border-b border-[var(--on-surface)] bg-[var(--surface-container)] px-4 py-3 text-base text-[var(--on-surface)] outline-none transition-all focus:border-b-2 focus:border-[var(--primary)]"
             placeholder={t('templates.exercisePlaceholder')}
           />

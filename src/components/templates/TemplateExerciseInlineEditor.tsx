@@ -56,7 +56,7 @@ export function TemplateExerciseInlineEditor({
           <ExerciseNameInput
             value={draft.name}
             disabled={isSubmitting}
-            onChange={(name) => onDraftChange({ ...draft, name })}
+            onChange={(nameValue) => onDraftChange({ ...draft, ...nameValue })}
             className="w-full rounded-xl bg-[var(--surface-container)] px-4 py-3 text-base text-[var(--on-surface)] outline-none ring-1 ring-transparent transition-all focus:ring-[var(--primary)]"
             placeholder={t('templates.exercisePlaceholder')}
           />

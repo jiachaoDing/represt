@@ -20,7 +20,7 @@ class TrainReDatabase extends Dexie {
   constructor() {
     super('trainre')
 
-    this.version(9)
+    this.version(10)
       .stores({
         trainingCycles: 'id, updatedAt',
         workoutTemplates: 'id, name, updatedAt',
@@ -28,6 +28,16 @@ class TrainReDatabase extends Dexie {
         workoutSessions: 'id, &sessionDateKey, createdAt',
         sessionExercises: 'id, sessionId, restEndsAt, [sessionId+order]',
         setRecords: 'id, sessionId, sessionExerciseId, [sessionExerciseId+setNumber], completedAt',
+      })
+      .upgrade(async (transaction) => {
+        await Promise.all([
+          transaction.table('trainingCycles').clear(),
+          transaction.table('workoutTemplates').clear(),
+          transaction.table('templateExercises').clear(),
+          transaction.table('workoutSessions').clear(),
+          transaction.table('sessionExercises').clear(),
+          transaction.table('setRecords').clear(),
+        ])
       })
   }
 }

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 
 import { BottomSheet } from '../ui/BottomSheet'
 import type { TemplateWithExercises } from '../../db/templates'
+import { getDisplayExerciseName } from '../../lib/exercise-name'
 
 type TemplateExerciseImportSheetProps = {
   isOpen: boolean
@@ -46,7 +47,10 @@ export function TemplateExerciseImportSheet({
                 {template.name}
               </h3>
               <div className="space-y-1">
-                {template.exercises.map((exercise) => (
+                {template.exercises.map((exercise) => {
+                  const displayName = getDisplayExerciseName(t, exercise)
+
+                  return (
                   <label
                     key={exercise.id}
                     className="flex cursor-pointer items-center gap-4 rounded-xl px-2 py-3 transition-colors hover:bg-[var(--surface-container)]"
@@ -67,7 +71,7 @@ export function TemplateExerciseImportSheet({
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-base text-[var(--on-surface)]">
-                        {exercise.name}
+                        {displayName}
                       </span>
                       <span className="mt-0.5 block text-xs text-[var(--on-surface-variant)]">
                         {t('templates.exerciseMeta', {
@@ -77,7 +81,8 @@ export function TemplateExerciseImportSheet({
                       </span>
                     </span>
                   </label>
-                ))}
+                  )
+                })}
               </div>
             </section>
           ))}

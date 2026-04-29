@@ -26,6 +26,7 @@ import type { TrainingCycle } from '../../models/types'
 
 type ScheduleExerciseDraft = {
   name: string
+  catalogExerciseId: string | null
   targetSets: string
   restSeconds: string
   weightKg: string
@@ -40,6 +41,7 @@ type TemplateImportConfirmation = {
 
 const emptyExerciseDraft: ScheduleExerciseDraft = {
   name: '',
+  catalogExerciseId: null,
   targetSets: '3',
   restSeconds: '90',
   weightKg: '',
@@ -245,6 +247,7 @@ export function useSchedulePageData() {
     return runMutation(async () => {
       await addTemporarySessionExercise(currentSession.id, {
         name: newExerciseDraft.name,
+        catalogExerciseId: newExerciseDraft.catalogExerciseId,
         targetSets: parseIntegerInput(newExerciseDraft.targetSets),
         restSeconds: parseIntegerInput(newExerciseDraft.restSeconds),
         defaultWeightKg: parseOptionalWeightKg(newExerciseDraft.weightKg),

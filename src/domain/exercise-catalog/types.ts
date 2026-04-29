@@ -1,26 +1,23 @@
 export type MeasurementType = 'weightReps' | 'reps' | 'duration' | 'distance' | 'weightDistance'
 
+export type MovementPattern = 'push' | 'pull' | 'legs' | 'core' | 'fullBody' | 'conditioning'
+
 export type MuscleGroup =
   | 'chest'
   | 'back'
   | 'shoulders'
   | 'arms'
   | 'core'
-  | 'hips'
-  | 'quadriceps'
-  | 'hamstrings'
-  | 'calves'
+  | 'legs'
   | 'fullBody'
 
 export type Equipment = {
   id: string
-  aliases: string[]
 }
 
 export type Muscle = {
   id: string
   groupId: MuscleGroup
-  aliases: string[]
 }
 
 export type Exercise = {
@@ -29,8 +26,8 @@ export type Exercise = {
   equipmentIds: string[]
   primaryMuscleIds: string[]
   secondaryMuscleIds: string[]
+  movementPattern: MovementPattern
   measurementType: MeasurementType
-  aliases: string[]
   sourceUrls: string[]
 }
 

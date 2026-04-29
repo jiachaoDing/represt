@@ -9,6 +9,7 @@ import type {
 import { getTodaySessionDateKey } from '../lib/session-date-key'
 import { getRestEndsAt } from '../lib/rest-timer'
 import { deriveExerciseStatus, type DerivedExerciseStatus } from '../lib/session-display'
+import { resolveCatalogExerciseId } from '../lib/exercise-name'
 import { db } from './app-db'
 import { ensureTemplateSeedData } from './templates'
 import { getTodayTrainingCycleDay, getTrainingCycle } from './training-cycle'
@@ -53,6 +54,7 @@ export type TemplateSyncResult = {
 
 type SessionExerciseInput = {
   name: string
+  catalogExerciseId?: string | null
   targetSets?: number
   restSeconds?: number
   defaultReps?: number | null
@@ -80,8 +82,11 @@ function setStoredCurrentSessionId(sessionId: string | null) {
 }
 
 function normalizeSessionExercise(input: Partial<SessionExerciseInput>) {
+  const name = input.name?.trim() || '未命名动作'
+
   return {
-    name: input.name?.trim() || '未命名动作',
+    name,
+    catalogExerciseId: resolveCatalogExerciseId({ name, catalogExerciseId: input.catalogExerciseId }),
     targetSets: Math.max(1, Math.floor(input.targetSets ?? 3)),
     restSeconds: Math.max(0, Math.floor(input.restSeconds ?? 90)),
     defaultWeightKg: input.defaultWeightKg ?? null,
@@ -94,6 +99,7 @@ function createTemplateExerciseSnapshot(
 ): SessionTemplateExerciseSnapshot {
   return {
     name: exercise.name,
+    catalogExerciseId: exercise.catalogExerciseId ?? null,
     targetSets: exercise.targetSets,
     defaultWeightKg: exercise.weightKg ?? null,
     defaultReps: exercise.reps ?? null,
@@ -232,6 +238,7 @@ async function buildSessionExercisesFromTemplate(
     removedFromTemplate: false,
     archivedAt: null,
     name: exercise.name,
+    catalogExerciseId: exercise.catalogExerciseId ?? null,
     targetSets: exercise.targetSets,
     defaultWeightKg: exercise.weightKg ?? null,
     defaultReps: exercise.reps ?? null,
@@ -549,6 +556,7 @@ export async function addTemporarySessionExercise(sessionId: string, input: Part
     removedFromTemplate: false,
     archivedAt: null,
     name: normalized.name,
+    catalogExerciseId: normalized.catalogExerciseId,
     targetSets: normalized.targetSets,
     defaultWeightKg: normalized.defaultWeightKg,
     defaultReps: normalized.defaultReps,

@@ -61,6 +61,47 @@ function checkGroupNames(errors, groupIds, ...resources) {
   }
 }
 
+function checkGroupAliases(errors, groupIds, ...resources) {
+  for (const groupId of groupIds) {
+    resources.forEach((resource, index) => {
+      if (!Array.isArray(resource.groupAliases?.[groupId])) {
+        errors.push(`MuscleGroup "${groupId}" is missing group aliases in resource ${index + 1}`)
+      }
+    })
+  }
+}
+
+function checkMovementPatterns(errors, movementPatterns, ...resources) {
+  for (const movementPattern of movementPatterns) {
+    resources.forEach((resource, index) => {
+      const label = `MovementPattern "${movementPattern}" in resource ${index + 1}`
+      if (
+        typeof resource.movementPatterns?.names?.[movementPattern] !== 'string' ||
+        resource.movementPatterns.names[movementPattern].trim() === ''
+      ) {
+        errors.push(`${label} is missing name`)
+      }
+      if (
+        typeof resource.movementPatterns?.descriptions?.[movementPattern] !== 'string' ||
+        resource.movementPatterns.descriptions[movementPattern].trim() === ''
+      ) {
+        errors.push(`${label} is missing description`)
+      }
+      if (!Array.isArray(resource.movementPatterns?.aliases?.[movementPattern])) {
+        errors.push(`${label} is missing aliases`)
+      }
+    })
+  }
+}
+
+function checkNoCatalogAliases(errors, label, items) {
+  for (const item of items) {
+    if (Object.prototype.hasOwnProperty.call(item, 'aliases')) {
+      errors.push(`${label} "${item.id}" should keep aliases in i18n resources`)
+    }
+  }
+}
+
 const { exercises } = loadTsModule('src/domain/exercise-catalog/exercises.ts')
 const { equipment } = loadTsModule('src/domain/exercise-catalog/equipment.ts')
 const { muscles } = loadTsModule('src/domain/exercise-catalog/muscles.ts')
@@ -75,6 +116,8 @@ const errors = []
 const equipmentIds = new Set(equipment.map((item) => item.id))
 const muscleIds = new Set(muscles.map((muscle) => muscle.id))
 const muscleGroupIds = readStringUnion('src/domain/exercise-catalog/types.ts', 'MuscleGroup')
+const movementPatterns = readStringUnion('src/domain/exercise-catalog/types.ts', 'MovementPattern')
+const movementPatternIds = new Set(movementPatterns)
 
 checkNames(errors, 'equipment', equipmentIds, enEquipment, zhCNEquipment)
 checkNames(errors, 'muscle', muscleIds, enMuscles, zhCNMuscles)
@@ -86,8 +129,17 @@ checkNames(
   zhCNExercises,
 )
 checkGroupNames(errors, muscleGroupIds, enMuscles, zhCNMuscles)
+checkGroupAliases(errors, muscleGroupIds, enMuscles, zhCNMuscles)
+checkMovementPatterns(errors, movementPatterns, enExercises, zhCNExercises)
+checkNoCatalogAliases(errors, 'equipment', equipment)
+checkNoCatalogAliases(errors, 'muscle', muscles)
+checkNoCatalogAliases(errors, 'exercise', exercises)
 
 for (const exercise of exercises) {
+  if (!movementPatternIds.has(exercise.movementPattern)) {
+    errors.push(`Exercise "${exercise.id}" references missing movement pattern "${exercise.movementPattern}"`)
+  }
+
   for (const equipmentId of exercise.equipmentIds) {
     if (!equipmentIds.has(equipmentId)) {
       errors.push(`Exercise "${exercise.id}" references missing equipment "${equipmentId}"`)

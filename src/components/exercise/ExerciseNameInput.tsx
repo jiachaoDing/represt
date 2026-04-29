@@ -2,11 +2,12 @@ import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { findExerciseNameSuggestions } from '../../lib/exercise-dictionary'
+import type { ExerciseNameValue } from '../../lib/exercise-name'
 
 type ExerciseNameInputProps = {
   className: string
   disabled: boolean
-  onChange: (value: string) => void
+  onChange: (value: ExerciseNameValue) => void
   placeholder?: string
   value: string
 }
@@ -32,7 +33,7 @@ export function ExerciseNameInput({
         value={value}
         disabled={disabled}
         onBlur={() => setIsFocused(false)}
-        onChange={(event) => onChange(event.target.value)}
+        onChange={(event) => onChange({ name: event.target.value, catalogExerciseId: null })}
         onFocus={() => setIsFocused(true)}
         className={className}
         placeholder={placeholder}
@@ -42,11 +43,11 @@ export function ExerciseNameInput({
         <div className="absolute left-0 right-0 top-full z-30 mt-2 max-h-72 overflow-y-auto rounded-xl border border-[var(--outline-variant)]/40 bg-[var(--surface-container)] shadow-lg">
           {suggestions.map((suggestion) => (
             <button
-              key={suggestion.name}
+              key={suggestion.id}
               type="button"
               onMouseDown={(event) => event.preventDefault()}
               onClick={() => {
-                onChange(suggestion.name)
+                onChange({ name: suggestion.name, catalogExerciseId: suggestion.id })
                 setIsFocused(false)
               }}
               className="block w-full px-4 py-3 text-left text-sm font-medium text-[var(--on-surface)] transition-colors hover:bg-[var(--on-surface)]/5"

@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 
 import { BottomSheet } from '../ui/BottomSheet'
 import type { TemplateWithExercises } from '../../db/templates'
+import { getDisplayExerciseName } from '../../lib/exercise-name'
 
 type ScheduleTemplateImportSheetProps = {
   isOpen: boolean
@@ -33,7 +34,10 @@ export function ScheduleTemplateImportSheet({
           </p>
 
           <div className="-mx-2 max-h-[50vh] space-y-1 overflow-y-auto px-2">
-            {template.exercises.map((exercise) => (
+            {template.exercises.map((exercise) => {
+              const displayName = getDisplayExerciseName(t, exercise)
+
+              return (
               <label
                 key={exercise.id}
                 className="flex cursor-pointer items-center gap-4 rounded-xl px-2 py-3 transition-colors hover:bg-[var(--surface-container)]"
@@ -59,13 +63,14 @@ export function ScheduleTemplateImportSheet({
                   </svg>
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-base text-[var(--on-surface)]">{exercise.name}</p>
+                  <p className="text-base text-[var(--on-surface)]">{displayName}</p>
                   <p className="mt-0.5 text-xs text-[var(--on-surface-variant)]">
                     {t('schedule.restMeta', { sets: exercise.targetSets, seconds: exercise.restSeconds })}
                   </p>
                 </div>
               </label>
-            ))}
+              )
+            })}
           </div>
 
           {selectedExerciseIds.length === 0 ? (

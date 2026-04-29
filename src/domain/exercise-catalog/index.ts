@@ -7,6 +7,7 @@ export type {
   Exercise,
   ExerciseCatalogReviewItem,
   MeasurementType,
+  MovementPattern,
   Muscle,
   MuscleGroup,
 } from './types'

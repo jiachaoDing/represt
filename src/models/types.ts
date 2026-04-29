@@ -26,6 +26,7 @@ export interface TemplateExercise {
   id: string
   templateId: string
   name: string
+  catalogExerciseId?: string | null
   targetSets: number
   restSeconds: number
   weightKg?: number | null
@@ -45,6 +46,7 @@ export interface WorkoutSession {
 
 export interface SessionTemplateExerciseSnapshot {
   name: string
+  catalogExerciseId?: string | null
   targetSets: number
   defaultWeightKg?: number | null
   defaultReps?: number | null
@@ -62,6 +64,7 @@ export interface SessionExercise {
   removedFromTemplate?: boolean
   archivedAt?: string | null
   name: string
+  catalogExerciseId?: string | null
   targetSets: number
   defaultWeightKg?: number | null
   defaultReps?: number | null

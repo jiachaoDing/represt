@@ -1,15 +1,21 @@
 const muscles = {
   groups: {
-    chest: 'Chest',
+    chest: 'Pectorals',
     back: 'Back',
     shoulders: 'Shoulders',
     arms: 'Arms',
     core: 'Core',
-    hips: 'Hips',
-    quadriceps: 'Quadriceps',
-    hamstrings: 'Hamstrings',
-    calves: 'Calves',
+    legs: 'Legs',
     fullBody: 'Full body',
+  },
+  groupAliases: {
+    chest: ['chest', 'pecs', 'pectorals'],
+    back: ['lats', 'upper back', 'lower back'],
+    shoulders: ['delts', 'deltoids'],
+    arms: ['biceps', 'triceps', 'forearms'],
+    core: ['abs', 'abdominals'],
+    legs: ['quads', 'hamstrings', 'glutes', 'calves', 'hips'],
+    fullBody: ['whole body', 'total body'],
   },
   names: {
     pectoralisMajor: 'Pectoralis major',

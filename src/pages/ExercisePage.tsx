@@ -16,6 +16,7 @@ import { useBackLinkState } from '../hooks/useRouteBack'
 import { useExercisePageData } from '../hooks/pages/useExercisePageData'
 import { listSpringTransition } from '../components/motion/motion-tokens'
 import { getRestTimerSnapshot, getRestTimerState } from '../lib/rest-timer'
+import { getDisplayExerciseName } from '../lib/exercise-name'
 
 export function ExercisePage() {
   const { t } = useTranslation()
@@ -92,11 +93,12 @@ export function ExercisePage() {
     detail.exercise.completedSets >= detail.exercise.targetSets
   const isFinalResting = hasReachedTarget && isResting
   const isCompleted = hasReachedTarget && !isFinalResting
+  const displayExerciseName = detail ? getDisplayExerciseName(t, detail.exercise) : null
 
   return (
     <div className="relative flex min-h-full flex-col pb-4">
       <PageHeader
-        title={detail?.exercise.name ?? t('exercise.pageTitle')}
+        title={displayExerciseName ?? t('exercise.pageTitle')}
         subtitle={
           detail
             ? t('exercise.subtitle', {
@@ -139,7 +141,7 @@ export function ExercisePage() {
             />
             
             <ExerciseMetaGrid
-              name={detail.exercise.name}
+              name={displayExerciseName ?? detail.exercise.name}
               restSeconds={detail.exercise.restSeconds}
             />
           </div>

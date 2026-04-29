@@ -1,12 +1,16 @@
 import type { TFunction } from 'i18next'
 
-import { equipment, exercises, muscles } from '../domain/exercise-catalog'
+import { exercises, muscles } from '../domain/exercise-catalog'
 import {
   getEquipmentAliases,
   getEquipmentName,
   getExerciseAliases,
   getExerciseName,
+  getMovementPatternAliases,
+  getMovementPatternName,
   getMuscleAliases,
+  getMuscleGroupAliases,
+  getMuscleGroupName,
   getMuscleName,
 } from './exercise-catalog-i18n'
 
@@ -92,11 +96,10 @@ const pinyinAliasesByExerciseId: Record<string, string[]> = {
 
 export const exerciseDictionary: ExerciseDictionaryEntry[] = exercises.map((exercise) => ({
   id: exercise.id,
-  aliases: [...exercise.aliases, ...(pinyinAliasesByExerciseId[exercise.id] ?? [])],
+  aliases: pinyinAliasesByExerciseId[exercise.id] ?? [],
 }))
 
 const exercisesById = new Map(exercises.map((exercise) => [exercise.id, exercise]))
-const equipmentById = new Map(equipment.map((item) => [item.id, item]))
 const musclesById = new Map(muscles.map((muscle) => [muscle.id, muscle]))
 
 function normalizeKeyword(value: string) {
@@ -110,25 +113,33 @@ function getAssociatedCatalogSearchValues(t: TFunction, exerciseId: string) {
     return []
   }
 
-  const equipmentSearchValues = exercise.equipmentIds.flatMap((equipmentId) => {
-    const item = equipmentById.get(equipmentId)
-    return [
-      getEquipmentName(t, equipmentId),
-      ...getEquipmentAliases(t, equipmentId),
-      ...(item?.aliases ?? []),
-    ]
-  })
+  const equipmentSearchValues = exercise.equipmentIds.flatMap((equipmentId) => [
+    getEquipmentName(t, equipmentId),
+    ...getEquipmentAliases(t, equipmentId),
+  ])
 
   const muscleSearchValues = [...exercise.primaryMuscleIds, ...exercise.secondaryMuscleIds].flatMap((muscleId) => {
     const muscle = musclesById.get(muscleId)
+    const groupSearchValues = muscle
+      ? [
+          getMuscleGroupName(t, muscle.groupId),
+          ...getMuscleGroupAliases(t, muscle.groupId),
+        ]
+      : []
+
     return [
       getMuscleName(t, muscleId),
       ...getMuscleAliases(t, muscleId),
-      ...(muscle?.aliases ?? []),
+      ...groupSearchValues,
     ]
   })
 
-  return [...equipmentSearchValues, ...muscleSearchValues]
+  const movementPatternSearchValues = [
+    getMovementPatternName(t, exercise.movementPattern),
+    ...getMovementPatternAliases(t, exercise.movementPattern),
+  ]
+
+  return [...equipmentSearchValues, ...muscleSearchValues, ...movementPatternSearchValues]
 }
 
 export function findExerciseNameSuggestions(

@@ -5,6 +5,7 @@ import { CSS } from '@dnd-kit/utilities'
 
 import { verticalSortTransition } from '../dnd/vertical-sortable-motion'
 import { usePrimaryTabLongPressSwipeLock } from '../layout/PrimaryTabSwipeContext'
+import { getDisplayExerciseName } from '../../lib/exercise-name'
 import { TemplateExerciseCard } from './TemplateExerciseCard'
 import type { SortableTemplateExerciseItemProps } from './template-exercise-list.types'
 
@@ -20,6 +21,7 @@ export function SortableTemplateExerciseItem({
   registerItemRef,
 }: SortableTemplateExerciseItemProps) {
   const { t } = useTranslation()
+  const displayName = getDisplayExerciseName(t, exercise)
   const swipeLockHandlers = usePrimaryTabLongPressSwipeLock(isSubmitting || isSelectionMode)
   const {
     attributes,
@@ -54,7 +56,7 @@ export function SortableTemplateExerciseItem({
         isDragging ? 'relative opacity-0 pointer-events-none' : 'relative',
         isSubmitting ? 'cursor-default' : 'cursor-grab active:cursor-grabbing',
       ].join(' ')}
-      aria-label={t('templates.dragExercise', { name: exercise.name })}
+      aria-label={t('templates.dragExercise', { name: displayName })}
       onClick={isSelectionMode ? () => onToggleSelected(exercise.id) : undefined}
       {...attributes}
       {...listeners}

@@ -130,6 +130,7 @@ export function useTemplatesPageData() {
     return runMutation(async () => {
       const exercise = await createTemplateExercise(templateId, {
         name: draft.name || t('common.unnamedExercise'),
+        catalogExerciseId: draft.catalogExerciseId,
         targetSets: parseIntegerInput(draft.targetSets),
         restSeconds: parseIntegerInput(draft.restSeconds),
         weightKg: parseOptionalWeightKg(draft.weightKg),
@@ -162,6 +163,7 @@ export function useTemplatesPageData() {
     return runMutation(async () => {
       await updateTemplateExercise(exerciseId, {
         name: draft.name || t('common.unnamedExercise'),
+        catalogExerciseId: draft.catalogExerciseId,
         targetSets: parseIntegerInput(draft.targetSets),
         restSeconds: parseIntegerInput(draft.restSeconds),
         weightKg: parseOptionalWeightKg(draft.weightKg),

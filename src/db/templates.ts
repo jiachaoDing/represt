@@ -1,5 +1,6 @@
 import type { TemplateExercise, WorkoutTemplate } from '../models/types'
 import i18n from '../i18n'
+import { resolveCatalogExerciseId } from '../lib/exercise-name'
 import { db } from './app-db'
 import { clearTemplateFromTrainingCycle } from './training-cycle'
 
@@ -9,13 +10,14 @@ export type TemplateWithExercises = WorkoutTemplate & {
 
 type TemplateExerciseInput = {
   name: string
+  catalogExerciseId?: string | null
   targetSets: number
   restSeconds: number
   weightKg?: number | null
   reps?: number | null
 }
 
-const TEMPLATE_SEED_KEY = 'trainre.templates.seeded.v2'
+const TEMPLATE_SEED_KEY = 'trainre.templates.seeded.v3'
 let ensureTemplateSeedPromise: Promise<void> | null = null
 
 const demoTemplateBlueprints: Array<{
@@ -97,8 +99,11 @@ function normalizeTemplateName(name: string) {
 }
 
 function normalizeExercise(input: Partial<TemplateExerciseInput>) {
+  const name = input.name?.trim() || '未命名动作'
+
   return {
-    name: input.name?.trim() || '未命名动作',
+    name,
+    catalogExerciseId: resolveCatalogExerciseId({ name, catalogExerciseId: input.catalogExerciseId }),
     targetSets: Math.max(1, Math.floor(input.targetSets ?? 3)),
     restSeconds: Math.max(0, Math.floor(input.restSeconds ?? 90)),
     weightKg: input.weightKg ?? null,
@@ -141,6 +146,7 @@ export async function ensureTemplateSeedData() {
         id: crypto.randomUUID(),
         templateId: template.id,
         name: exercise.name,
+        catalogExerciseId: exercise.exerciseId,
         targetSets: exercise.targetSets,
         restSeconds: exercise.restSeconds,
         weightKg: exercise.weightKg,
@@ -260,6 +266,7 @@ export async function importTemplateExercises(targetTemplateId: string, sourceEx
     id: crypto.randomUUID(),
     templateId: targetTemplateId,
     name: exercise.name,
+    catalogExerciseId: exercise.catalogExerciseId ?? null,
     targetSets: exercise.targetSets,
     restSeconds: exercise.restSeconds,
     weightKg: exercise.weightKg ?? null,

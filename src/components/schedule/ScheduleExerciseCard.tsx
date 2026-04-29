@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 
 import { deriveExerciseStatus } from '../../lib/session-display'
 import { formatDuration, getRestTimerSnapshot, getRestTimerState } from '../../lib/rest-timer'
+import { getDisplayExerciseName } from '../../lib/exercise-name'
 import type { WorkoutSessionWithExercises } from '../../db/sessions'
 
 type ScheduleExercise = WorkoutSessionWithExercises['exercises'][number]
@@ -148,6 +149,7 @@ export function ScheduleExerciseCard({
 }: ScheduleExerciseCardProps) {
   const { t } = useTranslation()
   const cardState = getExerciseCardState(exercise, now, index, t)
+  const displayName = getDisplayExerciseName(t, exercise)
   const isSelectionDisabled = selectionMode && !isSelectable
   const handle = selectionMode
     ? <SelectionMark checked={isSelected} disabled={isSelectionDisabled} />
@@ -166,7 +168,7 @@ export function ScheduleExerciseCard({
   const content = (
     <div className="min-w-0 flex items-center justify-between">
       <div className="flex min-w-0 flex-col">
-        <p className={`truncate text-[16px] font-bold ${cardState.nameClassName}`}>{exercise.name}</p>
+        <p className={`truncate text-[16px] font-bold ${cardState.nameClassName}`}>{displayName}</p>
         <p className={`mt-0.5 text-[12px] ${cardState.metaClassName}`}>{cardState.metaText}</p>
       </div>
       <div className={`ml-2 shrink-0 text-[13px] ${statusClassName}`}>

@@ -14,6 +14,8 @@ import {
   toOptionalNumberString,
 } from '../../lib/input-parsers'
 import { triggerHaptic } from '../../lib/haptics'
+import { getDisplayExerciseName } from '../../lib/exercise-name'
+import i18n from '../../i18n'
 import {
   prepareRestTimerReminderPermissions,
   scheduleRestTimerNotification,
@@ -36,7 +38,7 @@ async function syncRestTimerNotification(detail: SessionExerciseDetail | null) {
   try {
     await scheduleRestTimerNotification({
       exerciseId: detail.exercise.id,
-      exerciseName: detail.exercise.name,
+      exerciseName: getDisplayExerciseName(i18n.t, detail.exercise),
       restEndsAt: detail.exercise.restEndsAt,
     })
   } catch (notificationError) {

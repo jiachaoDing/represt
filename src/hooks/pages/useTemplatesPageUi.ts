@@ -1,10 +1,12 @@
 import { useState, type FormEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import {
   emptyTemplateExerciseDraft,
   toTemplateExerciseDraft,
   type TemplateExerciseDraft,
 } from '../../lib/template-editor'
+import { getDisplayExerciseName } from '../../lib/exercise-name'
 import type { TemplateWithExercises } from '../../db/templates'
 
 type TemplateSheetMode = 'create' | 'rename' | null
@@ -36,6 +38,7 @@ export function useTemplatesPageUi({
   handleSaveTemplateName,
   setNewTemplateName,
 }: UseTemplatesPageUiOptions) {
+  const { t } = useTranslation()
   const [editExerciseId, setEditExerciseId] = useState<string | null>(null)
   const [exerciseDraft, setExerciseDraft] = useState<TemplateExerciseDraft>(emptyTemplateExerciseDraft)
   const [isCreatingExercise, setIsCreatingExercise] = useState(false)
@@ -77,7 +80,10 @@ export function useTemplatesPageUi({
 
     setIsCreatingExercise(false)
     setEditExerciseId(exercise.id)
-    setExerciseDraft(toTemplateExerciseDraft(exercise))
+    setExerciseDraft(toTemplateExerciseDraft({
+      ...exercise,
+      name: getDisplayExerciseName(t, exercise),
+    }))
   }
 
   async function handleTemplateSubmit(

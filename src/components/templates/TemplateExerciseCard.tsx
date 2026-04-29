@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 
+import { getDisplayExerciseName } from '../../lib/exercise-name'
 import type { TemplateExerciseCardProps } from './template-exercise-list.types'
 
 export function TemplateExerciseCard({
@@ -12,6 +13,7 @@ export function TemplateExerciseCard({
   selectionMode = false,
 }: TemplateExerciseCardProps) {
   const { t } = useTranslation()
+  const displayName = getDisplayExerciseName(t, exercise)
 
   return (
     <div
@@ -50,7 +52,7 @@ export function TemplateExerciseCard({
 
         <div className="min-w-0 flex-1 py-0.5">
           <div className="truncate text-[15px] font-semibold text-[var(--on-surface)]">
-            {exercise.name}
+            {displayName}
           </div>
           <div className="mt-2 flex flex-wrap gap-y-1 text-[13px] text-[var(--on-surface-variant)]">
             <span className="w-14 shrink-0">{t('common.sets', { value: exercise.targetSets })}</span>
@@ -66,7 +68,7 @@ export function TemplateExerciseCard({
             onClick={() => onEdit(exercise.id)}
             disabled={isSubmitting}
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-[var(--on-surface-variant)] transition-colors hover:bg-[var(--surface-container)] disabled:opacity-40"
-            aria-label={t('templates.editExercise', { name: exercise.name })}
+            aria-label={t('templates.editExercise', { name: displayName })}
           >
             <svg
               viewBox="0 0 24 24"

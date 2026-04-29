@@ -5,6 +5,7 @@ import { CSS } from '@dnd-kit/utilities'
 
 import type { WorkoutSessionWithExercises } from '../../db/sessions'
 import { useBackLinkState } from '../../hooks/useRouteBack'
+import { getDisplayExerciseName } from '../../lib/exercise-name'
 import { ScheduleExerciseCard } from './ScheduleExerciseCard'
 import { usePrimaryTabLongPressSwipeLock } from '../layout/PrimaryTabSwipeContext'
 import { verticalSortTransition } from '../dnd/vertical-sortable-motion'
@@ -31,6 +32,7 @@ export function SortableScheduleExerciseItem({
   onToggleSelected,
 }: SortableScheduleExerciseItemProps) {
   const { t } = useTranslation()
+  const displayName = getDisplayExerciseName(t, exercise)
   const backLinkState = useBackLinkState()
   const swipeLockHandlers = usePrimaryTabLongPressSwipeLock(isSubmitting || isSelectionMode)
   const {
@@ -73,7 +75,7 @@ export function SortableScheduleExerciseItem({
         isDragging ? 'relative opacity-0 pointer-events-none' : 'relative',
         interactionClassName,
       ].join(' ')}
-      aria-label={t('templates.dragExercise', { name: exercise.name })}
+      aria-label={t('templates.dragExercise', { name: displayName })}
       onClick={isSelectionMode && canSelect ? () => onToggleSelected(exercise.id) : undefined}
       {...attributes}
       {...listeners}

@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Exercise Catalog Editor</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
+    <style>
+      :root {
+        --pico-font-size: 95%;
+      }
+
+      body {
+        padding: 1rem;
+      }
+
+      main {
+        max-width: 1440px;
+      }
+
+      nav button {
+        width: auto;
+      }
+
+      .toolbar,
+      .form-grid,
+      .export-toolbar,
+      .sync-actions {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 0.75rem;
+        align-items: end;
+      }
+
+      .table-wrap {
+        overflow-x: auto;
+      }
+
+      table {
+        white-space: nowrap;
+      }
+
+      td button {
+        width: auto;
+        margin: 0 0.25rem 0.25rem 0;
+        padding: 0.35rem 0.6rem;
+      }
+
+      td textarea,
+      textarea.code-output {
+        min-height: 8rem;
+        font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      }
+
+      textarea.compact-textarea {
+        min-width: 16rem;
+        min-height: 5rem;
+      }
+
+      select[multiple] {
+        min-height: 9rem;
+      }
+
+      .checkbox-list {
+        display: grid;
+        gap: 0.2rem;
+        max-height: 12rem;
+        overflow: auto;
+        padding: 0.6rem;
+        border: 1px solid var(--pico-form-element-border-color);
+        border-radius: var(--pico-border-radius);
+        background: var(--pico-form-element-background-color);
+      }
+
+      .checkbox-list label {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        margin: 0;
+        padding: 0.15rem 0;
+      }
+
+      .checkbox-list input {
+        margin: 0;
+      }
+
+      .exercise-card-list {
+        display: grid;
+        gap: 0.75rem;
+      }
+
+      .exercise-card {
+        padding: 1rem;
+        border: 1px solid var(--pico-muted-border-color);
+        border-radius: var(--pico-border-radius);
+      }
+
+      .exercise-card-header,
+      .exercise-card-actions,
+      .field-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        align-items: center;
+      }
+
+      .exercise-card-header {
+        justify-content: space-between;
+      }
+
+      .exercise-card-title {
+        margin: 0;
+        font-size: 1rem;
+      }
+
+      .exercise-card-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 0.75rem;
+        margin-top: 0.75rem;
+      }
+
+      .field-label {
+        display: block;
+        margin-bottom: 0.25rem;
+        color: var(--pico-muted-color);
+        font-size: 0.85rem;
+      }
+
+      .chip {
+        display: inline-flex;
+        max-width: 100%;
+        padding: 0.12rem 0.45rem;
+        border: 1px solid var(--pico-muted-border-color);
+        border-radius: 999px;
+        font-size: 0.85rem;
+        overflow-wrap: anywhere;
+      }
+
+      .muted {
+        color: var(--pico-muted-color);
+      }
+
+      .danger {
+        color: var(--pico-del-color);
+      }
+
+      .warning {
+        color: #9a6700;
+      }
+
+      .status-pill {
+        display: inline-block;
+        padding: 0.15rem 0.45rem;
+        border: 1px solid var(--pico-muted-border-color);
+        border-radius: 999px;
+        font-size: 0.85rem;
+      }
+
+      .sync-log {
+        min-height: 8rem;
+        white-space: pre-wrap;
+      }
+
+      .tab-panel {
+        margin-top: 1rem;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="container-fluid">
+      <header>
+        <h1>Exercise Catalog Editor</h1>
+        <p class="muted">静态开发辅助工具。编辑只保存在当前浏览器内存中，请在 Export 页复制 TypeScript 内容回项目文件。</p>
+      </header>
+      <nav aria-label="Tool tabs">
+        <ul>
+          <li><button type="button" data-tab="catalog">Catalog</button></li>
+          <li><button type="button" data-tab="i18n">i18n</button></li>
+          <li><button type="button" data-tab="validate">Validate</button></li>
+          <li><button type="button" data-tab="sync">Sync</button></li>
+          <li><button type="button" data-tab="export">Export</button></li>
+        </ul>
+      </nav>
+      <section id="app" class="tab-panel" aria-live="polite"></section>
+    </main>
+    <script src="./app.js"></script>
+  </body>
+</html>

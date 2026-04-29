@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import type { SessionSummaryDetail } from '../../db/sessions'
+import { getDisplayExerciseName } from '../../lib/exercise-name'
 import type { SetRecord } from '../../models/types'
 
 type SessionExerciseSummaryListProps = {
@@ -99,6 +100,7 @@ export function SessionExerciseSummaryList({ detail }: SessionExerciseSummaryLis
       <div className="flex flex-col gap-3 px-4">
         {detail.exercises.map((exercise) => {
           const recordSummary = getRecordSummary(exercise.setRecords, t)
+          const displayName = getDisplayExerciseName(t, exercise)
 
           return (
             <details
@@ -109,7 +111,7 @@ export function SessionExerciseSummaryList({ detail }: SessionExerciseSummaryLis
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <h4 className="truncate text-[16px] font-bold text-[var(--on-surface)]">
-                      {exercise.name}
+                      {displayName}
                     </h4>
                   </div>
 
