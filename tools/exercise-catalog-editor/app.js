@@ -1,30 +1,26 @@
 const initialData = {
-  catalog: { exercises: [], equipment: [], muscles: [] },
+  catalog: { exercises: [] },
   i18n: {
     en: {
-      exercises: { names: {}, aliases: {} },
-      equipment: { names: {}, aliases: {} },
-      muscles: { groups: {}, names: {}, aliases: {} },
+      exercises: { names: {}, aliases: {}, movementPatterns: { names: {}, descriptions: {}, aliases: {} } },
+      muscles: { groups: {}, groupAliases: {} },
     },
     'zh-CN': {
-      exercises: { names: {}, aliases: {} },
-      equipment: { names: {}, aliases: {} },
-      muscles: { groups: {}, names: {}, aliases: {} },
+      exercises: { names: {}, aliases: {}, movementPatterns: { names: {}, descriptions: {}, aliases: {} } },
+      muscles: { groups: {}, groupAliases: {} },
     },
   },
 }
 
 const measurementTypes = ['weightReps', 'reps', 'duration', 'distance', 'weightDistance']
-const defaultMuscleGroups = ['chest', 'back', 'shoulders', 'arms', 'core', 'hips', 'quadriceps', 'hamstrings', 'calves', 'fullBody']
+const movementPatterns = ['push', 'pull', 'legs', 'core', 'fullBody', 'conditioning']
+const defaultMuscleGroups = ['chest', 'back', 'shoulders', 'arms', 'core', 'legs', 'fullBody']
 const exportPaths = [
   'src/domain/exercise-catalog/types.ts',
   'src/domain/exercise-catalog/exercises.ts',
-  'src/domain/exercise-catalog/equipment.ts',
   'src/domain/exercise-catalog/muscles.ts',
   'src/locales/en/exercises.ts',
   'src/locales/zh-CN/exercises.ts',
-  'src/locales/en/equipment.ts',
-  'src/locales/zh-CN/equipment.ts',
   'src/locales/en/muscles.ts',
   'src/locales/zh-CN/muscles.ts',
 ]
@@ -35,13 +31,10 @@ const state = {
   catalog: structuredClone(initialData.catalog),
   i18n: structuredClone(initialData.i18n),
   catalogSearch: '',
-  equipmentSearch: '',
   muscleSearch: '',
   muscleGroupSearch: '',
   muscleGroups: [...defaultMuscleGroups],
   editingExerciseId: null,
-  editingEquipmentId: null,
-  editingMuscleId: null,
   editingMuscleGroupId: null,
   i18nNamespace: 'exercises',
   i18nLocaleView: 'both',
@@ -105,12 +98,8 @@ function matchesSearch(values, search) {
 }
 
 function renderCatalog() {
-  if (state.catalogPage === 'equipment') {
-    renderEquipmentCatalog()
-    return
-  }
   if (state.catalogPage === 'muscles') {
-    renderMusclesCatalog()
+    renderMuscleGroupsCatalog()
     return
   }
   renderExercisesCatalog()
@@ -119,8 +108,7 @@ function renderCatalog() {
 function renderCatalogPageNav() {
   const pages = [
     ['exercises', 'Exercises'],
-    ['equipment', 'Equipment'],
-    ['muscles', 'Muscles'],
+    ['muscles', 'Muscle Groups'],
   ]
   return `
     <nav aria-label="Catalog pages">
@@ -153,7 +141,7 @@ function renderExercisesCatalog() {
       <div class="toolbar">
         <label>
           Search exercises
-          <input id="catalog-search" value="${escapeHtml(state.catalogSearch)}" placeholder="id, slug, i18n alias, equipment, muscle" />
+          <input id="catalog-search" value="${escapeHtml(state.catalogSearch)}" placeholder="id, slug, i18n alias, muscle" />
         </label>
         <div>
           <button type="button" onclick="startNewExercise()">New exercise</button>
@@ -186,9 +174,9 @@ function renderExerciseForm(exercise) {
     id: '',
     slug: '',
     measurementType: 'weightReps',
-    equipmentIds: [],
-    primaryMuscleIds: [],
-    secondaryMuscleIds: [],
+    movementPattern: movementPatterns[0],
+    primaryMuscleGroupIds: [],
+    secondaryMuscleGroupIds: [],
     sourceUrls: [],
   }
 
@@ -204,6 +192,14 @@ function renderExerciseForm(exercise) {
           <input id="exercise-slug" required value="${escapeHtml(value.slug)}" />
         </label>
         <label>
+          movementPattern
+          <select id="exercise-movement-pattern">
+            ${movementPatterns
+              .map((type) => `<option value="${type}" ${type === value.movementPattern ? 'selected' : ''}>${type}</option>`)
+              .join('')}
+          </select>
+        </label>
+        <label>
           measurementType
           <select id="exercise-measurement-type">
             ${measurementTypes
@@ -213,9 +209,8 @@ function renderExerciseForm(exercise) {
         </label>
       </div>
       <div class="form-grid">
-        ${renderCheckboxMultiSelect('exercise-equipment-ids', 'equipmentIds', state.catalog.equipment, value.equipmentIds)}
-        ${renderCheckboxMultiSelect('exercise-primary-muscle-ids', 'primaryMuscleIds', state.catalog.muscles, value.primaryMuscleIds)}
-        ${renderCheckboxMultiSelect('exercise-secondary-muscle-ids', 'secondaryMuscleIds', state.catalog.muscles, value.secondaryMuscleIds)}
+        ${renderCheckboxMultiSelect('exercise-primary-muscle-group-ids', 'primaryMuscleGroupIds', state.muscleGroups, value.primaryMuscleGroupIds)}
+        ${renderCheckboxMultiSelect('exercise-secondary-muscle-group-ids', 'secondaryMuscleGroupIds', state.muscleGroups, value.secondaryMuscleGroupIds)}
       </div>
       <div class="form-grid">
         <label>
@@ -237,12 +232,15 @@ function renderCheckboxMultiSelect(id, label, items, selected) {
       <div id="${id}" class="checkbox-list">
       ${items
         .map(
-          (item) => `
+          (item) => {
+            const itemId = typeof item === 'string' ? item : item.id
+            return `
             <label>
-              <input type="checkbox" value="${escapeHtml(item.id)}" ${selectedSet.has(item.id) ? 'checked' : ''} />
-              <span>${escapeHtml(item.id)}</span>
+              <input type="checkbox" value="${escapeHtml(itemId)}" ${selectedSet.has(itemId) ? 'checked' : ''} />
+              <span>${escapeHtml(itemId)}</span>
             </label>
-          `,
+          `
+          },
         )
         .join('')}
       </div>
@@ -262,10 +260,10 @@ function renderExerciseCard(exercise) {
       </div>
       <div class="exercise-card-grid">
         ${renderCardField('slug', [exercise.slug])}
+        ${renderCardField('movementPattern', [exercise.movementPattern])}
         ${renderCardField('measurementType', [exercise.measurementType])}
-        ${renderCardField('equipmentIds', exercise.equipmentIds)}
-        ${renderCardField('primaryMuscleIds', exercise.primaryMuscleIds)}
-        ${renderCardField('secondaryMuscleIds', exercise.secondaryMuscleIds)}
+        ${renderCardField('primaryMuscleGroupIds', exercise.primaryMuscleGroupIds)}
+        ${renderCardField('secondaryMuscleGroupIds', exercise.secondaryMuscleGroupIds)}
         ${renderCardField('sourceUrls', exercise.sourceUrls)}
       </div>
     </section>
@@ -287,168 +285,47 @@ function renderCardField(label, values) {
 }
 
 function exerciseSearchValues(exercise) {
+  const muscleGroupSearchValues = [...(exercise.primaryMuscleGroupIds || []), ...(exercise.secondaryMuscleGroupIds || [])].flatMap((id) => [
+    id,
+    state.i18n.en?.muscles?.groups?.[id] || '',
+    state.i18n['zh-CN']?.muscles?.groups?.[id] || '',
+    state.i18n.en?.muscles?.groupAliases?.[id] || [],
+    state.i18n['zh-CN']?.muscles?.groupAliases?.[id] || [],
+  ])
+  const movementPatternSearchValues = [
+    exercise.movementPattern,
+    state.i18n.en?.exercises?.movementPatterns?.names?.[exercise.movementPattern] || '',
+    state.i18n['zh-CN']?.exercises?.movementPatterns?.names?.[exercise.movementPattern] || '',
+    state.i18n.en?.exercises?.movementPatterns?.descriptions?.[exercise.movementPattern] || '',
+    state.i18n['zh-CN']?.exercises?.movementPatterns?.descriptions?.[exercise.movementPattern] || '',
+    state.i18n.en?.exercises?.movementPatterns?.aliases?.[exercise.movementPattern] || [],
+    state.i18n['zh-CN']?.exercises?.movementPatterns?.aliases?.[exercise.movementPattern] || [],
+  ]
   return [
     exercise.id,
     exercise.slug,
-    exercise.equipmentIds,
-    exercise.primaryMuscleIds,
-    exercise.secondaryMuscleIds,
+    state.i18n.en?.exercises?.names?.[exercise.id] || '',
+    state.i18n['zh-CN']?.exercises?.names?.[exercise.id] || '',
+    muscleGroupSearchValues,
+    movementPatternSearchValues,
     state.i18n.en?.exercises?.aliases?.[exercise.id] || [],
     state.i18n['zh-CN']?.exercises?.aliases?.[exercise.id] || [],
   ]
 }
 
-function renderEquipmentCatalog() {
-  const filteredEquipment = state.catalog.equipment.filter((equipment) =>
-    matchesSearch([equipment.id], state.equipmentSearch),
-  )
-  const editing = state.catalog.equipment.find((equipment) => equipment.id === state.editingEquipmentId)
-
+function renderMuscleGroupsCatalog() {
   app.innerHTML = `
     <section>
       ${renderCatalogPageNav()}
-      <div class="toolbar">
-        <label>
-          Search equipment
-          <input id="equipment-search" value="${escapeHtml(state.equipmentSearch)}" placeholder="id" />
-        </label>
-        <div>
-          <button type="button" onclick="startNewEquipment()">New equipment</button>
-        </div>
-      </div>
-      <article>
-        <h2>${editing ? 'Edit equipment' : 'New equipment'}</h2>
-        ${renderEquipmentForm(editing)}
-      </article>
-      <article>
-        <h2>Equipment <span class="status-pill">${filteredEquipment.length} / ${state.catalog.equipment.length}</span></h2>
-        ${renderCompactTable(
-          ['id', 'Actions'],
-          filteredEquipment,
-          renderEquipmentRow,
-          'No equipment matches the current search.',
-        )}
-      </article>
-    </section>
-  `
-
-  document.getElementById('equipment-search').addEventListener('input', (event) => {
-    state.equipmentSearch = event.target.value
-    renderEquipmentCatalog()
-  })
-  document.getElementById('equipment-form').addEventListener('submit', saveEquipment)
-}
-
-function renderEquipmentForm(equipment) {
-  const value = equipment || { id: '' }
-  return `
-    <form id="equipment-form">
-      <div class="form-grid">
-        <label>
-          id
-          <input id="equipment-id" required value="${escapeHtml(value.id)}" />
-        </label>
-      </div>
-      <button type="submit">${equipment ? 'Save equipment' : 'Add equipment'}</button>
-      <button type="button" class="secondary" onclick="startNewEquipment()">Reset</button>
-    </form>
-  `
-}
-
-function renderEquipmentRow(equipment) {
-  return `
-    <tr>
-      <td>${escapeHtml(equipment.id)}</td>
-      <td>
-          <button type="button" class="secondary" onclick="editEquipment('${escapeHtml(equipment.id)}')">Edit</button>
-          <button type="button" class="contrast" onclick="deleteEquipment('${escapeHtml(equipment.id)}')">Delete</button>
-      </td>
-    </tr>
-  `
-}
-
-function renderMusclesCatalog() {
-  const filteredMuscles = state.catalog.muscles.filter((muscle) =>
-    matchesSearch([muscle.id, muscle.groupId], state.muscleSearch),
-  )
-  const editing = state.catalog.muscles.find((muscle) => muscle.id === state.editingMuscleId)
-
-  app.innerHTML = `
-    <section>
-      ${renderCatalogPageNav()}
-      <div class="toolbar">
-        <label>
-          Search muscles
-          <input id="muscle-search" value="${escapeHtml(state.muscleSearch)}" placeholder="id, group" />
-        </label>
-        <div>
-          <button type="button" onclick="startNewMuscle()">New muscle</button>
-        </div>
-      </div>
-      <article>
-        <h2>${editing ? 'Edit muscle' : 'New muscle'}</h2>
-        ${renderMuscleForm(editing)}
-      </article>
-      <article>
-        <h2>Muscles <span class="status-pill">${filteredMuscles.length} / ${state.catalog.muscles.length}</span></h2>
-        ${renderCompactTable(
-          ['id', 'groupId', 'Actions'],
-          filteredMuscles,
-          renderMuscleRow,
-          'No muscles match the current search.',
-        )}
-      </article>
       ${renderMuscleGroupsSection()}
     </section>
   `
 
-  document.getElementById('muscle-search').addEventListener('input', (event) => {
-    state.muscleSearch = event.target.value
-    renderMusclesCatalog()
-  })
-  document.getElementById('muscle-form').addEventListener('submit', saveMuscle)
   document.getElementById('muscle-group-search').addEventListener('input', (event) => {
     state.muscleGroupSearch = event.target.value
-    renderMusclesCatalog()
+    renderMuscleGroupsCatalog()
   })
   document.getElementById('muscle-group-form').addEventListener('submit', saveMuscleGroupCatalog)
-}
-
-function renderMuscleForm(muscle) {
-  const value = muscle || { id: '', groupId: state.muscleGroups[0] || '' }
-  return `
-    <form id="muscle-form">
-      <div class="form-grid">
-        <label>
-          id
-          <input id="muscle-id" required value="${escapeHtml(value.id)}" />
-        </label>
-        <label>
-          groupId
-          <select id="muscle-group-id">
-            ${state.muscleGroups
-              .map((group) => `<option value="${group}" ${group === value.groupId ? 'selected' : ''}>${group}</option>`)
-              .join('')}
-          </select>
-        </label>
-      </div>
-      <button type="submit">${muscle ? 'Save muscle' : 'Add muscle'}</button>
-      <button type="button" class="secondary" onclick="startNewMuscle()">Reset</button>
-    </form>
-  `
-}
-
-function renderMuscleRow(muscle) {
-  return `
-    <tr>
-      <td>${escapeHtml(muscle.id)}</td>
-      <td>${escapeHtml(muscle.groupId)}</td>
-      <td>
-          <button type="button" class="secondary" onclick="editMuscle('${escapeHtml(muscle.id)}')">Edit</button>
-          <button type="button" class="contrast" onclick="deleteMuscle('${escapeHtml(muscle.id)}')">Delete</button>
-      </td>
-    </tr>
-  `
 }
 
 function renderCompactTable(headers, rows, renderRow, emptyMessage) {
@@ -469,7 +346,13 @@ function renderCompactTable(headers, rows, renderRow, emptyMessage) {
 
 function renderMuscleGroupsSection() {
   const filteredGroups = state.muscleGroups.filter((id) =>
-    matchesSearch([id, state.i18n.en?.muscles?.groups?.[id] || '', state.i18n['zh-CN']?.muscles?.groups?.[id] || ''], state.muscleGroupSearch),
+    matchesSearch([
+      id,
+      state.i18n.en?.muscles?.groups?.[id] || '',
+      state.i18n['zh-CN']?.muscles?.groups?.[id] || '',
+      state.i18n.en?.muscles?.groupAliases?.[id] || [],
+      state.i18n['zh-CN']?.muscles?.groupAliases?.[id] || [],
+    ], state.muscleGroupSearch),
   )
   const editing = state.editingMuscleGroupId
 
@@ -479,7 +362,7 @@ function renderMuscleGroupsSection() {
       <div class="toolbar">
         <label>
           Search muscle groups
-          <input id="muscle-group-search" value="${escapeHtml(state.muscleGroupSearch)}" placeholder="id, en name, zh-CN name" />
+          <input id="muscle-group-search" value="${escapeHtml(state.muscleGroupSearch)}" placeholder="id, name, alias" />
         </label>
         <div>
           <button type="button" onclick="startNewMuscleGroup()">New muscle group</button>
@@ -488,7 +371,7 @@ function renderMuscleGroupsSection() {
       ${renderMuscleGroupForm(editing)}
       <h3>Muscle Groups <span class="status-pill">${filteredGroups.length} / ${state.muscleGroups.length}</span></h3>
         ${renderCompactTable(
-          ['id', 'en name', 'zh-CN name', 'used by', 'Actions'],
+          ['id', 'en name', 'zh-CN name', 'used by exercises', 'Actions'],
           filteredGroups,
           renderMuscleGroupRow,
           'No muscle groups match the current search.',
@@ -522,7 +405,9 @@ function renderMuscleGroupForm(groupId) {
 }
 
 function renderMuscleGroupRow(groupId) {
-  const usedBy = state.catalog.muscles.filter((muscle) => muscle.groupId === groupId).length
+  const usedBy = state.catalog.exercises.filter((exercise) =>
+    [...(exercise.primaryMuscleGroupIds || []), ...(exercise.secondaryMuscleGroupIds || [])].includes(groupId),
+  ).length
   return `
     <tr>
       <td>${escapeHtml(groupId)}</td>
@@ -542,9 +427,9 @@ function saveExercise(event) {
   const exercise = {
     id: document.getElementById('exercise-id').value.trim(),
     slug: document.getElementById('exercise-slug').value.trim(),
-    equipmentIds: selectedValues('exercise-equipment-ids'),
-    primaryMuscleIds: selectedValues('exercise-primary-muscle-ids'),
-    secondaryMuscleIds: selectedValues('exercise-secondary-muscle-ids'),
+    primaryMuscleGroupIds: selectedValues('exercise-primary-muscle-group-ids'),
+    secondaryMuscleGroupIds: selectedValues('exercise-secondary-muscle-group-ids'),
+    movementPattern: document.getElementById('exercise-movement-pattern').value,
     measurementType: document.getElementById('exercise-measurement-type').value,
     sourceUrls: linesToArray(document.getElementById('exercise-source-urls').value),
   }
@@ -596,101 +481,6 @@ function setCatalogPage(page) {
   renderCatalog()
 }
 
-function saveEquipment(event) {
-  event.preventDefault()
-  const equipment = {
-    id: document.getElementById('equipment-id').value.trim(),
-  }
-
-  if (!equipment.id) {
-    window.alert('id is required.')
-    return
-  }
-
-  const duplicate = state.catalog.equipment.find(
-    (item) => item.id === equipment.id && item.id !== state.editingEquipmentId,
-  )
-  if (duplicate) {
-    window.alert(`Equipment id already exists: ${equipment.id}`)
-    return
-  }
-
-  if (state.editingEquipmentId) {
-    state.catalog.equipment = state.catalog.equipment.map((item) =>
-      item.id === state.editingEquipmentId ? equipment : item,
-    )
-  } else {
-    state.catalog.equipment.push(equipment)
-  }
-
-  state.editingEquipmentId = equipment.id
-  renderEquipmentCatalog()
-}
-
-function startNewEquipment() {
-  state.editingEquipmentId = null
-  renderEquipmentCatalog()
-}
-
-function editEquipment(id) {
-  state.editingEquipmentId = id
-  renderEquipmentCatalog()
-}
-
-function deleteEquipment(id) {
-  if (!window.confirm(`Delete equipment "${id}" from catalog? Exercise references will be checked on the Validate page.`)) return
-  state.catalog.equipment = state.catalog.equipment.filter((equipment) => equipment.id !== id)
-  if (state.editingEquipmentId === id) state.editingEquipmentId = null
-  renderEquipmentCatalog()
-}
-
-function saveMuscle(event) {
-  event.preventDefault()
-  const muscle = {
-    id: document.getElementById('muscle-id').value.trim(),
-    groupId: document.getElementById('muscle-group-id').value,
-  }
-
-  if (!muscle.id) {
-    window.alert('id is required.')
-    return
-  }
-
-  const duplicate = state.catalog.muscles.find(
-    (item) => item.id === muscle.id && item.id !== state.editingMuscleId,
-  )
-  if (duplicate) {
-    window.alert(`Muscle id already exists: ${muscle.id}`)
-    return
-  }
-
-  if (state.editingMuscleId) {
-    state.catalog.muscles = state.catalog.muscles.map((item) => (item.id === state.editingMuscleId ? muscle : item))
-  } else {
-    state.catalog.muscles.push(muscle)
-  }
-
-  state.editingMuscleId = muscle.id
-  renderMusclesCatalog()
-}
-
-function startNewMuscle() {
-  state.editingMuscleId = null
-  renderMusclesCatalog()
-}
-
-function editMuscle(id) {
-  state.editingMuscleId = id
-  renderMusclesCatalog()
-}
-
-function deleteMuscle(id) {
-  if (!window.confirm(`Delete muscle "${id}" from catalog? Exercise references will be checked on the Validate page.`)) return
-  state.catalog.muscles = state.catalog.muscles.filter((muscle) => muscle.id !== id)
-  if (state.editingMuscleId === id) state.editingMuscleId = null
-  renderMusclesCatalog()
-}
-
 function saveMuscleGroupCatalog(event) {
   event.preventDefault()
   const nextId = document.getElementById('muscle-group-id').value.trim()
@@ -714,11 +504,15 @@ function saveMuscleGroupCatalog(event) {
 
   if (previousId) {
     state.muscleGroups = state.muscleGroups.map((id) => (id === previousId ? nextId : id))
-    state.catalog.muscles = state.catalog.muscles.map((muscle) =>
-      muscle.groupId === previousId ? { ...muscle, groupId: nextId } : muscle,
-    )
+    state.catalog.exercises = state.catalog.exercises.map((exercise) => ({
+      ...exercise,
+      primaryMuscleGroupIds: (exercise.primaryMuscleGroupIds || []).map((id) => (id === previousId ? nextId : id)),
+      secondaryMuscleGroupIds: (exercise.secondaryMuscleGroupIds || []).map((id) => (id === previousId ? nextId : id)),
+    }))
     moveObjectKey(state.i18n.en.muscles.groups, previousId, nextId)
     moveObjectKey(state.i18n['zh-CN'].muscles.groups, previousId, nextId)
+    moveObjectKey(state.i18n.en.muscles.groupAliases, previousId, nextId)
+    moveObjectKey(state.i18n['zh-CN'].muscles.groupAliases, previousId, nextId)
   } else {
     state.muscleGroups.push(nextId)
   }
@@ -727,27 +521,31 @@ function saveMuscleGroupCatalog(event) {
   state.i18n['zh-CN'].muscles.groups[nextId] = zhName
   state.muscleGroups = Array.from(new Set(state.muscleGroups))
   state.editingMuscleGroupId = nextId
-  renderMusclesCatalog()
+  renderMuscleGroupsCatalog()
 }
 
 function startNewMuscleGroup() {
   state.editingMuscleGroupId = null
-  renderMusclesCatalog()
+  renderMuscleGroupsCatalog()
 }
 
 function editMuscleGroupCatalog(id) {
   state.editingMuscleGroupId = id
-  renderMusclesCatalog()
+  renderMuscleGroupsCatalog()
 }
 
 function deleteMuscleGroupCatalog(id) {
-  const usedBy = state.catalog.muscles.filter((muscle) => muscle.groupId === id).length
-  if (!window.confirm(`Delete muscle group "${id}"? ${usedBy} muscles currently use this group.`)) return
+  const usedBy = state.catalog.exercises.filter((exercise) =>
+    [...(exercise.primaryMuscleGroupIds || []), ...(exercise.secondaryMuscleGroupIds || [])].includes(id),
+  ).length
+  if (!window.confirm(`Delete muscle group "${id}"? ${usedBy} exercises currently use this group.`)) return
   state.muscleGroups = state.muscleGroups.filter((groupId) => groupId !== id)
   delete state.i18n.en?.muscles?.groups?.[id]
   delete state.i18n['zh-CN']?.muscles?.groups?.[id]
+  delete state.i18n.en?.muscles?.groupAliases?.[id]
+  delete state.i18n['zh-CN']?.muscles?.groupAliases?.[id]
   if (state.editingMuscleGroupId === id) state.editingMuscleGroupId = null
-  renderMusclesCatalog()
+  renderMuscleGroupsCatalog()
 }
 
 function moveObjectKey(object, previousKey, nextKey) {
@@ -769,7 +567,7 @@ function renderI18n() {
         <label>
           namespace
           <select id="i18n-namespace">
-            ${['exercises', 'equipment', 'muscles']
+            ${['exercises', 'muscles']
               .map((namespace) => `<option value="${namespace}" ${namespace === state.i18nNamespace ? 'selected' : ''}>${namespace}</option>`)
               .join('')}
           </select>
@@ -808,8 +606,9 @@ function renderI18n() {
         </div>
       </div>
       <p class="${hasNamespace ? 'muted' : 'warning'}">${hasNamespace ? 'Namespace loaded.' : '待创建：当前 namespace 缺少一个或多个 locale 对象。'}</p>
+      ${state.i18nNamespace === 'exercises' ? renderMovementPatternsEditor() : ''}
       ${state.i18nNamespace === 'muscles' ? renderMuscleGroupsEditor() : ''}
-      <article>
+      ${state.i18nNamespace !== 'muscles' ? `<article>
         <h2>${state.i18nNamespace} i18n <span class="status-pill">${rows.length} / ${ids.length}</span></h2>
         <div class="table-wrap">
           <table>
@@ -826,7 +625,7 @@ function renderI18n() {
             </tbody>
           </table>
         </div>
-      </article>
+      </article>` : ''}
     </section>
   `
 
@@ -856,20 +655,34 @@ function ensureNamespace(locale, namespace) {
   ensureLocale(locale)
   if (!state.i18n[locale][namespace]) {
     state.i18n[locale][namespace] = namespace === 'muscles'
-      ? { groups: {}, names: {}, aliases: {} }
-      : { names: {}, aliases: {} }
+      ? { groups: {}, groupAliases: {} }
+      : { names: {}, aliases: {}, movementPatterns: { names: {}, descriptions: {}, aliases: {} } }
   }
-  if (!state.i18n[locale][namespace].names) state.i18n[locale][namespace].names = {}
-  if (!state.i18n[locale][namespace].aliases) state.i18n[locale][namespace].aliases = {}
+  if (namespace !== 'muscles' && !state.i18n[locale][namespace].names) state.i18n[locale][namespace].names = {}
+  if (namespace !== 'muscles' && !state.i18n[locale][namespace].aliases) state.i18n[locale][namespace].aliases = {}
   if (namespace === 'muscles' && !state.i18n[locale][namespace].groups) {
     state.i18n[locale][namespace].groups = {}
+  }
+  if (namespace === 'muscles' && !state.i18n[locale][namespace].groupAliases) {
+    state.i18n[locale][namespace].groupAliases = {}
+  }
+  if (namespace === 'exercises' && !state.i18n[locale][namespace].movementPatterns) {
+    state.i18n[locale][namespace].movementPatterns = { names: {}, descriptions: {}, aliases: {} }
+  }
+  if (namespace === 'exercises' && !state.i18n[locale][namespace].movementPatterns.names) {
+    state.i18n[locale][namespace].movementPatterns.names = {}
+  }
+  if (namespace === 'exercises' && !state.i18n[locale][namespace].movementPatterns.descriptions) {
+    state.i18n[locale][namespace].movementPatterns.descriptions = {}
+  }
+  if (namespace === 'exercises' && !state.i18n[locale][namespace].movementPatterns.aliases) {
+    state.i18n[locale][namespace].movementPatterns.aliases = {}
   }
 }
 
 function namespaceIds(namespace) {
   if (namespace === 'exercises') return state.catalog.exercises.map((item) => item.id)
-  if (namespace === 'equipment') return state.catalog.equipment.map((item) => item.id)
-  return state.catalog.muscles.map((item) => item.id)
+  return [...state.muscleGroups]
 }
 
 function groupIds() {
@@ -935,13 +748,54 @@ function saveI18nRow(id) {
   renderI18n()
 }
 
+function renderMovementPatternsEditor() {
+  return `
+    <article>
+      <h2>Movement patterns</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>id</th><th>en name</th><th>en description</th><th>en aliases</th><th>zh-CN name</th><th>zh-CN description</th><th>zh-CN aliases</th><th>Actions</th></tr></thead>
+          <tbody>
+            ${movementPatterns
+              .map(
+                (id) => `
+                  <tr>
+                    <td>${escapeHtml(id)}</td>
+                    <td><input id="movement-en-name-${id}" value="${escapeHtml(state.i18n.en.exercises?.movementPatterns?.names?.[id] || '')}" /></td>
+                    <td><textarea class="compact-textarea" id="movement-en-description-${id}">${escapeHtml(state.i18n.en.exercises?.movementPatterns?.descriptions?.[id] || '')}</textarea></td>
+                    <td><textarea class="compact-textarea" id="movement-en-aliases-${id}">${arrayTextarea(state.i18n.en.exercises?.movementPatterns?.aliases?.[id] || [])}</textarea></td>
+                    <td><input id="movement-zh-CN-name-${id}" value="${escapeHtml(state.i18n['zh-CN'].exercises?.movementPatterns?.names?.[id] || '')}" /></td>
+                    <td><textarea class="compact-textarea" id="movement-zh-CN-description-${id}">${escapeHtml(state.i18n['zh-CN'].exercises?.movementPatterns?.descriptions?.[id] || '')}</textarea></td>
+                    <td><textarea class="compact-textarea" id="movement-zh-CN-aliases-${id}">${arrayTextarea(state.i18n['zh-CN'].exercises?.movementPatterns?.aliases?.[id] || [])}</textarea></td>
+                    <td><button type="button" onclick="saveMovementPattern('${escapeHtml(id)}')">Save</button></td>
+                  </tr>
+                `,
+              )
+              .join('')}
+          </tbody>
+        </table>
+      </div>
+    </article>
+  `
+}
+
+function saveMovementPattern(id) {
+  ;['en', 'zh-CN'].forEach((locale) => {
+    ensureNamespace(locale, 'exercises')
+    state.i18n[locale].exercises.movementPatterns.names[id] = document.getElementById(`movement-${locale}-name-${id}`).value.trim()
+    state.i18n[locale].exercises.movementPatterns.descriptions[id] = document.getElementById(`movement-${locale}-description-${id}`).value.trim()
+    state.i18n[locale].exercises.movementPatterns.aliases[id] = linesToArray(document.getElementById(`movement-${locale}-aliases-${id}`).value)
+  })
+  renderI18n()
+}
+
 function renderMuscleGroupsEditor() {
   return `
     <article>
-      <h2>Muscle group names</h2>
+      <h2>Muscle groups</h2>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>group id</th><th>en name</th><th>zh-CN name</th><th>Actions</th></tr></thead>
+          <thead><tr><th>group id</th><th>en name</th><th>en aliases</th><th>zh-CN name</th><th>zh-CN aliases</th><th>Actions</th></tr></thead>
           <tbody>
             ${groupIds()
               .map(
@@ -949,7 +803,9 @@ function renderMuscleGroupsEditor() {
                   <tr>
                     <td>${escapeHtml(id)}</td>
                     <td><input id="group-en-${id}" value="${escapeHtml(state.i18n.en.muscles?.groups?.[id] || '')}" /></td>
+                    <td><textarea class="compact-textarea" id="group-en-aliases-${id}">${arrayTextarea(state.i18n.en.muscles?.groupAliases?.[id] || [])}</textarea></td>
                     <td><input id="group-zh-CN-${id}" value="${escapeHtml(state.i18n['zh-CN'].muscles?.groups?.[id] || '')}" /></td>
+                    <td><textarea class="compact-textarea" id="group-zh-CN-aliases-${id}">${arrayTextarea(state.i18n['zh-CN'].muscles?.groupAliases?.[id] || [])}</textarea></td>
                     <td><button type="button" onclick="saveMuscleGroup('${escapeHtml(id)}')">Save</button></td>
                   </tr>
                 `,
@@ -966,6 +822,7 @@ function saveMuscleGroup(id) {
   ;['en', 'zh-CN'].forEach((locale) => {
     ensureNamespace(locale, 'muscles')
     state.i18n[locale].muscles.groups[id] = document.getElementById(`group-${locale}-${id}`).value.trim()
+    state.i18n[locale].muscles.groupAliases[id] = linesToArray(document.getElementById(`group-${locale}-aliases-${id}`).value)
   })
   renderI18n()
 }
@@ -974,13 +831,29 @@ function generateI18nTemplate() {
   const namespace = state.i18nNamespace
   ;['en', 'zh-CN'].forEach((locale) => {
     ensureNamespace(locale, namespace)
-    namespaceIds(namespace).forEach((id) => {
-      if (!(id in state.i18n[locale][namespace].names)) state.i18n[locale][namespace].names[id] = ''
-      if (!(id in state.i18n[locale][namespace].aliases)) state.i18n[locale][namespace].aliases[id] = []
-    })
+    if (namespace !== 'muscles') {
+      namespaceIds(namespace).forEach((id) => {
+        if (!(id in state.i18n[locale][namespace].names)) state.i18n[locale][namespace].names[id] = ''
+        if (!(id in state.i18n[locale][namespace].aliases)) state.i18n[locale][namespace].aliases[id] = []
+      })
+    }
     if (namespace === 'muscles') {
       groupIds().forEach((id) => {
         if (!(id in state.i18n[locale].muscles.groups)) state.i18n[locale].muscles.groups[id] = ''
+        if (!(id in state.i18n[locale].muscles.groupAliases)) state.i18n[locale].muscles.groupAliases[id] = []
+      })
+    }
+    if (namespace === 'exercises') {
+      movementPatterns.forEach((id) => {
+        if (!(id in state.i18n[locale].exercises.movementPatterns.names)) {
+          state.i18n[locale].exercises.movementPatterns.names[id] = ''
+        }
+        if (!(id in state.i18n[locale].exercises.movementPatterns.descriptions)) {
+          state.i18n[locale].exercises.movementPatterns.descriptions[id] = ''
+        }
+        if (!(id in state.i18n[locale].exercises.movementPatterns.aliases)) {
+          state.i18n[locale].exercises.movementPatterns.aliases[id] = []
+        }
       })
     }
   })
@@ -1054,25 +927,19 @@ async function loadFromProjectFiles() {
     const files = await readProjectFiles(exportPaths)
     state.catalog = {
       exercises: parseCatalogSource(files['src/domain/exercise-catalog/exercises.ts'], 'exercises'),
-      equipment: parseCatalogSource(files['src/domain/exercise-catalog/equipment.ts'], 'equipment'),
-      muscles: parseCatalogSource(files['src/domain/exercise-catalog/muscles.ts'], 'muscles'),
     }
     state.muscleGroups = parseMuscleGroupsSource(files['src/domain/exercise-catalog/types.ts'])
     state.i18n = {
       en: {
         exercises: parseLocaleSource(files['src/locales/en/exercises.ts'], 'exercises'),
-        equipment: parseLocaleSource(files['src/locales/en/equipment.ts'], 'equipment'),
         muscles: parseLocaleSource(files['src/locales/en/muscles.ts'], 'muscles'),
       },
       'zh-CN': {
         exercises: parseLocaleSource(files['src/locales/zh-CN/exercises.ts'], 'exercises'),
-        equipment: parseLocaleSource(files['src/locales/zh-CN/equipment.ts'], 'equipment'),
         muscles: parseLocaleSource(files['src/locales/zh-CN/muscles.ts'], 'muscles'),
       },
     }
     state.editingExerciseId = null
-    state.editingEquipmentId = null
-    state.editingMuscleId = null
     state.editingMuscleGroupId = null
     state.syncMessage = `Loaded ${exportPaths.length} source files from project folder.`
   } catch (error) {
@@ -1099,23 +966,15 @@ function validateAll() {
 
   findDuplicates(state.catalog.exercises.map((item) => item.id)).forEach((id) => add('error', 'catalog.exercises', `Duplicate exercise id: ${id}`))
   findDuplicates(state.catalog.exercises.map((item) => item.slug)).forEach((slug) => add('error', 'catalog.exercises', `Duplicate exercise slug: ${slug}`))
-  findDuplicates(state.catalog.equipment.map((item) => item.id)).forEach((id) => add('error', 'catalog.equipment', `Duplicate equipment id: ${id}`))
-  findDuplicates(state.catalog.muscles.map((item) => item.id)).forEach((id) => add('error', 'catalog.muscles', `Duplicate muscle id: ${id}`))
   findDuplicates(state.muscleGroups).forEach((id) => add('error', 'catalog.muscleGroups', `Duplicate muscle group id: ${id}`))
 
-  const equipmentIds = new Set(state.catalog.equipment.map((item) => item.id))
-  const muscleIds = new Set(state.catalog.muscles.map((item) => item.id))
   const muscleGroupIds = new Set(state.muscleGroups)
-  state.catalog.muscles.forEach((muscle) => {
-    if (!muscleGroupIds.has(muscle.groupId)) add('error', muscle.id, `Unknown muscle groupId: ${muscle.groupId}`)
-  })
+  const movementPatternIds = new Set(movementPatterns)
   state.catalog.exercises.forEach((exercise) => {
-    exercise.equipmentIds.forEach((id) => {
-      if (!equipmentIds.has(id)) add('error', exercise.id, `Unknown equipmentId: ${id}`)
+    ;[...(exercise.primaryMuscleGroupIds || []), ...(exercise.secondaryMuscleGroupIds || [])].forEach((id) => {
+      if (!muscleGroupIds.has(id)) add('error', exercise.id, `Unknown muscleGroupId: ${id}`)
     })
-    ;[...exercise.primaryMuscleIds, ...exercise.secondaryMuscleIds].forEach((id) => {
-      if (!muscleIds.has(id)) add('error', exercise.id, `Unknown muscleId: ${id}`)
-    })
+    if (!movementPatternIds.has(exercise.movementPattern)) add('error', exercise.id, `Invalid movementPattern: ${exercise.movementPattern}`)
     if (!measurementTypes.includes(exercise.measurementType)) {
       add('error', exercise.id, `Invalid measurementType: ${exercise.measurementType}`)
     }
@@ -1128,8 +987,20 @@ function validateAll() {
   })
 
   ;['en', 'zh-CN'].forEach((locale) => {
-    if (!state.i18n[locale]?.equipment) add('warning', `i18n.${locale}.equipment`, 'Equipment i18n file/object is missing')
     if (!state.i18n[locale]?.muscles) add('warning', `i18n.${locale}.muscles`, 'Muscle i18n file/object is missing')
+    movementPatterns.forEach((id) => {
+      if (!state.i18n[locale]?.exercises?.movementPatterns?.names?.[id]) {
+        add('error', `i18n.${locale}.exercises`, `Movement pattern is missing a name: ${id}`)
+      }
+      if (!state.i18n[locale]?.exercises?.movementPatterns?.descriptions?.[id]) {
+        add('error', `i18n.${locale}.exercises`, `Movement pattern is missing a description: ${id}`)
+      }
+    })
+    state.muscleGroups.forEach((id) => {
+      if (!state.i18n[locale]?.muscles?.groups?.[id]) {
+        add('error', `i18n.${locale}.muscles`, `Muscle group is missing a name: ${id}`)
+      }
+    })
   })
 
   const catalogExerciseIds = new Set(state.catalog.exercises.map((item) => item.id))
@@ -1251,7 +1122,7 @@ function parseLocaleSource(source, name) {
 }
 
 function parseMuscleGroupsSource(source) {
-  const match = source.match(/export\s+type\s+MuscleGroup\s*=([\s\S]*?)\n\nexport\s+type\s+Equipment/)
+  const match = source.match(/export\s+type\s+MuscleGroup\s*=([\s\S]*?)\n\nexport\s+type\s+Exercise/)
   if (!match) return [...defaultMuscleGroups]
   return Array.from(match[1].matchAll(/'([^']+)'/g), (item) => item[1])
 }
@@ -1263,11 +1134,8 @@ function generateExport(path) {
   if (path.endsWith('domain/exercise-catalog/exercises.ts')) {
     return `import type { Exercise } from './types'\n\nexport const exercises: Exercise[] = ${formatArrayOfObjects(state.catalog.exercises)}\n`
   }
-  if (path.endsWith('domain/exercise-catalog/equipment.ts')) {
-    return `import type { Equipment } from './types'\n\nexport const equipment: Equipment[] = ${formatArrayOfObjects(state.catalog.equipment)}\n`
-  }
   if (path.endsWith('domain/exercise-catalog/muscles.ts')) {
-    return `import type { Muscle } from './types'\n\nexport const muscles: Muscle[] = ${formatArrayOfObjects(state.catalog.muscles)}\n`
+    return `import type { MuscleGroup } from './types'\n\nexport const muscleGroups: MuscleGroup[] = ${formatArray(state.muscleGroups, 0)}\n`
   }
 
   const parts = path.split('/')
@@ -1277,35 +1145,39 @@ function generateExport(path) {
 }
 
 function formatLocaleFile(namespace, bundle) {
-  const safeBundle = bundle || (namespace === 'muscles' ? { groups: {}, names: {}, aliases: {} } : { names: {}, aliases: {} })
+  const safeBundle = bundle || (namespace === 'muscles'
+    ? { groups: {}, groupAliases: {} }
+    : namespace === 'exercises'
+      ? { names: {}, aliases: {}, movementPatterns: { names: {}, descriptions: {}, aliases: {} } }
+      : { names: {}, aliases: {} })
   const blocks = []
-  if (namespace === 'muscles') blocks.push(`  groups: ${formatObject(safeBundle.groups || {}, 2)}`)
-  blocks.push(`  names: ${formatObject(safeBundle.names || {}, 2)}`)
-  blocks.push(`  aliases: ${formatObject(safeBundle.aliases || {}, 2)}`)
+  if (namespace === 'muscles') {
+    blocks.push(`  groups: ${formatObject(safeBundle.groups || {}, 2)}`)
+    blocks.push(`  groupAliases: ${formatObject(safeBundle.groupAliases || {}, 2)}`)
+  } else {
+    blocks.push(`  names: ${formatObject(safeBundle.names || {}, 2)}`)
+    blocks.push(`  aliases: ${formatObject(safeBundle.aliases || {}, 2)}`)
+  }
+  if (namespace === 'exercises') {
+    blocks.push(`  movementPatterns: ${formatObject(safeBundle.movementPatterns || { names: {}, descriptions: {}, aliases: {} }, 2)}`)
+  }
   return `const ${namespace} = {\n${blocks.join(',\n')},\n}\n\nexport default ${namespace}\n`
 }
 
 function generateTypesFile() {
   return `export type MeasurementType = ${measurementTypes.map(formatString).join(' | ')}
 
+export type MovementPattern = ${movementPatterns.map(formatString).join(' | ')}
+
 export type MuscleGroup =
 ${state.muscleGroups.map((group) => `  | ${formatString(group)}`).join('\n')}
-
-export type Equipment = {
-  id: string
-}
-
-export type Muscle = {
-  id: string
-  groupId: MuscleGroup
-}
 
 export type Exercise = {
   id: string
   slug: string
-  equipmentIds: string[]
-  primaryMuscleIds: string[]
-  secondaryMuscleIds: string[]
+  primaryMuscleGroupIds: MuscleGroup[]
+  secondaryMuscleGroupIds: MuscleGroup[]
+  movementPattern: MovementPattern
   measurementType: MeasurementType
   sourceUrls: string[]
 }
@@ -1352,16 +1224,11 @@ window.startNewExercise = startNewExercise
 window.editExercise = editExercise
 window.deleteExercise = deleteExercise
 window.setCatalogPage = setCatalogPage
-window.startNewEquipment = startNewEquipment
-window.editEquipment = editEquipment
-window.deleteEquipment = deleteEquipment
-window.startNewMuscle = startNewMuscle
-window.editMuscle = editMuscle
-window.deleteMuscle = deleteMuscle
 window.startNewMuscleGroup = startNewMuscleGroup
 window.editMuscleGroupCatalog = editMuscleGroupCatalog
 window.deleteMuscleGroupCatalog = deleteMuscleGroupCatalog
 window.saveI18nRow = saveI18nRow
+window.saveMovementPattern = saveMovementPattern
 window.saveMuscleGroup = saveMuscleGroup
 window.generateI18nTemplate = generateI18nTemplate
 window.selectProjectDirectory = selectProjectDirectory

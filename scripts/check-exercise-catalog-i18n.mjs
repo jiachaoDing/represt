@@ -103,24 +103,18 @@ function checkNoCatalogAliases(errors, label, items) {
 }
 
 const { exercises } = loadTsModule('src/domain/exercise-catalog/exercises.ts')
-const { equipment } = loadTsModule('src/domain/exercise-catalog/equipment.ts')
-const { muscles } = loadTsModule('src/domain/exercise-catalog/muscles.ts')
+const { muscleGroups } = loadTsModule('src/domain/exercise-catalog/muscles.ts')
 const enExercises = loadTsModule('src/locales/en/exercises.ts').default
 const zhCNExercises = loadTsModule('src/locales/zh-CN/exercises.ts').default
-const enEquipment = loadTsModule('src/locales/en/equipment.ts').default
-const zhCNEquipment = loadTsModule('src/locales/zh-CN/equipment.ts').default
 const enMuscles = loadTsModule('src/locales/en/muscles.ts').default
 const zhCNMuscles = loadTsModule('src/locales/zh-CN/muscles.ts').default
 
 const errors = []
-const equipmentIds = new Set(equipment.map((item) => item.id))
-const muscleIds = new Set(muscles.map((muscle) => muscle.id))
 const muscleGroupIds = readStringUnion('src/domain/exercise-catalog/types.ts', 'MuscleGroup')
+const muscleGroupIdSet = new Set(muscleGroupIds)
 const movementPatterns = readStringUnion('src/domain/exercise-catalog/types.ts', 'MovementPattern')
 const movementPatternIds = new Set(movementPatterns)
 
-checkNames(errors, 'equipment', equipmentIds, enEquipment, zhCNEquipment)
-checkNames(errors, 'muscle', muscleIds, enMuscles, zhCNMuscles)
 checkNames(
   errors,
   'exercise',
@@ -131,24 +125,28 @@ checkNames(
 checkGroupNames(errors, muscleGroupIds, enMuscles, zhCNMuscles)
 checkGroupAliases(errors, muscleGroupIds, enMuscles, zhCNMuscles)
 checkMovementPatterns(errors, movementPatterns, enExercises, zhCNExercises)
-checkNoCatalogAliases(errors, 'equipment', equipment)
-checkNoCatalogAliases(errors, 'muscle', muscles)
 checkNoCatalogAliases(errors, 'exercise', exercises)
+
+for (const muscleGroup of muscleGroups) {
+  if (!muscleGroupIdSet.has(muscleGroup)) {
+    errors.push(`Muscle group list references missing group "${muscleGroup}"`)
+  }
+}
+
+for (const muscleGroupId of muscleGroupIds) {
+  if (!muscleGroups.includes(muscleGroupId)) {
+    errors.push(`Muscle group list is missing group "${muscleGroupId}"`)
+  }
+}
 
 for (const exercise of exercises) {
   if (!movementPatternIds.has(exercise.movementPattern)) {
     errors.push(`Exercise "${exercise.id}" references missing movement pattern "${exercise.movementPattern}"`)
   }
 
-  for (const equipmentId of exercise.equipmentIds) {
-    if (!equipmentIds.has(equipmentId)) {
-      errors.push(`Exercise "${exercise.id}" references missing equipment "${equipmentId}"`)
-    }
-  }
-
-  for (const muscleId of [...exercise.primaryMuscleIds, ...exercise.secondaryMuscleIds]) {
-    if (!muscleIds.has(muscleId)) {
-      errors.push(`Exercise "${exercise.id}" references missing muscle "${muscleId}"`)
+  for (const muscleGroupId of [...exercise.primaryMuscleGroupIds, ...exercise.secondaryMuscleGroupIds]) {
+    if (!muscleGroupIdSet.has(muscleGroupId)) {
+      errors.push(`Exercise "${exercise.id}" references missing muscle group "${muscleGroupId}"`)
     }
   }
 }

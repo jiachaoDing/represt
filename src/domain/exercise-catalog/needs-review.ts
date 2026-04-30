@@ -19,6 +19,6 @@ export const needsReview: ExerciseCatalogReviewItem[] = [
   {
     id: 'hangingLegRaise',
     reason:
-      'Muscle emphasis differs between hip-flexor leg raise and abdominal leg-hip raise; current mapping keeps both abs and hip flexors for conservative search/filter behavior.',
+      'Confirm whether hanging leg raise should stay primarily grouped as core when users perform it with more lower-body involvement.',
   },
 ]

@@ -11,21 +11,11 @@ export type MuscleGroup =
   | 'legs'
   | 'fullBody'
 
-export type Equipment = {
-  id: string
-}
-
-export type Muscle = {
-  id: string
-  groupId: MuscleGroup
-}
-
 export type Exercise = {
   id: string
   slug: string
-  equipmentIds: string[]
-  primaryMuscleIds: string[]
-  secondaryMuscleIds: string[]
+  primaryMuscleGroupIds: MuscleGroup[]
+  secondaryMuscleGroupIds: MuscleGroup[]
   movementPattern: MovementPattern
   measurementType: MeasurementType
   sourceUrls: string[]
