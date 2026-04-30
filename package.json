@@ -2,9 +2,6 @@
   "name": "trainre",
   "private": true,
   "version": "1.0.0",
-  "android": {
-    "versionCode": 1
-  },
   "type": "module",
   "scripts": {
     "dev": "vite",
