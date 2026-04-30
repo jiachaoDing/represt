@@ -87,11 +87,13 @@ scripts/
 - `WorkoutTemplate` 和 `WorkoutSession` 分离，模板编辑不会自动回写已生成训练。
 - `TrainingCycle` 持久化一套全局循环配置，包含循环位数组、锚点日期与锚点位置。
 - `TemplateExercise` 除组数与休息时长外，还可选持久化 `weightKg`、`reps` 作为模板默认值。
-- `WorkoutSession` 还会记录当天是否已完成循环模板自动导入；会话状态仍在运行时由动作完成情况派生。
-- `SessionExercise` 持久化 `completedSets`、`lastCompletedAt`、`restEndsAt` 等执行数据；动作状态同样在运行时派生。
-- `SetRecord` 持久化本次训练的真实重量与次数；若动作来自模板，则创建组记录时会复制模板默认值作为可编辑初始值。
-- `RestTimerState` 是由 `SessionExercise` 计算出的界面态，不是单独的数据库表。
-- IndexedDB 当前包含 6 张表：`trainingCycles`、`workoutTemplates`、`templateExercises`、`workoutSessions`、`sessionExercises`、`setRecords`。
+- `WorkoutSession` 记录当天计划来源与最近同步模板时间；会话状态在运行时由实际执行情况派生。
+- `SessionPlanItem` 表示当天训练计划项，训练页按它展示模板动作和临时新增动作。
+- `PerformedExercise` 表示实际开始或完成过的动作，保存完成组数、最近完成时间与休息结束时间。
+- `SetRecord` 持久化本次训练的真实重量与次数，并通过 `performedExerciseId` 指向实际执行动作。
+- 总结页和日历记录日只根据真实 `SetRecord` 聚合，未开始的计划项不进入历史记录。
+- `RestTimerState` 是由实际执行动作计算出的界面态，不是单独的数据库表。
+- IndexedDB 当前包含 7 张表：`trainingCycles`、`workoutTemplates`、`templateExercises`、`workoutSessions`、`sessionPlanItems`、`performedExercises`、`setRecords`。
 
 ## 当前未覆盖的能力
 

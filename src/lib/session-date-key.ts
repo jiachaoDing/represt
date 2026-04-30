@@ -6,6 +6,8 @@ export type CalendarDateCell = {
   isCurrentMonth: boolean
 }
 
+const debugDateOffsetStorageKey = 'trainre.debug-date-offset-days.v1'
+
 function buildSessionDateKey(date: Date) {
   const year = date.getFullYear()
   const month = String(date.getMonth() + 1).padStart(2, '0')
@@ -14,8 +16,18 @@ function buildSessionDateKey(date: Date) {
   return `${year}-${month}-${day}`
 }
 
+export function getDebugDateOffsetDays() {
+  const value = localStorage.getItem(debugDateOffsetStorageKey)
+  const parsedValue = value === null ? 0 : Number(value)
+
+  return Number.isInteger(parsedValue) ? parsedValue : 0
+}
+
 export function getTodaySessionDateKey() {
-  return buildSessionDateKey(new Date())
+  const date = new Date()
+  date.setDate(date.getDate() + getDebugDateOffsetDays())
+
+  return buildSessionDateKey(date)
 }
 
 export function parseSessionDateKey(sessionDateKey: string) {
@@ -72,6 +84,30 @@ export function addDaysToSessionDateKey(sessionDateKey: string, amount: number) 
   nextDate.setDate(nextDate.getDate() + amount)
 
   return buildSessionDateKey(nextDate)
+}
+
+export function setDebugTodaySessionDateKey(sessionDateKey: string) {
+  const date = parseSessionDateKey(sessionDateKey)
+  if (!date) {
+    return getDebugDateOffsetDays()
+  }
+
+  const realTodayDateKey = buildSessionDateKey(new Date())
+  const offsetDays = diffSessionDateKeys(sessionDateKey, realTodayDateKey)
+  localStorage.setItem(debugDateOffsetStorageKey, String(offsetDays))
+
+  return offsetDays
+}
+
+export function advanceDebugDateByOneDay() {
+  const offsetDays = getDebugDateOffsetDays() + 1
+  localStorage.setItem(debugDateOffsetStorageKey, String(offsetDays))
+
+  return offsetDays
+}
+
+export function resetDebugDateOffset() {
+  localStorage.removeItem(debugDateOffsetStorageKey)
 }
 
 export function addMonthsToSessionDateKey(sessionDateKey: string, amount: number) {

@@ -1,11 +1,20 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 
 import { LocalReminderSettings } from '../components/settings/LocalReminderSettings'
 import { PageHeader } from '../components/ui/PageHeader'
+import { clearStoredCurrentSessionId } from '../db/sessions'
 import { useHapticsPreference } from '../hooks/useHapticsPreference'
 import { useLanguagePreference } from '../i18n/useLanguagePreference'
 import type { LanguagePreference } from '../i18n/languages'
 import { triggerHaptic } from '../lib/haptics'
+import {
+  getDebugDateOffsetDays,
+  getTodaySessionDateKey,
+  resetDebugDateOffset,
+  setDebugTodaySessionDateKey,
+} from '../lib/session-date-key'
 import { useThemePreference, type ThemePreference } from '../lib/theme'
 
 function HapticsSettingsCard() {
@@ -130,6 +139,69 @@ function ThemeSettingsCard() {
   )
 }
 
+function DebugDateSettingsCard() {
+  const { t } = useTranslation()
+  const navigate = useNavigate()
+  const [selectedDateKey, setSelectedDateKey] = useState(getTodaySessionDateKey)
+  const [offsetDays, setOffsetDays] = useState(getDebugDateOffsetDays)
+
+  function handleApplyDate() {
+    const nextOffsetDays = setDebugTodaySessionDateKey(selectedDateKey)
+    setOffsetDays(nextOffsetDays)
+    clearStoredCurrentSessionId()
+    navigate('/')
+  }
+
+  function handleResetDate() {
+    resetDebugDateOffset()
+    const todayDateKey = getTodaySessionDateKey()
+    setSelectedDateKey(todayDateKey)
+    setOffsetDays(0)
+    clearStoredCurrentSessionId()
+    navigate('/')
+  }
+
+  return (
+    <section className="rounded-[1.25rem] border border-[var(--outline-variant)]/20 bg-[var(--surface)] px-5 py-4 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)]">
+      <div>
+        <p className="text-[15px] font-semibold text-[var(--on-surface)]">{t('settings.debugDate.title')}</p>
+        <p className="mt-1 text-[13px] leading-5 text-[var(--on-surface-variant)]">
+          {t('settings.debugDate.description')}
+        </p>
+      </div>
+      <p className="mt-3 text-[13px] font-medium text-[var(--on-surface-variant)]">
+        {t('settings.debugDate.offset', { count: offsetDays })}
+      </p>
+      <div className="mt-4 flex flex-col gap-2">
+        <input
+          type="date"
+          value={selectedDateKey}
+          onChange={(event) => setSelectedDateKey(event.target.value)}
+          aria-label={t('settings.debugDate.dateLabel')}
+          className="h-11 rounded-xl border border-[var(--outline-variant)] bg-[var(--surface-container)] px-3 text-sm font-medium text-[var(--on-surface)]"
+        />
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={handleApplyDate}
+            disabled={!selectedDateKey}
+            className="min-h-10 rounded-full bg-[var(--primary)] px-3 py-2 text-xs font-semibold text-[var(--on-primary)] transition-colors disabled:opacity-40"
+          >
+            {t('settings.debugDate.apply')}
+          </button>
+          <button
+            type="button"
+            onClick={handleResetDate}
+            className="min-h-10 rounded-full border border-[var(--outline-variant)] px-3 py-2 text-xs font-semibold text-[var(--on-surface)] transition-colors"
+          >
+            {t('settings.debugDate.reset')}
+          </button>
+        </div>
+      </div>
+    </section>
+  )
+}
+
 export function SettingsPage() {
   const { t } = useTranslation()
 
@@ -141,6 +213,7 @@ export function SettingsPage() {
         <LanguageSettingsCard />
         <ThemeSettingsCard />
         <HapticsSettingsCard />
+        <DebugDateSettingsCard />
         <LocalReminderSettings open />
       </div>
     </div>

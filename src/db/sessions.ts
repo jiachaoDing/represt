@@ -53,6 +53,11 @@ function setStoredCurrentSessionId(sessionId: string | null) {
   localStorage.removeItem(CURRENT_SESSION_KEY)
 }
 
+export function clearStoredCurrentSessionId() {
+  getOrCreateTodaySessionPromise = null
+  setStoredCurrentSessionId(null)
+}
+
 async function resolveCurrentSessionId() {
   const todayDateKey = getTodaySessionDateKey()
   const storedSessionId = getStoredCurrentSessionId()

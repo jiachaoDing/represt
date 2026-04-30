@@ -66,6 +66,14 @@ const common = {
       description: '完成、保存、撤销和危险操作时短促反馈',
       test: '测试触感反馈',
     },
+    debugDate: {
+      title: '调试日期',
+      description: '设置应用内今天，用于本地检查跨天训练行为。',
+      dateLabel: '应用内今天',
+      offset: '当前偏移 {{count}} 天',
+      apply: '应用日期',
+      reset: '重置日期',
+    },
     reminder: {
       unavailable: '无法检测',
       enabled: '已开启',

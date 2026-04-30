@@ -66,6 +66,14 @@ const common = {
       description: 'Short feedback for completion, save, undo, and dangerous actions',
       test: 'Test haptics',
     },
+    debugDate: {
+      title: 'Debug date',
+      description: 'Set the app\'s today for local cross-day training checks.',
+      dateLabel: 'App today',
+      offset: 'Current offset: {{count}} days',
+      apply: 'Apply date',
+      reset: 'Reset date',
+    },
     reminder: {
       unavailable: 'Unavailable',
       enabled: 'Enabled',
@@ -259,7 +267,7 @@ const common = {
     progressSets: '{{completed}} / {{total}} sets',
     restMeta: '{{sets}} sets · rest {{seconds}} sec',
     templateUpdatedTitle: '{{name}} has updates',
-    templateUpdatedDescription: 'Today will be rebuilt from the current template. Recorded sets stay in the summary.',
+    templateUpdatedDescription: ' Recorded sets stay in the summary.',
     syncTemplate: 'Sync template',
     duplicateImport: '"{{name}}" may already be in today\'s training.',
     willUpdateSummary: 'This will update today\'s training summary.',
