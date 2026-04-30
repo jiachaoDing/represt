@@ -8,6 +8,7 @@ import {
   getCurrentSession,
   getOrCreateTodaySession,
   getSessionTemplateSyncStatus,
+  replaceSessionPlanItem,
   reorderSessionPlanItems,
   syncSessionPlanFromTemplate,
   type TemplateSyncResult,
@@ -17,21 +18,15 @@ import {
 import { getTodayTrainingCycleDay, getTrainingCycle } from '../../db/training-cycle'
 import { listTemplatesWithExercises, type TemplateWithExercises } from '../../db/templates'
 import {
+  parseOptionalDistanceMeters,
+  parseOptionalDurationSeconds,
   parseIntegerInput,
   parseOptionalReps,
   parseOptionalWeightKg,
 } from '../../lib/input-parsers'
 import { triggerHaptic } from '../../lib/haptics'
+import type { TemplateExerciseDraft } from '../../lib/template-editor'
 import type { TrainingCycle } from '../../models/types'
-
-type ScheduleExerciseDraft = {
-  name: string
-  catalogExerciseId: string | null
-  targetSets: string
-  restSeconds: string
-  weightKg: string
-  reps: string
-}
 
 type TemplateImportConfirmation = {
   isDuplicateImport: boolean
@@ -39,13 +34,15 @@ type TemplateImportConfirmation = {
   willContinueCompletedSession: boolean
 }
 
-const emptyExerciseDraft: ScheduleExerciseDraft = {
+const emptyExerciseDraft: TemplateExerciseDraft = {
   name: '',
   catalogExerciseId: null,
   targetSets: '3',
   restSeconds: '90',
   weightKg: '',
   reps: '',
+  durationSeconds: '',
+  distanceMeters: '',
 }
 
 function hasImportedTemplateExercises(
@@ -81,7 +78,7 @@ export function useSchedulePageData() {
     templateName: null,
   })
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null)
-  const [newExerciseDraft, setNewExerciseDraft] = useState<ScheduleExerciseDraft>(emptyExerciseDraft)
+  const [newExerciseDraft, setNewExerciseDraft] = useState<TemplateExerciseDraft>(emptyExerciseDraft)
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -252,8 +249,30 @@ export function useSchedulePageData() {
         restSeconds: parseIntegerInput(newExerciseDraft.restSeconds),
         defaultWeightKg: parseOptionalWeightKg(newExerciseDraft.weightKg),
         defaultReps: parseOptionalReps(newExerciseDraft.reps),
+        defaultDurationSeconds: parseOptionalDurationSeconds(newExerciseDraft.durationSeconds),
+        defaultDistanceMeters: parseOptionalDistanceMeters(newExerciseDraft.distanceMeters),
       })
       setNewExerciseDraft(emptyExerciseDraft)
+      await loadData(selectedTemplateId)
+    })
+  }
+
+  async function handleReplaceExercise(planItemId: string, draft: TemplateExerciseDraft) {
+    if (!currentSession) {
+      return false
+    }
+
+    return runMutation(async () => {
+      await replaceSessionPlanItem(currentSession.id, planItemId, {
+        name: draft.name,
+        catalogExerciseId: draft.catalogExerciseId,
+        targetSets: parseIntegerInput(draft.targetSets),
+        restSeconds: parseIntegerInput(draft.restSeconds),
+        defaultWeightKg: parseOptionalWeightKg(draft.weightKg),
+        defaultReps: parseOptionalReps(draft.reps),
+        defaultDurationSeconds: parseOptionalDurationSeconds(draft.durationSeconds),
+        defaultDistanceMeters: parseOptionalDistanceMeters(draft.distanceMeters),
+      })
       await loadData(selectedTemplateId)
     })
   }
@@ -324,6 +343,7 @@ export function useSchedulePageData() {
     handleAddTemporaryExercise,
     handleAddTemplateExercises,
     handleDeleteExercises,
+    handleReplaceExercise,
     handleReorderExercises,
     handleSyncTemplate,
     hasTemplates,

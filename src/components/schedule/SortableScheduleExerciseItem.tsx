@@ -13,22 +13,26 @@ import { verticalSortTransition } from '../dnd/vertical-sortable-motion'
 type SortableScheduleExerciseItemProps = {
   exercise: WorkoutSessionWithExercises['exercises'][number]
   isSelected: boolean
+  isEditMode: boolean
   index: number
   isSelectionMode: boolean
   isSorting: boolean
   isSubmitting: boolean
   now: number
+  onEdit: (exerciseId: string) => void
   onToggleSelected: (exerciseId: string) => void
 }
 
 export function SortableScheduleExerciseItem({
   exercise,
   isSelected,
+  isEditMode,
   index,
   isSelectionMode,
   isSorting,
   isSubmitting,
   now,
+  onEdit,
   onToggleSelected,
 }: SortableScheduleExerciseItemProps) {
   const { t } = useTranslation()
@@ -45,7 +49,7 @@ export function SortableScheduleExerciseItem({
     isDragging,
   } = useSortable({
     id: exercise.id,
-    disabled: isSubmitting || isSelectionMode,
+    disabled: isSubmitting || isSelectionMode || isEditMode,
     transition: verticalSortTransition,
   })
 
@@ -54,11 +58,13 @@ export function SortableScheduleExerciseItem({
     transition,
     touchAction: 'manipulation',
   }
-  const canSelect = exercise.status === 'pending' && exercise.completedSets === 0
+  const canSelect = true
   const interactionClassName = isSelectionMode
     ? canSelect
       ? 'cursor-pointer'
       : 'cursor-not-allowed'
+    : isEditMode
+    ? 'cursor-default'
     : isSubmitting
     ? 'cursor-default'
     : 'cursor-grab active:cursor-grabbing'
@@ -82,7 +88,7 @@ export function SortableScheduleExerciseItem({
     >
       <ScheduleExerciseCard
         exercise={exercise}
-        href={isSelectionMode ? undefined : `/exercise/${exercise.id}`}
+        href={isSelectionMode || isEditMode ? undefined : `/exercise/${exercise.id}`}
         index={index}
         isDragging={isDragging}
         isSelectable={canSelect}
@@ -90,6 +96,7 @@ export function SortableScheduleExerciseItem({
         isSubmitting={isSubmitting || isSorting}
         linkState={backLinkState}
         now={now}
+        onEdit={isEditMode ? () => onEdit(exercise.id) : undefined}
         selectionMode={isSelectionMode}
       />
     </div>

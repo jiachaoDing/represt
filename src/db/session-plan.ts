@@ -270,6 +270,57 @@ export async function addTemporarySessionPlanItem(sessionId: string, input: Part
   return planItem
 }
 
+export async function replaceSessionPlanItem(
+  sessionId: string,
+  planItemId: string,
+  input: Partial<SessionPlanItemInput>,
+) {
+  const [session, planItem, performedExercise] = await Promise.all([
+    getSessionRecord(sessionId),
+    db.sessionPlanItems.get(planItemId),
+    getPerformedExerciseForPlanItem(planItemId),
+  ])
+
+  if (!session || session.sessionDateKey !== getTodaySessionDateKey()) {
+    throw new Error('只能修改今天的训练。')
+  }
+
+  if (!planItem || planItem.sessionId !== sessionId) {
+    throw new Error('当前动作不存在。')
+  }
+
+  const normalized = normalizeSessionPlanItem(input)
+  const timestamp = nowIso()
+  const nextPlanItem: SessionPlanItem = {
+    id: crypto.randomUUID(),
+    sessionId,
+    templateExerciseId: null,
+    sourceTemplateId: null,
+    sourceTemplateSnapshot: null,
+    origin: 'manual',
+    name: normalized.name,
+    catalogExerciseId: normalized.catalogExerciseId,
+    targetSets: normalized.targetSets,
+    defaultWeightKg: normalized.defaultWeightKg,
+    defaultReps: normalized.defaultReps,
+    defaultDurationSeconds: normalized.defaultDurationSeconds,
+    defaultDistanceMeters: normalized.defaultDistanceMeters,
+    restSeconds: normalized.restSeconds,
+    order: planItem.order,
+    createdAt: timestamp,
+  }
+
+  await db.transaction('rw', db.sessionPlanItems, db.performedExercises, async () => {
+    if (performedExercise) {
+      await db.performedExercises.update(performedExercise.id, { planItemId: null })
+    }
+    await db.sessionPlanItems.delete(planItem.id)
+    await db.sessionPlanItems.add(nextPlanItem)
+  })
+
+  return nextPlanItem
+}
+
 export async function deletePendingSessionPlanItem(sessionId: string, planItemId: string) {
   const [session, planItem, performedExercise] = await Promise.all([
     getSessionRecord(sessionId),
@@ -281,11 +332,12 @@ export async function deletePendingSessionPlanItem(sessionId: string, planItemId
     throw new Error('当前动作不存在。')
   }
 
-  if (performedExercise && performedExercise.completedSets > 0) {
-    throw new Error('只能删除未开始的动作。')
-  }
-
-  await db.sessionPlanItems.delete(planItemId)
+  await db.transaction('rw', db.sessionPlanItems, db.performedExercises, async () => {
+    if (performedExercise) {
+      await db.performedExercises.update(performedExercise.id, { planItemId: null })
+    }
+    await db.sessionPlanItems.delete(planItemId)
+  })
 }
 
 export async function reorderSessionPlanItems(sessionId: string, orderedPlanItemIds: string[]) {

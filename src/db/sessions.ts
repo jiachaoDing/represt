@@ -21,6 +21,7 @@ export {
   addTemporarySessionPlanItem,
   deletePendingSessionPlanItem,
   getSessionTemplateSyncStatus,
+  replaceSessionPlanItem,
   reorderSessionPlanItems,
   syncSessionPlanFromTemplate,
 } from './session-plan'

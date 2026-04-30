@@ -21,7 +21,6 @@ type UseSchedulePageUiOptions = {
   handleAddTemporaryExercise: () => Promise<boolean>
   handleDeleteExercises: (planItemIds: string[]) => Promise<boolean>
   handleSyncTemplate: () => Promise<TemplateSyncResult | false>
-  hasTemplates: boolean
   shouldConfirmContinueBeforeAddingExercise: boolean
   templates: TemplateWithExercises[]
 }
@@ -32,12 +31,11 @@ export function useSchedulePageUi({
   handleAddTemporaryExercise,
   handleDeleteExercises,
   handleSyncTemplate,
-  hasTemplates,
   shouldConfirmContinueBeforeAddingExercise,
   templates,
 }: UseSchedulePageUiOptions) {
   const [importSourceTemplateId, setImportSourceTemplateId] = useState<string | null>(null)
-  const [isActionSheetOpen, setIsActionSheetOpen] = useState(false)
+  const [isAllTemplateImportMode, setIsAllTemplateImportMode] = useState(false)
   const [isContinueDialogOpen, setIsContinueDialogOpen] = useState(false)
   const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false)
   const [isTemplateSheetOpen, setIsTemplateSheetOpen] = useState(false)
@@ -54,20 +52,35 @@ export function useSchedulePageUi({
     : null
 
   function openAddEntry() {
-    if (hasTemplates) {
-      setIsActionSheetOpen(true)
+    const hasTemplateExercises = templates.some((template) => template.exercises.length > 0)
+    if (!hasTemplateExercises) {
+      setIsCreateSheetOpen(true)
       return
     }
 
-    setIsCreateSheetOpen(true)
+    setImportSourceTemplateId(null)
+    setSelectedTemplateExerciseIds([])
+    setIsAllTemplateImportMode(true)
+    setIsTemplateSheetOpen(true)
   }
 
   function selectTemplateForImport(templateId: string) {
     const template = templates.find((item) => item.id === templateId)
     setImportSourceTemplateId(templateId)
     setSelectedTemplateExerciseIds(template?.exercises.map((exercise) => exercise.id) ?? [])
-    setIsActionSheetOpen(false)
+    setIsAllTemplateImportMode(false)
     setIsTemplateSheetOpen(true)
+  }
+
+  function closeTemplateImportSheet() {
+    setIsTemplateSheetOpen(false)
+    setIsAllTemplateImportMode(false)
+    setSelectedTemplateExerciseIds([])
+  }
+
+  function createExerciseFromTemplateImportSheet() {
+    closeTemplateImportSheet()
+    setIsCreateSheetOpen(true)
   }
 
   function toggleTemplateExercise(exerciseId: string) {
@@ -88,6 +101,28 @@ export function useSchedulePageUi({
   }
 
   async function handleImportTemplate() {
+    if (isAllTemplateImportMode) {
+      if (selectedTemplateExerciseIds.length === 0) {
+        return
+      }
+
+      for (const template of templates) {
+        const selectedIds = template.exercises
+          .filter((exercise) => selectedTemplateExerciseIds.includes(exercise.id))
+          .map((exercise) => exercise.id)
+
+        if (selectedIds.length > 0) {
+          const result = await handleAddTemplateExercises(template.id, selectedIds)
+          if (!result) {
+            return
+          }
+        }
+      }
+
+      closeTemplateImportSheet()
+      return
+    }
+
     if (!importSourceTemplateId) {
       return
     }
@@ -148,16 +183,17 @@ export function useSchedulePageUi({
     handleImportTemplate,
     handleSyncTemplateAction,
     importSourceTemplate,
-    isActionSheetOpen,
+    isAllTemplateImportMode,
     isContinueDialogOpen,
     isCreateSheetOpen,
     isTemplateSheetOpen,
+    closeTemplateImportSheet,
+    createExerciseFromTemplateImportSheet,
     openAddEntry,
     pendingTemplateExerciseIds,
     pendingTemplateImportConfirmation,
     selectTemplateForImport,
     selectedTemplateExerciseIds,
-    setIsActionSheetOpen,
     setIsContinueDialogOpen,
     setIsCreateSheetOpen,
     setIsTemplateSheetOpen,

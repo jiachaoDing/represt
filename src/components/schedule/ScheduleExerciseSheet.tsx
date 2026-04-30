@@ -3,22 +3,14 @@ import { useTranslation } from 'react-i18next'
 
 import { ExerciseNameInput } from '../exercise/ExerciseNameInput'
 import { BottomSheet } from '../ui/BottomSheet'
-
-type ScheduleExerciseDraft = {
-  name: string
-  catalogExerciseId: string | null
-  targetSets: string
-  restSeconds: string
-  weightKg: string
-  reps: string
-}
+import type { TemplateExerciseDraft } from '../../lib/template-editor'
 
 type ScheduleExerciseSheetProps = {
-  draft: ScheduleExerciseDraft
+  draft: TemplateExerciseDraft
   isOpen: boolean
   isSubmitting: boolean
   onClose: () => void
-  onDraftChange: (draft: ScheduleExerciseDraft) => void
+  onDraftChange: (draft: TemplateExerciseDraft) => void
   onSubmit: (event: FormEvent<HTMLFormElement>) => void
 }
 

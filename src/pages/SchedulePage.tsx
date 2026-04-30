@@ -10,7 +10,6 @@ import { useNow } from '../hooks/useNow'
 import { useSchedulePageData } from '../hooks/pages/useSchedulePageData'
 import { useSchedulePageUi } from '../hooks/pages/useSchedulePageUi'
 import { getTemplateColor } from '../lib/template-color'
-import { ScheduleActionSheet } from '../components/schedule/ScheduleActionSheet'
 import { ScheduleExerciseList } from '../components/schedule/ScheduleExerciseList'
 import { ScheduleExerciseSheet } from '../components/schedule/ScheduleExerciseSheet'
 import { ScheduleTemplateImportSheet } from '../components/schedule/ScheduleTemplateImportSheet'
@@ -113,22 +112,11 @@ export function SchedulePage() {
             now={now}
             onOpenAdd={ui.openAddEntry}
             onDeleteSelected={ui.handleDeleteExercisesAction}
+            onEditExercise={schedule.handleReplaceExercise}
             onReorder={schedule.handleReorderExercises}
           />
         </section>
       ) : null}
-
-      <ScheduleActionSheet
-        hasTemplates={schedule.hasTemplates}
-        isOpen={ui.isActionSheetOpen}
-        templates={schedule.templates}
-        onClose={() => ui.setIsActionSheetOpen(false)}
-        onCreateExercise={() => {
-          ui.setIsActionSheetOpen(false)
-          ui.setIsCreateSheetOpen(true)
-        }}
-        onSelectTemplate={ui.selectTemplateForImport}
-      />
 
       <ScheduleExerciseSheet
         draft={schedule.newExerciseDraft}
@@ -143,8 +131,10 @@ export function SchedulePage() {
         isOpen={ui.isTemplateSheetOpen}
         isSubmitting={schedule.isSubmitting}
         selectedExerciseIds={ui.selectedTemplateExerciseIds}
+        sourceTemplates={ui.isAllTemplateImportMode ? schedule.templates : undefined}
         template={ui.importSourceTemplate}
-        onClose={() => ui.setIsTemplateSheetOpen(false)}
+        onClose={ui.closeTemplateImportSheet}
+        onCreateExercise={ui.isAllTemplateImportMode ? ui.createExerciseFromTemplateImportSheet : undefined}
         onSubmit={() => void ui.handleImportTemplate()}
         onToggleExercise={ui.toggleTemplateExercise}
       />

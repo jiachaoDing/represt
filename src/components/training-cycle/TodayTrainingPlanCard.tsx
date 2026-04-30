@@ -82,7 +82,7 @@ export function TodayTrainingPlanCard({
     return (
       <section className="mx-auto w-full max-w-sm px-8 py-6 text-center">
         <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-[var(--on-surface-variant)]">
-          {t('trainingCycle.todayPlan')}
+          {t('schedule.starterKicker')}
         </p>
         <div className="mt-2 min-w-0">
           <h2 className="text-[24px] font-bold leading-tight text-[var(--on-surface)]">
@@ -96,31 +96,23 @@ export function TodayTrainingPlanCard({
         <div className="mt-5">
           <button
             type="button"
-            onClick={onChooseTemplate}
+            onClick={onCreateExercise}
             className="min-h-12 w-full rounded-full bg-[var(--primary)] px-5 text-sm font-semibold text-[var(--on-primary)] transition-opacity disabled:opacity-40"
+            disabled={!onCreateExercise}
+          >
+            {t('schedule.addFirstExercise')}
+          </button>
+        </div>
+
+        <div className="mt-3 flex items-center justify-center">
+          <button
+            type="button"
+            onClick={onChooseTemplate}
+            className="min-h-10 text-sm font-semibold text-[var(--primary)] disabled:opacity-40"
             disabled={!onChooseTemplate}
           >
             {t('schedule.chooseTemplate')}
           </button>
-        </div>
-
-        <div className="mt-3 flex items-center justify-center gap-5">
-          <button
-            type="button"
-            onClick={onCreateExercise}
-            className="min-h-10 text-sm font-semibold text-[var(--primary)] disabled:opacity-40"
-            disabled={!onCreateExercise}
-          >
-            {t('schedule.addExercise')}
-          </button>
-          <Link
-            to="/templates/cycle"
-            state={backLinkState}
-            viewTransition
-            className="flex min-h-10 items-center text-sm font-semibold text-[var(--primary)]"
-          >
-            {t('trainingCycle.setCycle')}
-          </Link>
         </div>
       </section>
     )

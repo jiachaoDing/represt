@@ -1,6 +1,7 @@
-import { useMemo, useRef, useState } from 'react'
+import { useMemo, useRef, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { createPortal } from 'react-dom'
+import { Pencil } from 'lucide-react'
 import {
   DndContext,
   DragOverlay,
@@ -23,6 +24,9 @@ import {
 import { triggerHaptic } from '../../lib/haptics'
 import { ScheduleExerciseCard } from './ScheduleExerciseCard'
 import { SortableScheduleExerciseItem } from './SortableScheduleExerciseItem'
+import { TemplateExerciseInlineEditor } from '../templates/TemplateExerciseInlineEditor'
+import { toTemplateExerciseDraft, type TemplateExerciseDraft } from '../../lib/template-editor'
+import { getDisplayExerciseName } from '../../lib/exercise-name'
 
 type ScheduleExerciseListProps = {
   currentSession: WorkoutSessionWithExercises | null
@@ -32,6 +36,7 @@ type ScheduleExerciseListProps = {
   now: number
   onOpenAdd: () => void
   onDeleteSelected: (exerciseIds: string[]) => Promise<boolean>
+  onEditExercise: (exerciseId: string, draft: TemplateExerciseDraft) => Promise<boolean>
   onReorder: (orderedExerciseIds: string[]) => Promise<boolean>
 }
 
@@ -43,12 +48,16 @@ export function ScheduleExerciseList({
   now,
   onOpenAdd,
   onDeleteSelected,
+  onEditExercise,
   onReorder,
 }: ScheduleExerciseListProps) {
   const { t } = useTranslation()
   const [exerciseOrder, setExerciseOrder] = useState<string[] | null>(null)
   const [activeExerciseId, setActiveExerciseId] = useState<string | null>(null)
   const [isSorting, setIsSorting] = useState(false)
+  const [isEditMode, setIsEditMode] = useState(false)
+  const [editExerciseId, setEditExerciseId] = useState<string | null>(null)
+  const [editDraft, setEditDraft] = useState<TemplateExerciseDraft | null>(null)
   const [isSelectionMode, setIsSelectionMode] = useState(false)
   const [selectedExerciseIds, setSelectedExerciseIds] = useState<string[]>([])
   const lastDragOverIdRef = useRef<string | null>(null)
@@ -90,17 +99,14 @@ export function ScheduleExerciseList({
     activeExercise === null
       ? -1
       : orderedExercises.findIndex((exercise) => exercise.id === activeExercise.id)
-  const deletableCount = orderedExercises.filter(
-    (exercise) => exercise.status === 'pending' && exercise.completedSets === 0,
-  ).length
-  const deletableExerciseIds = orderedExercises
-    .filter((exercise) => exercise.status === 'pending' && exercise.completedSets === 0)
-    .map((exercise) => exercise.id)
+  const deletableCount = orderedExercises.length
+  const deletableExerciseIds = orderedExercises.map((exercise) => exercise.id)
   const isAllSelected =
     deletableExerciseIds.length > 0 &&
     deletableExerciseIds.every((exerciseId) => selectedExerciseIds.includes(exerciseId))
 
   function openSelectionMode() {
+    closeEditMode()
     setSelectedExerciseIds([])
     setIsSelectionMode(true)
   }
@@ -108,6 +114,34 @@ export function ScheduleExerciseList({
   function closeSelectionMode() {
     setSelectedExerciseIds([])
     setIsSelectionMode(false)
+  }
+
+  function openEditMode() {
+    closeSelectionMode()
+    setIsEditMode(true)
+  }
+
+  function closeEditMode() {
+    setIsEditMode(false)
+    setEditExerciseId(null)
+    setEditDraft(null)
+  }
+
+  function openExerciseEditor(exerciseId: string) {
+    const exercise = orderedExercises.find((item) => item.id === exerciseId)
+    if (!exercise) {
+      return
+    }
+
+    setEditExerciseId(exercise.id)
+    setEditDraft(toTemplateExerciseDraft({
+      ...exercise,
+      name: getDisplayExerciseName(t, exercise),
+      weightKg: exercise.defaultWeightKg ?? null,
+      reps: exercise.defaultReps ?? null,
+      durationSeconds: exercise.defaultDurationSeconds ?? null,
+      distanceMeters: exercise.defaultDistanceMeters ?? null,
+    }))
   }
 
   function toggleSelectedExercise(exerciseId: string) {
@@ -122,6 +156,18 @@ export function ScheduleExerciseList({
     const didDelete = await onDeleteSelected(selectedExerciseIds)
     if (didDelete) {
       closeSelectionMode()
+    }
+  }
+
+  async function submitExerciseEdit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (!editExerciseId || !editDraft) {
+      return
+    }
+
+    const didEdit = await onEditExercise(editExerciseId, editDraft)
+    if (didEdit) {
+      closeEditMode()
     }
   }
 
@@ -236,12 +282,26 @@ export function ScheduleExerciseList({
     <div className="flex flex-col gap-3 px-4">
       <div className="-mb-1 flex items-center justify-between px-2">
         <div className={`text-[12px] text-[var(--on-surface-variant)] ${isSelectionMode ? 'whitespace-nowrap' : ''}`}>
-          {isSelectionMode
+          {isEditMode
+            ? t('schedule.editExercises')
+            : isSelectionMode
             ? t('schedule.selectedDeletableCount', { count: selectedExerciseIds.length })
             : t('templates.longPressSort')}
         </div>
         <div className="flex items-center gap-1">
-          {isSelectionMode ? (
+          {isEditMode ? (
+            <button
+              type="button"
+              onClick={closeEditMode}
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[var(--on-surface-variant)] transition-colors hover:bg-[var(--on-surface-variant)]/10"
+              aria-label={t('common.cancel')}
+            >
+              <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M18 6 6 18" />
+                <path d="m6 6 12 12" />
+              </svg>
+            </button>
+          ) : isSelectionMode ? (
             <>
               <button
                 type="button"
@@ -307,7 +367,17 @@ export function ScheduleExerciseList({
               </svg>
             </button>
           ) : null}
-          {!isSelectionMode ? (
+          {!isSelectionMode && !isEditMode ? (
+            <button
+              type="button"
+              onClick={openEditMode}
+              className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/10"
+              aria-label={t('schedule.editExercises')}
+            >
+              <Pencil size={18} strokeWidth={2.25} />
+            </button>
+          ) : null}
+          {!isSelectionMode && !isEditMode ? (
             <button
               type="button"
               onClick={onOpenAdd}
@@ -348,16 +418,29 @@ export function ScheduleExerciseList({
           <div className="flex flex-col gap-3">
             {orderedExercises.map((exercise, index) => (
               <div key={exercise.id}>
-                <SortableScheduleExerciseItem
-                  exercise={exercise}
-                  isSelected={selectedExerciseIds.includes(exercise.id)}
-                  index={index}
-                  isSelectionMode={isSelectionMode}
-                  isSorting={isSorting}
-                  isSubmitting={isSubmitting}
-                  now={now}
-                  onToggleSelected={toggleSelectedExercise}
-                />
+                {editExerciseId === exercise.id && editDraft ? (
+                  <TemplateExerciseInlineEditor
+                    draft={editDraft}
+                    isEditing
+                    isSubmitting={isSubmitting}
+                    onCancel={closeEditMode}
+                    onDraftChange={setEditDraft}
+                    onSubmit={submitExerciseEdit}
+                  />
+                ) : (
+                  <SortableScheduleExerciseItem
+                    exercise={exercise}
+                    isSelected={selectedExerciseIds.includes(exercise.id)}
+                    isEditMode={isEditMode}
+                    index={index}
+                    isSelectionMode={isSelectionMode}
+                    isSorting={isSorting}
+                    isSubmitting={isSubmitting}
+                    now={now}
+                    onEdit={openExerciseEditor}
+                    onToggleSelected={toggleSelectedExercise}
+                  />
+                )}
               </div>
             ))}
           </div>

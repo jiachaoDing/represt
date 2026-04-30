@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import { Pencil } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 import { deriveExerciseStatus } from '../../lib/session-display'
@@ -18,6 +19,7 @@ type ScheduleExerciseCardProps = {
   isSubmitting: boolean
   linkState?: { backTo: string }
   now: number
+  onEdit?: () => void
   selectionMode?: boolean
 }
 
@@ -145,6 +147,7 @@ export function ScheduleExerciseCard({
   isSubmitting,
   linkState,
   now,
+  onEdit,
   selectionMode = false,
 }: ScheduleExerciseCardProps) {
   const { t } = useTranslation()
@@ -171,8 +174,19 @@ export function ScheduleExerciseCard({
         <p className={`truncate text-[16px] font-bold ${cardState.nameClassName}`}>{displayName}</p>
         <p className={`mt-0.5 text-[12px] ${cardState.metaClassName}`}>{cardState.metaText}</p>
       </div>
-      <div className={`ml-2 shrink-0 text-[13px] ${statusClassName}`}>
-        {statusText}
+      <div className="ml-2 flex shrink-0 items-center gap-2">
+        <span className={`text-[13px] ${statusClassName}`}>{statusText}</span>
+        {onEdit ? (
+          <button
+            type="button"
+            onClick={onEdit}
+            disabled={isSubmitting}
+            className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/10 disabled:opacity-40"
+            aria-label={t('common.edit')}
+          >
+            <Pencil size={17} strokeWidth={2.25} />
+          </button>
+        ) : null}
       </div>
     </div>
   )
