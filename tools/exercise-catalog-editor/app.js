@@ -16,9 +16,11 @@ const measurementTypes = ['weightReps', 'reps', 'duration', 'distance', 'weightD
 const movementPatterns = ['push', 'pull', 'legs', 'core', 'fullBody', 'conditioning']
 const defaultMuscleGroups = ['chest', 'back', 'shoulders', 'arms', 'core', 'legs', 'fullBody']
 const exportPaths = [
+  'src/domain/exercise-catalog/measurement-types.ts',
+  'src/domain/exercise-catalog/movement-patterns.ts',
+  'src/domain/exercise-catalog/muscles.ts',
   'src/domain/exercise-catalog/types.ts',
   'src/domain/exercise-catalog/exercises.ts',
-  'src/domain/exercise-catalog/muscles.ts',
   'src/locales/en/exercises.ts',
   'src/locales/zh-CN/exercises.ts',
   'src/locales/en/muscles.ts',
@@ -30,11 +32,17 @@ const state = {
   catalogPage: 'exercises',
   catalog: structuredClone(initialData.catalog),
   i18n: structuredClone(initialData.i18n),
+  measurementTypes: [...measurementTypes],
+  movementPatterns: [...movementPatterns],
   catalogSearch: '',
+  measurementTypeSearch: '',
+  movementPatternSearch: '',
   muscleSearch: '',
   muscleGroupSearch: '',
   muscleGroups: [...defaultMuscleGroups],
   editingExerciseId: null,
+  editingMeasurementTypeId: null,
+  editingMovementPatternId: null,
   editingMuscleGroupId: null,
   i18nNamespace: 'exercises',
   i18nLocaleView: 'both',
@@ -98,6 +106,14 @@ function matchesSearch(values, search) {
 }
 
 function renderCatalog() {
+  if (state.catalogPage === 'measurementTypes') {
+    renderMeasurementTypesCatalog()
+    return
+  }
+  if (state.catalogPage === 'movementPatterns') {
+    renderMovementPatternsCatalog()
+    return
+  }
   if (state.catalogPage === 'muscles') {
     renderMuscleGroupsCatalog()
     return
@@ -108,6 +124,8 @@ function renderCatalog() {
 function renderCatalogPageNav() {
   const pages = [
     ['exercises', 'Exercises'],
+    ['measurementTypes', 'Measurement Types'],
+    ['movementPatterns', 'Movement Patterns'],
     ['muscles', 'Muscle Groups'],
   ]
   return `
@@ -174,7 +192,7 @@ function renderExerciseForm(exercise) {
     id: '',
     slug: '',
     measurementType: 'weightReps',
-    movementPattern: movementPatterns[0],
+    movementPattern: state.movementPatterns[0],
     primaryMuscleGroupIds: [],
     secondaryMuscleGroupIds: [],
     sourceUrls: [],
@@ -194,7 +212,7 @@ function renderExerciseForm(exercise) {
         <label>
           movementPattern
           <select id="exercise-movement-pattern">
-            ${movementPatterns
+            ${state.movementPatterns
               .map((type) => `<option value="${type}" ${type === value.movementPattern ? 'selected' : ''}>${type}</option>`)
               .join('')}
           </select>
@@ -202,7 +220,7 @@ function renderExerciseForm(exercise) {
         <label>
           measurementType
           <select id="exercise-measurement-type">
-            ${measurementTypes
+            ${state.measurementTypes
               .map((type) => `<option value="${type}" ${type === value.measurementType ? 'selected' : ''}>${type}</option>`)
               .join('')}
           </select>
@@ -344,6 +362,129 @@ function renderCompactTable(headers, rows, renderRow, emptyMessage) {
   `
 }
 
+function renderMeasurementTypesCatalog() {
+  const filteredTypes = state.measurementTypes.filter((id) => matchesSearch([id], state.measurementTypeSearch))
+  app.innerHTML = `
+    <section>
+      ${renderCatalogPageNav()}
+      <article>
+        <h2>${state.editingMeasurementTypeId ? 'Edit measurement type' : 'New measurement type'}</h2>
+        <div class="toolbar">
+          <label>
+            Search measurement types
+            <input id="measurement-type-search" value="${escapeHtml(state.measurementTypeSearch)}" placeholder="id" />
+          </label>
+          <div>
+            <button type="button" onclick="startNewMeasurementType()">New measurement type</button>
+          </div>
+        </div>
+        ${renderIdForm('measurement-type-form', 'measurement-type-id', state.editingMeasurementTypeId, 'measurement type')}
+        <h3>Measurement Types <span class="status-pill">${filteredTypes.length} / ${state.measurementTypes.length}</span></h3>
+        ${renderCompactTable(
+          ['id', 'used by exercises', 'Actions'],
+          filteredTypes,
+          renderMeasurementTypeRow,
+          'No measurement types match the current search.',
+        )}
+      </article>
+    </section>
+  `
+
+  document.getElementById('measurement-type-search').addEventListener('input', (event) => {
+    state.measurementTypeSearch = event.target.value
+    renderMeasurementTypesCatalog()
+  })
+  document.getElementById('measurement-type-form').addEventListener('submit', saveMeasurementType)
+}
+
+function renderMovementPatternsCatalog() {
+  const filteredPatterns = state.movementPatterns.filter((id) =>
+    matchesSearch([
+      id,
+      state.i18n.en?.exercises?.movementPatterns?.names?.[id] || '',
+      state.i18n['zh-CN']?.exercises?.movementPatterns?.names?.[id] || '',
+      state.i18n.en?.exercises?.movementPatterns?.aliases?.[id] || [],
+      state.i18n['zh-CN']?.exercises?.movementPatterns?.aliases?.[id] || [],
+    ], state.movementPatternSearch),
+  )
+  app.innerHTML = `
+    <section>
+      ${renderCatalogPageNav()}
+      <article>
+        <h2>${state.editingMovementPatternId ? 'Edit movement pattern' : 'New movement pattern'}</h2>
+        <div class="toolbar">
+          <label>
+            Search movement patterns
+            <input id="movement-pattern-search" value="${escapeHtml(state.movementPatternSearch)}" placeholder="id, name, alias" />
+          </label>
+          <div>
+            <button type="button" onclick="startNewMovementPattern()">New movement pattern</button>
+          </div>
+        </div>
+        ${renderIdForm('movement-pattern-form', 'movement-pattern-id', state.editingMovementPatternId, 'movement pattern')}
+        <h3>Movement Patterns <span class="status-pill">${filteredPatterns.length} / ${state.movementPatterns.length}</span></h3>
+        ${renderCompactTable(
+          ['id', 'en name', 'zh-CN name', 'used by exercises', 'Actions'],
+          filteredPatterns,
+          renderMovementPatternRow,
+          'No movement patterns match the current search.',
+        )}
+      </article>
+    </section>
+  `
+
+  document.getElementById('movement-pattern-search').addEventListener('input', (event) => {
+    state.movementPatternSearch = event.target.value
+    renderMovementPatternsCatalog()
+  })
+  document.getElementById('movement-pattern-form').addEventListener('submit', saveMovementPatternCatalog)
+}
+
+function renderIdForm(formId, inputId, value, label) {
+  return `
+    <form id="${formId}">
+      <div class="form-grid">
+        <label>
+          id
+          <input id="${inputId}" required value="${escapeHtml(value || '')}" />
+        </label>
+      </div>
+      <button type="submit">${value ? `Save ${label}` : `Add ${label}`}</button>
+      <button type="button" class="secondary" onclick="${value && label === 'measurement type' ? 'startNewMeasurementType()' : value && label === 'movement pattern' ? 'startNewMovementPattern()' : label === 'measurement type' ? 'startNewMeasurementType()' : 'startNewMovementPattern()'}">Reset</button>
+    </form>
+  `
+}
+
+function renderMeasurementTypeRow(id) {
+  const usedBy = state.catalog.exercises.filter((exercise) => exercise.measurementType === id).length
+  return `
+    <tr>
+      <td>${escapeHtml(id)}</td>
+      <td>${usedBy}</td>
+      <td>
+        <button type="button" class="secondary" onclick="editMeasurementType('${escapeHtml(id)}')">Edit</button>
+        <button type="button" class="contrast" onclick="deleteMeasurementType('${escapeHtml(id)}')">Delete</button>
+      </td>
+    </tr>
+  `
+}
+
+function renderMovementPatternRow(id) {
+  const usedBy = state.catalog.exercises.filter((exercise) => exercise.movementPattern === id).length
+  return `
+    <tr>
+      <td>${escapeHtml(id)}</td>
+      <td>${escapeHtml(state.i18n.en?.exercises?.movementPatterns?.names?.[id] || '')}</td>
+      <td>${escapeHtml(state.i18n['zh-CN']?.exercises?.movementPatterns?.names?.[id] || '')}</td>
+      <td>${usedBy}</td>
+      <td>
+        <button type="button" class="secondary" onclick="editMovementPattern('${escapeHtml(id)}')">Edit</button>
+        <button type="button" class="contrast" onclick="deleteMovementPattern('${escapeHtml(id)}')">Delete</button>
+      </td>
+    </tr>
+  `
+}
+
 function renderMuscleGroupsSection() {
   const filteredGroups = state.muscleGroups.filter((id) =>
     matchesSearch([
@@ -479,6 +620,119 @@ function deleteExercise(id) {
 function setCatalogPage(page) {
   state.catalogPage = page
   renderCatalog()
+}
+
+function saveMeasurementType(event) {
+  event.preventDefault()
+  const nextId = document.getElementById('measurement-type-id').value.trim()
+  const previousId = state.editingMeasurementTypeId
+
+  if (!nextId) {
+    window.alert('id is required.')
+    return
+  }
+
+  const duplicate = state.measurementTypes.includes(nextId) && nextId !== previousId
+  if (duplicate) {
+    window.alert(`Measurement type id already exists: ${nextId}`)
+    return
+  }
+
+  if (previousId) {
+    state.measurementTypes = state.measurementTypes.map((id) => (id === previousId ? nextId : id))
+    state.catalog.exercises = state.catalog.exercises.map((exercise) => ({
+      ...exercise,
+      measurementType: exercise.measurementType === previousId ? nextId : exercise.measurementType,
+    }))
+  } else {
+    state.measurementTypes.push(nextId)
+  }
+
+  state.measurementTypes = Array.from(new Set(state.measurementTypes))
+  state.editingMeasurementTypeId = nextId
+  renderMeasurementTypesCatalog()
+}
+
+function startNewMeasurementType() {
+  state.editingMeasurementTypeId = null
+  renderMeasurementTypesCatalog()
+}
+
+function editMeasurementType(id) {
+  state.editingMeasurementTypeId = id
+  renderMeasurementTypesCatalog()
+}
+
+function deleteMeasurementType(id) {
+  const usedBy = state.catalog.exercises.filter((exercise) => exercise.measurementType === id).length
+  if (!window.confirm(`Delete measurement type "${id}"? ${usedBy} exercises currently use this type.`)) return
+  state.measurementTypes = state.measurementTypes.filter((typeId) => typeId !== id)
+  if (state.editingMeasurementTypeId === id) state.editingMeasurementTypeId = null
+  renderMeasurementTypesCatalog()
+}
+
+function saveMovementPatternCatalog(event) {
+  event.preventDefault()
+  const nextId = document.getElementById('movement-pattern-id').value.trim()
+  const previousId = state.editingMovementPatternId
+
+  if (!nextId) {
+    window.alert('id is required.')
+    return
+  }
+
+  const duplicate = state.movementPatterns.includes(nextId) && nextId !== previousId
+  if (duplicate) {
+    window.alert(`Movement pattern id already exists: ${nextId}`)
+    return
+  }
+
+  ensureNamespace('en', 'exercises')
+  ensureNamespace('zh-CN', 'exercises')
+
+  if (previousId) {
+    state.movementPatterns = state.movementPatterns.map((id) => (id === previousId ? nextId : id))
+    state.catalog.exercises = state.catalog.exercises.map((exercise) => ({
+      ...exercise,
+      movementPattern: exercise.movementPattern === previousId ? nextId : exercise.movementPattern,
+    }))
+    ;['en', 'zh-CN'].forEach((locale) => {
+      const movementPatterns = state.i18n[locale].exercises.movementPatterns
+      moveObjectKey(movementPatterns.names, previousId, nextId)
+      moveObjectKey(movementPatterns.descriptions, previousId, nextId)
+      moveObjectKey(movementPatterns.aliases, previousId, nextId)
+    })
+  } else {
+    state.movementPatterns.push(nextId)
+  }
+
+  state.movementPatterns = Array.from(new Set(state.movementPatterns))
+  state.editingMovementPatternId = nextId
+  renderMovementPatternsCatalog()
+}
+
+function startNewMovementPattern() {
+  state.editingMovementPatternId = null
+  renderMovementPatternsCatalog()
+}
+
+function editMovementPattern(id) {
+  state.editingMovementPatternId = id
+  renderMovementPatternsCatalog()
+}
+
+function deleteMovementPattern(id) {
+  const usedBy = state.catalog.exercises.filter((exercise) => exercise.movementPattern === id).length
+  if (!window.confirm(`Delete movement pattern "${id}"? ${usedBy} exercises currently use this pattern.`)) return
+  state.movementPatterns = state.movementPatterns.filter((patternId) => patternId !== id)
+  ;['en', 'zh-CN'].forEach((locale) => {
+    const movementPatterns = state.i18n[locale]?.exercises?.movementPatterns
+    delete movementPatterns?.names?.[id]
+    delete movementPatterns?.descriptions?.[id]
+    delete movementPatterns?.aliases?.[id]
+  })
+  if (state.editingMovementPatternId === id) state.editingMovementPatternId = null
+  renderMovementPatternsCatalog()
 }
 
 function saveMuscleGroupCatalog(event) {
@@ -756,7 +1010,7 @@ function renderMovementPatternsEditor() {
         <table>
           <thead><tr><th>id</th><th>en name</th><th>en description</th><th>en aliases</th><th>zh-CN name</th><th>zh-CN description</th><th>zh-CN aliases</th><th>Actions</th></tr></thead>
           <tbody>
-            ${movementPatterns
+            ${state.movementPatterns
               .map(
                 (id) => `
                   <tr>
@@ -844,7 +1098,7 @@ function generateI18nTemplate() {
       })
     }
     if (namespace === 'exercises') {
-      movementPatterns.forEach((id) => {
+      state.movementPatterns.forEach((id) => {
         if (!(id in state.i18n[locale].exercises.movementPatterns.names)) {
           state.i18n[locale].exercises.movementPatterns.names[id] = ''
         }
@@ -928,7 +1182,9 @@ async function loadFromProjectFiles() {
     state.catalog = {
       exercises: parseCatalogSource(files['src/domain/exercise-catalog/exercises.ts'], 'exercises'),
     }
-    state.muscleGroups = parseMuscleGroupsSource(files['src/domain/exercise-catalog/types.ts'])
+    state.measurementTypes = parseCatalogSource(files['src/domain/exercise-catalog/measurement-types.ts'], 'measurementTypes')
+    state.movementPatterns = parseCatalogSource(files['src/domain/exercise-catalog/movement-patterns.ts'], 'movementPatterns')
+    state.muscleGroups = parseCatalogSource(files['src/domain/exercise-catalog/muscles.ts'], 'muscleGroups')
     state.i18n = {
       en: {
         exercises: parseLocaleSource(files['src/locales/en/exercises.ts'], 'exercises'),
@@ -940,6 +1196,8 @@ async function loadFromProjectFiles() {
       },
     }
     state.editingExerciseId = null
+    state.editingMeasurementTypeId = null
+    state.editingMovementPatternId = null
     state.editingMuscleGroupId = null
     state.syncMessage = `Loaded ${exportPaths.length} source files from project folder.`
   } catch (error) {
@@ -966,16 +1224,19 @@ function validateAll() {
 
   findDuplicates(state.catalog.exercises.map((item) => item.id)).forEach((id) => add('error', 'catalog.exercises', `Duplicate exercise id: ${id}`))
   findDuplicates(state.catalog.exercises.map((item) => item.slug)).forEach((slug) => add('error', 'catalog.exercises', `Duplicate exercise slug: ${slug}`))
+  findDuplicates(state.measurementTypes).forEach((id) => add('error', 'catalog.measurementTypes', `Duplicate measurement type id: ${id}`))
+  findDuplicates(state.movementPatterns).forEach((id) => add('error', 'catalog.movementPatterns', `Duplicate movement pattern id: ${id}`))
   findDuplicates(state.muscleGroups).forEach((id) => add('error', 'catalog.muscleGroups', `Duplicate muscle group id: ${id}`))
 
+  const measurementTypeIds = new Set(state.measurementTypes)
   const muscleGroupIds = new Set(state.muscleGroups)
-  const movementPatternIds = new Set(movementPatterns)
+  const movementPatternIds = new Set(state.movementPatterns)
   state.catalog.exercises.forEach((exercise) => {
     ;[...(exercise.primaryMuscleGroupIds || []), ...(exercise.secondaryMuscleGroupIds || [])].forEach((id) => {
       if (!muscleGroupIds.has(id)) add('error', exercise.id, `Unknown muscleGroupId: ${id}`)
     })
     if (!movementPatternIds.has(exercise.movementPattern)) add('error', exercise.id, `Invalid movementPattern: ${exercise.movementPattern}`)
-    if (!measurementTypes.includes(exercise.measurementType)) {
+    if (!measurementTypeIds.has(exercise.measurementType)) {
       add('error', exercise.id, `Invalid measurementType: ${exercise.measurementType}`)
     }
     if (!exercise.sourceUrls.length) {
@@ -988,7 +1249,7 @@ function validateAll() {
 
   ;['en', 'zh-CN'].forEach((locale) => {
     if (!state.i18n[locale]?.muscles) add('warning', `i18n.${locale}.muscles`, 'Muscle i18n file/object is missing')
-    movementPatterns.forEach((id) => {
+    state.movementPatterns.forEach((id) => {
       if (!state.i18n[locale]?.exercises?.movementPatterns?.names?.[id]) {
         add('error', `i18n.${locale}.exercises`, `Movement pattern is missing a name: ${id}`)
       }
@@ -1110,7 +1371,8 @@ async function getFileHandle(path, options = {}) {
 function parseCatalogSource(source, name) {
   const code = source
     .replace(/^\s*import\s+type[^\n]*\r?\n/gm, '')
-    .replace(new RegExp(`export\\s+const\\s+${name}\\s*:\\s*\\w+\\[\\]\\s*=`), 'return')
+    .replace(/\s+as\s+const\s*$/m, '')
+    .replace(new RegExp(`export\\s+const\\s+${name}\\s*(?::\\s*[^=]+)?\\s*=`), 'return')
   return Function(code)()
 }
 
@@ -1121,13 +1383,13 @@ function parseLocaleSource(source, name) {
   return Function(code)()
 }
 
-function parseMuscleGroupsSource(source) {
-  const match = source.match(/export\s+type\s+MuscleGroup\s*=([\s\S]*?)\n\nexport\s+type\s+Exercise/)
-  if (!match) return [...defaultMuscleGroups]
-  return Array.from(match[1].matchAll(/'([^']+)'/g), (item) => item[1])
-}
-
 function generateExport(path) {
+  if (path.endsWith('domain/exercise-catalog/measurement-types.ts')) {
+    return `export const measurementTypes = ${formatArray(state.measurementTypes, 0)} as const\n`
+  }
+  if (path.endsWith('domain/exercise-catalog/movement-patterns.ts')) {
+    return `export const movementPatterns = ${formatArray(state.movementPatterns, 0)} as const\n`
+  }
   if (path.endsWith('domain/exercise-catalog/types.ts')) {
     return generateTypesFile()
   }
@@ -1135,7 +1397,7 @@ function generateExport(path) {
     return `import type { Exercise } from './types'\n\nexport const exercises: Exercise[] = ${formatArrayOfObjects(state.catalog.exercises)}\n`
   }
   if (path.endsWith('domain/exercise-catalog/muscles.ts')) {
-    return `import type { MuscleGroup } from './types'\n\nexport const muscleGroups: MuscleGroup[] = ${formatArray(state.muscleGroups, 0)}\n`
+    return `export const muscleGroups = ${formatArray(state.muscleGroups, 0)} as const\n`
   }
 
   const parts = path.split('/')
@@ -1165,12 +1427,15 @@ function formatLocaleFile(namespace, bundle) {
 }
 
 function generateTypesFile() {
-  return `export type MeasurementType = ${measurementTypes.map(formatString).join(' | ')}
+  return `import type { measurementTypes } from './measurement-types'
+import type { movementPatterns } from './movement-patterns'
+import type { muscleGroups } from './muscles'
 
-export type MovementPattern = ${movementPatterns.map(formatString).join(' | ')}
+export type MeasurementType = (typeof measurementTypes)[number]
 
-export type MuscleGroup =
-${state.muscleGroups.map((group) => `  | ${formatString(group)}`).join('\n')}
+export type MovementPattern = (typeof movementPatterns)[number]
+
+export type MuscleGroup = (typeof muscleGroups)[number]
 
 export type Exercise = {
   id: string
@@ -1224,6 +1489,12 @@ window.startNewExercise = startNewExercise
 window.editExercise = editExercise
 window.deleteExercise = deleteExercise
 window.setCatalogPage = setCatalogPage
+window.startNewMeasurementType = startNewMeasurementType
+window.editMeasurementType = editMeasurementType
+window.deleteMeasurementType = deleteMeasurementType
+window.startNewMovementPattern = startNewMovementPattern
+window.editMovementPattern = editMovementPattern
+window.deleteMovementPattern = deleteMovementPattern
 window.startNewMuscleGroup = startNewMuscleGroup
 window.editMuscleGroupCatalog = editMuscleGroupCatalog
 window.deleteMuscleGroupCatalog = deleteMuscleGroupCatalog

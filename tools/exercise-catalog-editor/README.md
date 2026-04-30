@@ -15,8 +15,10 @@ tools/exercise-catalog-editor/index.html
 ## 当前功能
 
 - Catalog Tab
-  - 按 Exercises / Muscle Groups 拆分为两个子页面。
+  - 按 Exercises / Measurement Types / Movement Patterns / Muscle Groups 拆分为四个子页面。
   - exercises 支持新增、编辑、删除和关键词搜索。
+  - measurement types 支持新增、编辑、删除和关键词搜索。
+  - movement patterns 支持新增、编辑、删除和关键词搜索。
   - muscle groups 支持新增、编辑、删除和关键词搜索，并维护 en / zh-CN group name。
   - primaryMuscleGroupIds、secondaryMuscleGroupIds 使用多选控件。
   - movementPattern 使用下拉控件。
@@ -39,9 +41,11 @@ tools/exercise-catalog-editor/index.html
 - Export Tab
   - 生成可复制回项目的 TypeScript 内容。
   - 支持复制以下文件内容：
+    - `src/domain/exercise-catalog/measurement-types.ts`
+    - `src/domain/exercise-catalog/movement-patterns.ts`
+    - `src/domain/exercise-catalog/muscles.ts`
     - `src/domain/exercise-catalog/types.ts`
     - `src/domain/exercise-catalog/exercises.ts`
-    - `src/domain/exercise-catalog/muscles.ts`
     - `src/locales/en/exercises.ts`
     - `src/locales/zh-CN/exercises.ts`
     - `src/locales/en/muscles.ts`

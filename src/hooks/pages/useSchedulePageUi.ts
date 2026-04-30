@@ -19,7 +19,7 @@ type UseSchedulePageUiOptions = {
     templateExerciseIds?: string[],
   ) => Promise<{ count: number; name: string } | null | false>
   handleAddTemporaryExercise: () => Promise<boolean>
-  handleDeleteExercises: (sessionExerciseIds: string[]) => Promise<boolean>
+  handleDeleteExercises: (planItemIds: string[]) => Promise<boolean>
   handleSyncTemplate: () => Promise<TemplateSyncResult | false>
   hasTemplates: boolean
   shouldConfirmContinueBeforeAddingExercise: boolean
@@ -131,8 +131,8 @@ export function useSchedulePageUi({
     await addExercise()
   }
 
-  async function handleDeleteExercisesAction(sessionExerciseIds: string[]) {
-    const didDelete = await handleDeleteExercises(sessionExerciseIds)
+  async function handleDeleteExercisesAction(planItemIds: string[]) {
+    const didDelete = await handleDeleteExercises(planItemIds)
     return didDelete
   }
 

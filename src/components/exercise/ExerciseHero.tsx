@@ -3,10 +3,10 @@ import { useTranslation } from 'react-i18next'
 
 import { quickEaseTransition } from '../motion/motion-tokens'
 import { getExerciseHeroData, getExerciseHeroTone } from '../../lib/exercise-hero'
-import type { SessionExerciseDetail } from '../../db/sessions'
+import type { ScheduleExerciseDetail } from '../../db/sessions'
 
 type ExerciseHeroProps = {
-  detail: SessionExerciseDetail
+  detail: ScheduleExerciseDetail
   now: number
 }
 

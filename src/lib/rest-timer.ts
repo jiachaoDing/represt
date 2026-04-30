@@ -1,4 +1,10 @@
-import type { RestTimerState, SessionExercise } from '../models/types'
+import type { RestTimerState } from '../models/types'
+
+type RestTimerExercise = {
+  id: string
+  lastCompletedAt: string | null
+  restEndsAt: string | null
+}
 
 export function formatDuration(totalSeconds: number) {
   const minutes = Math.floor(totalSeconds / 60)
@@ -16,10 +22,12 @@ export function getRestEndsAt(startedAt: string, restSeconds: number) {
   return new Date(startedAtMs + Math.max(0, restSeconds) * 1000).toISOString()
 }
 
-export function getRestTimerState(exercise: Pick<SessionExercise, 'id' | 'lastCompletedAt' | 'restEndsAt'>) {
+export function getRestTimerState(
+  exercise: Pick<RestTimerExercise, 'id' | 'lastCompletedAt' | 'restEndsAt'>,
+) {
   if (!exercise.lastCompletedAt || !exercise.restEndsAt) {
     return {
-      sessionExerciseId: exercise.id,
+      exerciseId: exercise.id,
       status: 'idle' as const,
       startedAt: null,
       endsAt: null,
@@ -27,7 +35,7 @@ export function getRestTimerState(exercise: Pick<SessionExercise, 'id' | 'lastCo
   }
 
   return {
-    sessionExerciseId: exercise.id,
+    exerciseId: exercise.id,
     status: 'running' as const,
     startedAt: exercise.lastCompletedAt,
     endsAt: exercise.restEndsAt,

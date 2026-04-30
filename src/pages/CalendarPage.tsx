@@ -129,8 +129,8 @@ export function CalendarPage() {
         : t('calendar.pastDate')
   const selectedDateHasSession = sessionDateKeySet.has(selectedDateKey)
   const selectedCycleDay = getTrainingCycleDayForDate(trainingCycle, selectedDateKey)
-  const recordedTemplate = selectedSummary?.session.autoImportedTemplateId
-    ? templates.find((template) => template.id === selectedSummary.session.autoImportedTemplateId) ?? null
+  const recordedTemplate = selectedSummary?.session.plannedTemplateId
+    ? templates.find((template) => template.id === selectedSummary.session.plannedTemplateId) ?? null
     : null
   const plannedTemplate = selectedCycleDay?.slot.templateId
     ? templates.find((template) => template.id === selectedCycleDay.slot.templateId) ?? null
@@ -140,8 +140,9 @@ export function CalendarPage() {
   const completedExerciseCount =
     selectedSummary?.exercises.filter((exercise) => exercise.completedSets > 0).length ?? 0
   const selectedTemplateLabel = selectedSummary
-    ? recordedTemplate?.name ??
-      (selectedSummary.session.autoImportedTemplateId ? t('calendar.deletedTemplate') : t('calendar.manualPlan'))
+    ? selectedSummary.session.plannedTemplateNameSnapshot ??
+      recordedTemplate?.name ??
+      (selectedSummary.session.plannedTemplateId ? t('calendar.deletedTemplate') : t('calendar.manualPlan'))
     : plannedTemplate?.name ?? (selectedCycleDay ? t('calendar.restDay') : t('calendar.cycleNotSet'))
   const selectedDateSummary = selectedDateHasSession
     ? completedSetCount > 0

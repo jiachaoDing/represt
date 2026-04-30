@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
 
 import {
-  completeSessionExerciseSet,
-  getSessionExerciseDetail,
-  skipSessionExerciseRest,
-  undoLatestSessionExerciseSet,
+  completePlanItemSet,
+  getScheduleExerciseDetail,
+  skipPlanItemRest,
+  undoLatestPlanItemSet,
   updateLatestSetRecordValues,
-  type SessionExerciseDetail,
+  type ScheduleExerciseDetail,
 } from '../../db/sessions'
 import {
   parseOptionalReps,
@@ -22,7 +22,7 @@ import {
 } from '../../native/training-notifications'
 
 function syncLatestSetInputs(
-  detail: SessionExerciseDetail | null,
+  detail: ScheduleExerciseDetail | null,
   setWeightInput: (value: string) => void,
   setRepsInput: (value: string) => void,
 ) {
@@ -30,7 +30,7 @@ function syncLatestSetInputs(
   setRepsInput(toOptionalNumberString(detail?.latestSetRecord?.reps ?? null))
 }
 
-async function syncRestTimerNotification(detail: SessionExerciseDetail | null) {
+async function syncRestTimerNotification(detail: ScheduleExerciseDetail | null) {
   if (!detail) {
     return
   }
@@ -55,7 +55,7 @@ async function prepareRestTimerReminder() {
 }
 
 export function useExercisePageData(id: string) {
-  const [detail, setDetail] = useState<SessionExerciseDetail | null>(null)
+  const [detail, setDetail] = useState<ScheduleExerciseDetail | null>(null)
   const [weightInput, setWeightInput] = useState('')
   const [repsInput, setRepsInput] = useState('')
   const [isLoading, setIsLoading] = useState(true)
@@ -70,7 +70,7 @@ export function useExercisePageData(id: string) {
         setError(null)
         setIsLoading(true)
 
-        const result = await getSessionExerciseDetail(id)
+        const result = await getScheduleExerciseDetail(id)
         if (isCancelled) {
           return
         }
@@ -125,8 +125,8 @@ export function useExercisePageData(id: string) {
 
     const didSucceed = await runMutation(async () => {
       await prepareRestTimerReminder()
-      await completeSessionExerciseSet(detail.exercise.id)
-      const nextDetail = await getSessionExerciseDetail(detail.exercise.id)
+      await completePlanItemSet(detail.exercise.id)
+      const nextDetail = await getScheduleExerciseDetail(detail.exercise.id)
 
       setDetail(nextDetail)
       syncLatestSetInputs(nextDetail, setWeightInput, setRepsInput)
@@ -183,8 +183,8 @@ export function useExercisePageData(id: string) {
     let didUndo = false
 
     const didSucceed = await runMutation(async () => {
-      await undoLatestSessionExerciseSet(detail.exercise.id)
-      const nextDetail = await getSessionExerciseDetail(detail.exercise.id)
+      await undoLatestPlanItemSet(detail.exercise.id)
+      const nextDetail = await getScheduleExerciseDetail(detail.exercise.id)
 
       setDetail(nextDetail)
       syncLatestSetInputs(nextDetail, setWeightInput, setRepsInput)
@@ -209,8 +209,8 @@ export function useExercisePageData(id: string) {
     }
 
     return runMutation(async () => {
-      await skipSessionExerciseRest(detail.exercise.id)
-      const nextDetail = await getSessionExerciseDetail(detail.exercise.id)
+      await skipPlanItemRest(detail.exercise.id)
+      const nextDetail = await getScheduleExerciseDetail(detail.exercise.id)
 
       setDetail(nextDetail)
       await syncRestTimerNotification(nextDetail)

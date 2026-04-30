@@ -38,10 +38,10 @@ export interface WorkoutSession {
   id: string
   sessionDateKey: string
   createdAt: string
-  autoImportedTemplateId?: string | null
-  autoImportedAt?: string | null
+  plannedTemplateId?: string | null
+  plannedTemplateNameSnapshot?: string | null
+  plannedTemplateSelectedAt?: string | null
   lastSyncedTemplateUpdatedAt?: string | null
-  deletedTemplateExerciseIds?: string[]
 }
 
 export interface SessionTemplateExerciseSnapshot {
@@ -54,15 +54,31 @@ export interface SessionTemplateExerciseSnapshot {
   order: number
 }
 
-export interface SessionExercise {
+export interface SessionPlanItem {
   id: string
   sessionId: string
   templateExerciseId: string | null
   sourceTemplateId?: string | null
   sourceTemplateSnapshot?: SessionTemplateExerciseSnapshot | null
   origin?: 'template' | 'manual'
-  removedFromTemplate?: boolean
-  archivedAt?: string | null
+  name: string
+  catalogExerciseId?: string | null
+  targetSets: number
+  defaultWeightKg?: number | null
+  defaultReps?: number | null
+  restSeconds: number
+  order: number
+  createdAt: string
+}
+
+export interface PerformedExercise {
+  id: string
+  sessionId: string
+  planItemId: string | null
+  templateExerciseId: string | null
+  sourceTemplateId?: string | null
+  sourceTemplateSnapshot?: SessionTemplateExerciseSnapshot | null
+  origin?: 'template' | 'manual'
   name: string
   catalogExerciseId?: string | null
   targetSets: number
@@ -71,6 +87,7 @@ export interface SessionExercise {
   completedSets: number
   restSeconds: number
   order: number
+  startedAt: string
   lastCompletedAt: string | null
   restEndsAt: string | null
 }
@@ -78,7 +95,7 @@ export interface SessionExercise {
 export interface SetRecord {
   id: string
   sessionId: string
-  sessionExerciseId: string
+  performedExerciseId: string
   setNumber: number
   completedAt: string
   weightKg: number | null
@@ -86,7 +103,7 @@ export interface SetRecord {
 }
 
 export interface RestTimerState {
-  sessionExerciseId: string
+  exerciseId: string
   status: RestTimerStatus
   startedAt: string | null
   endsAt: string | null

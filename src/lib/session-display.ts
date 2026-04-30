@@ -1,6 +1,6 @@
 import { getRestTimerSnapshot, getRestTimerState } from './rest-timer'
 import i18n from '../i18n'
-import type { SessionExercise, SessionStatus } from '../models/types'
+import type { SessionStatus } from '../models/types'
 
 export type DerivedExerciseStatus = 'pending' | 'active' | 'completed'
 
@@ -17,7 +17,7 @@ export function getSessionStatusLabel(status: SessionStatus) {
 }
 
 export function deriveExerciseStatus(
-  exercise: Pick<SessionExercise, 'completedSets' | 'targetSets'> & Partial<Pick<SessionExercise, 'restEndsAt'>>,
+  exercise: ExerciseProgress,
 ): DerivedExerciseStatus {
   if (exercise.completedSets >= exercise.targetSets) {
     const restEndsAtMs = exercise.restEndsAt ? new Date(exercise.restEndsAt).getTime() : 0
@@ -47,12 +47,24 @@ export function getExerciseStatusLabel(status: DerivedExerciseStatus) {
   return i18n.t('status.pending')
 }
 
-export function getExerciseRestLabel(exercise: SessionExercise, now: number) {
+export function getExerciseRestLabel(exercise: ExerciseRestProgress, now: number) {
   if (deriveExerciseStatus(exercise) === 'completed') {
     return i18n.t('status.completed')
   }
 
   return getRestTimerSnapshot(getRestTimerState(exercise), now).label
+}
+
+type ExerciseProgress = {
+  completedSets: number
+  targetSets: number
+  restEndsAt?: string | null
+}
+
+type ExerciseRestProgress = ExerciseProgress & {
+  id: string
+  lastCompletedAt: string | null
+  restEndsAt: string | null
 }
 
 export function getCompletedAtLabel(completedAt: string, locale = 'zh-CN') {

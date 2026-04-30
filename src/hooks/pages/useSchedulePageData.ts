@@ -2,14 +2,14 @@ import { useCallback, useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 
 import {
-  addTemplateExercisesToSession,
-  addTemporarySessionExercise,
-  deletePendingSessionExercise,
+  addTemplateExercisesToSessionPlan,
+  addTemporarySessionPlanItem,
+  deletePendingSessionPlanItem,
   getCurrentSession,
   getOrCreateTodaySession,
   getSessionTemplateSyncStatus,
-  reorderSessionExercises,
-  syncSessionFromTemplate,
+  reorderSessionPlanItems,
+  syncSessionPlanFromTemplate,
   type TemplateSyncResult,
   type TemplateSyncStatus,
   type WorkoutSessionWithExercises,
@@ -187,7 +187,7 @@ export function useSchedulePageData() {
     setSelectedTemplateId(templateId)
 
     const didSucceed = await runMutation(async () => {
-      await addTemplateExercisesToSession(currentSession.id, templateId, templateExerciseIds)
+      await addTemplateExercisesToSessionPlan(currentSession.id, templateId, templateExerciseIds)
       await loadData(templateId)
     })
 
@@ -245,7 +245,7 @@ export function useSchedulePageData() {
     }
 
     return runMutation(async () => {
-      await addTemporarySessionExercise(currentSession.id, {
+      await addTemporarySessionPlanItem(currentSession.id, {
         name: newExerciseDraft.name,
         catalogExerciseId: newExerciseDraft.catalogExerciseId,
         targetSets: parseIntegerInput(newExerciseDraft.targetSets),
@@ -264,19 +264,19 @@ export function useSchedulePageData() {
     }
 
     return runMutation(async () => {
-      await reorderSessionExercises(currentSession.id, orderedExerciseIds)
+      await reorderSessionPlanItems(currentSession.id, orderedExerciseIds)
       await loadData(selectedTemplateId)
     })
   }
 
-  async function handleDeleteExercises(sessionExerciseIds: string[]) {
-    if (!currentSession || sessionExerciseIds.length === 0) {
+  async function handleDeleteExercises(planItemIds: string[]) {
+    if (!currentSession || planItemIds.length === 0) {
       return false
     }
 
     const didDelete = await runMutation(async () => {
-      for (const sessionExerciseId of sessionExerciseIds) {
-        await deletePendingSessionExercise(currentSession.id, sessionExerciseId)
+      for (const planItemId of planItemIds) {
+        await deletePendingSessionPlanItem(currentSession.id, planItemId)
       }
       await loadData(selectedTemplateId)
     })
@@ -295,7 +295,7 @@ export function useSchedulePageData() {
 
     let result: TemplateSyncResult | false = false
     const didSucceed = await runMutation(async () => {
-      result = await syncSessionFromTemplate(currentSession.id)
+      result = await syncSessionPlanFromTemplate(currentSession.id)
       await loadData(selectedTemplateId)
     })
 
@@ -311,8 +311,8 @@ export function useSchedulePageData() {
   const didAutoImportToday =
     currentSession !== null &&
     todayTemplate !== null &&
-    currentSession.autoImportedTemplateId === todayTemplate.id &&
-    currentSession.autoImportedAt !== null
+    currentSession.plannedTemplateId === todayTemplate.id &&
+    currentSession.plannedTemplateSelectedAt !== null
   const shouldConfirmContinueBeforeAddingExercise = currentSession?.status === 'completed'
   const hasTemplates = templates.length > 0
 

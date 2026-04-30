@@ -21,26 +21,6 @@ function loadTsModule(relativePath) {
   return module.exports
 }
 
-function readStringUnion(relativePath, typeName) {
-  const filePath = resolve(root, relativePath)
-  const sourceFile = ts.createSourceFile(
-    filePath,
-    readFileSync(filePath, 'utf8'),
-    ts.ScriptTarget.Latest,
-    true,
-  )
-
-  for (const statement of sourceFile.statements) {
-    if (ts.isTypeAliasDeclaration(statement) && statement.name.text === typeName) {
-      return statement.type.types
-        .filter((node) => ts.isLiteralTypeNode(node) && ts.isStringLiteral(node.literal))
-        .map((node) => node.literal.text)
-    }
-  }
-
-  throw new Error(`Cannot find string union type ${typeName}`)
-}
-
 function checkNames(errors, label, ids, ...resources) {
   for (const id of ids) {
     resources.forEach((resource, index) => {
@@ -103,16 +83,18 @@ function checkNoCatalogAliases(errors, label, items) {
 }
 
 const { exercises } = loadTsModule('src/domain/exercise-catalog/exercises.ts')
+const { measurementTypes } = loadTsModule('src/domain/exercise-catalog/measurement-types.ts')
 const { muscleGroups } = loadTsModule('src/domain/exercise-catalog/muscles.ts')
+const { movementPatterns } = loadTsModule('src/domain/exercise-catalog/movement-patterns.ts')
 const enExercises = loadTsModule('src/locales/en/exercises.ts').default
 const zhCNExercises = loadTsModule('src/locales/zh-CN/exercises.ts').default
 const enMuscles = loadTsModule('src/locales/en/muscles.ts').default
 const zhCNMuscles = loadTsModule('src/locales/zh-CN/muscles.ts').default
 
 const errors = []
-const muscleGroupIds = readStringUnion('src/domain/exercise-catalog/types.ts', 'MuscleGroup')
+const muscleGroupIds = muscleGroups
 const muscleGroupIdSet = new Set(muscleGroupIds)
-const movementPatterns = readStringUnion('src/domain/exercise-catalog/types.ts', 'MovementPattern')
+const measurementTypeIds = new Set(measurementTypes)
 const movementPatternIds = new Set(movementPatterns)
 
 checkNames(
@@ -142,6 +124,10 @@ for (const muscleGroupId of muscleGroupIds) {
 for (const exercise of exercises) {
   if (!movementPatternIds.has(exercise.movementPattern)) {
     errors.push(`Exercise "${exercise.id}" references missing movement pattern "${exercise.movementPattern}"`)
+  }
+
+  if (!measurementTypeIds.has(exercise.measurementType)) {
+    errors.push(`Exercise "${exercise.id}" references missing measurement type "${exercise.measurementType}"`)
   }
 
   for (const muscleGroupId of [...exercise.primaryMuscleGroupIds, ...exercise.secondaryMuscleGroupIds]) {

@@ -1,7 +1,7 @@
 import type { TFunction } from 'i18next'
 
 import { formatDuration, getRestTimerSnapshot, getRestTimerState } from './rest-timer'
-import type { SessionExerciseDetail } from '../db/sessions'
+import type { ScheduleExerciseDetail } from '../db/sessions'
 
 type ExerciseHeroState = 'completed' | 'counting' | 'ready' | 'resting'
 
@@ -26,7 +26,7 @@ export function getExerciseHeroTone(state: ExerciseHeroState) {
 }
 
 export function getExerciseHeroData(
-  detail: SessionExerciseDetail | null,
+  detail: ScheduleExerciseDetail | null,
   now: number,
   t: TFunction,
 ): ExerciseHeroData | null {
