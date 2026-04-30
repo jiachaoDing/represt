@@ -100,6 +100,8 @@ export interface SetRecord {
   completedAt: string
   weightKg: number | null
   reps: number | null
+  durationSeconds: number | null
+  distanceMeters: number | null
 }
 
 export interface RestTimerState {

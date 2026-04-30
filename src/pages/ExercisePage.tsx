@@ -27,6 +27,8 @@ export function ExercisePage() {
     canCompleteSet,
     canUndoLatestSet,
     detail,
+    distanceInput,
+    durationInput,
     error,
     handleCompleteSet,
     handleSkipRest,
@@ -35,7 +37,10 @@ export function ExercisePage() {
     isLoading,
     isSubmitting,
     latestSetRecord,
+    measurementType,
     repsInput,
+    setDistanceInput,
+    setDurationInput,
     setRepsInput,
     setWeightInput,
     weightInput,
@@ -137,6 +142,7 @@ export function ExercisePage() {
             
             <ExerciseLatestRecordCard
               latestSetRecord={latestSetRecord}
+              measurementType={measurementType}
               onEdit={() => setIsRecordFormOpen(true)}
             />
             
@@ -150,9 +156,14 @@ export function ExercisePage() {
             <ExerciseRecordInlineCard
               isSubmitting={isSubmitting}
               latestSetRecord={latestSetRecord}
+              distanceInput={distanceInput}
+              durationInput={durationInput}
+              measurementType={measurementType}
               repsInput={repsInput}
               weightInput={weightInput}
               onCancel={() => setIsRecordFormOpen(false)}
+              onDistanceChange={setDistanceInput}
+              onDurationChange={setDurationInput}
               onRepsChange={setRepsInput}
               onSubmit={handleSaveRecord}
               onWeightChange={setWeightInput}

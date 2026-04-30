@@ -1,6 +1,7 @@
 import type { FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import type { MeasurementType } from '../../domain/exercise-catalog'
 import { getCompletedAtLabel } from '../../lib/session-display'
 
 type ExerciseRecordInlineCardProps = {
@@ -9,9 +10,14 @@ type ExerciseRecordInlineCardProps = {
     completedAt: string
     setNumber: number
   } | null
+  distanceInput: string
+  durationInput: string
+  measurementType: MeasurementType
   repsInput: string
   weightInput: string
   onCancel: () => void
+  onDistanceChange: (value: string) => void
+  onDurationChange: (value: string) => void
   onRepsChange: (value: string) => void
   onSubmit: (event: FormEvent<HTMLFormElement>) => void
   onWeightChange: (value: string) => void
@@ -20,14 +26,61 @@ type ExerciseRecordInlineCardProps = {
 export function ExerciseRecordInlineCard({
   isSubmitting,
   latestSetRecord,
+  distanceInput,
+  durationInput,
+  measurementType,
   repsInput,
   weightInput,
   onCancel,
+  onDistanceChange,
+  onDurationChange,
   onRepsChange,
   onSubmit,
   onWeightChange,
 }: ExerciseRecordInlineCardProps) {
   const { i18n, t } = useTranslation()
+  const fields = [
+    measurementType === 'weightReps' || measurementType === 'weightDistance'
+      ? {
+          inputMode: 'decimal' as const,
+          label: t('exercise.weightKg'),
+          min: 0,
+          onChange: onWeightChange,
+          step: '0.5',
+          value: weightInput,
+        }
+      : null,
+    measurementType === 'weightReps' || measurementType === 'reps'
+      ? {
+          inputMode: 'numeric' as const,
+          label: t('exercise.reps'),
+          min: 0,
+          onChange: onRepsChange,
+          step: '1',
+          value: repsInput,
+        }
+      : null,
+    measurementType === 'duration'
+      ? {
+          inputMode: 'numeric' as const,
+          label: t('exercise.durationSeconds'),
+          min: 0,
+          onChange: onDurationChange,
+          step: '1',
+          value: durationInput,
+        }
+      : null,
+    measurementType === 'distance' || measurementType === 'weightDistance'
+      ? {
+          inputMode: 'decimal' as const,
+          label: t('exercise.distanceMeters'),
+          min: 0,
+          onChange: onDistanceChange,
+          step: '1',
+          value: distanceInput,
+        }
+      : null,
+  ].filter((field): field is NonNullable<typeof field> => field !== null)
 
   return (
     <section className="mx-4 mt-3 rounded-[1.5rem] border border-[var(--outline-variant)]/30 bg-[var(--surface)] px-5 py-5 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)]">
@@ -63,37 +116,24 @@ export function ExerciseRecordInlineCard({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <label className="block">
+          <div className={`grid gap-4 ${fields.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+            {fields.map((field) => (
+              <label key={field.label} className="block">
               <span className="mb-1 ml-1 block text-xs font-medium text-[var(--on-surface-variant)]">
-                {t('exercise.weightKg')}
+                {field.label}
               </span>
               <input
                 type="number"
-                min={0}
-                step="0.5"
-                inputMode="decimal"
-                value={weightInput}
+                min={field.min}
+                step={field.step}
+                inputMode={field.inputMode}
+                value={field.value}
                 disabled={isSubmitting}
-                onChange={(event) => onWeightChange(event.target.value)}
+                onChange={(event) => field.onChange(event.target.value)}
                 className="w-full rounded-none border-b border-[var(--on-surface)] bg-transparent px-1 py-3 text-base text-[var(--on-surface)] outline-none transition-all focus:border-b-2 focus:border-[var(--primary)] disabled:opacity-50"
               />
             </label>
-
-            <label className="block">
-              <span className="mb-1 ml-1 block text-xs font-medium text-[var(--on-surface-variant)]">
-                {t('exercise.reps')}
-              </span>
-              <input
-                type="number"
-                min={0}
-                inputMode="numeric"
-                value={repsInput}
-                disabled={isSubmitting}
-                onChange={(event) => onRepsChange(event.target.value)}
-                className="w-full rounded-none border-b border-[var(--on-surface)] bg-transparent px-1 py-3 text-base text-[var(--on-surface)] outline-none transition-all focus:border-b-2 focus:border-[var(--primary)] disabled:opacity-50"
-              />
-            </label>
+            ))}
           </div>
 
           <button

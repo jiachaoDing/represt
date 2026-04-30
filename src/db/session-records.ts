@@ -1,5 +1,9 @@
 import type { PerformedExercise, SessionPlanItem, SetRecord } from '../models/types'
 import { getRestEndsAt } from '../lib/rest-timer'
+import {
+  buildSetRecordValuesForMeasurement,
+  getMeasurementTypeForExercise,
+} from '../lib/set-record-measurement'
 import { db } from './app-db'
 import { getLatestSetRecord, getPerformedExerciseForPlanItem, nowIso } from './session-core'
 
@@ -63,6 +67,11 @@ export async function completePlanItemSet(planItemId: string): Promise<SetRecord
         : null
       const nextCompletedSets = exercise.completedSets + 1
       const restEndsAt = getRestEndsAt(completedAt, exercise.restSeconds)
+      const measurementType = getMeasurementTypeForExercise(exercise)
+      const defaultValues = buildSetRecordValuesForMeasurement(measurementType, {
+        weightKg: exercise.defaultWeightKg ?? templateExercise?.weightKg ?? null,
+        reps: exercise.defaultReps ?? templateExercise?.reps ?? null,
+      })
 
       const setRecord: SetRecord = {
         id: crypto.randomUUID(),
@@ -70,8 +79,7 @@ export async function completePlanItemSet(planItemId: string): Promise<SetRecord
         performedExerciseId: exercise.id,
         setNumber: nextCompletedSets,
         completedAt,
-        weightKg: exercise.defaultWeightKg ?? templateExercise?.weightKg ?? null,
-        reps: exercise.defaultReps ?? templateExercise?.reps ?? null,
+        ...defaultValues,
       }
 
       createdSetRecord = setRecord
@@ -157,6 +165,8 @@ export async function updateLatestSetRecordValues(
   input: {
     weightKg?: number | null
     reps?: number | null
+    durationSeconds?: number | null
+    distanceMeters?: number | null
   },
 ) {
   const exercise = await getPerformedExerciseForPlanItem(planItemId)
@@ -169,15 +179,8 @@ export async function updateLatestSetRecordValues(
     throw new Error('当前动作还没有组记录，无法补录。')
   }
 
-  const updates: Partial<SetRecord> = {}
-
-  if (Object.prototype.hasOwnProperty.call(input, 'weightKg')) {
-    updates.weightKg = input.weightKg ?? null
-  }
-
-  if (Object.prototype.hasOwnProperty.call(input, 'reps')) {
-    updates.reps = input.reps ?? null
-  }
+  const measurementType = getMeasurementTypeForExercise(exercise)
+  const updates: Partial<SetRecord> = buildSetRecordValuesForMeasurement(measurementType, input)
 
   await db.setRecords.update(latestSetRecord.id, updates)
 

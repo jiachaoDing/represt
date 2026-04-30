@@ -2,53 +2,17 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import type { SessionSummaryDetail } from '../../db/sessions'
 import { getDisplayExerciseName } from '../../lib/exercise-name'
-import type { SetRecord } from '../../models/types'
+import {
+  formatSetRecordValue,
+  getMeasurementTypeForExercise,
+  getRecordSummaryParts,
+} from '../../lib/set-record-measurement'
 
 type SessionExerciseSummaryListProps = {
   detail: SessionSummaryDetail | null
 }
 
 const maxDotCount = 10
-
-function formatNumber(value: number) {
-  return Number.isInteger(value) ? String(value) : String(value).replace(/\.0$/, '')
-}
-
-function formatSetRecordValue(setRecord: SetRecord, t: ReturnType<typeof useTranslation>['t']) {
-  if (setRecord.weightKg === null && setRecord.reps === null) {
-    return t('summary.completedValue')
-  }
-
-  if (setRecord.weightKg !== null && setRecord.reps !== null) {
-    return `${formatNumber(setRecord.weightKg)}kg × ${setRecord.reps}`
-  }
-
-  if (setRecord.weightKg !== null) {
-    return `${formatNumber(setRecord.weightKg)}kg`
-  }
-
-  return t('common.reps', { value: setRecord.reps })
-}
-
-function getRecordSummary(setRecords: SetRecord[], t: ReturnType<typeof useTranslation>['t']) {
-  const weights = setRecords
-    .map((setRecord) => setRecord.weightKg)
-    .filter((weightKg): weightKg is number => weightKg !== null)
-  const reps = setRecords
-    .map((setRecord) => setRecord.reps)
-    .filter((repCount): repCount is number => repCount !== null)
-  const parts: string[] = []
-
-  if (weights.length > 0) {
-    parts.push(t('summary.highestWeight', { weight: formatNumber(Math.max(...weights)) }))
-  }
-
-  if (reps.length > 0) {
-    parts.push(t('summary.totalReps', { reps: reps.reduce((acc, repCount) => acc + repCount, 0) }))
-  }
-
-  return parts.join(' · ')
-}
 
 function SetCompletionDots({ completedSets }: { completedSets: number }) {
   if (completedSets <= 0) {
@@ -99,7 +63,8 @@ export function SessionExerciseSummaryList({ detail }: SessionExerciseSummaryLis
 
       <div className="flex flex-col gap-3 px-4">
         {detail.exercises.map((exercise) => {
-          const recordSummary = getRecordSummary(exercise.setRecords, t)
+          const measurementType = getMeasurementTypeForExercise(exercise)
+          const recordSummary = getRecordSummaryParts(exercise.setRecords, measurementType, t).join(' · ')
           const displayName = getDisplayExerciseName(t, exercise)
 
           return (
@@ -132,13 +97,13 @@ export function SessionExerciseSummaryList({ detail }: SessionExerciseSummaryLis
               <div className="mt-4 border-t border-[var(--outline-variant)]/20 pt-3">
                 {exercise.setRecords.length > 0 ? (
                   <div className="flex flex-col gap-2">
-                    {exercise.setRecords.map((setRecord) => (
+                    {exercise.setRecords.map((setRecord, index) => (
                       <div key={setRecord.id} className="flex items-center text-[14px]">
                         <div className="w-14 text-[var(--on-surface-variant)]">
-                          {t('summary.setNumber', { setNumber: setRecord.setNumber })}
+                          {t('summary.setNumber', { setNumber: index + 1 })}
                         </div>
                         <div className="flex-1 pl-4 font-medium text-[var(--on-surface)]">
-                          {formatSetRecordValue(setRecord, t)}
+                          {formatSetRecordValue(setRecord, measurementType, t)}
                         </div>
                       </div>
                     ))}

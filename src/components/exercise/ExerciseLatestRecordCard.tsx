@@ -1,23 +1,26 @@
 import { useTranslation } from 'react-i18next'
 
+import type { MeasurementType } from '../../domain/exercise-catalog'
+import { formatSetRecordValue } from '../../lib/set-record-measurement'
 import type { SetRecord } from '../../models/types'
 
 type ExerciseLatestRecordCardProps = {
   latestSetRecord: SetRecord | null
+  measurementType: MeasurementType
   onEdit: () => void
 }
 
 export function ExerciseLatestRecordCard({
   latestSetRecord,
+  measurementType,
   onEdit,
 }: ExerciseLatestRecordCardProps) {
   const { t } = useTranslation()
   const latestRecordParts = latestSetRecord
     ? [
         t('summary.setNumber', { setNumber: latestSetRecord.setNumber }),
-        latestSetRecord.weightKg === null ? null : t('common.kg', { value: latestSetRecord.weightKg }),
-        latestSetRecord.reps === null ? null : t('common.reps', { value: latestSetRecord.reps }),
-      ].filter((part): part is string => part !== null)
+        formatSetRecordValue(latestSetRecord, measurementType, t),
+      ]
     : []
 
   return (

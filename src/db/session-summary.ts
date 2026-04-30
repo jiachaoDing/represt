@@ -10,6 +10,20 @@ import {
 } from './session-core'
 import type { SessionSummaryDetail } from './session-types'
 
+function getSummaryExerciseMergeKey(exercise: {
+  catalogExerciseId?: string | null
+  id: string
+  name: string
+}) {
+  const catalogExerciseId = exercise.catalogExerciseId?.trim()
+  if (catalogExerciseId) {
+    return `catalog:${catalogExerciseId}`
+  }
+
+  const normalizedName = exercise.name.normalize('NFKC').trim().toLowerCase().replace(/\s+/g, ' ')
+  return normalizedName ? `name:${normalizedName}` : `exercise:${exercise.id}`
+}
+
 export async function getSessionSummaryDetail(sessionId: string) {
   const [session, exercises, setRecords] = await Promise.all([
     getSessionRecord(sessionId),
@@ -29,15 +43,53 @@ export async function getSessionSummaryDetail(sessionId: string) {
     setRecordsByExerciseId.set(setRecord.performedExerciseId, current)
   }
 
+  const summaryExercises = exercises
+    .map((exercise) => ({
+      ...exercise,
+      status: deriveExerciseStatus(exercise),
+      setRecords: setRecordsByExerciseId.get(exercise.id) ?? [],
+    }))
+    .filter((exercise) => exercise.setRecords.length > 0)
+  const summaryExerciseGroups = summaryExercises.reduce((groups, exercise) => {
+    const mergeKey = getSummaryExerciseMergeKey(exercise)
+    const current = groups.get(mergeKey)
+
+    if (!current) {
+      groups.set(mergeKey, { ...exercise, setRecords: [...exercise.setRecords] })
+      return groups
+    }
+
+    const setRecords = [...current.setRecords, ...exercise.setRecords].sort((left, right) =>
+      left.completedAt.localeCompare(right.completedAt),
+    )
+
+    groups.set(mergeKey, {
+      ...current,
+      completedSets: current.completedSets + exercise.completedSets,
+      lastCompletedAt:
+        current.lastCompletedAt && exercise.lastCompletedAt
+          ? current.lastCompletedAt > exercise.lastCompletedAt
+            ? current.lastCompletedAt
+            : exercise.lastCompletedAt
+          : current.lastCompletedAt ?? exercise.lastCompletedAt,
+      targetSets: current.targetSets + exercise.targetSets,
+      setRecords,
+      status: deriveExerciseStatus({
+        completedSets: current.completedSets + exercise.completedSets,
+        targetSets: current.targetSets + exercise.targetSets,
+        restEndsAt: null,
+      }),
+    })
+
+    return groups
+  }, new Map<string, typeof summaryExercises[number]>())
+  const mergedSummaryExercises = Array.from(summaryExerciseGroups.values()).sort(
+    (left, right) => left.order - right.order,
+  )
+
   return {
     session: attachDerivedSessionStatus(session, exercises),
-    exercises: exercises
-      .map((exercise) => ({
-        ...exercise,
-        status: deriveExerciseStatus(exercise),
-        setRecords: setRecordsByExerciseId.get(exercise.id) ?? [],
-      }))
-      .filter((exercise) => exercise.setRecords.length > 0),
+    exercises: mergedSummaryExercises,
   } satisfies SessionSummaryDetail
 }
 

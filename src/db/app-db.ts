@@ -32,6 +32,23 @@ class TrainReDatabase extends Dexie {
         performedExercises: 'id, sessionId, planItemId, restEndsAt, [sessionId+order]',
         setRecords: 'id, sessionId, performedExerciseId, [performedExerciseId+setNumber], completedAt',
       })
+
+    this.version(12)
+      .stores({
+        trainingCycles: 'id, updatedAt',
+        workoutTemplates: 'id, name, updatedAt',
+        templateExercises: 'id, templateId, [templateId+order]',
+        workoutSessions: 'id, &sessionDateKey, createdAt',
+        sessionPlanItems: 'id, sessionId, templateExerciseId, sourceTemplateId, [sessionId+order]',
+        performedExercises: 'id, sessionId, planItemId, restEndsAt, [sessionId+order]',
+        setRecords: 'id, sessionId, performedExerciseId, [performedExerciseId+setNumber], completedAt',
+      })
+      .upgrade((transaction) =>
+        transaction.table('setRecords').toCollection().modify((setRecord) => {
+          setRecord.durationSeconds ??= null
+          setRecord.distanceMeters ??= null
+        }),
+      )
   }
 }
 

@@ -9,6 +9,8 @@ import {
   type ScheduleExerciseDetail,
 } from '../../db/sessions'
 import {
+  parseOptionalDistanceMeters,
+  parseOptionalDurationSeconds,
   parseOptionalReps,
   parseOptionalWeightKg,
   toOptionalNumberString,
@@ -20,14 +22,19 @@ import {
   prepareRestTimerReminderPermissions,
   scheduleRestTimerNotification,
 } from '../../native/training-notifications'
+import { getMeasurementTypeForExercise } from '../../lib/set-record-measurement'
 
 function syncLatestSetInputs(
   detail: ScheduleExerciseDetail | null,
   setWeightInput: (value: string) => void,
   setRepsInput: (value: string) => void,
+  setDurationInput: (value: string) => void,
+  setDistanceInput: (value: string) => void,
 ) {
   setWeightInput(toOptionalNumberString(detail?.latestSetRecord?.weightKg ?? null))
   setRepsInput(toOptionalNumberString(detail?.latestSetRecord?.reps ?? null))
+  setDurationInput(toOptionalNumberString(detail?.latestSetRecord?.durationSeconds ?? null))
+  setDistanceInput(toOptionalNumberString(detail?.latestSetRecord?.distanceMeters ?? null))
 }
 
 async function syncRestTimerNotification(detail: ScheduleExerciseDetail | null) {
@@ -58,6 +65,8 @@ export function useExercisePageData(id: string) {
   const [detail, setDetail] = useState<ScheduleExerciseDetail | null>(null)
   const [weightInput, setWeightInput] = useState('')
   const [repsInput, setRepsInput] = useState('')
+  const [durationInput, setDurationInput] = useState('')
+  const [distanceInput, setDistanceInput] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -76,7 +85,7 @@ export function useExercisePageData(id: string) {
         }
 
         setDetail(result)
-        syncLatestSetInputs(result, setWeightInput, setRepsInput)
+        syncLatestSetInputs(result, setWeightInput, setRepsInput, setDurationInput, setDistanceInput)
       } catch (loadError) {
         if (isCancelled) {
           return
@@ -129,7 +138,7 @@ export function useExercisePageData(id: string) {
       const nextDetail = await getScheduleExerciseDetail(detail.exercise.id)
 
       setDetail(nextDetail)
-      syncLatestSetInputs(nextDetail, setWeightInput, setRepsInput)
+      syncLatestSetInputs(nextDetail, setWeightInput, setRepsInput, setDurationInput, setDistanceInput)
       await syncRestTimerNotification(nextDetail)
       didComplete = true
     })
@@ -152,6 +161,8 @@ export function useExercisePageData(id: string) {
 
     const didSave = await runMutation(async () => {
       const latestSetRecord = await updateLatestSetRecordValues(detail.exercise.id, {
+        distanceMeters: parseOptionalDistanceMeters(distanceInput),
+        durationSeconds: parseOptionalDurationSeconds(durationInput),
         weightKg: parseOptionalWeightKg(weightInput),
         reps: parseOptionalReps(repsInput),
       })
@@ -187,7 +198,7 @@ export function useExercisePageData(id: string) {
       const nextDetail = await getScheduleExerciseDetail(detail.exercise.id)
 
       setDetail(nextDetail)
-      syncLatestSetInputs(nextDetail, setWeightInput, setRepsInput)
+      syncLatestSetInputs(nextDetail, setWeightInput, setRepsInput, setDurationInput, setDistanceInput)
       await syncRestTimerNotification(nextDetail)
       didUndo = true
     })
@@ -218,6 +229,7 @@ export function useExercisePageData(id: string) {
   }
 
   const latestSetRecord = detail?.latestSetRecord ?? null
+  const measurementType = getMeasurementTypeForExercise(detail?.exercise ?? {})
   const canCompleteSet =
     detail !== null && detail.exercise.completedSets < detail.exercise.targetSets && !isSubmitting
   const canUndoLatestSet = latestSetRecord !== null && !isSubmitting
@@ -226,6 +238,8 @@ export function useExercisePageData(id: string) {
     canCompleteSet,
     canUndoLatestSet,
     detail,
+    distanceInput,
+    durationInput,
     error,
     handleCompleteSet,
     handleSkipRest,
@@ -234,7 +248,10 @@ export function useExercisePageData(id: string) {
     isLoading,
     isSubmitting,
     latestSetRecord,
+    measurementType,
     repsInput,
+    setDistanceInput,
+    setDurationInput,
     setRepsInput,
     setWeightInput,
     weightInput,
