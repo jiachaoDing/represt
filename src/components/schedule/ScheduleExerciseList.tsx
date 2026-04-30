@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { createPortal } from 'react-dom'
-import { Pencil } from 'lucide-react'
+import { BookmarkPlus, ListChecks, ListX, Pencil } from 'lucide-react'
 import {
   DndContext,
   DragOverlay,
@@ -35,6 +35,7 @@ type ScheduleExerciseListProps = {
   isSubmitting: boolean
   now: number
   onOpenAdd: () => void
+  onOpenSaveTemplate: () => void
   onDeleteSelected: (exerciseIds: string[]) => Promise<boolean>
   onEditExercise: (exerciseId: string, draft: TemplateExerciseDraft) => Promise<boolean>
   onReorder: (orderedExerciseIds: string[]) => Promise<boolean>
@@ -47,6 +48,7 @@ export function ScheduleExerciseList({
   isSubmitting,
   now,
   onOpenAdd,
+  onOpenSaveTemplate,
   onDeleteSelected,
   onEditExercise,
   onReorder,
@@ -281,12 +283,29 @@ export function ScheduleExerciseList({
   return (
     <div className="flex flex-col gap-3 px-4">
       <div className="-mb-1 flex items-center justify-between px-2">
-        <div className={`text-[12px] text-[var(--on-surface-variant)] ${isSelectionMode ? 'whitespace-nowrap' : ''}`}>
-          {isEditMode
-            ? t('schedule.editExercises')
-            : isSelectionMode
-            ? t('schedule.selectedDeletableCount', { count: selectedExerciseIds.length })
-            : t('templates.longPressSort')}
+        <div className="flex min-w-0 items-center gap-2">
+          <span className="whitespace-nowrap text-[12px] text-[var(--on-surface-variant)]">
+            {isEditMode
+              ? t('schedule.editExercises')
+              : isSelectionMode
+              ? t('schedule.selectedDeletableCount', { count: selectedExerciseIds.length })
+              : t('templates.longPressSort')}
+          </span>
+          {isSelectionMode ? (
+            <button
+              type="button"
+              onClick={() => setSelectedExerciseIds(isAllSelected ? [] : deletableExerciseIds)}
+              className="flex h-8 items-center gap-1 rounded-full px-2.5 text-xs font-medium text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/10"
+              aria-label={isAllSelected ? t('templates.clearAll') : t('templates.selectAll')}
+            >
+              {isAllSelected ? (
+                <ListX size={16} strokeWidth={2.25} />
+              ) : (
+                <ListChecks size={16} strokeWidth={2.25} />
+              )}
+              <span>{isAllSelected ? t('templates.clearAll') : t('templates.selectAll')}</span>
+            </button>
+          ) : null}
         </div>
         <div className="flex items-center gap-1">
           {isEditMode ? (
@@ -303,24 +322,6 @@ export function ScheduleExerciseList({
             </button>
           ) : isSelectionMode ? (
             <>
-              <button
-                type="button"
-                onClick={() => setSelectedExerciseIds(isAllSelected ? [] : deletableExerciseIds)}
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/10"
-                aria-label={isAllSelected ? t('templates.clearAll') : t('templates.selectAll')}
-              >
-                {isAllSelected ? (
-                  <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <path d="M8 12h8" />
-                    <circle cx="12" cy="12" r="9" />
-                  </svg>
-                ) : (
-                  <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <path d="m9 12 2 2 4-5" />
-                    <circle cx="12" cy="12" r="9" />
-                  </svg>
-                )}
-              </button>
               <button
                 type="button"
                 onClick={closeSelectionMode}
@@ -380,23 +381,11 @@ export function ScheduleExerciseList({
           {!isSelectionMode && !isEditMode ? (
             <button
               type="button"
-              onClick={onOpenAdd}
+              onClick={onOpenSaveTemplate}
               className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/10"
-              aria-label={hasTemplates ? t('schedule.addExercise') : t('schedule.newExercise')}
+              aria-label={t('schedule.saveTodayAsTemplate')}
             >
-              <svg
-                viewBox="0 0 24 24"
-                width="20"
-                height="20"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
+              <BookmarkPlus size={18} strokeWidth={2.25} />
             </button>
           ) : null}
         </div>

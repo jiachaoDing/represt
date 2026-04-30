@@ -1,4 +1,4 @@
-import type { TemplateExercise, WorkoutTemplate } from '../models/types'
+import type { SessionPlanItem, TemplateExercise, WorkoutTemplate } from '../models/types'
 import i18n from '../i18n'
 import { resolveCatalogExerciseId } from '../lib/exercise-name'
 import { buildSetRecordValuesForMeasurement, getMeasurementTypeForExercise } from '../lib/set-record-measurement'
@@ -19,6 +19,19 @@ type TemplateExerciseInput = {
   durationSeconds?: number | null
   distanceMeters?: number | null
 }
+
+type SessionPlanTemplateSource = Pick<
+  SessionPlanItem,
+  | 'name'
+  | 'catalogExerciseId'
+  | 'targetSets'
+  | 'restSeconds'
+  | 'defaultWeightKg'
+  | 'defaultReps'
+  | 'defaultDurationSeconds'
+  | 'defaultDistanceMeters'
+  | 'order'
+>
 
 const TEMPLATE_SEED_KEY = 'trainre.templates.seeded.v3'
 let ensureTemplateSeedPromise: Promise<void> | null = null
@@ -125,6 +138,27 @@ async function touchTemplate(templateId: string) {
   await db.workoutTemplates.update(templateId, { updatedAt: nowIso() })
 }
 
+function buildTemplateExercisesFromSessionPlanItems(
+  templateId: string,
+  planItems: SessionPlanTemplateSource[],
+) {
+  return [...planItems]
+    .sort((left, right) => left.order - right.order)
+    .map((item, order) => ({
+      id: crypto.randomUUID(),
+      templateId,
+      name: item.name,
+      catalogExerciseId: item.catalogExerciseId ?? null,
+      targetSets: item.targetSets,
+      restSeconds: item.restSeconds,
+      weightKg: item.defaultWeightKg ?? null,
+      reps: item.defaultReps ?? null,
+      durationSeconds: item.defaultDurationSeconds ?? null,
+      distanceMeters: item.defaultDistanceMeters ?? null,
+      order,
+    })) satisfies TemplateExercise[]
+}
+
 export async function ensureTemplateSeedData() {
   if (ensureTemplateSeedPromise) {
     await ensureTemplateSeedPromise
@@ -220,6 +254,31 @@ export async function createTemplate(name: string) {
   return template
 }
 
+export async function createTemplateFromSessionPlanItems(
+  name: string,
+  planItems: SessionPlanTemplateSource[],
+) {
+  if (planItems.length === 0) {
+    return null
+  }
+
+  const timestamp = nowIso()
+  const template: WorkoutTemplate = {
+    id: crypto.randomUUID(),
+    name: normalizeTemplateName(name),
+    createdAt: timestamp,
+    updatedAt: timestamp,
+  }
+  const exercises = buildTemplateExercisesFromSessionPlanItems(template.id, planItems)
+
+  await db.transaction('rw', db.workoutTemplates, db.templateExercises, async () => {
+    await db.workoutTemplates.add(template)
+    await db.templateExercises.bulkAdd(exercises)
+  })
+
+  return { ...template, exercises } satisfies TemplateWithExercises
+}
+
 export async function updateTemplateName(templateId: string, name: string) {
   await db.workoutTemplates.update(templateId, {
     name: normalizeTemplateName(name),
@@ -294,6 +353,31 @@ export async function importTemplateExercises(targetTemplateId: string, sourceEx
   })
 
   return importedExercises
+}
+
+export async function replaceTemplateExercisesFromSessionPlanItems(
+  templateId: string,
+  planItems: SessionPlanTemplateSource[],
+) {
+  if (planItems.length === 0) {
+    return null
+  }
+
+  const template = await db.workoutTemplates.get(templateId)
+  if (!template) {
+    return null
+  }
+
+  const updatedAt = nowIso()
+  const exercises = buildTemplateExercisesFromSessionPlanItems(templateId, planItems)
+
+  await db.transaction('rw', db.workoutTemplates, db.templateExercises, async () => {
+    await db.templateExercises.where('templateId').equals(templateId).delete()
+    await db.templateExercises.bulkAdd(exercises)
+    await db.workoutTemplates.update(templateId, { updatedAt })
+  })
+
+  return { ...template, updatedAt, exercises } satisfies TemplateWithExercises
 }
 
 export async function updateTemplateExercise(

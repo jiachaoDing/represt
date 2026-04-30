@@ -1,6 +1,8 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
+import { Plus } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router-dom'
+import { createPortal } from 'react-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 import { TodayTrainingPlanCard } from '../components/training-cycle/TodayTrainingPlanCard'
 import { PageHeader } from '../components/ui/PageHeader'
@@ -13,13 +15,16 @@ import { getTemplateColor } from '../lib/template-color'
 import { ScheduleExerciseList } from '../components/schedule/ScheduleExerciseList'
 import { ScheduleExerciseSheet } from '../components/schedule/ScheduleExerciseSheet'
 import { ScheduleTemplateImportSheet } from '../components/schedule/ScheduleTemplateImportSheet'
+import { ScheduleTemplateSaveSheet } from '../components/schedule/ScheduleTemplateSaveSheet'
 
 export function SchedulePage() {
   const { i18n, t } = useTranslation()
+  const location = useLocation()
   const navigate = useNavigate()
   const now = useNow()
   const schedule = useSchedulePageData()
   const ui = useSchedulePageUi(schedule)
+  const [isTemplateSaveSheetOpen, setIsTemplateSaveSheetOpen] = useState(false)
   const templateColorMap = useMemo(
     () => new Map(schedule.templates.map((template, index) => [template.id, getTemplateColor(index)])),
     [schedule.templates],
@@ -33,6 +38,9 @@ export function SchedulePage() {
   const completedSets =
     schedule.currentSession?.exercises.reduce((sum, exercise) => sum + exercise.completedSets, 0) ?? 0
   const totalSets = schedule.currentSession?.exercises.reduce((sum, exercise) => sum + exercise.targetSets, 0) ?? 0
+  const canSaveTodayAsTemplate =
+    !schedule.isLoading && (schedule.currentSession?.exercises.length ?? 0) > 0
+  const canShowAddExerciseButton = location.pathname === '/' && canSaveTodayAsTemplate
   const isStarterState =
     !schedule.isLoading &&
     schedule.currentSession !== null &&
@@ -47,6 +55,25 @@ export function SchedulePage() {
   ]
     .filter(Boolean)
     .join(' ')
+  const addExerciseButton =
+    canShowAddExerciseButton && typeof document !== 'undefined'
+      ? createPortal(
+          <div className="fixed inset-x-0 bottom-[calc(6.5rem+env(safe-area-inset-bottom))] z-30 pointer-events-none">
+            <div className="mx-auto flex max-w-[30rem] justify-end px-6">
+              <button
+                type="button"
+                disabled={schedule.isSubmitting}
+                onClick={ui.openAddEntry}
+                aria-label={schedule.hasTemplates ? t('schedule.addExercise') : t('schedule.newExercise')}
+                className="pointer-events-auto flex h-12 w-12 items-center justify-center rounded-full bg-[var(--primary-container)] text-[var(--on-primary-container)] shadow-lg transition-transform hover:scale-[1.02] active:scale-95 disabled:opacity-50 tap-highlight-transparent"
+              >
+                <Plus size={22} strokeWidth={2.5} />
+              </button>
+            </div>
+          </div>,
+          document.body,
+        )
+      : null
 
   return (
     <div className="pb-4">
@@ -111,6 +138,7 @@ export function SchedulePage() {
             isSubmitting={schedule.isSubmitting}
             now={now}
             onOpenAdd={ui.openAddEntry}
+            onOpenSaveTemplate={() => setIsTemplateSaveSheetOpen(true)}
             onDeleteSelected={ui.handleDeleteExercisesAction}
             onEditExercise={schedule.handleReplaceExercise}
             onReorder={schedule.handleReorderExercises}
@@ -137,6 +165,19 @@ export function SchedulePage() {
         onCreateExercise={ui.isAllTemplateImportMode ? ui.createExerciseFromTemplateImportSheet : undefined}
         onSubmit={() => void ui.handleImportTemplate()}
         onToggleExercise={ui.toggleTemplateExercise}
+      />
+
+      {addExerciseButton}
+
+      <ScheduleTemplateSaveSheet
+        currentTemplateId={schedule.currentSession?.plannedTemplateId ?? null}
+        exerciseCount={schedule.currentSession?.exercises.length ?? 0}
+        isOpen={isTemplateSaveSheetOpen}
+        isSubmitting={schedule.isSubmitting}
+        templates={schedule.templates}
+        onClose={() => setIsTemplateSaveSheetOpen(false)}
+        onCreateTemplate={schedule.handleCreateTemplateFromToday}
+        onOverwriteTemplate={schedule.handleOverwriteTemplateFromToday}
       />
 
       <ConfirmDialog

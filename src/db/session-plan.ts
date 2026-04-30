@@ -200,6 +200,21 @@ export async function syncSessionPlanFromTemplate(sessionId: string): Promise<Te
   }
 }
 
+export async function markSessionTemplateSynced(
+  sessionId: string,
+  templateId: string,
+  templateUpdatedAt: string,
+) {
+  const session = await getSessionRecord(sessionId)
+  if (!session || session.plannedTemplateId !== templateId) {
+    return
+  }
+
+  await db.workoutSessions.update(sessionId, {
+    lastSyncedTemplateUpdatedAt: templateUpdatedAt,
+  })
+}
+
 export async function addTemplateExercisesToSessionPlan(
   sessionId: string,
   templateId: string,

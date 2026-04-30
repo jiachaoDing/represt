@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from 'react'
+import { ListChecks, ListX } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import {
   DndContext,
@@ -256,30 +257,29 @@ export function TemplateExerciseList({
 
       {!shouldShowEmptyHint ? (
         <div className="flex items-center justify-between px-2 pb-2">
-          <div className={`text-[12px] text-[var(--on-surface-variant)] ${isSelectionMode ? 'whitespace-nowrap' : ''}`}>
-            {isSelectionMode ? t('templates.selectedCount', { count: selectedExerciseIds.length }) : t('templates.longPressSort')}
+          <div className="flex min-w-0 items-center gap-2">
+            <span className="whitespace-nowrap text-[12px] text-[var(--on-surface-variant)]">
+              {isSelectionMode ? t('templates.selectedCount', { count: selectedExerciseIds.length }) : t('templates.longPressSort')}
+            </span>
+            {isSelectionMode ? (
+              <button
+                type="button"
+                onClick={() => setSelectedExerciseIds(isAllSelected ? [] : exerciseIds)}
+                className="flex h-8 items-center gap-1 rounded-full px-2.5 text-xs font-medium text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/10"
+                aria-label={isAllSelected ? t('templates.clearAll') : t('templates.selectAll')}
+              >
+                {isAllSelected ? (
+                  <ListX size={16} strokeWidth={2.25} />
+                ) : (
+                  <ListChecks size={16} strokeWidth={2.25} />
+                )}
+                <span>{isAllSelected ? t('templates.clearAll') : t('templates.selectAll')}</span>
+              </button>
+            ) : null}
           </div>
           <div className="flex items-center gap-1">
             {isSelectionMode ? (
               <>
-                <button
-                  type="button"
-                  onClick={() => setSelectedExerciseIds(isAllSelected ? [] : exerciseIds)}
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/10"
-                  aria-label={isAllSelected ? t('templates.clearAll') : t('templates.selectAll')}
-                >
-                  {isAllSelected ? (
-                    <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <path d="M8 12h8" />
-                      <circle cx="12" cy="12" r="9" />
-                    </svg>
-                  ) : (
-                    <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <path d="m9 12 2 2 4-5" />
-                      <circle cx="12" cy="12" r="9" />
-                    </svg>
-                  )}
-                </button>
                 <button
                   type="button"
                   onClick={closeSelectionMode}

@@ -8,6 +8,7 @@ import {
   getCurrentSession,
   getOrCreateTodaySession,
   getSessionTemplateSyncStatus,
+  markSessionTemplateSynced,
   replaceSessionPlanItem,
   reorderSessionPlanItems,
   syncSessionPlanFromTemplate,
@@ -16,7 +17,12 @@ import {
   type WorkoutSessionWithExercises,
 } from '../../db/sessions'
 import { getTodayTrainingCycleDay, getTrainingCycle } from '../../db/training-cycle'
-import { listTemplatesWithExercises, type TemplateWithExercises } from '../../db/templates'
+import {
+  createTemplateFromSessionPlanItems,
+  listTemplatesWithExercises,
+  replaceTemplateExercisesFromSessionPlanItems,
+  type TemplateWithExercises,
+} from '../../db/templates'
 import {
   parseOptionalDistanceMeters,
   parseOptionalDurationSeconds,
@@ -321,6 +327,47 @@ export function useSchedulePageData() {
     return didSucceed ? result : false
   }
 
+  async function handleCreateTemplateFromToday(name: string) {
+    if (!currentSession || currentSession.exercises.length === 0) {
+      return false
+    }
+
+    let savedTemplateId: string | null = null
+    const didSucceed = await runMutation(async () => {
+      const template = await createTemplateFromSessionPlanItems(name, currentSession.exercises)
+      savedTemplateId = template?.id ?? null
+      await loadData(savedTemplateId)
+    })
+
+    return didSucceed && savedTemplateId !== null
+  }
+
+  async function handleOverwriteTemplateFromToday(templateId: string) {
+    if (!currentSession || currentSession.exercises.length === 0) {
+      return false
+    }
+
+    let didSave = false
+    const didSucceed = await runMutation(async () => {
+      const template = await replaceTemplateExercisesFromSessionPlanItems(
+        templateId,
+        currentSession.exercises,
+      )
+      if (!template) {
+        return
+      }
+
+      if (currentSession.plannedTemplateId === templateId) {
+        await markSessionTemplateSynced(currentSession.id, templateId, template.updatedAt)
+      }
+
+      didSave = true
+      await loadData(templateId)
+    })
+
+    return didSucceed && didSave
+  }
+
   const todayCycleDay = getTodayTrainingCycleDay(trainingCycle)
   const todayTemplate =
     todayCycleDay?.slot.templateId
@@ -343,6 +390,8 @@ export function useSchedulePageData() {
     handleAddTemporaryExercise,
     handleAddTemplateExercises,
     handleDeleteExercises,
+    handleCreateTemplateFromToday,
+    handleOverwriteTemplateFromToday,
     handleReplaceExercise,
     handleReorderExercises,
     handleSyncTemplate,
