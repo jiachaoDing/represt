@@ -20,6 +20,8 @@ import {
   getTrainingCycleTemplateIndexes,
 } from '../../db/training-cycle'
 import {
+  parseOptionalDistanceMeters,
+  parseOptionalDurationSeconds,
   parseIntegerInput,
   parseOptionalReps,
   parseOptionalWeightKg,
@@ -135,6 +137,8 @@ export function useTemplatesPageData() {
         restSeconds: parseIntegerInput(draft.restSeconds),
         weightKg: parseOptionalWeightKg(draft.weightKg),
         reps: parseOptionalReps(draft.reps),
+        durationSeconds: parseOptionalDurationSeconds(draft.durationSeconds),
+        distanceMeters: parseOptionalDistanceMeters(draft.distanceMeters),
       })
       setLastCreatedExerciseId(exercise.id)
       await loadTemplates(templateId)
@@ -168,6 +172,8 @@ export function useTemplatesPageData() {
         restSeconds: parseIntegerInput(draft.restSeconds),
         weightKg: parseOptionalWeightKg(draft.weightKg),
         reps: parseOptionalReps(draft.reps),
+        durationSeconds: parseOptionalDurationSeconds(draft.durationSeconds),
+        distanceMeters: parseOptionalDistanceMeters(draft.distanceMeters),
       })
       await loadTemplates(templateId)
     })

@@ -3,6 +3,7 @@ import { CopyPlus } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { ExerciseNameInput } from '../exercise/ExerciseNameInput'
+import { getMeasurementTypeForExercise } from '../../lib/set-record-measurement'
 import type { TemplateExerciseDraft } from '../../lib/template-editor'
 
 type TemplateExerciseInlineEditorProps = {
@@ -26,6 +27,49 @@ export function TemplateExerciseInlineEditor({
 }: TemplateExerciseInlineEditorProps) {
   const { t } = useTranslation()
   const formRef = useRef<HTMLFormElement>(null)
+  const measurementType = getMeasurementTypeForExercise(draft)
+  const valueFields = [
+    measurementType === 'weightReps' || measurementType === 'weightDistance'
+      ? {
+          inputMode: 'decimal' as const,
+          label: t('templates.defaultWeight'),
+          min: 0,
+          onChange: (value: string) => onDraftChange({ ...draft, weightKg: value }),
+          step: '0.5',
+          value: draft.weightKg,
+        }
+      : null,
+    measurementType === 'weightReps' || measurementType === 'reps'
+      ? {
+          inputMode: 'numeric' as const,
+          label: t('templates.defaultReps'),
+          min: 0,
+          onChange: (value: string) => onDraftChange({ ...draft, reps: value }),
+          step: '1',
+          value: draft.reps,
+        }
+      : null,
+    measurementType === 'duration'
+      ? {
+          inputMode: 'numeric' as const,
+          label: t('templates.defaultDurationSeconds'),
+          min: 0,
+          onChange: (value: string) => onDraftChange({ ...draft, durationSeconds: value }),
+          step: '1',
+          value: draft.durationSeconds,
+        }
+      : null,
+    measurementType === 'distance' || measurementType === 'weightDistance'
+      ? {
+          inputMode: 'decimal' as const,
+          label: t('templates.defaultDistanceMeters'),
+          min: 0,
+          onChange: (value: string) => onDraftChange({ ...draft, distanceMeters: value }),
+          step: '1',
+          value: draft.distanceMeters,
+        }
+      : null,
+  ].filter((field): field is NonNullable<typeof field> => field !== null)
 
   useEffect(() => {
     const element = formRef.current
@@ -94,39 +138,25 @@ export function TemplateExerciseInlineEditor({
           </label>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <label className="block">
+        <div className={`grid gap-3 ${valueFields.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+          {valueFields.map((field) => (
+            <label key={field.label} className="block">
             <span className="mb-1 ml-1 block text-xs font-medium text-[var(--on-surface-variant)]">
-              {t('templates.defaultWeight')}
+              {field.label}
             </span>
             <input
               type="number"
-              min={0}
-              step="0.5"
-              inputMode="decimal"
-              value={draft.weightKg}
+              min={field.min}
+              step={field.step}
+              inputMode={field.inputMode}
+              value={field.value}
               disabled={isSubmitting}
-              onChange={(event) => onDraftChange({ ...draft, weightKg: event.target.value })}
+              onChange={(event) => field.onChange(event.target.value)}
               className="w-full rounded-xl bg-[var(--surface-container)] px-4 py-3 text-base text-[var(--on-surface)] outline-none ring-1 ring-transparent transition-all focus:ring-[var(--primary)]"
               placeholder={t('templates.optional')}
             />
           </label>
-
-          <label className="block">
-            <span className="mb-1 ml-1 block text-xs font-medium text-[var(--on-surface-variant)]">
-              {t('templates.defaultReps')}
-            </span>
-            <input
-              type="number"
-              min={0}
-              inputMode="numeric"
-              value={draft.reps}
-              disabled={isSubmitting}
-              onChange={(event) => onDraftChange({ ...draft, reps: event.target.value })}
-              className="w-full rounded-xl bg-[var(--surface-container)] px-4 py-3 text-base text-[var(--on-surface)] outline-none ring-1 ring-transparent transition-all focus:ring-[var(--primary)]"
-              placeholder={t('templates.optional')}
-            />
-          </label>
+          ))}
         </div>
 
         <div className="flex items-center justify-between gap-2 pt-1">

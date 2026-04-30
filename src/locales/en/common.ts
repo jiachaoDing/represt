@@ -210,9 +210,13 @@ const common = {
     exerciseMeta: '{{sets}} sets · rest {{seconds}} sec',
     defaultWeight: 'Default weight (kg)',
     defaultReps: 'Default reps',
+    defaultDurationSeconds: 'Default duration (sec)',
+    defaultDistanceMeters: 'Default distance (m)',
     optional: 'Optional',
     weightEmpty: 'Weight -',
     repsEmpty: 'Reps -',
+    durationEmpty: 'Duration -',
+    distanceEmpty: 'Distance -',
   },
   starterTemplate: {
     title: 'Choose template',

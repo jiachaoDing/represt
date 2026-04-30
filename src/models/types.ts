@@ -31,6 +31,8 @@ export interface TemplateExercise {
   restSeconds: number
   weightKg?: number | null
   reps?: number | null
+  durationSeconds?: number | null
+  distanceMeters?: number | null
   order: number
 }
 
@@ -50,6 +52,8 @@ export interface SessionTemplateExerciseSnapshot {
   targetSets: number
   defaultWeightKg?: number | null
   defaultReps?: number | null
+  defaultDurationSeconds?: number | null
+  defaultDistanceMeters?: number | null
   restSeconds: number
   order: number
 }
@@ -66,6 +70,8 @@ export interface SessionPlanItem {
   targetSets: number
   defaultWeightKg?: number | null
   defaultReps?: number | null
+  defaultDurationSeconds?: number | null
+  defaultDistanceMeters?: number | null
   restSeconds: number
   order: number
   createdAt: string
@@ -84,6 +90,8 @@ export interface PerformedExercise {
   targetSets: number
   defaultWeightKg?: number | null
   defaultReps?: number | null
+  defaultDurationSeconds?: number | null
+  defaultDistanceMeters?: number | null
   completedSets: number
   restSeconds: number
   order: number

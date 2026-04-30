@@ -1,6 +1,11 @@
 import { useTranslation } from 'react-i18next'
 
 import { getDisplayExerciseName } from '../../lib/exercise-name'
+import {
+  formatDistanceMeters,
+  formatDurationSeconds,
+  getMeasurementTypeForExercise,
+} from '../../lib/set-record-measurement'
 import type { TemplateExerciseCardProps } from './template-exercise-list.types'
 
 export function TemplateExerciseCard({
@@ -14,6 +19,33 @@ export function TemplateExerciseCard({
 }: TemplateExerciseCardProps) {
   const { t } = useTranslation()
   const displayName = getDisplayExerciseName(t, exercise)
+  const measurementType = getMeasurementTypeForExercise(exercise)
+  const valueLabels =
+    measurementType === 'weightReps'
+      ? [
+          exercise.weightKg ? t('common.kg', { value: exercise.weightKg }) : t('templates.weightEmpty'),
+          exercise.reps ? t('common.reps', { value: exercise.reps }) : t('templates.repsEmpty'),
+        ]
+      : measurementType === 'reps'
+      ? [exercise.reps ? t('common.reps', { value: exercise.reps }) : t('templates.repsEmpty')]
+      : measurementType === 'duration'
+      ? [
+          exercise.durationSeconds
+            ? formatDurationSeconds(exercise.durationSeconds, t)
+            : t('templates.durationEmpty'),
+        ]
+      : measurementType === 'distance'
+      ? [
+          exercise.distanceMeters
+            ? formatDistanceMeters(exercise.distanceMeters, t)
+            : t('templates.distanceEmpty'),
+        ]
+      : [
+          exercise.weightKg ? t('common.kg', { value: exercise.weightKg }) : t('templates.weightEmpty'),
+          exercise.distanceMeters
+            ? formatDistanceMeters(exercise.distanceMeters, t)
+            : t('templates.distanceEmpty'),
+        ]
 
   return (
     <div
@@ -57,8 +89,9 @@ export function TemplateExerciseCard({
           <div className="mt-2 flex flex-wrap gap-y-1 text-[13px] text-[var(--on-surface-variant)]">
             <span className="w-14 shrink-0">{t('common.sets', { value: exercise.targetSets })}</span>
             <span className="w-16 shrink-0">{t('common.seconds', { value: exercise.restSeconds })}</span>
-            <span className="w-20 shrink-0">{exercise.weightKg ? t('common.kg', { value: exercise.weightKg }) : t('templates.weightEmpty')}</span>
-            <span className="shrink-0">{exercise.reps ? t('common.reps', { value: exercise.reps }) : t('templates.repsEmpty')}</span>
+            {valueLabels.map((label) => (
+              <span key={label} className="w-20 shrink-0">{label}</span>
+            ))}
           </div>
         </div>
 

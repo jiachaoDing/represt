@@ -1,6 +1,7 @@
 import type { TemplateExercise, WorkoutTemplate } from '../models/types'
 import i18n from '../i18n'
 import { resolveCatalogExerciseId } from '../lib/exercise-name'
+import { buildSetRecordValuesForMeasurement, getMeasurementTypeForExercise } from '../lib/set-record-measurement'
 import { db } from './app-db'
 import { clearTemplateFromTrainingCycle } from './training-cycle'
 
@@ -15,6 +16,8 @@ type TemplateExerciseInput = {
   restSeconds: number
   weightKg?: number | null
   reps?: number | null
+  durationSeconds?: number | null
+  distanceMeters?: number | null
 }
 
 const TEMPLATE_SEED_KEY = 'trainre.templates.seeded.v3'
@@ -100,14 +103,21 @@ function normalizeTemplateName(name: string) {
 
 function normalizeExercise(input: Partial<TemplateExerciseInput>) {
   const name = input.name?.trim() || '未命名动作'
+  const catalogExerciseId = resolveCatalogExerciseId({ name, catalogExerciseId: input.catalogExerciseId })
+  const measurementType = getMeasurementTypeForExercise({ name, catalogExerciseId })
+  const values = buildSetRecordValuesForMeasurement(measurementType, {
+    distanceMeters: input.distanceMeters ?? null,
+    durationSeconds: input.durationSeconds ?? null,
+    reps: input.reps ?? null,
+    weightKg: input.weightKg ?? null,
+  })
 
   return {
     name,
-    catalogExerciseId: resolveCatalogExerciseId({ name, catalogExerciseId: input.catalogExerciseId }),
+    catalogExerciseId,
     targetSets: Math.max(1, Math.floor(input.targetSets ?? 3)),
     restSeconds: Math.max(0, Math.floor(input.restSeconds ?? 90)),
-    weightKg: input.weightKg ?? null,
-    reps: input.reps ?? null,
+    ...values,
   }
 }
 
@@ -151,6 +161,8 @@ export async function ensureTemplateSeedData() {
         restSeconds: exercise.restSeconds,
         weightKg: exercise.weightKg,
         reps: exercise.reps,
+        durationSeconds: exercise.durationSeconds,
+        distanceMeters: exercise.distanceMeters,
         order,
       })),
     )
@@ -271,6 +283,8 @@ export async function importTemplateExercises(targetTemplateId: string, sourceEx
     restSeconds: exercise.restSeconds,
     weightKg: exercise.weightKg ?? null,
     reps: exercise.reps ?? null,
+    durationSeconds: exercise.durationSeconds ?? null,
+    distanceMeters: exercise.distanceMeters ?? null,
     order: nextOrder + index,
   }))
 

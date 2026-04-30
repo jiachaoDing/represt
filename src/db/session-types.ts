@@ -57,4 +57,6 @@ export type SessionPlanItemInput = {
   restSeconds?: number
   defaultReps?: number | null
   defaultWeightKg?: number | null
+  defaultDurationSeconds?: number | null
+  defaultDistanceMeters?: number | null
 }

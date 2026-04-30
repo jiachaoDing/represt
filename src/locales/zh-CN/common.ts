@@ -210,9 +210,13 @@ const common = {
     exerciseMeta: '{{sets}} 组 · 休息 {{seconds}} 秒',
     defaultWeight: '默认重量 (kg)',
     defaultReps: '默认次数',
+    defaultDurationSeconds: '默认时长 (秒)',
+    defaultDistanceMeters: '默认距离 (m)',
     optional: '可选',
     weightEmpty: '重量 -',
     repsEmpty: '次数 -',
+    durationEmpty: '时长 -',
+    distanceEmpty: '距离 -',
   },
   starterTemplate: {
     title: '选择模板',

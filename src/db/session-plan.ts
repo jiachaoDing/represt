@@ -21,6 +21,8 @@ function normalizeSessionPlanItem(input: Partial<SessionPlanItemInput>) {
     restSeconds: Math.max(0, Math.floor(input.restSeconds ?? 90)),
     defaultWeightKg: input.defaultWeightKg ?? null,
     defaultReps: input.defaultReps ?? null,
+    defaultDurationSeconds: input.defaultDurationSeconds ?? null,
+    defaultDistanceMeters: input.defaultDistanceMeters ?? null,
   }
 }
 
@@ -33,6 +35,8 @@ function createTemplateExerciseSnapshot(
     targetSets: exercise.targetSets,
     defaultWeightKg: exercise.weightKg ?? null,
     defaultReps: exercise.reps ?? null,
+    defaultDurationSeconds: exercise.durationSeconds ?? null,
+    defaultDistanceMeters: exercise.distanceMeters ?? null,
     restSeconds: exercise.restSeconds,
     order: exercise.order,
   }
@@ -65,6 +69,8 @@ export async function buildPlanItemsFromTemplate(
     targetSets: exercise.targetSets,
     defaultWeightKg: exercise.weightKg ?? null,
     defaultReps: exercise.reps ?? null,
+    defaultDurationSeconds: exercise.durationSeconds ?? null,
+    defaultDistanceMeters: exercise.distanceMeters ?? null,
     restSeconds: exercise.restSeconds,
     order: startOrder + index,
     createdAt: timestamp,
@@ -252,6 +258,8 @@ export async function addTemporarySessionPlanItem(sessionId: string, input: Part
     targetSets: normalized.targetSets,
     defaultWeightKg: normalized.defaultWeightKg,
     defaultReps: normalized.defaultReps,
+    defaultDurationSeconds: normalized.defaultDurationSeconds,
+    defaultDistanceMeters: normalized.defaultDistanceMeters,
     restSeconds: normalized.restSeconds,
     order: nextOrder,
     createdAt: nowIso(),

@@ -21,6 +21,8 @@ function createPerformedExercise(planItem: SessionPlanItem, timestamp: string) {
     targetSets: planItem.targetSets,
     defaultWeightKg: planItem.defaultWeightKg ?? null,
     defaultReps: planItem.defaultReps ?? null,
+    defaultDurationSeconds: planItem.defaultDurationSeconds ?? null,
+    defaultDistanceMeters: planItem.defaultDistanceMeters ?? null,
     completedSets: 0,
     restSeconds: planItem.restSeconds,
     order: planItem.order,
@@ -71,6 +73,8 @@ export async function completePlanItemSet(planItemId: string): Promise<SetRecord
       const defaultValues = buildSetRecordValuesForMeasurement(measurementType, {
         weightKg: exercise.defaultWeightKg ?? templateExercise?.weightKg ?? null,
         reps: exercise.defaultReps ?? templateExercise?.reps ?? null,
+        durationSeconds: exercise.defaultDurationSeconds ?? templateExercise?.durationSeconds ?? null,
+        distanceMeters: exercise.defaultDistanceMeters ?? templateExercise?.distanceMeters ?? null,
       })
 
       const setRecord: SetRecord = {
