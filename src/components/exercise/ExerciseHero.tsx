@@ -26,7 +26,7 @@ export function ExerciseHero({ detail, now }: ExerciseHeroProps) {
   ].join(':')
 
   return (
-    <section className="px-4 pb-12 pt-14 text-center bg-[var(--surface-container)]/30">
+    <section className="flex h-[19rem] shrink-0 items-center justify-center px-4 py-4 text-center">
       <AnimatePresence initial={false} mode="wait">
         <motion.div
           key={heroTransitionKey}
@@ -38,11 +38,11 @@ export function ExerciseHero({ detail, now }: ExerciseHeroProps) {
               : { opacity: 0, y: -12, scale: 0.98, transition: quickEaseTransition }
           }
         >
-          <p className="mb-6 text-[15px] font-medium text-[var(--on-surface-variant)]">
+          <p className={`mb-5 text-[16px] font-medium ${getExerciseHeroTone(hero.state)}`}>
             {hero.label}
           </p>
           <h2
-            className={`text-[5rem] leading-none font-medium tracking-tight ${getExerciseHeroTone(hero.state)}`}
+            className={`text-[4.75rem] leading-none font-medium tracking-normal ${getExerciseHeroTone(hero.state)}`}
             style={{ fontVariantNumeric: 'tabular-nums' }}
           >
             {hero.value}
@@ -50,16 +50,22 @@ export function ExerciseHero({ detail, now }: ExerciseHeroProps) {
 
           <div
             className={[
-              'mx-auto mt-8 h-2 w-[180px] overflow-hidden rounded-full bg-[var(--primary-container)]',
-              hero.state === 'resting' ? 'opacity-100' : 'opacity-0',
+              'mx-auto mt-6 h-1 w-20 overflow-hidden rounded-full',
+              hero.state === 'resting' ? 'bg-[var(--tertiary)]' : 'bg-[var(--primary)]',
             ].join(' ')}
-            aria-hidden={hero.state !== 'resting'}
+            aria-hidden="true"
           >
-            <div
-              className="h-full origin-left rounded-full bg-[var(--primary)] will-change-transform"
-              style={{ transform: `scaleX(${hero.restRemainingRatio ?? 0})` }}
-            />
+            {hero.state === 'resting' ? (
+              <div
+                className="h-full origin-left rounded-full bg-[var(--primary)] will-change-transform"
+                style={{ transform: `scaleX(${1 - (hero.restRemainingRatio ?? 0)})` }}
+              />
+            ) : null}
           </div>
+
+          {hero.supporting ? (
+            <p className="mt-4 text-[16px] text-[var(--on-surface-variant)]">{hero.supporting}</p>
+          ) : null}
         </motion.div>
       </AnimatePresence>
     </section>

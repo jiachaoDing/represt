@@ -18,7 +18,7 @@ export function getExerciseHeroTone(state: ExerciseHeroState) {
     return 'text-[var(--tertiary)]'
   }
 
-  if (state === 'completed' || state === 'ready') {
+  if (state === 'completed' || state === 'ready' || state === 'counting') {
     return 'text-[var(--primary)]'
   }
 
@@ -43,7 +43,7 @@ export function getExerciseHeroData(
       label: t('exercise.resting'),
       restRemainingRatio: Math.min(1, Math.max(0, restSnapshot.remainingMs / restTotalMs)),
       state: 'resting',
-      supporting: '',
+      supporting: t('exercise.restUntilNextSet'),
       value: formatDuration(restSnapshot.remainingSeconds),
     }
   }
@@ -52,7 +52,7 @@ export function getExerciseHeroData(
     return {
       label: t('exercise.completed'),
       state: 'completed',
-      supporting: '',
+      supporting: t('exercise.completedSupporting'),
       value: `${detail.exercise.targetSets}/${detail.exercise.targetSets}`,
     }
   }
@@ -61,7 +61,7 @@ export function getExerciseHeroData(
     return {
       label: t('exercise.ready'),
       state: 'ready',
-      supporting: '',
+      supporting: t('exercise.readySupporting'),
       value: '00:00',
     }
   }

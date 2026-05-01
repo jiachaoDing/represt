@@ -93,7 +93,7 @@ export function useExercisePageData(id: string) {
         }
 
         console.error(loadError)
-        setError('动作数据加载失败，请返回训练安排页后重试。')
+        setError(i18n.t('exercise.loadFailed'))
       } finally {
         if (!isCancelled) {
           setIsLoading(false)
@@ -117,7 +117,7 @@ export function useExercisePageData(id: string) {
     } catch (mutationError) {
       console.error(mutationError)
       setError(
-        mutationError instanceof Error ? mutationError.message : '动作数据保存失败，请重试。',
+        mutationError instanceof Error ? mutationError.message : i18n.t('exercise.saveFailed'),
       )
       void triggerHaptic('error')
       return false

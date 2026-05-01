@@ -83,7 +83,7 @@ export function ExerciseRecordInlineCard({
   ].filter((field): field is NonNullable<typeof field> => field !== null)
 
   return (
-    <section className="mx-4 mt-3 rounded-[1.5rem] border border-[var(--outline-variant)]/30 bg-[var(--surface)] px-5 py-5 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)]">
+    <section className="mx-auto max-h-[calc(100dvh_-_5rem)] w-full max-w-[22rem] overflow-y-auto rounded-[28px] bg-[var(--surface-container)] p-5 shadow-2xl">
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-[18px] font-semibold text-[var(--on-surface)]">{t('exercise.recordTitle')}</h2>
         <button
@@ -102,13 +102,13 @@ export function ExerciseRecordInlineCard({
       {latestSetRecord ? (
         <form className="mt-5 space-y-5" onSubmit={onSubmit}>
           <div className="grid grid-cols-2 gap-3">
-            <div className="rounded-xl bg-[var(--surface-container)] px-4 py-3">
+            <div className="border-b border-[var(--outline-variant)]/45 pb-3">
               <p className="text-xs font-medium text-[var(--on-surface-variant)]">{t('exercise.setIndex')}</p>
               <p className="mt-1 text-sm font-medium text-[var(--on-surface)]">
                 {t('summary.setNumber', { setNumber: latestSetRecord.setNumber })}
               </p>
             </div>
-            <div className="rounded-xl bg-[var(--surface-container)] px-4 py-3">
+            <div className="border-b border-[var(--outline-variant)]/45 pb-3">
               <p className="text-xs font-medium text-[var(--on-surface-variant)]">{t('exercise.completedAt')}</p>
               <p className="mt-1 text-sm font-medium text-[var(--on-surface)]">
                 {getCompletedAtLabel(latestSetRecord.completedAt, i18n.resolvedLanguage)}
