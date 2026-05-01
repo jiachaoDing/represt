@@ -18,7 +18,7 @@ import { getTemplateColor } from '../lib/template-color'
 import type { TrainingCycleSlot } from '../models/types'
 
 export function TrainingCyclePage() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const {
     error,
     handleAddSlot,
@@ -73,6 +73,8 @@ export function TrainingCyclePage() {
           orderedSlots.findIndex((slot) => slot.id === todayCycleDay.slot.id),
         )
 
+  const weekdayLocale = i18n.resolvedLanguage ?? i18n.language
+
   const orderedSlotItems = useMemo(() => {
     return orderedSlots.map<TrainingCycleSlotListItem>((slot, index) => {
       const template = slot.templateId
@@ -90,10 +92,10 @@ export function TrainingCyclePage() {
         isToday,
         slot,
         template,
-        weekdayLabel: slotDateKey ? getWeekdayLabel(slotDateKey) : '',
+        weekdayLabel: slotDateKey ? getWeekdayLabel(slotDateKey, weekdayLocale) : '',
       }
     })
-  }, [orderedAnchorIndex, orderedSlots, templateColorMap, templates, todayCycleDay, trainingCycle])
+  }, [orderedAnchorIndex, orderedSlots, templateColorMap, templates, todayCycleDay, trainingCycle, weekdayLocale])
   const activeSlotItem =
     activeSlotId === null
       ? null

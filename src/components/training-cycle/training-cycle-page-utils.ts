@@ -4,6 +4,6 @@ export function getCycleSlotDateKey(anchorDateKey: string, anchorIndex: number, 
   return addDaysToSessionDateKey(anchorDateKey, slotIndex - anchorIndex)
 }
 
-export function getWeekdayLabel(sessionDateKey: string) {
-  return formatSessionDateKey(sessionDateKey, { weekday: 'short' })
+export function getWeekdayLabel(sessionDateKey: string, locale?: string) {
+  return formatSessionDateKey(sessionDateKey, { weekday: 'short' }, locale)
 }

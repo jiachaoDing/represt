@@ -31,7 +31,7 @@ function TrainingCycleSlotCard({
           : {}
       }
     >
-      <div>
+      <div className="min-w-0">
         <h4 className="text-[17px] font-bold tracking-tight">
           {template ? template.name : t('trainingCycle.restDay')}
         </h4>
@@ -40,15 +40,17 @@ function TrainingCycleSlotCard({
             ? t('trainingCycle.exerciseCount', { count: template.exercises.length })
             : t('trainingCycle.restDescription')}
         </p>
-        <p className="mt-2 text-[12px] font-medium opacity-60">
-          {isToday ? t('trainingCycle.today') : weekdayLabel}
-        </p>
       </div>
 
-      <div className="ml-2 flex h-8 w-8 items-center justify-center rounded-full bg-black/5 opacity-50">
-        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
-        </svg>
+      <div className="ml-4 flex shrink-0 items-center gap-2">
+        <span className="text-[15px] font-semibold opacity-65">
+          {isToday ? t('trainingCycle.today') : weekdayLabel}
+        </span>
+        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-black/5 opacity-50">
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
+          </svg>
+        </div>
       </div>
     </button>
   )
