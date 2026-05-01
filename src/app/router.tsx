@@ -7,6 +7,7 @@ import { TrainingCyclePageLoading } from '../components/training-cycle/TrainingC
 import {
   CalendarPage,
   ExercisePage,
+  QuickTimerPage,
   SchedulePage,
   SettingsPage,
   StarterTemplatePage,
@@ -34,6 +35,11 @@ export const router = createBrowserRouter([
         path: 'exercise/:id',
         element: lazyRoute(<ExercisePage />, <ExercisePageLoading />),
         handle: { titleKey: 'routes.exercise' },
+      },
+      {
+        path: 'quick-timer',
+        element: lazyRoute(<QuickTimerPage />),
+        handle: { titleKey: 'routes.quickTimer' },
       },
       {
         path: 'templates',

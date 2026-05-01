@@ -1,5 +1,6 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 import { TemplateCyclePreviewCard } from '../components/training-cycle/TemplateCyclePreviewCard'
 import { PageHeader } from '../components/ui/PageHeader'
@@ -14,12 +15,29 @@ import { getTemplateColor } from '../lib/template-color'
 
 export function TemplatesPage() {
   const { t } = useTranslation()
+  const location = useLocation()
+  const navigate = useNavigate()
   const templates = useTemplatesPageData()
   const ui = useTemplatesPageUi(templates)
+  const shouldOpenTemplateCreateSheet =
+    typeof location.state === 'object' &&
+    location.state !== null &&
+    'openTemplateCreateSheet' in location.state &&
+    location.state.openTemplateCreateSheet === true
   const templateColorMap = useMemo(
     () => new Map(templates.templates.map((template, index) => [template.id, getTemplateColor(index)])),
     [templates.templates],
   )
+
+  useEffect(() => {
+    if (!shouldOpenTemplateCreateSheet) {
+      return
+    }
+
+    ui.openTemplateSheet('create')
+    navigate('/templates', { replace: true, state: null })
+  }, [navigate, shouldOpenTemplateCreateSheet, ui])
+
   const menuItems = templates.currentTemplate
     ? [
         {

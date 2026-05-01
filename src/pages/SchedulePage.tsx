@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
-import { Plus } from 'lucide-react'
+import { Plus, Timer } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { createPortal } from 'react-dom'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 import { TodayTrainingPlanCard } from '../components/training-cycle/TodayTrainingPlanCard'
 import { PageHeader } from '../components/ui/PageHeader'
@@ -16,11 +16,13 @@ import { ScheduleExerciseList } from '../components/schedule/ScheduleExerciseLis
 import { ScheduleExerciseSheet } from '../components/schedule/ScheduleExerciseSheet'
 import { ScheduleTemplateImportSheet } from '../components/schedule/ScheduleTemplateImportSheet'
 import { ScheduleTemplateSaveSheet } from '../components/schedule/ScheduleTemplateSaveSheet'
+import { useBackLinkState } from '../hooks/useRouteBack'
 
 export function SchedulePage() {
   const { i18n, t } = useTranslation()
   const location = useLocation()
   const navigate = useNavigate()
+  const backLinkState = useBackLinkState()
   const now = useNow()
   const schedule = useSchedulePageData()
   const ui = useSchedulePageUi(schedule)
@@ -80,7 +82,20 @@ export function SchedulePage() {
       <PageHeader 
         title={todayStr} 
         titleAlign="start"
-        actions={<SettingsButton />}
+        actions={
+          <div className="flex items-center gap-1">
+            <Link
+              to="/quick-timer"
+              state={backLinkState}
+              viewTransition
+              aria-label={t('exercise.openQuickTimer')}
+              className="flex h-11 w-11 items-center justify-center rounded-full text-[var(--on-surface-variant)] transition-colors hover:bg-[var(--on-surface-variant)]/10 hover:text-[var(--on-surface)] tap-highlight-transparent"
+            >
+              <Timer size={22} strokeWidth={2.3} aria-hidden="true" />
+            </Link>
+            <SettingsButton />
+          </div>
+        }
       />
 
       {!schedule.isLoading ? (

@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 
 import { BottomSheet } from '../ui/BottomSheet'
 import type { TemplateWithExercises } from '../../db/templates'
@@ -115,6 +116,22 @@ export function TrainingCycleSlotSheet({
         })}
 
         <div className="my-3 h-px bg-[var(--outline-variant)]/20" />
+
+        <Link
+          to="/templates"
+          state={{ openTemplateCreateSheet: true }}
+          viewTransition
+          onClick={onClose}
+          className="flex items-center gap-3 rounded-[1rem] px-4 py-3.5 text-left text-[var(--primary)] hover:bg-[var(--primary-container)] transition-colors active:scale-[0.98]"
+        >
+          <OptionIcon className="bg-[var(--primary-container)] text-[var(--primary)]">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M12 5v14" />
+              <path d="M5 12h14" />
+            </svg>
+          </OptionIcon>
+          <span className="font-medium">{t('templates.newTemplate')}</span>
+        </Link>
 
         <button
           type="button"

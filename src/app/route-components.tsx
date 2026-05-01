@@ -3,6 +3,7 @@ import { lazy } from 'react'
 import {
   loadCalendarPage,
   loadExercisePage,
+  loadQuickTimerPage,
   loadSchedulePage,
   loadSettingsPage,
   loadSummaryPage,
@@ -16,6 +17,9 @@ export const CalendarPage = lazy(() =>
 )
 export const ExercisePage = lazy(() =>
   loadExercisePage().then((module) => ({ default: module.ExercisePage })),
+)
+export const QuickTimerPage = lazy(() =>
+  loadQuickTimerPage().then((module) => ({ default: module.QuickTimerPage })),
 )
 export const SchedulePage = lazy(() =>
   loadSchedulePage().then((module) => ({ default: module.SchedulePage })),

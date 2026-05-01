@@ -52,6 +52,7 @@ export function AppLayout() {
   const navigate = useNavigate()
   const hideNavigation =
     location.pathname.startsWith('/exercise/') ||
+    location.pathname.startsWith('/quick-timer') ||
     location.pathname.startsWith('/calendar') ||
     location.pathname.startsWith('/settings')
 

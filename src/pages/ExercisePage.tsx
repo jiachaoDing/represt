@@ -1,13 +1,14 @@
 import { useNavigate, useParams } from 'react-router-dom'
 import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import { motion } from 'framer-motion'
-import { ArrowRight, Pause } from 'lucide-react'
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
+import { ArrowRight, Pause, Timer } from 'lucide-react'
 
 import { ExerciseHero } from '../components/exercise/ExerciseHero'
 import { ExerciseLatestRecordCard } from '../components/exercise/ExerciseLatestRecordCard'
 import { ExerciseMetaGrid } from '../components/exercise/ExerciseMetaGrid'
 import { ExercisePageLoading } from '../components/exercise/ExercisePageLoading'
+import { ExerciseQuickTimer } from '../components/exercise/ExerciseQuickTimer'
 import { AnimatedContentSwap } from '../components/motion/AnimatedContentSwap'
 import { ExerciseRecordInlineCard } from '../components/exercise/ExerciseRecordInlineCard'
 import { AnimatedDialog } from '../components/motion/AnimatedDialog'
@@ -17,7 +18,7 @@ import { PageHeader } from '../components/ui/PageHeader'
 import { useNow } from '../hooks/useNow'
 import { useBackLinkState } from '../hooks/useRouteBack'
 import { useExercisePageData } from '../hooks/pages/useExercisePageData'
-import { listSpringTransition } from '../components/motion/motion-tokens'
+import { listSpringTransition, quickEaseTransition } from '../components/motion/motion-tokens'
 import { getRestTimerSnapshot, getRestTimerState } from '../lib/rest-timer'
 import { getDisplayExerciseName } from '../lib/exercise-name'
 
@@ -75,6 +76,7 @@ export function ExercisePage() {
   const { t } = useTranslation()
   const { id = 'unknown' } = useParams()
   const navigate = useNavigate()
+  const reduceMotion = useReducedMotion()
   const now = useNow(16)
   const {
     canCompleteSet,
@@ -102,7 +104,9 @@ export function ExercisePage() {
   } = useExercisePageData(id)
   const [isRecordFormOpen, setIsRecordFormOpen] = useState(false)
   const [isUndoExerciseDialogOpen, setIsUndoExerciseDialogOpen] = useState(false)
+  const [quickTimerView, setQuickTimerView] = useState({ exerciseId: id, isOpen: false })
   const backLinkState = useBackLinkState()
+  const isQuickTimerOpen = quickTimerView.exerciseId === id && quickTimerView.isOpen
 
   async function handleCompleteCurrentSet() {
     await handleCompleteSet()
@@ -173,13 +177,60 @@ export function ExercisePage() {
     detail && restSnapshot?.status === 'running'
       ? Math.min(1, Math.max(0, 1 - restSnapshot.remainingMs / Math.max(1, detail.exercise.restSeconds * 1000)))
       : 0
+  const headerActions = detail ? (
+    <div className="flex items-center gap-1">
+      <button
+        type="button"
+        aria-label={t(isQuickTimerOpen ? 'exercise.closeQuickTimer' : 'exercise.openQuickTimer')}
+        aria-pressed={isQuickTimerOpen}
+        onClick={() => {
+          setQuickTimerView((current) => ({
+            exerciseId: id,
+            isOpen: current.exerciseId === id ? !current.isOpen : true,
+          }))
+        }}
+        className={[
+          'flex h-10 w-10 items-center justify-center rounded-full transition-colors tap-highlight-transparent',
+          isQuickTimerOpen
+            ? 'bg-[var(--primary-container)] text-[var(--on-primary-container)]'
+            : 'text-[var(--on-surface-variant)] hover:bg-[var(--on-surface-variant)]/10',
+        ].join(' ')}
+      >
+        <Timer size={23} strokeWidth={2.3} aria-hidden="true" />
+      </button>
+      {menuItems.length > 0 ? <OverflowMenu items={menuItems} /> : null}
+    </div>
+  ) : menuItems.length > 0 ? (
+    <OverflowMenu items={menuItems} />
+  ) : undefined
+  const flipDirection = isQuickTimerOpen ? 1 : -1
+  const pageFlipVariants = {
+    initial: (direction: number) =>
+      reduceMotion
+        ? { opacity: 0 }
+        : { opacity: 0, rotateX: direction * 82, scale: 0.985 },
+    animate: {
+      opacity: 1,
+      rotateX: 0,
+      scale: 1,
+      transition: quickEaseTransition,
+    },
+    exit: (direction: number) =>
+      reduceMotion
+        ? { opacity: 0, transition: quickEaseTransition }
+        : { opacity: 0, rotateX: direction * -82, scale: 0.985, transition: quickEaseTransition },
+  }
+  const pageFlipStyle = {
+    backfaceVisibility: 'hidden',
+    transformOrigin: 'center calc(19rem + 2rem)',
+  } as const
 
   return (
     <div className="relative flex h-[100dvh] overflow-hidden flex-col">
       <PageHeader
         title={displayExerciseName ?? t('exercise.pageTitle')}
         backFallbackTo="/"
-        actions={menuItems.length > 0 ? <OverflowMenu items={menuItems} /> : undefined}
+        actions={headerActions}
       />
 
       {error ? (
@@ -221,20 +272,50 @@ export function ExercisePage() {
           />
 
           <main className="flex min-h-0 flex-1 flex-col px-4">
-            <ExerciseHero detail={detail} now={now} />
+            <div className="relative min-h-0 flex-1 overflow-hidden [perspective:1200px]">
+              <AnimatePresence custom={flipDirection} initial={false} mode="wait">
+                {isQuickTimerOpen ? (
+                  <motion.div
+                    key="quick-timer"
+                    custom={flipDirection}
+                    variants={pageFlipVariants}
+                    initial="initial"
+                    animate="animate"
+                    exit="exit"
+                    className="absolute inset-0 flex min-h-0 flex-col"
+                    style={pageFlipStyle}
+                  >
+                    <ExerciseQuickTimer now={now} />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="exercise-body"
+                    custom={flipDirection}
+                    variants={pageFlipVariants}
+                    initial="initial"
+                    animate="animate"
+                    exit="exit"
+                    className="absolute inset-0 flex min-h-0 flex-col overflow-hidden"
+                    style={pageFlipStyle}
+                  >
+                    <ExerciseHero detail={detail} now={now} />
 
-            <ExerciseLatestRecordCard
-              isResting={isResting}
-              latestSetRecord={latestSetRecord}
-              measurementType={measurementType}
-              onEdit={() => setIsRecordFormOpen(true)}
-              restSeconds={detail.exercise.restSeconds}
-            />
+                    <ExerciseLatestRecordCard
+                      isResting={isResting}
+                      latestSetRecord={latestSetRecord}
+                      measurementType={measurementType}
+                      onEdit={() => setIsRecordFormOpen(true)}
+                      restSeconds={detail.exercise.restSeconds}
+                    />
 
-            <ExerciseMetaGrid
-              name={displayExerciseName ?? detail.exercise.name}
-              restSeconds={detail.exercise.restSeconds}
-            />
+                    <ExerciseMetaGrid
+                      name={displayExerciseName ?? detail.exercise.name}
+                      restSeconds={detail.exercise.restSeconds}
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
 
             <AnimatedDialog open={isRecordFormOpen} onClose={() => setIsRecordFormOpen(false)}>
               <ExerciseRecordInlineCard
