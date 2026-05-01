@@ -14,7 +14,7 @@ import {
   type DragOverEvent,
   type DragStartEvent,
 } from '@dnd-kit/core'
-import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 
 import type { WorkoutSessionWithExercises } from '../../db/sessions'
 import {
@@ -27,6 +27,10 @@ import { SortableScheduleExerciseItem } from './SortableScheduleExerciseItem'
 import { TemplateExerciseInlineEditor } from '../templates/TemplateExerciseInlineEditor'
 import { toTemplateExerciseDraft, type TemplateExerciseDraft } from '../../lib/template-editor'
 import { getDisplayExerciseName } from '../../lib/exercise-name'
+import {
+  getOrderedScheduleExercises,
+  getReorderedScheduleExerciseIds,
+} from './schedule-exercise-list.utils'
 
 type ScheduleExerciseListProps = {
   currentSession: WorkoutSessionWithExercises | null
@@ -81,16 +85,7 @@ export function ScheduleExerciseList({
 
   const orderedExercises = useMemo(() => {
     const exercises = currentSession?.exercises ?? []
-    if (!exerciseOrder || exerciseOrder.length !== exercises.length) {
-      return exercises
-    }
-
-    const exerciseMap = new Map(exercises.map((exercise) => [exercise.id, exercise]))
-    const nextExercises = exerciseOrder
-      .map((exerciseId) => exerciseMap.get(exerciseId) ?? null)
-      .filter((exercise): exercise is WorkoutSessionWithExercises['exercises'][number] => exercise !== null)
-
-    return nextExercises.length === exercises.length ? nextExercises : exercises
+    return getOrderedScheduleExercises(exercises, exerciseOrder)
   }, [currentSession, exerciseOrder])
 
   const activeExercise =
@@ -205,20 +200,19 @@ export function ScheduleExerciseList({
     lastDragOverIdRef.current = null
     void triggerHaptic('light')
 
-    if (!currentSession || !over || active.id === over.id) {
+    if (!currentSession || !over) {
       return
     }
 
-    const oldIndex = orderedExercises.findIndex((exercise) => exercise.id === active.id)
-    const newIndex = orderedExercises.findIndex((exercise) => exercise.id === over.id)
-
-    if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex) {
-      return
-    }
-
-    const nextOrderIds = arrayMove(orderedExercises, oldIndex, newIndex).map(
-      (exercise) => exercise.id,
+    const nextOrderIds = getReorderedScheduleExerciseIds(
+      orderedExercises,
+      String(active.id),
+      String(over.id),
     )
+
+    if (!nextOrderIds) {
+      return
+    }
 
     setExerciseOrder(nextOrderIds)
 
