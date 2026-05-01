@@ -24,12 +24,10 @@ import {
   type TemplateWithExercises,
 } from '../../db/templates'
 import {
-  parseOptionalDistanceMeters,
-  parseOptionalDurationSeconds,
-  parseIntegerInput,
-  parseOptionalReps,
-  parseOptionalWeightKg,
-} from '../../lib/input-parsers'
+  draftToSessionPlanInput,
+  emptyExerciseDraft,
+  hasImportedTemplateExercises,
+} from './schedule-page-data.utils'
 import { triggerHaptic } from '../../lib/haptics'
 import type { TemplateExerciseDraft } from '../../lib/template-editor'
 import type { TrainingCycle } from '../../models/types'
@@ -38,40 +36,6 @@ type TemplateImportConfirmation = {
   isDuplicateImport: boolean
   templateName: string
   willContinueCompletedSession: boolean
-}
-
-const emptyExerciseDraft: TemplateExerciseDraft = {
-  name: '',
-  catalogExerciseId: null,
-  targetSets: '3',
-  restSeconds: '90',
-  weightKg: '',
-  reps: '',
-  durationSeconds: '',
-  distanceMeters: '',
-}
-
-function hasImportedTemplateExercises(
-  session: WorkoutSessionWithExercises,
-  template: TemplateWithExercises,
-  templateExerciseIds?: string[],
-) {
-  const selectedTemplateExerciseIds = templateExerciseIds ? new Set(templateExerciseIds) : null
-  const selectedExercises = template.exercises.filter((exercise) =>
-    selectedTemplateExerciseIds ? selectedTemplateExerciseIds.has(exercise.id) : true,
-  )
-
-  if (selectedExercises.length === 0) {
-    return false
-  }
-
-  const importedTemplateExerciseIds = new Set(
-    session.exercises
-      .map((exercise) => exercise.templateExerciseId)
-      .filter((templateExerciseId) => templateExerciseId !== null),
-  )
-
-  return selectedExercises.every((exercise) => importedTemplateExerciseIds.has(exercise.id))
 }
 
 export function useSchedulePageData() {
@@ -248,16 +212,7 @@ export function useSchedulePageData() {
     }
 
     return runMutation(async () => {
-      await addTemporarySessionPlanItem(currentSession.id, {
-        name: newExerciseDraft.name,
-        catalogExerciseId: newExerciseDraft.catalogExerciseId,
-        targetSets: parseIntegerInput(newExerciseDraft.targetSets),
-        restSeconds: parseIntegerInput(newExerciseDraft.restSeconds),
-        defaultWeightKg: parseOptionalWeightKg(newExerciseDraft.weightKg),
-        defaultReps: parseOptionalReps(newExerciseDraft.reps),
-        defaultDurationSeconds: parseOptionalDurationSeconds(newExerciseDraft.durationSeconds),
-        defaultDistanceMeters: parseOptionalDistanceMeters(newExerciseDraft.distanceMeters),
-      })
+      await addTemporarySessionPlanItem(currentSession.id, draftToSessionPlanInput(newExerciseDraft))
       setNewExerciseDraft(emptyExerciseDraft)
       await loadData(selectedTemplateId)
     })
@@ -269,16 +224,7 @@ export function useSchedulePageData() {
     }
 
     return runMutation(async () => {
-      await replaceSessionPlanItem(currentSession.id, planItemId, {
-        name: draft.name,
-        catalogExerciseId: draft.catalogExerciseId,
-        targetSets: parseIntegerInput(draft.targetSets),
-        restSeconds: parseIntegerInput(draft.restSeconds),
-        defaultWeightKg: parseOptionalWeightKg(draft.weightKg),
-        defaultReps: parseOptionalReps(draft.reps),
-        defaultDurationSeconds: parseOptionalDurationSeconds(draft.durationSeconds),
-        defaultDistanceMeters: parseOptionalDistanceMeters(draft.distanceMeters),
-      })
+      await replaceSessionPlanItem(currentSession.id, planItemId, draftToSessionPlanInput(draft))
       await loadData(selectedTemplateId)
     })
   }

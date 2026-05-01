@@ -1,78 +1,30 @@
 import { LocalNotifications } from '@capacitor/local-notifications'
-import { registerPlugin, type PermissionState } from '@capacitor/core'
+import type { PermissionState } from '@capacitor/core'
 
 import i18n from '../i18n'
 import { isNativeApp, isNativePluginAvailable } from './capacitor-platform'
+import { RestTimerAlarm, type RestTimerAlarmStatus } from './rest-timer-alarm-plugin'
+import type {
+  ExactAlarmPermission,
+  LocalReminderStatus,
+  RestTimerNotificationInput,
+  RestTimerPermissionPrepareResult,
+  RestTimerScheduleResult,
+} from './training-notification.types'
+
+export type {
+  ExactAlarmPermission,
+  LocalReminderStatus,
+  RestTimerNotificationInput,
+  RestTimerPermissionPrepareResult,
+  RestTimerScheduleResult,
+} from './training-notification.types'
 
 const OLD_REST_TIMER_CHANNEL_ID = 'trainre-rest-timer'
 const REST_TIMER_CHANNEL_ID = 'trainre-rest-timer-alarm-v3'
 const REST_TIMER_FALLBACK_CHANNEL_ID = 'trainre-rest-timer-local'
 const REST_TIMER_NOTIFICATION_GROUP = 'trainre-rest-timers'
 const TEST_REST_TIMER_NOTIFICATION_ID = 910001
-
-type RestTimerAlarmStatus = {
-  available: boolean
-  channelId: string
-  canScheduleExactAlarms: boolean
-  canUseFullScreenIntent: boolean
-  channelReady: boolean
-  channelImportance: number | null
-  channelVibration: boolean | null
-  channelSound: string | null
-}
-
-type RestTimerAlarmPlugin = {
-  status: () => Promise<RestTimerAlarmStatus>
-  schedule: (input: {
-    id: number
-    title: string
-    body: string
-    triggerAt: number
-    path?: string
-  }) => Promise<{ scheduled: boolean }>
-  cancel: (input: { id: number }) => Promise<void>
-  openExactAlarmSettings: () => Promise<void>
-  openChannelSettings: () => Promise<void>
-}
-
-const RestTimerAlarm = registerPlugin<RestTimerAlarmPlugin>('RestTimerAlarm')
-
-export type RestTimerNotificationInput = {
-  exerciseId: string
-  exerciseName: string
-  restEndsAt: string | null
-}
-
-export type ExactAlarmPermission = 'granted' | 'denied' | 'unknown'
-
-export type LocalReminderStatus = {
-  isNative: boolean
-  isLocalNotificationsAvailable: boolean
-  displayPermission: PermissionState | 'unknown'
-  isDisplayPermissionGranted: boolean
-  exactAlarmPermission: ExactAlarmPermission
-  hasTriedRestTimerChannel: boolean
-  isRestTimerChannelReady: boolean
-  restTimerChannelImportance: number | null
-  restTimerChannelVibration: boolean | null
-  restTimerChannelSound: string | null
-  isStrongReminderAvailable: boolean
-  isStrongReminderChannelReady: boolean
-  strongReminderCanScheduleExactAlarms: boolean | null
-  strongReminderCanUseFullScreenIntent: boolean | null
-  strongReminderChannelSound: string | null
-}
-
-export type RestTimerScheduleResult = {
-  scheduled: boolean
-  reason?: 'invalid-time' | 'permission-denied' | 'plugin-unavailable'
-  exactAlarmPermission: ExactAlarmPermission
-}
-
-export type RestTimerPermissionPrepareResult = {
-  displayPermission: PermissionState | 'unknown'
-  exactAlarmPermission: ExactAlarmPermission
-}
 
 let isChannelReady = false
 let hasTriedRestTimerChannel = false
