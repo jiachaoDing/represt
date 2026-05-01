@@ -42,7 +42,7 @@ function createTemplateExerciseSnapshot(
   }
 }
 
-export async function buildPlanItemsFromTemplate(
+async function buildPlanItemsFromTemplate(
   sessionId: string,
   templateId: string,
   startOrder = 0,
@@ -77,7 +77,7 @@ export async function buildPlanItemsFromTemplate(
   })) satisfies SessionPlanItem[]
 }
 
-export async function replaceSessionPlanFromTemplate(
+async function replaceSessionPlanFromTemplate(
   session: WorkoutSession,
   templateId: string | null,
 ) {

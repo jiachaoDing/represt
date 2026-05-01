@@ -11,7 +11,7 @@ import {
 } from './session-core'
 import type { ScheduleExercise, ScheduleExerciseDetail } from './session-types'
 
-export function toScheduleExercise(
+function toScheduleExercise(
   planItem: SessionPlanItem,
   performedExercise: PerformedExercise | null,
 ) {
