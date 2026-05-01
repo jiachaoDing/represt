@@ -153,6 +153,28 @@ export async function undoLatestPlanItemSet(planItemId: string): Promise<SetReco
   return deletedSetRecord
 }
 
+export async function undoPlanItemExercise(planItemId: string) {
+  await db.transaction(
+    'rw',
+    db.performedExercises,
+    db.setRecords,
+    async () => {
+      const exercise = await getPerformedExerciseForPlanItem(planItemId)
+      if (!exercise) {
+        throw new Error('当前动作还没有已完成的组。')
+      }
+
+      const setRecords = await db.setRecords.where('performedExerciseId').equals(exercise.id).toArray()
+      if (setRecords.length === 0) {
+        throw new Error('当前动作还没有已完成的组。')
+      }
+
+      await db.setRecords.bulkDelete(setRecords.map((record) => record.id))
+      await db.performedExercises.delete(exercise.id)
+    },
+  )
+}
+
 export async function skipPlanItemRest(planItemId: string) {
   const exercise = await getPerformedExerciseForPlanItem(planItemId)
   if (!exercise) {

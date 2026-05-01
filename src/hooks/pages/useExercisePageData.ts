@@ -4,6 +4,7 @@ import {
   completePlanItemSet,
   getScheduleExerciseDetail,
   skipPlanItemRest,
+  undoPlanItemExercise,
   undoLatestPlanItemSet,
   updateLatestSetRecordValues,
   type ScheduleExerciseDetail,
@@ -214,6 +215,34 @@ export function useExercisePageData(id: string) {
     return didUndo
   }
 
+  async function handleUndoExercise() {
+    if (!detail?.latestSetRecord) {
+      return false
+    }
+
+    let didUndo = false
+
+    const didSucceed = await runMutation(async () => {
+      await undoPlanItemExercise(detail.exercise.id)
+      const nextDetail = await getScheduleExerciseDetail(detail.exercise.id)
+
+      setDetail(nextDetail)
+      syncLatestSetInputs(nextDetail, setWeightInput, setRepsInput, setDurationInput, setDistanceInput)
+      await syncRestTimerNotification(nextDetail)
+      didUndo = true
+    })
+
+    if (!didSucceed) {
+      return false
+    }
+
+    if (didUndo) {
+      void triggerHaptic('light')
+    }
+
+    return didUndo
+  }
+
   async function handleSkipRest() {
     if (!detail) {
       return false
@@ -233,9 +262,11 @@ export function useExercisePageData(id: string) {
   const canCompleteSet =
     detail !== null && detail.exercise.completedSets < detail.exercise.targetSets && !isSubmitting
   const canUndoLatestSet = latestSetRecord !== null && !isSubmitting
+  const canUndoExercise = latestSetRecord !== null && !isSubmitting
 
   return {
     canCompleteSet,
+    canUndoExercise,
     canUndoLatestSet,
     detail,
     distanceInput,
@@ -243,6 +274,7 @@ export function useExercisePageData(id: string) {
     error,
     handleCompleteSet,
     handleSkipRest,
+    handleUndoExercise,
     handleUndoLatestSet,
     handleUpdateLatestSetRecord,
     isLoading,

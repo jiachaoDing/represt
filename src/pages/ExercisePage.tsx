@@ -9,6 +9,7 @@ import { ExerciseMetaGrid } from '../components/exercise/ExerciseMetaGrid'
 import { ExercisePageLoading } from '../components/exercise/ExercisePageLoading'
 import { AnimatedContentSwap } from '../components/motion/AnimatedContentSwap'
 import { ExerciseRecordInlineCard } from '../components/exercise/ExerciseRecordInlineCard'
+import { ConfirmDialog } from '../components/ui/ConfirmDialog'
 import { OverflowMenu } from '../components/ui/OverflowMenu'
 import { PageHeader } from '../components/ui/PageHeader'
 import { useNow } from '../hooks/useNow'
@@ -25,6 +26,7 @@ export function ExercisePage() {
   const now = useNow(16)
   const {
     canCompleteSet,
+    canUndoExercise,
     canUndoLatestSet,
     detail,
     distanceInput,
@@ -32,6 +34,7 @@ export function ExercisePage() {
     error,
     handleCompleteSet,
     handleSkipRest,
+    handleUndoExercise,
     handleUndoLatestSet,
     handleUpdateLatestSetRecord,
     isLoading,
@@ -46,6 +49,7 @@ export function ExercisePage() {
     weightInput,
   } = useExercisePageData(id)
   const [isRecordFormOpen, setIsRecordFormOpen] = useState(false)
+  const [isUndoExerciseDialogOpen, setIsUndoExerciseDialogOpen] = useState(false)
   const backLinkState = useBackLinkState()
 
   async function handleCompleteCurrentSet() {
@@ -72,12 +76,27 @@ export function ExercisePage() {
     await handleUndoLatestSet()
   }
 
+  async function handleUndoCurrentExercise() {
+    const didUndo = await handleUndoExercise()
+    if (didUndo) {
+      setIsUndoExerciseDialogOpen(false)
+      setIsRecordFormOpen(false)
+    }
+  }
+
+  const displayExerciseName = detail ? getDisplayExerciseName(t, detail.exercise) : null
   const menuItems = detail
     ? [
         {
           label: t('exercise.undoLatestSet'),
           disabled: !canUndoLatestSet,
           onSelect: () => void handleUndoPreviousSetCompletion(),
+        },
+        {
+          label: t('exercise.undoExercise'),
+          danger: true,
+          disabled: !canUndoExercise,
+          onSelect: () => setIsUndoExerciseDialogOpen(true),
         },
         {
           label: t('exercise.viewSummary'),
@@ -98,7 +117,6 @@ export function ExercisePage() {
     detail.exercise.completedSets >= detail.exercise.targetSets
   const isFinalResting = hasReachedTarget && isResting
   const isCompleted = hasReachedTarget && !isFinalResting
-  const displayExerciseName = detail ? getDisplayExerciseName(t, detail.exercise) : null
 
   return (
     <div className="relative flex min-h-full flex-col pb-4">
@@ -135,6 +153,18 @@ export function ExercisePage() {
 
       {detail ? (
         <>
+          <ConfirmDialog
+            open={isUndoExerciseDialogOpen}
+            title={t('exercise.undoExerciseTitle')}
+            description={t('exercise.undoExerciseDescription', {
+              name: displayExerciseName ?? detail.exercise.name,
+            })}
+            confirmLabel={t('exercise.undoExercise')}
+            danger
+            onCancel={() => setIsUndoExerciseDialogOpen(false)}
+            onConfirm={() => void handleUndoCurrentExercise()}
+          />
+
           <div className="mx-4 mt-2 rounded-[1.5rem] border border-[var(--outline-variant)]/30 bg-[var(--surface)] shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)] overflow-hidden">
             <ExerciseHero detail={detail} now={now} />
             

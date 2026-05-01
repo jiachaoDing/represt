@@ -29,6 +29,7 @@ export {
 export {
   completePlanItemSet,
   skipPlanItemRest,
+  undoPlanItemExercise,
   undoLatestPlanItemSet,
   updateLatestSetRecordValues,
 } from './session-records'
