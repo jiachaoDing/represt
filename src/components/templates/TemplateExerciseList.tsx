@@ -1,5 +1,4 @@
 import { useMemo, useRef, useState } from 'react'
-import { ListChecks, ListX } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import {
   DndContext,
@@ -20,6 +19,7 @@ import { SortableTemplateExerciseItem } from './SortableTemplateExerciseItem'
 import { TemplateExerciseDragOverlay } from './TemplateExerciseDragOverlay'
 import { TemplateExerciseImportSheet } from './TemplateExerciseImportSheet'
 import { TemplateExerciseInlineEditor } from './TemplateExerciseInlineEditor'
+import { TemplateExerciseListToolbar } from './TemplateExerciseListToolbar'
 import type { TemplateExerciseListProps } from './template-exercise-list.types'
 import { getOrderedExercises, getReorderedExerciseIds } from './template-exercise-list.utils'
 import { useScrollToPendingExercise } from './useScrollToPendingExercise'
@@ -256,100 +256,18 @@ export function TemplateExerciseList({
       ) : null}
 
       {!shouldShowEmptyHint ? (
-        <div className="flex items-center justify-between px-2 pb-2">
-          <div className="flex min-w-0 items-center gap-2">
-            <span className="whitespace-nowrap text-[12px] text-[var(--on-surface-variant)]">
-              {isSelectionMode ? t('templates.selectedCount', { count: selectedExerciseIds.length }) : t('templates.longPressSort')}
-            </span>
-            {isSelectionMode ? (
-              <button
-                type="button"
-                onClick={() => setSelectedExerciseIds(isAllSelected ? [] : exerciseIds)}
-                className="flex h-8 items-center gap-1 rounded-full px-2.5 text-xs font-medium text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/10"
-                aria-label={isAllSelected ? t('templates.clearAll') : t('templates.selectAll')}
-              >
-                {isAllSelected ? (
-                  <ListX size={16} strokeWidth={2.25} />
-                ) : (
-                  <ListChecks size={16} strokeWidth={2.25} />
-                )}
-                <span>{isAllSelected ? t('templates.clearAll') : t('templates.selectAll')}</span>
-              </button>
-            ) : null}
-          </div>
-          <div className="flex items-center gap-1">
-            {isSelectionMode ? (
-              <>
-                <button
-                  type="button"
-                  onClick={closeSelectionMode}
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[var(--on-surface-variant)] transition-colors hover:bg-[var(--on-surface-variant)]/10"
-                  aria-label={t('common.cancel')}
-                >
-                  <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <path d="M18 6 6 18" />
-                    <path d="m6 6 12 12" />
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  disabled={selectedExerciseIds.length === 0 || isSubmitting}
-                  onClick={() => void deleteSelectedExercises()}
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[var(--error)] transition-colors hover:bg-[var(--error)]/10 disabled:opacity-40"
-                  aria-label={t('common.delete')}
-                >
-                  <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <polyline points="3 6 5 6 21 6" />
-                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                  </svg>
-                </button>
-              </>
-            ) : orderedExercises.length > 0 ? (
-              <button
-                type="button"
-                onClick={openSelectionMode}
-                className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--error)] transition-colors hover:bg-[var(--error)]/10"
-                aria-label={t('templates.bulkDeleteExercise')}
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  width="19"
-                  height="19"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <polyline points="3 6 5 6 21 6" />
-                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                </svg>
-              </button>
-            ) : null}
-            {!isSelectionMode ? (
-              <button
-                type="button"
-                onClick={onCreate}
-                className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/10"
-                aria-label={t('templates.addExercise')}
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  width="20"
-                  height="20"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <line x1="12" y1="5" x2="12" y2="19" />
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                </svg>
-              </button>
-            ) : null}
-          </div>
-        </div>
+        <TemplateExerciseListToolbar
+          exerciseCount={orderedExercises.length}
+          isAllSelected={isAllSelected}
+          isSelectionMode={isSelectionMode}
+          isSubmitting={isSubmitting}
+          selectedExerciseCount={selectedExerciseIds.length}
+          onCancelSelection={closeSelectionMode}
+          onCreate={onCreate}
+          onDeleteSelected={() => void deleteSelectedExercises()}
+          onOpenSelectionMode={openSelectionMode}
+          onToggleSelectAll={() => setSelectedExerciseIds(isAllSelected ? [] : exerciseIds)}
+        />
       ) : null}
 
       <AnimatedList className="flex flex-col gap-3">
