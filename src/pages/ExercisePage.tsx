@@ -2,13 +2,14 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
-import { ArrowRight, Pause, Timer } from 'lucide-react'
+import { ArrowRight, Pause } from 'lucide-react'
 
 import { ExerciseHero } from '../components/exercise/ExerciseHero'
 import { ExerciseLatestRecordCard } from '../components/exercise/ExerciseLatestRecordCard'
 import { ExerciseMetaGrid } from '../components/exercise/ExerciseMetaGrid'
 import { ExercisePageLoading } from '../components/exercise/ExercisePageLoading'
 import { ExerciseQuickTimer } from '../components/exercise/ExerciseQuickTimer'
+import { QuickTimerEntryButton } from '../components/exercise/QuickTimerEntryButton'
 import { AnimatedContentSwap } from '../components/motion/AnimatedContentSwap'
 import { ExerciseRecordInlineCard } from '../components/exercise/ExerciseRecordInlineCard'
 import { AnimatedDialog } from '../components/motion/AnimatedDialog'
@@ -179,25 +180,16 @@ export function ExercisePage() {
       : 0
   const headerActions = detail ? (
     <div className="flex items-center gap-1">
-      <button
-        type="button"
-        aria-label={t(isQuickTimerOpen ? 'exercise.closeQuickTimer' : 'exercise.openQuickTimer')}
-        aria-pressed={isQuickTimerOpen}
+      <QuickTimerEntryButton
+        active={isQuickTimerOpen}
+        now={now}
         onClick={() => {
           setQuickTimerView((current) => ({
             exerciseId: id,
             isOpen: current.exerciseId === id ? !current.isOpen : true,
           }))
         }}
-        className={[
-          'flex h-10 w-10 items-center justify-center rounded-full transition-colors tap-highlight-transparent',
-          isQuickTimerOpen
-            ? 'bg-[var(--primary-container)] text-[var(--on-primary-container)]'
-            : 'text-[var(--on-surface-variant)] hover:bg-[var(--on-surface-variant)]/10',
-        ].join(' ')}
-      >
-        <Timer size={23} strokeWidth={2.3} aria-hidden="true" />
-      </button>
+      />
       {menuItems.length > 0 ? <OverflowMenu items={menuItems} /> : null}
     </div>
   ) : menuItems.length > 0 ? (

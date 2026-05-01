@@ -1,8 +1,8 @@
-import { useEffect, useMemo } from 'react'
-import { Pause, Play, RotateCcw } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { Pause, Pencil, Play, RotateCcw } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
-import { QUICK_TIMER_OPTIONS, useQuickTimer } from '../../hooks/useQuickTimer'
+import { useQuickTimer } from '../../hooks/useQuickTimer'
 
 type ExerciseQuickTimerProps = {
   now: number
@@ -18,7 +18,11 @@ function formatRemainingTime(remainingMs: number) {
 
 export function ExerciseQuickTimer({ now }: ExerciseQuickTimerProps) {
   const { t } = useTranslation()
-  const { finish, pause, reset, selectSeconds, start, state: timerState } = useQuickTimer()
+  const { finish, pause, reset, selectSeconds, start, state: timerState, updateOptionSeconds } = useQuickTimer()
+  const [isEditingOptions, setIsEditingOptions] = useState(false)
+  const [draftOptionSeconds, setDraftOptionSeconds] = useState(() =>
+    timerState.optionSeconds.map((seconds) => String(seconds)),
+  )
 
   const selectedMs = timerState.selectedSeconds * 1000
   const remainingMs =
@@ -28,21 +32,25 @@ export function ExerciseQuickTimer({ now }: ExerciseQuickTimerProps) {
   const progress = selectedMs > 0 ? Math.min(1, Math.max(0, (selectedMs - remainingMs) / selectedMs)) : 0
   const circumference = 2 * Math.PI * 45
   const strokeOffset = circumference * (1 - progress)
+  const isRunning = timerState.status === 'running'
 
   const controlItems = useMemo(
     () => [
       {
-        key: 'start',
-        icon: Play,
-        label: t('exercise.quickTimerStart'),
-        onClick: start,
+        key: 'edit',
+        icon: Pencil,
+        label: t('exercise.quickTimerEdit'),
+        onClick: () => {
+          setDraftOptionSeconds(timerState.optionSeconds.map((seconds) => String(seconds)))
+          setIsEditingOptions((current) => !current)
+        },
         primary: true,
       },
       {
-        key: 'pause',
-        icon: Pause,
-        label: t('exercise.quickTimerPause'),
-        onClick: pause,
+        key: 'startPause',
+        icon: isRunning ? Pause : Play,
+        label: isRunning ? t('exercise.quickTimerPause') : t('exercise.quickTimerStart'),
+        onClick: isRunning ? pause : start,
         primary: false,
       },
       {
@@ -53,7 +61,7 @@ export function ExerciseQuickTimer({ now }: ExerciseQuickTimerProps) {
         primary: false,
       },
     ],
-    [pause, reset, start, t],
+    [isRunning, pause, reset, start, t, timerState.optionSeconds],
   )
 
   useEffect(() => {
@@ -67,6 +75,20 @@ export function ExerciseQuickTimer({ now }: ExerciseQuickTimerProps) {
 
     return () => window.clearTimeout(timeoutId)
   }, [finish, timerState.endsAt, timerState.status])
+
+  function commitOptionSeconds(index: number) {
+    const currentValue = draftOptionSeconds[index]
+    if (!currentValue) {
+      setDraftOptionSeconds((current) =>
+        current.map((value, valueIndex) =>
+          valueIndex === index ? String(timerState.optionSeconds[index]) : value,
+        ),
+      )
+      return
+    }
+
+    updateOptionSeconds(index, Number(currentValue))
+  }
 
   return (
     <section className="flex min-h-0 flex-1 flex-col items-center justify-between py-4 text-center">
@@ -110,12 +132,41 @@ export function ExerciseQuickTimer({ now }: ExerciseQuickTimerProps) {
       </div>
 
       <div className="grid w-full grid-cols-4 gap-2">
-        {QUICK_TIMER_OPTIONS.map((seconds) => {
+        {timerState.optionSeconds.map((seconds, index) => {
           const isSelected = timerState.selectedSeconds === seconds
 
-          return (
+          return isEditingOptions ? (
+            <label
+              key={index}
+              className="flex h-11 items-center justify-center border-b border-[var(--outline)] px-1 text-[15px] font-medium text-[var(--on-surface)]"
+            >
+              <input
+                type="text"
+                inputMode="numeric"
+                aria-label={t('exercise.quickTimerEditSeconds', { index: index + 1 })}
+                value={draftOptionSeconds[index] ?? ''}
+                onBlur={() => commitOptionSeconds(index)}
+                onChange={(event) => {
+                  const nextValue = event.target.value.replace(/\D/g, '').slice(0, 4)
+                  setDraftOptionSeconds((current) =>
+                    current.map((value, valueIndex) => (valueIndex === index ? nextValue : value)),
+                  )
+                  if (nextValue) {
+                    updateOptionSeconds(index, Number(nextValue))
+                  }
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') {
+                    event.currentTarget.blur()
+                  }
+                }}
+                className="min-w-0 flex-1 bg-transparent text-center outline-none"
+              />
+              <span className="shrink-0 text-[var(--on-surface-variant)]">{t('exercise.quickTimerSecondsUnit')}</span>
+            </label>
+          ) : (
             <button
-              key={seconds}
+              key={index}
               type="button"
               aria-pressed={isSelected}
               onClick={() => selectSeconds(seconds)}
@@ -151,7 +202,7 @@ export function ExerciseQuickTimer({ now }: ExerciseQuickTimerProps) {
                     : 'border-[var(--outline)] text-[var(--on-surface-variant)]',
                 ].join(' ')}
               >
-                <Icon size={25} fill={item.key === 'start' ? 'currentColor' : 'none'} strokeWidth={2.4} aria-hidden="true" />
+                <Icon size={25} fill={item.key === 'startPause' && !isRunning ? 'currentColor' : 'none'} strokeWidth={2.4} aria-hidden="true" />
               </span>
               <span>{item.label}</span>
             </button>

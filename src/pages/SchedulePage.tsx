@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react'
-import { Plus, Timer } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { createPortal } from 'react-dom'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 
 import { TodayTrainingPlanCard } from '../components/training-cycle/TodayTrainingPlanCard'
 import { PageHeader } from '../components/ui/PageHeader'
@@ -16,17 +17,20 @@ import { ScheduleExerciseList } from '../components/schedule/ScheduleExerciseLis
 import { ScheduleExerciseSheet } from '../components/schedule/ScheduleExerciseSheet'
 import { ScheduleTemplateImportSheet } from '../components/schedule/ScheduleTemplateImportSheet'
 import { ScheduleTemplateSaveSheet } from '../components/schedule/ScheduleTemplateSaveSheet'
-import { useBackLinkState } from '../hooks/useRouteBack'
+import { QuickTimerEntryButton } from '../components/exercise/QuickTimerEntryButton'
+import { ExerciseQuickTimer } from '../components/exercise/ExerciseQuickTimer'
+import { quickEaseTransition } from '../components/motion/motion-tokens'
 
 export function SchedulePage() {
   const { i18n, t } = useTranslation()
   const location = useLocation()
   const navigate = useNavigate()
-  const backLinkState = useBackLinkState()
+  const reduceMotion = useReducedMotion()
   const now = useNow()
   const schedule = useSchedulePageData()
   const ui = useSchedulePageUi(schedule)
   const [isTemplateSaveSheetOpen, setIsTemplateSaveSheetOpen] = useState(false)
+  const [isQuickTimerOpen, setIsQuickTimerOpen] = useState(false)
   const templateColorMap = useMemo(
     () => new Map(schedule.templates.map((template, index) => [template.id, getTemplateColor(index)])),
     [schedule.templates],
@@ -58,7 +62,7 @@ export function SchedulePage() {
     .filter(Boolean)
     .join(' ')
   const addExerciseButton =
-    canShowAddExerciseButton && typeof document !== 'undefined'
+    canShowAddExerciseButton && !isQuickTimerOpen && typeof document !== 'undefined'
       ? createPortal(
           <div className="fixed inset-x-0 bottom-[calc(6.5rem+env(safe-area-inset-bottom))] z-30 pointer-events-none">
             <div className="mx-auto flex max-w-[30rem] justify-end px-6">
@@ -76,90 +80,137 @@ export function SchedulePage() {
           document.body,
         )
       : null
+  const flipDirection = isQuickTimerOpen ? 1 : -1
+  const pageFlipVariants = {
+    initial: (direction: number) =>
+      reduceMotion
+        ? { opacity: 0 }
+        : { opacity: 0, rotateX: direction * 82, scale: 0.985 },
+    animate: {
+      opacity: 1,
+      rotateX: 0,
+      scale: 1,
+      transition: quickEaseTransition,
+    },
+    exit: (direction: number) =>
+      reduceMotion
+        ? { opacity: 0, transition: quickEaseTransition }
+        : { opacity: 0, rotateX: direction * -82, scale: 0.985, transition: quickEaseTransition },
+  }
+  const pageFlipStyle = {
+    backfaceVisibility: 'hidden',
+    transformOrigin: 'center top',
+  } as const
 
   return (
-    <div className="pb-4">
+    <div className="flex h-full min-h-0 flex-col pb-4">
       <PageHeader 
         title={todayStr} 
         titleAlign="start"
         actions={
           <div className="flex items-center gap-1">
-            <Link
-              to="/quick-timer"
-              state={backLinkState}
-              viewTransition
-              aria-label={t('exercise.openQuickTimer')}
-              className="flex h-11 w-11 items-center justify-center rounded-full text-[var(--on-surface-variant)] transition-colors hover:bg-[var(--on-surface-variant)]/10 hover:text-[var(--on-surface)] tap-highlight-transparent"
-            >
-              <Timer size={22} strokeWidth={2.3} aria-hidden="true" />
-            </Link>
+            <QuickTimerEntryButton
+              active={isQuickTimerOpen}
+              now={now}
+              onClick={() => setIsQuickTimerOpen((current) => !current)}
+            />
             <SettingsButton />
           </div>
         }
       />
 
-      {!schedule.isLoading ? (
-        <div className={isStarterState ? 'flex min-h-[calc(100vh-13rem-env(safe-area-inset-bottom))] items-center' : ''}>
-          <TodayTrainingPlanCard
-            cycle={schedule.trainingCycle}
-            currentIndex={schedule.todayCycleDay?.index ?? null}
-            didAutoImportToday={schedule.didAutoImportToday}
-            getTemplateColor={(templateId) => templateColorMap.get(templateId) ?? null}
-            todayTemplateName={schedule.todayTemplate?.name ?? null}
-            completedSets={completedSets}
-            totalSets={totalSets}
-            isStarterState={isStarterState}
-            onChooseTemplate={() => navigate('/templates/starter')}
-            onCreateExercise={ui.openAddEntry}
-          />
-        </div>
-      ) : null}
-
-      {!schedule.isLoading && schedule.templateSyncStatus.hasUpdates ? (
-        <div className="mx-4 mb-4 rounded-2xl border border-[var(--primary)]/20 bg-[var(--primary-container)]/20 px-4 py-3">
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <p className="text-sm font-semibold text-[var(--on-surface)]">
-                {t('schedule.templateUpdatedTitle', { name: schedule.templateSyncStatus.templateName ?? t('common.templateFallback') })}
-              </p>
-              <p className="mt-1 text-xs leading-5 text-[var(--on-surface-variant)]">
-                {t('schedule.templateUpdatedDescription')}
-              </p>
-            </div>
-            <button
-              type="button"
-              disabled={schedule.isSubmitting}
-              onClick={() => void ui.handleSyncTemplateAction()}
-              className="shrink-0 rounded-full bg-[var(--primary)] px-3 py-2 text-xs font-semibold text-[var(--on-primary)] transition-opacity disabled:opacity-50"
+      <div className="relative min-h-0 flex-1 overflow-hidden [perspective:1200px]">
+        <AnimatePresence custom={flipDirection} initial={false} mode="wait">
+          {isQuickTimerOpen ? (
+            <motion.div
+              key="quick-timer"
+              custom={flipDirection}
+              variants={pageFlipVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              className="absolute inset-0 flex min-h-0 flex-col px-4"
+              style={pageFlipStyle}
             >
-              {t('schedule.syncTemplate')}
-            </button>
-          </div>
-        </div>
-      ) : null}
+              <ExerciseQuickTimer now={now} />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="schedule-body"
+              custom={flipDirection}
+              variants={pageFlipVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              className="absolute inset-0 overflow-hidden"
+              style={pageFlipStyle}
+            >
+              {!schedule.isLoading ? (
+                <div className={isStarterState ? 'flex min-h-[calc(100vh-13rem-env(safe-area-inset-bottom))] items-center' : ''}>
+                  <TodayTrainingPlanCard
+                    cycle={schedule.trainingCycle}
+                    currentIndex={schedule.todayCycleDay?.index ?? null}
+                    didAutoImportToday={schedule.didAutoImportToday}
+                    getTemplateColor={(templateId) => templateColorMap.get(templateId) ?? null}
+                    todayTemplateName={schedule.todayTemplate?.name ?? null}
+                    completedSets={completedSets}
+                    totalSets={totalSets}
+                    isStarterState={isStarterState}
+                    onChooseTemplate={() => navigate('/templates/starter')}
+                    onCreateExercise={ui.openAddEntry}
+                  />
+                </div>
+              ) : null}
 
-      {schedule.error ? (
-        <div className="mx-4 mt-4 rounded-xl bg-[var(--error-container)] px-4 py-3 text-sm text-[var(--on-error-container)]">
-          {schedule.error}
-        </div>
-      ) : null}
+              {!schedule.isLoading && schedule.templateSyncStatus.hasUpdates ? (
+                <div className="mx-4 mb-4 rounded-2xl border border-[var(--primary)]/20 bg-[var(--primary-container)]/20 px-4 py-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-[var(--on-surface)]">
+                        {t('schedule.templateUpdatedTitle', { name: schedule.templateSyncStatus.templateName ?? t('common.templateFallback') })}
+                      </p>
+                      <p className="mt-1 text-xs leading-5 text-[var(--on-surface-variant)]">
+                        {t('schedule.templateUpdatedDescription')}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      disabled={schedule.isSubmitting}
+                      onClick={() => void ui.handleSyncTemplateAction()}
+                      className="shrink-0 rounded-full bg-[var(--primary)] px-3 py-2 text-xs font-semibold text-[var(--on-primary)] transition-opacity disabled:opacity-50"
+                    >
+                      {t('schedule.syncTemplate')}
+                    </button>
+                  </div>
+                </div>
+              ) : null}
 
-      {schedule.isLoading || !isStarterState ? (
-        <section className="mt-2">
-          <ScheduleExerciseList
-            currentSession={schedule.currentSession}
-            hasTemplates={schedule.hasTemplates}
-            isLoading={schedule.isLoading}
-            isSubmitting={schedule.isSubmitting}
-            now={now}
-            onOpenAdd={ui.openAddEntry}
-            onOpenSaveTemplate={() => setIsTemplateSaveSheetOpen(true)}
-            onDeleteSelected={ui.handleDeleteExercisesAction}
-            onEditExercise={schedule.handleReplaceExercise}
-            onReorder={schedule.handleReorderExercises}
-          />
-        </section>
-      ) : null}
+              {schedule.error ? (
+                <div className="mx-4 mt-4 rounded-xl bg-[var(--error-container)] px-4 py-3 text-sm text-[var(--on-error-container)]">
+                  {schedule.error}
+                </div>
+              ) : null}
+
+              {schedule.isLoading || !isStarterState ? (
+                <section className="mt-2">
+                  <ScheduleExerciseList
+                    currentSession={schedule.currentSession}
+                    hasTemplates={schedule.hasTemplates}
+                    isLoading={schedule.isLoading}
+                    isSubmitting={schedule.isSubmitting}
+                    now={now}
+                    onOpenAdd={ui.openAddEntry}
+                    onOpenSaveTemplate={() => setIsTemplateSaveSheetOpen(true)}
+                    onDeleteSelected={ui.handleDeleteExercisesAction}
+                    onEditExercise={schedule.handleReplaceExercise}
+                    onReorder={schedule.handleReorderExercises}
+                  />
+                </section>
+              ) : null}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
       <ScheduleExerciseSheet
         draft={schedule.newExerciseDraft}
