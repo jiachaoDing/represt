@@ -10,9 +10,9 @@ import {
   QuickTimerPage,
   SchedulePage,
   SettingsPage,
-  StarterTemplatePage,
+  StarterPlanPage,
   SummaryPage,
-  TemplatesPage,
+  PlansPage,
   TrainingCyclePage,
 } from './route-components'
 export { preloadPrimaryRouteModules } from './route-loaders'
@@ -42,17 +42,17 @@ export const router = createBrowserRouter([
         handle: { titleKey: 'routes.quickTimer' },
       },
       {
-        path: 'templates',
-        element: lazyRoute(<TemplatesPage />),
-        handle: { titleKey: 'routes.templates' },
+        path: 'plans',
+        element: lazyRoute(<PlansPage />),
+        handle: { titleKey: 'routes.plans' },
       },
       {
-        path: 'templates/starter',
-        element: lazyRoute(<StarterTemplatePage />),
-        handle: { titleKey: 'routes.starterTemplate' },
+        path: 'plans/starter',
+        element: lazyRoute(<StarterPlanPage />),
+        handle: { titleKey: 'routes.starterPlan' },
       },
       {
-        path: 'templates/cycle',
+        path: 'plans/cycle',
         element: lazyRoute(<TrainingCyclePage />, <TrainingCyclePageLoading />),
         handle: { titleKey: 'routes.trainingCycle' },
       },

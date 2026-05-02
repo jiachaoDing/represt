@@ -5,14 +5,14 @@ import { Link } from 'react-router-dom'
 import { useBackLinkState } from '../../hooks/useRouteBack'
 import { TrainingCycleDots } from './TrainingCycleDots'
 import type { TrainingCycle } from '../../models/types'
-import type { TemplateColor } from '../../lib/template-color'
+import type { PlanColor } from '../../lib/plan-color'
 
-type TemplateCyclePreviewCardProps = {
+type PlanCyclePreviewCardProps = {
   cycle: TrainingCycle | null
   currentIndex: number | null
   daysUntil: number | null
-  getTemplateColor: (templateId: string) => TemplateColor | null
-  templateId: string | null
+  getPlanColor: (planId: string) => PlanColor | null
+  planId: string | null
 }
 
 function getNextTrainingLabel(
@@ -30,25 +30,25 @@ function getNextTrainingLabel(
   return t('trainingCycle.daysUntil', { days: daysUntil })
 }
 
-export function TemplateCyclePreviewCard({
+export function PlanCyclePreviewCard({
   cycle,
   currentIndex,
   daysUntil,
-  getTemplateColor,
-  templateId,
-}: TemplateCyclePreviewCardProps) {
+  getPlanColor,
+  planId,
+}: PlanCyclePreviewCardProps) {
   const { t } = useTranslation()
   const isConfigured = (cycle?.slots.length ?? 0) > 0
   const backLinkState = useBackLinkState()
   const previewTitle = !isConfigured
     ? t('trainingCycle.cycleNotSet')
-    : templateId
+    : planId
       ? getNextTrainingLabel(daysUntil, t)
       : t('trainingCycle.cycleSet')
 
   return (
     <Link
-      to="/templates/cycle"
+      to="/plans/cycle"
       state={backLinkState}
       viewTransition
       aria-label={isConfigured ? t('trainingCycle.editCycle') : t('trainingCycle.setCycle')}
@@ -82,8 +82,8 @@ export function TemplateCyclePreviewCard({
           <TrainingCycleDots
             slots={cycle.slots}
             currentIndex={currentIndex}
-            getTemplateColor={getTemplateColor}
-            highlightedTemplateId={templateId ?? null}
+            getPlanColor={getPlanColor}
+            highlightedPlanId={planId ?? null}
           />
         ) : (
           <div />

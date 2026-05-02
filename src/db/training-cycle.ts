@@ -82,9 +82,9 @@ export function getTodayTrainingCycleDay(cycle: TrainingCycle | null) {
   return getTrainingCycleDayForDate(cycle, getTodaySessionDateKey())
 }
 
-export function getTrainingCycleTemplateDaysUntil(
+export function getTrainingCyclePlanDaysUntil(
   cycle: TrainingCycle | null,
-  templateId: string,
+  planId: string,
   sessionDateKey = getTodaySessionDateKey(),
 ) {
   const day = getTrainingCycleDayForDate(cycle, sessionDateKey)
@@ -94,7 +94,7 @@ export function getTrainingCycleTemplateDaysUntil(
 
   for (let offset = 0; offset < cycle.slots.length; offset += 1) {
     const index = normalizeIndex(day.index + offset, cycle.slots.length)
-    if (cycle.slots[index].templateId === templateId) {
+    if (cycle.slots[index].planId === planId) {
       return offset
     }
   }
@@ -102,13 +102,13 @@ export function getTrainingCycleTemplateDaysUntil(
   return null
 }
 
-export function getTrainingCycleTemplateIndexes(cycle: TrainingCycle | null, templateId: string) {
+export function getTrainingCyclePlanIndexes(cycle: TrainingCycle | null, planId: string) {
   if (!cycle) {
     return [] as number[]
   }
 
   return cycle.slots.reduce<number[]>((indexes, slot, index) => {
-    if (slot.templateId === templateId) {
+    if (slot.planId === planId) {
       indexes.push(index)
     }
 
@@ -135,23 +135,23 @@ export async function addTrainingCycleSlot() {
       ...cycle.slots,
       {
         id: crypto.randomUUID(),
-        templateId: null,
+        planId: null,
       },
     ],
   })
 }
 
-export async function setTrainRestTrainingCycle(templateId: string) {
+export async function setTrainRestTrainingCycle(planId: string) {
   return saveTrainingCycle({
     id: TRAINING_CYCLE_ID,
     slots: [
       {
         id: crypto.randomUUID(),
-        templateId,
+        planId,
       },
       {
         id: crypto.randomUUID(),
-        templateId: null,
+        planId: null,
       },
     ],
     anchorDateKey: getTodaySessionDateKey(),
@@ -192,7 +192,7 @@ export async function removeTrainingCycleSlot(slotId: string) {
   })
 }
 
-export async function assignTemplateToTrainingCycleSlot(slotId: string, templateId: string | null) {
+export async function assignPlanToTrainingCycleSlot(slotId: string, planId: string | null) {
   const cycle = await getOrCreateTrainingCycle()
 
   return saveTrainingCycle({
@@ -201,7 +201,7 @@ export async function assignTemplateToTrainingCycleSlot(slotId: string, template
       slot.id === slotId
         ? {
             ...slot,
-            templateId,
+            planId,
           }
         : slot,
     ),
@@ -255,13 +255,13 @@ export async function reorderTrainingCycleSlots(orderedSlotIds: string[]) {
   })
 }
 
-export async function clearTemplateFromTrainingCycle(templateId: string) {
+export async function clearPlanFromTrainingCycle(planId: string) {
   const cycle = await getTrainingCycle()
   if (!cycle) {
     return null
   }
 
-  const shouldClear = cycle.slots.some((slot) => slot.templateId === templateId)
+  const shouldClear = cycle.slots.some((slot) => slot.planId === planId)
   if (!shouldClear) {
     return cycle
   }
@@ -269,10 +269,10 @@ export async function clearTemplateFromTrainingCycle(templateId: string) {
   return saveTrainingCycle({
     ...cycle,
     slots: cycle.slots.map((slot) =>
-      slot.templateId === templateId
+      slot.planId === planId
         ? {
             ...slot,
-            templateId: null,
+            planId: null,
           }
         : slot,
     ),

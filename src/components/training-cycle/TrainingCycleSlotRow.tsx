@@ -8,7 +8,7 @@ function TrainingCycleSlotCard({
   isSubmitting,
   onOpenSheet,
   slot,
-  template,
+  plan,
   weekdayLabel,
   isToday,
 }: Omit<TrainingCycleSlotRowProps, 'index' | 'isDragging' | 'onCalibrateToday'>) {
@@ -21,23 +21,23 @@ function TrainingCycleSlotCard({
       disabled={isSubmitting || isSorting}
       className={[
         'flex flex-1 items-center justify-between rounded-3xl p-5 text-left transition-transform active:scale-[0.98] shadow-sm border border-transparent disabled:opacity-80',
-        template
+        plan
           ? ''
           : 'bg-[var(--surface-container)] text-[var(--on-surface)] border-[var(--outline-variant)]/20',
       ].join(' ')}
       style={
-        template && color
+        plan && color
           ? { backgroundColor: color.soft, color: color.text, borderColor: 'rgba(0,0,0,0.05)' }
           : {}
       }
     >
       <div className="min-w-0">
         <h4 className="text-[17px] font-bold tracking-tight">
-          {template ? template.name : t('trainingCycle.restDay')}
+          {plan ? plan.name : t('trainingCycle.restDay')}
         </h4>
         <p className="mt-1 text-[13px] font-medium opacity-70">
-          {template
-            ? t('trainingCycle.exerciseCount', { count: template.exercises.length })
+          {plan
+            ? t('trainingCycle.exerciseCount', { count: plan.exercises.length })
             : t('trainingCycle.restDescription')}
         </p>
       </div>
@@ -66,7 +66,7 @@ export function TrainingCycleSlotRow({
   onCalibrateToday,
   onOpenSheet,
   slot,
-  template,
+  plan,
   weekdayLabel,
 }: TrainingCycleSlotRowProps) {
   const { t } = useTranslation()
@@ -111,7 +111,7 @@ export function TrainingCycleSlotRow({
         isToday={isToday}
         onOpenSheet={onOpenSheet}
         slot={slot}
-        template={template}
+        plan={plan}
         weekdayLabel={weekdayLabel}
       />
     </div>

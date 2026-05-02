@@ -1,25 +1,25 @@
 import { arrayMove } from '@dnd-kit/sortable'
 
-import type { TemplateExercise } from '../../models/types'
+import type { PlanExercise } from '../../models/types'
 
 export function getOrderedExercises(
-  templateExercises: TemplateExercise[],
+  planExercises: PlanExercise[],
   exerciseOrder: string[] | null,
 ) {
-  if (!exerciseOrder || exerciseOrder.length !== templateExercises.length) {
-    return templateExercises
+  if (!exerciseOrder || exerciseOrder.length !== planExercises.length) {
+    return planExercises
   }
 
-  const exerciseMap = new Map(templateExercises.map((exercise) => [exercise.id, exercise]))
+  const exerciseMap = new Map(planExercises.map((exercise) => [exercise.id, exercise]))
   const orderedExercises = exerciseOrder
     .map((exerciseId) => exerciseMap.get(exerciseId) ?? null)
-    .filter((exercise): exercise is TemplateExercise => exercise !== null)
+    .filter((exercise): exercise is PlanExercise => exercise !== null)
 
-  return orderedExercises.length === templateExercises.length ? orderedExercises : templateExercises
+  return orderedExercises.length === planExercises.length ? orderedExercises : planExercises
 }
 
 export function getReorderedExerciseIds(
-  exercises: TemplateExercise[],
+  exercises: PlanExercise[],
   activeExerciseId: string,
   overExerciseId: string,
 ) {

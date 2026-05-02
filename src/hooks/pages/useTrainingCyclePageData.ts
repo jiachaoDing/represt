@@ -2,31 +2,31 @@ import { useCallback, useEffect, useState } from 'react'
 
 import {
   addTrainingCycleSlot,
-  assignTemplateToTrainingCycleSlot,
+  assignPlanToTrainingCycleSlot,
   calibrateTrainingCycleToday,
   getOrCreateTrainingCycle,
   getTodayTrainingCycleDay,
   removeTrainingCycleSlot,
   reorderTrainingCycleSlots,
 } from '../../db/training-cycle'
-import { listTemplatesWithExercises, type TemplateWithExercises } from '../../db/templates'
+import { listPlansWithExercises, type PlanWithExercises } from '../../db/plans'
 import { triggerHaptic } from '../../lib/haptics'
 import type { TrainingCycle } from '../../models/types'
 
 export function useTrainingCyclePageData() {
-  const [templates, setTemplates] = useState<TemplateWithExercises[]>([])
+  const [plans, setPlans] = useState<PlanWithExercises[]>([])
   const [trainingCycle, setTrainingCycle] = useState<TrainingCycle | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const loadData = useCallback(async () => {
-    const [templateItems, cycle] = await Promise.all([
-      listTemplatesWithExercises(),
+    const [planItems, cycle] = await Promise.all([
+      listPlansWithExercises(),
       getOrCreateTrainingCycle(),
     ])
 
-    setTemplates(templateItems)
+    setPlans(planItems)
     setTrainingCycle(cycle)
   }, [])
 
@@ -84,9 +84,9 @@ export function useTrainingCyclePageData() {
     return didRemove
   }
 
-  async function handleAssignTemplate(slotId: string, templateId: string | null) {
+  async function handleAssignPlan(slotId: string, planId: string | null) {
     return runMutation(async () => {
-      await assignTemplateToTrainingCycleSlot(slotId, templateId)
+      await assignPlanToTrainingCycleSlot(slotId, planId)
       await loadData()
     })
   }
@@ -108,13 +108,13 @@ export function useTrainingCyclePageData() {
   return {
     error,
     handleAddSlot,
-    handleAssignTemplate,
+    handleAssignPlan,
     handleCalibrateToday,
     handleRemoveSlot,
     handleReorderSlots,
     isLoading,
     isSubmitting,
-    templates,
+    plans,
     todayCycleDay: getTodayTrainingCycleDay(trainingCycle),
     trainingCycle,
   }

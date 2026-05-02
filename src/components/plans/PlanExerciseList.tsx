@@ -15,26 +15,26 @@ import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 
 import { AnimatedList, AnimatedListItem } from '../motion/AnimatedList'
 import { verticalSortModifiers } from '../dnd/vertical-sortable-motion'
-import { SortableTemplateExerciseItem } from './SortableTemplateExerciseItem'
-import { TemplateExerciseDragOverlay } from './TemplateExerciseDragOverlay'
-import { TemplateExerciseImportSheet } from './TemplateExerciseImportSheet'
-import { TemplateExerciseInlineEditor } from './TemplateExerciseInlineEditor'
-import { TemplateExerciseListToolbar } from './TemplateExerciseListToolbar'
-import type { TemplateExerciseListProps } from './template-exercise-list.types'
-import { getOrderedExercises, getReorderedExerciseIds } from './template-exercise-list.utils'
+import { SortablePlanExerciseItem } from './SortablePlanExerciseItem'
+import { PlanExerciseDragOverlay } from './PlanExerciseDragOverlay'
+import { PlanExerciseImportSheet } from './PlanExerciseImportSheet'
+import { PlanExerciseInlineEditor } from './PlanExerciseInlineEditor'
+import { PlanExerciseListToolbar } from './PlanExerciseListToolbar'
+import type { PlanExerciseListProps } from './plan-exercise-list.types'
+import { getOrderedExercises, getReorderedExerciseIds } from './plan-exercise-list.utils'
 import { useScrollToPendingExercise } from './useScrollToPendingExercise'
 import { triggerHaptic } from '../../lib/haptics'
 
-export function TemplateExerciseList({
-  currentTemplate,
+export function PlanExerciseList({
+  currentPlan,
   draft,
   editExerciseId,
   isCreatingExercise,
   isLoading,
   isSubmitting,
   pendingScrollExerciseId,
-  templates,
-  templatesCount,
+  plans,
+  plansCount,
   onCancelEditing,
   onCreate,
   onDeleteSelected,
@@ -44,7 +44,7 @@ export function TemplateExerciseList({
   onReorder,
   onScrollAnimationComplete,
   onSubmit,
-}: TemplateExerciseListProps) {
+}: PlanExerciseListProps) {
   const { t } = useTranslation()
   const [exerciseOrder, setExerciseOrder] = useState<string[] | null>(null)
   const [activeExerciseId, setActiveExerciseId] = useState<string | null>(null)
@@ -71,8 +71,8 @@ export function TemplateExerciseList({
   )
 
   const orderedExercises = useMemo(() => {
-    return getOrderedExercises(currentTemplate?.exercises ?? [], exerciseOrder)
-  }, [currentTemplate, exerciseOrder])
+    return getOrderedExercises(currentPlan?.exercises ?? [], exerciseOrder)
+  }, [currentPlan, exerciseOrder])
 
   const activeExercise =
     activeExerciseId === null
@@ -83,14 +83,14 @@ export function TemplateExerciseList({
       ? -1
       : orderedExercises.findIndex((exercise) => exercise.id === activeExercise.id)
   const exerciseIds = orderedExercises.map((exercise) => exercise.id)
-  const sourceTemplates = useMemo(
+  const sourcePlans = useMemo(
     () =>
-      currentTemplate
-        ? templates.filter(
-            (template) => template.id !== currentTemplate.id && template.exercises.length > 0,
+      currentPlan
+        ? plans.filter(
+            (plan) => plan.id !== currentPlan.id && plan.exercises.length > 0,
           )
         : [],
-    [currentTemplate, templates],
+    [currentPlan, plans],
   )
   const isAllSelected =
     exerciseIds.length > 0 && exerciseIds.every((exerciseId) => selectedExerciseIds.includes(exerciseId))
@@ -132,7 +132,7 @@ export function TemplateExerciseList({
     lastDragOverIdRef.current = null
     void triggerHaptic('light')
 
-    if (!currentTemplate || !over || active.id === over.id) {
+    if (!currentPlan || !over || active.id === over.id) {
       return
     }
 
@@ -150,7 +150,7 @@ export function TemplateExerciseList({
 
     void onReorder(nextOrderIds).then((didReorder) => {
       if (!didReorder) {
-        setExerciseOrder(currentTemplate.exercises.map((exercise) => exercise.id))
+        setExerciseOrder(currentPlan.exercises.map((exercise) => exercise.id))
         return
       }
     })
@@ -226,15 +226,15 @@ export function TemplateExerciseList({
     )
   }
 
-  if (templatesCount === 0) {
+  if (plansCount === 0) {
     return (
       <div className="mx-4 mt-6 rounded-xl border border-dashed border-[var(--outline)] px-5 py-8 text-center">
-        <p className="text-sm font-medium text-[var(--on-surface-variant)]">{t('templates.noTemplates')}</p>
+        <p className="text-sm font-medium text-[var(--on-surface-variant)]">{t('plans.noPlans')}</p>
       </div>
     )
   }
 
-  if (!currentTemplate) {
+  if (!currentPlan) {
     return null
   }
 
@@ -244,19 +244,19 @@ export function TemplateExerciseList({
     <div className="mt-4 px-4">
       {shouldShowEmptyHint ? (
         <div className="rounded-xl border border-dashed border-[var(--outline)] px-5 py-8 text-center">
-          <p className="text-sm font-medium text-[var(--on-surface-variant)]">{t('templates.emptyTemplate')}</p>
+          <p className="text-sm font-medium text-[var(--on-surface-variant)]">{t('plans.emptyPlan')}</p>
           <button
             type="button"
             onClick={onCreate}
             className="mt-4 inline-flex items-center text-sm font-medium text-[var(--primary)]"
           >
-            {t('templates.addExercise')}
+            {t('plans.addExercise')}
           </button>
         </div>
       ) : null}
 
       {!shouldShowEmptyHint ? (
-        <TemplateExerciseListToolbar
+        <PlanExerciseListToolbar
           exerciseCount={orderedExercises.length}
           isAllSelected={isAllSelected}
           isSelectionMode={isSelectionMode}
@@ -273,13 +273,13 @@ export function TemplateExerciseList({
       <AnimatedList className="flex flex-col gap-3">
         {isCreatingExercise && !isSelectionMode ? (
           <AnimatedListItem key="creating-exercise">
-            <TemplateExerciseInlineEditor
+            <PlanExerciseInlineEditor
               draft={draft}
               isEditing={false}
               isSubmitting={isSubmitting}
               onCancel={onCancelEditing}
               onDraftChange={onDraftChange}
-              onImportClick={sourceTemplates.length > 0 ? openImportSheet : undefined}
+              onImportClick={sourcePlans.length > 0 ? openImportSheet : undefined}
               onSubmit={onSubmit}
             />
           </AnimatedListItem>
@@ -301,7 +301,7 @@ export function TemplateExerciseList({
             {orderedExercises.map((exercise, index) => (
               <div key={exercise.id}>
                 {editExerciseId === exercise.id ? (
-                  <TemplateExerciseInlineEditor
+                  <PlanExerciseInlineEditor
                     draft={draft}
                     isEditing
                     isSubmitting={isSubmitting}
@@ -310,7 +310,7 @@ export function TemplateExerciseList({
                     onSubmit={onSubmit}
                   />
                 ) : (
-                  <SortableTemplateExerciseItem
+                  <SortablePlanExerciseItem
                     exercise={exercise}
                     isSelected={selectedExerciseIds.includes(exercise.id)}
                     index={index}
@@ -326,18 +326,18 @@ export function TemplateExerciseList({
             ))}
           </SortableContext>
 
-          <TemplateExerciseDragOverlay
+          <PlanExerciseDragOverlay
             activeExercise={activeExercise}
             activeExerciseIndex={activeExerciseIndex}
           />
         </DndContext>
       </AnimatedList>
 
-      <TemplateExerciseImportSheet
+      <PlanExerciseImportSheet
         isOpen={isImportSheetOpen}
         isSubmitting={isSubmitting}
         selectedExerciseIds={selectedImportExerciseIds}
-        sourceTemplates={sourceTemplates}
+        sourcePlans={sourcePlans}
         onClose={closeImportSheet}
         onSubmit={() => void importSelectedExercises()}
         onToggleExercise={toggleImportExercise}

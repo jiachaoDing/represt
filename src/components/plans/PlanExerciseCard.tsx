@@ -6,9 +6,9 @@ import {
   formatDurationSeconds,
   getMeasurementTypeForExercise,
 } from '../../lib/set-record-measurement'
-import type { TemplateExerciseCardProps } from './template-exercise-list.types'
+import type { PlanExerciseCardProps } from './plan-exercise-list.types'
 
-export function TemplateExerciseCard({
+export function PlanExerciseCard({
   exercise,
   index,
   isDragging = false,
@@ -16,35 +16,35 @@ export function TemplateExerciseCard({
   isSubmitting,
   onEdit,
   selectionMode = false,
-}: TemplateExerciseCardProps) {
+}: PlanExerciseCardProps) {
   const { t } = useTranslation()
   const displayName = getDisplayExerciseName(t, exercise)
   const measurementType = getMeasurementTypeForExercise(exercise)
   const valueLabels =
     measurementType === 'weightReps'
       ? [
-          exercise.weightKg ? t('common.kg', { value: exercise.weightKg }) : t('templates.weightEmpty'),
-          exercise.reps ? t('common.reps', { value: exercise.reps }) : t('templates.repsEmpty'),
+          exercise.weightKg ? t('common.kg', { value: exercise.weightKg }) : t('plans.weightEmpty'),
+          exercise.reps ? t('common.reps', { value: exercise.reps }) : t('plans.repsEmpty'),
         ]
       : measurementType === 'reps'
-      ? [exercise.reps ? t('common.reps', { value: exercise.reps }) : t('templates.repsEmpty')]
+      ? [exercise.reps ? t('common.reps', { value: exercise.reps }) : t('plans.repsEmpty')]
       : measurementType === 'duration'
       ? [
           exercise.durationSeconds
             ? formatDurationSeconds(exercise.durationSeconds, t)
-            : t('templates.durationEmpty'),
+            : t('plans.durationEmpty'),
         ]
       : measurementType === 'distance'
       ? [
           exercise.distanceMeters
             ? formatDistanceMeters(exercise.distanceMeters, t)
-            : t('templates.distanceEmpty'),
+            : t('plans.distanceEmpty'),
         ]
       : [
-          exercise.weightKg ? t('common.kg', { value: exercise.weightKg }) : t('templates.weightEmpty'),
+          exercise.weightKg ? t('common.kg', { value: exercise.weightKg }) : t('plans.weightEmpty'),
           exercise.distanceMeters
             ? formatDistanceMeters(exercise.distanceMeters, t)
-            : t('templates.distanceEmpty'),
+            : t('plans.distanceEmpty'),
         ]
 
   return (
@@ -101,7 +101,7 @@ export function TemplateExerciseCard({
             onClick={() => onEdit(exercise.id)}
             disabled={isSubmitting}
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-[var(--on-surface-variant)] transition-colors hover:bg-[var(--surface-container)] disabled:opacity-40"
-            aria-label={t('templates.editExercise', { name: displayName })}
+            aria-label={t('plans.editExercise', { name: displayName })}
           >
             <svg
               viewBox="0 0 24 24"

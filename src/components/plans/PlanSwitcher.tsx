@@ -1,23 +1,23 @@
 import { useTranslation } from 'react-i18next'
 
-import type { TemplateWithExercises } from '../../db/templates'
-import { getTemplateColor } from '../../lib/template-color'
+import type { PlanWithExercises } from '../../db/plans'
+import { getPlanColor } from '../../lib/plan-color'
 
-type TemplateSwitcherProps = {
+type PlanSwitcherProps = {
   isSubmitting: boolean
-  selectedTemplateId: string | null
-  templates: TemplateWithExercises[]
+  selectedPlanId: string | null
+  plans: PlanWithExercises[]
   onCreate: () => void
-  onSelect: (templateId: string) => void
+  onSelect: (planId: string) => void
 }
 
-export function TemplateSwitcher({
+export function PlanSwitcher({
   isSubmitting,
-  selectedTemplateId,
-  templates,
+  selectedPlanId,
+  plans,
   onCreate,
   onSelect,
-}: TemplateSwitcherProps) {
+}: PlanSwitcherProps) {
   const { t } = useTranslation()
 
   return (
@@ -48,14 +48,14 @@ export function TemplateSwitcher({
           </svg>
           {t('common.add')}
         </button>
-        {templates.map((template, index) => {
-          const isSelected = template.id === selectedTemplateId
-          const color = getTemplateColor(index)
+        {plans.map((plan, index) => {
+          const isSelected = plan.id === selectedPlanId
+          const color = getPlanColor(index)
           return (
             <button
-              key={template.id}
+              key={plan.id}
               type="button"
-              onClick={() => onSelect(template.id)}
+              onClick={() => onSelect(plan.id)}
               disabled={isSubmitting}
               className={[
                 'flex h-8 items-center justify-center rounded-lg px-4 text-sm font-medium whitespace-nowrap transition-colors tap-highlight-transparent',
@@ -72,7 +72,7 @@ export function TemplateSwitcher({
                 color: isSelected ? color.text : color.solid,
               }}
             >
-              {template.name}
+              {plan.name}
             </button>
           )
         })}

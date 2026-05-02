@@ -1,7 +1,7 @@
 import type {
   SessionPlanItem,
-  SessionTemplateExerciseSnapshot,
-  TemplateExercise,
+  SessionPlanExerciseSnapshot,
+  PlanExercise,
   WorkoutSession,
 } from '../models/types'
 import { getTodaySessionDateKey } from '../lib/session-date-key'
@@ -9,7 +9,7 @@ import { resolveCatalogExerciseId } from '../lib/exercise-name'
 import { db } from './app-db'
 import { getTodayTrainingCycleDay, getTrainingCycle } from './training-cycle'
 import { getPerformedExerciseForPlanItem, getSessionPlanItems, getSessionRecord, nowIso } from './session-core'
-import type { SessionPlanItemInput, TemplateSyncResult, TemplateSyncStatus } from './session-types'
+import type { SessionPlanItemInput, PlanSyncResult, PlanSyncStatus } from './session-types'
 
 function normalizeSessionPlanItem(input: Partial<SessionPlanItemInput>) {
   const name = input.name?.trim() || '未命名动作'
@@ -26,9 +26,9 @@ function normalizeSessionPlanItem(input: Partial<SessionPlanItemInput>) {
   }
 }
 
-function createTemplateExerciseSnapshot(
-  exercise: TemplateExercise,
-): SessionTemplateExerciseSnapshot {
+function createPlanExerciseSnapshot(
+  exercise: PlanExercise,
+): SessionPlanExerciseSnapshot {
   return {
     name: exercise.name,
     catalogExerciseId: exercise.catalogExerciseId ?? null,
@@ -42,28 +42,28 @@ function createTemplateExerciseSnapshot(
   }
 }
 
-async function buildPlanItemsFromTemplate(
+async function buildPlanItemsFromPlan(
   sessionId: string,
-  templateId: string,
+  planId: string,
   startOrder = 0,
-  templateExerciseIds?: string[],
+  planExerciseIds?: string[],
 ) {
-  const templateExercises = await db.templateExercises.where('templateId').equals(templateId).toArray()
-  const selectedTemplateExerciseIds = templateExerciseIds ? new Set(templateExerciseIds) : null
-  const sortedTemplateExercises = templateExercises
+  const planExercises = await db.planExercises.where('planId').equals(planId).toArray()
+  const selectedPlanExerciseIds = planExerciseIds ? new Set(planExerciseIds) : null
+  const sortedPlanExercises = planExercises
     .filter((exercise) =>
-      selectedTemplateExerciseIds ? selectedTemplateExerciseIds.has(exercise.id) : true,
+      selectedPlanExerciseIds ? selectedPlanExerciseIds.has(exercise.id) : true,
     )
     .sort((left, right) => left.order - right.order)
   const timestamp = nowIso()
 
-  return sortedTemplateExercises.map((exercise, index) => ({
+  return sortedPlanExercises.map((exercise, index) => ({
     id: crypto.randomUUID(),
     sessionId,
-    templateExerciseId: exercise.id,
-    sourceTemplateId: templateId,
-    sourceTemplateSnapshot: createTemplateExerciseSnapshot(exercise),
-    origin: 'template',
+    planExerciseId: exercise.id,
+    sourcePlanId: planId,
+    sourcePlanSnapshot: createPlanExerciseSnapshot(exercise),
+    origin: 'plan',
     name: exercise.name,
     catalogExerciseId: exercise.catalogExerciseId ?? null,
     targetSets: exercise.targetSets,
@@ -77,38 +77,38 @@ async function buildPlanItemsFromTemplate(
   })) satisfies SessionPlanItem[]
 }
 
-async function replaceSessionPlanFromTemplate(
+async function replaceSessionPlanFromPlan(
   session: WorkoutSession,
-  templateId: string | null,
+  planId: string | null,
 ) {
   const timestamp = nowIso()
 
-  if (!templateId) {
+  if (!planId) {
     await db.transaction('rw', db.workoutSessions, db.sessionPlanItems, async () => {
       await db.sessionPlanItems.where('sessionId').equals(session.id).delete()
       await db.workoutSessions.update(session.id, {
-        plannedTemplateId: null,
-        plannedTemplateNameSnapshot: null,
-        plannedTemplateSelectedAt: timestamp,
-        lastSyncedTemplateUpdatedAt: null,
+        plannedPlanId: null,
+        plannedPlanNameSnapshot: null,
+        plannedPlanSelectedAt: timestamp,
+        lastSyncedPlanUpdatedAt: null,
       })
     })
 
     return {
       ...session,
-      plannedTemplateId: null,
-      plannedTemplateNameSnapshot: null,
-      plannedTemplateSelectedAt: timestamp,
-      lastSyncedTemplateUpdatedAt: null,
+      plannedPlanId: null,
+      plannedPlanNameSnapshot: null,
+      plannedPlanSelectedAt: timestamp,
+      lastSyncedPlanUpdatedAt: null,
     } satisfies WorkoutSession
   }
 
-  const template = await db.workoutTemplates.get(templateId)
-  if (!template) {
+  const plan = await db.workoutPlans.get(planId)
+  if (!plan) {
     return session
   }
 
-  const nextPlanItems = await buildPlanItemsFromTemplate(session.id, templateId)
+  const nextPlanItems = await buildPlanItemsFromPlan(session.id, planId)
 
   await db.transaction('rw', db.workoutSessions, db.sessionPlanItems, async () => {
     await db.sessionPlanItems.where('sessionId').equals(session.id).delete()
@@ -116,130 +116,130 @@ async function replaceSessionPlanFromTemplate(
       await db.sessionPlanItems.bulkAdd(nextPlanItems)
     }
     await db.workoutSessions.update(session.id, {
-      plannedTemplateId: templateId,
-      plannedTemplateNameSnapshot: template.name,
-      plannedTemplateSelectedAt: timestamp,
-      lastSyncedTemplateUpdatedAt: template.updatedAt,
+      plannedPlanId: planId,
+      plannedPlanNameSnapshot: plan.name,
+      plannedPlanSelectedAt: timestamp,
+      lastSyncedPlanUpdatedAt: plan.updatedAt,
     })
   })
 
   return {
     ...session,
-    plannedTemplateId: templateId,
-    plannedTemplateNameSnapshot: template.name,
-    plannedTemplateSelectedAt: timestamp,
-    lastSyncedTemplateUpdatedAt: template.updatedAt,
+    plannedPlanId: planId,
+    plannedPlanNameSnapshot: plan.name,
+    plannedPlanSelectedAt: timestamp,
+    lastSyncedPlanUpdatedAt: plan.updatedAt,
   } satisfies WorkoutSession
 }
 
-export async function maybeAutoImportTrainingCycleTemplate(session: WorkoutSession) {
+export async function maybeAutoImportTrainingCyclePlan(session: WorkoutSession) {
   if (session.sessionDateKey !== getTodaySessionDateKey()) {
     return session
   }
 
   const cycle = await getTrainingCycle()
   const todayCycleDay = getTodayTrainingCycleDay(cycle)
-  const templateId = todayCycleDay?.slot.templateId ?? null
+  const planId = todayCycleDay?.slot.planId ?? null
 
-  if (session.plannedTemplateSelectedAt && session.plannedTemplateId === templateId) {
+  if (session.plannedPlanSelectedAt && session.plannedPlanId === planId) {
     return session
   }
 
-  if (!templateId && !session.plannedTemplateId && session.plannedTemplateSelectedAt) {
+  if (!planId && !session.plannedPlanId && session.plannedPlanSelectedAt) {
     return session
   }
 
-  return replaceSessionPlanFromTemplate(session, templateId)
+  return replaceSessionPlanFromPlan(session, planId)
 }
 
-export async function getSessionTemplateSyncStatus(
+export async function getSessionPlanSyncStatus(
   sessionId: string,
-): Promise<TemplateSyncStatus> {
+): Promise<PlanSyncStatus> {
   const session = await getSessionRecord(sessionId)
-  const templateId = session?.plannedTemplateId ?? null
-  if (!session || !templateId) {
-    return { hasUpdates: false, templateName: null }
+  const planId = session?.plannedPlanId ?? null
+  if (!session || !planId) {
+    return { hasUpdates: false, planName: null }
   }
 
-  const template = await db.workoutTemplates.get(templateId)
-  if (!template) {
-    return { hasUpdates: false, templateName: null }
+  const plan = await db.workoutPlans.get(planId)
+  if (!plan) {
+    return { hasUpdates: false, planName: null }
   }
 
-  const lastSyncedAt = session.lastSyncedTemplateUpdatedAt ?? session.plannedTemplateSelectedAt ?? session.createdAt
+  const lastSyncedAt = session.lastSyncedPlanUpdatedAt ?? session.plannedPlanSelectedAt ?? session.createdAt
 
   return {
-    hasUpdates: template.updatedAt > lastSyncedAt,
-    templateName: template.name,
+    hasUpdates: plan.updatedAt > lastSyncedAt,
+    planName: plan.name,
   }
 }
 
-export async function syncSessionPlanFromTemplate(sessionId: string): Promise<TemplateSyncResult> {
+export async function syncSessionPlanFromPlan(sessionId: string): Promise<PlanSyncResult> {
   const session = await getSessionRecord(sessionId)
-  const templateId = session?.plannedTemplateId ?? null
-  if (!session || session.sessionDateKey !== getTodaySessionDateKey() || !templateId) {
-    throw new Error('只能同步今天安排的模板。')
+  const planId = session?.plannedPlanId ?? null
+  if (!session || session.sessionDateKey !== getTodaySessionDateKey() || !planId) {
+    throw new Error('只能同步今天安排的计划。')
   }
 
-  const [template, templateExercises, visiblePlanItems] = await Promise.all([
-    db.workoutTemplates.get(templateId),
-    db.templateExercises.where('templateId').equals(templateId).toArray(),
+  const [plan, planExercises, visiblePlanItems] = await Promise.all([
+    db.workoutPlans.get(planId),
+    db.planExercises.where('planId').equals(planId).toArray(),
     getSessionPlanItems(sessionId),
   ])
 
-  if (!template) {
-    throw new Error('模板不存在。')
+  if (!plan) {
+    throw new Error('计划不存在。')
   }
 
-  await replaceSessionPlanFromTemplate(session, templateId)
+  await replaceSessionPlanFromPlan(session, planId)
 
   return {
-    addedCount: templateExercises.length,
+    addedCount: planExercises.length,
     updatedCount: 0,
     removedCount: visiblePlanItems.length,
   }
 }
 
-export async function markSessionTemplateSynced(
+export async function markSessionPlanSynced(
   sessionId: string,
-  templateId: string,
-  templateUpdatedAt: string,
+  planId: string,
+  planUpdatedAt: string,
 ) {
   const session = await getSessionRecord(sessionId)
-  if (!session || session.plannedTemplateId !== templateId) {
+  if (!session || session.plannedPlanId !== planId) {
     return
   }
 
   await db.workoutSessions.update(sessionId, {
-    lastSyncedTemplateUpdatedAt: templateUpdatedAt,
+    lastSyncedPlanUpdatedAt: planUpdatedAt,
   })
 }
 
-export async function addTemplateExercisesToSessionPlan(
+export async function addPlanExercisesToSessionPlan(
   sessionId: string,
-  templateId: string,
-  templateExerciseIds?: string[],
+  planId: string,
+  planExerciseIds?: string[],
 ) {
-  const [session, template] = await Promise.all([
+  const [session, plan] = await Promise.all([
     getSessionRecord(sessionId),
-    db.workoutTemplates.get(templateId),
+    db.workoutPlans.get(planId),
   ])
 
   if (!session || session.sessionDateKey !== getTodaySessionDateKey()) {
-    throw new Error('只能把模板动作加入今天的训练。')
+    throw new Error('只能把计划动作加入今天的训练。')
   }
 
-  if (!template) {
-    throw new Error('模板不存在。')
+  if (!plan) {
+    throw new Error('计划不存在。')
   }
 
   const existingPlanItems = await getSessionPlanItems(sessionId)
   const nextOrder = existingPlanItems.reduce((maxOrder, item) => Math.max(maxOrder, item.order), -1) + 1
-  const planItems = await buildPlanItemsFromTemplate(
+  const planItems = await buildPlanItemsFromPlan(
     sessionId,
-    templateId,
+    planId,
     nextOrder,
-    templateExerciseIds,
+    planExerciseIds,
   )
 
   if (planItems.length === 0) {
@@ -264,9 +264,9 @@ export async function addTemporarySessionPlanItem(sessionId: string, input: Part
   const planItem: SessionPlanItem = {
     id: crypto.randomUUID(),
     sessionId,
-    templateExerciseId: null,
-    sourceTemplateId: null,
-    sourceTemplateSnapshot: null,
+    planExerciseId: null,
+    sourcePlanId: null,
+    sourcePlanSnapshot: null,
     origin: 'manual',
     name: normalized.name,
     catalogExerciseId: normalized.catalogExerciseId,
@@ -309,9 +309,9 @@ export async function replaceSessionPlanItem(
   const nextPlanItem: SessionPlanItem = {
     id: crypto.randomUUID(),
     sessionId,
-    templateExerciseId: null,
-    sourceTemplateId: null,
-    sourceTemplateSnapshot: null,
+    planExerciseId: null,
+    sourcePlanId: null,
+    sourcePlanSnapshot: null,
     origin: 'manual',
     name: normalized.name,
     catalogExerciseId: normalized.catalogExerciseId,

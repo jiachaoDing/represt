@@ -1,11 +1,11 @@
-import type { TemplateWithExercises } from '../../db/templates'
-import type { TemplateColor } from '../../lib/template-color'
+import type { PlanWithExercises } from '../../db/plans'
+import type { PlanColor } from '../../lib/plan-color'
 import type { TrainingCycleSlot } from '../../models/types'
 
 export type TrainingCycleSlotRenderData = {
-  color: TemplateColor | null
+  color: PlanColor | null
   isToday: boolean
-  template: TemplateWithExercises | null
+  plan: PlanWithExercises | null
   weekdayLabel: string
 }
 

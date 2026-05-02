@@ -18,8 +18,8 @@ const navigationItems = [
     )
   },
   { 
-    to: '/templates', 
-    labelKey: 'nav.templates', 
+    to: '/plans', 
+    labelKey: 'nav.plans', 
     end: false,
     icon: (isActive: boolean) => (
       <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth={isActive ? "2.5" : "2"} strokeLinecap="round" strokeLinejoin="round">

@@ -14,7 +14,7 @@ import { getCycleSlotDateKey, getWeekdayLabel } from '../components/training-cyc
 import { useTrainingCyclePageData } from '../hooks/pages/useTrainingCyclePageData'
 import { useBackLinkState } from '../hooks/useRouteBack'
 import { triggerHaptic } from '../lib/haptics'
-import { getTemplateColor } from '../lib/template-color'
+import { getPlanColor } from '../lib/plan-color'
 import type { TrainingCycleSlot } from '../models/types'
 
 export function TrainingCyclePage() {
@@ -22,13 +22,13 @@ export function TrainingCyclePage() {
   const {
     error,
     handleAddSlot,
-    handleAssignTemplate,
+    handleAssignPlan,
     handleCalibrateToday,
     handleRemoveSlot,
     handleReorderSlots,
     isLoading,
     isSubmitting,
-    templates,
+    plans,
     todayCycleDay,
     trainingCycle,
   } = useTrainingCyclePageData()
@@ -40,9 +40,9 @@ export function TrainingCyclePage() {
   const lastDragOverIdRef = useRef<string | null>(null)
   const backLinkState = useBackLinkState()
 
-  const templateColorMap = useMemo(
-    () => new Map(templates.map((template, index) => [template.id, getTemplateColor(index)])),
-    [templates],
+  const planColorMap = useMemo(
+    () => new Map(plans.map((plan, index) => [plan.id, getPlanColor(index)])),
+    [plans],
   )
   const orderedSlots = useMemo(() => {
     const slots = trainingCycle?.slots ?? []
@@ -60,8 +60,8 @@ export function TrainingCyclePage() {
 
   const selectedSlot = trainingCycle?.slots.find((slot) => slot.id === selectedSlotId) ?? null
   const selectedIndex = trainingCycle?.slots.findIndex((slot) => slot.id === selectedSlotId) ?? 0
-  const selectedTemplate = selectedSlot?.templateId
-    ? templates.find((template) => template.id === selectedSlot.templateId) ?? null
+  const selectedPlan = selectedSlot?.planId
+    ? plans.find((plan) => plan.id === selectedSlot.planId) ?? null
     : null
   const isSlotSheetOpen = sheetOpen && Boolean(trainingCycle && trainingCycle.slots.length > 0)
 
@@ -77,10 +77,10 @@ export function TrainingCyclePage() {
 
   const orderedSlotItems = useMemo(() => {
     return orderedSlots.map<TrainingCycleSlotListItem>((slot, index) => {
-      const template = slot.templateId
-        ? templates.find((item) => item.id === slot.templateId) ?? null
+      const plan = slot.planId
+        ? plans.find((item) => item.id === slot.planId) ?? null
         : null
-      const color = template ? templateColorMap.get(template.id) ?? null : null
+      const color = plan ? planColorMap.get(plan.id) ?? null : null
       const isToday = todayCycleDay?.slot.id === slot.id
       const slotDateKey = trainingCycle
         ? getCycleSlotDateKey(trainingCycle.anchorDateKey, orderedAnchorIndex, index)
@@ -91,19 +91,19 @@ export function TrainingCyclePage() {
         index,
         isToday,
         slot,
-        template,
+        plan,
         weekdayLabel: slotDateKey ? getWeekdayLabel(slotDateKey, weekdayLocale) : '',
       }
     })
-  }, [orderedAnchorIndex, orderedSlots, templateColorMap, templates, todayCycleDay, trainingCycle, weekdayLocale])
+  }, [orderedAnchorIndex, orderedSlots, planColorMap, plans, todayCycleDay, trainingCycle, weekdayLocale])
   const activeSlotItem =
     activeSlotId === null
       ? null
       : orderedSlotItems.find((item) => item.slot.id === activeSlotId) ?? null
 
-  async function assignTemplate(templateId: string | null) {
+  async function assignPlan(planId: string | null) {
     if (!selectedSlot) return
-    await handleAssignTemplate(selectedSlot.id, templateId)
+    await handleAssignPlan(selectedSlot.id, planId)
   }
 
   async function deleteSlot(slotId: string | null) {
@@ -179,7 +179,7 @@ export function TrainingCyclePage() {
       <PageHeader
         title={t('trainingCycle.title')}
         subtitle={t('trainingCycle.currentCycleDays', { days: trainingCycle?.slots.length || 0 })}
-        backFallbackTo="/templates"
+        backFallbackTo="/plans"
         actions={
           <Link
             to="/calendar"
@@ -237,15 +237,15 @@ export function TrainingCyclePage() {
 
       <TrainingCycleSlotSheet
         isSubmitting={isSubmitting}
-        onAssignTemplate={(templateId) => void assignTemplate(templateId)}
+        onAssignPlan={(planId) => void assignPlan(planId)}
         onClose={() => setSheetOpen(false)}
         onDeleteSlot={(slotId) => void deleteSlot(slotId)}
         open={isSlotSheetOpen}
         selectedIndex={selectedIndex}
         selectedSlotId={selectedSlotId}
-        selectedTemplate={selectedTemplate}
-        templateColorMap={templateColorMap}
-        templates={templates}
+        selectedPlan={selectedPlan}
+        planColorMap={planColorMap}
+        plans={plans}
       />
     </div>
   )

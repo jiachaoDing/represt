@@ -1,22 +1,22 @@
 import { DragOverlay } from '@dnd-kit/core'
 import { createPortal } from 'react-dom'
 
-import type { TemplateExercise } from '../../models/types'
+import type { PlanExercise } from '../../models/types'
 import {
   verticalSortDropAnimation,
   verticalSortModifiers,
 } from '../dnd/vertical-sortable-motion'
-import { TemplateExerciseCard } from './TemplateExerciseCard'
+import { PlanExerciseCard } from './PlanExerciseCard'
 
-type TemplateExerciseDragOverlayProps = {
-  activeExercise: TemplateExercise | null
+type PlanExerciseDragOverlayProps = {
+  activeExercise: PlanExercise | null
   activeExerciseIndex: number
 }
 
-export function TemplateExerciseDragOverlay({
+export function PlanExerciseDragOverlay({
   activeExercise,
   activeExerciseIndex,
-}: TemplateExerciseDragOverlayProps) {
+}: PlanExerciseDragOverlayProps) {
   const overlay = (
     <DragOverlay
       adjustScale={false}
@@ -25,7 +25,7 @@ export function TemplateExerciseDragOverlay({
     >
       {activeExercise ? (
         <div className="opacity-95">
-          <TemplateExerciseCard
+          <PlanExerciseCard
             exercise={activeExercise}
             index={activeExerciseIndex}
             isDragging

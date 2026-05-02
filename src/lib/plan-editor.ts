@@ -1,4 +1,4 @@
-export type TemplateExerciseDraft = {
+export type PlanExerciseDraft = {
   name: string
   catalogExerciseId: string | null
   targetSets: string
@@ -9,7 +9,7 @@ export type TemplateExerciseDraft = {
   distanceMeters: string
 }
 
-export const emptyTemplateExerciseDraft: TemplateExerciseDraft = {
+export const emptyPlanExerciseDraft: PlanExerciseDraft = {
   name: '',
   catalogExerciseId: null,
   targetSets: '3',
@@ -20,7 +20,7 @@ export const emptyTemplateExerciseDraft: TemplateExerciseDraft = {
   distanceMeters: '',
 }
 
-export function toTemplateExerciseDraft(input?: {
+export function toPlanExerciseDraft(input?: {
   name: string
   catalogExerciseId?: string | null
   targetSets: number
@@ -29,9 +29,9 @@ export function toTemplateExerciseDraft(input?: {
   reps?: number | null
   durationSeconds?: number | null
   distanceMeters?: number | null
-}): TemplateExerciseDraft {
+}): PlanExerciseDraft {
   if (!input) {
-    return emptyTemplateExerciseDraft
+    return emptyPlanExerciseDraft
   }
 
   return {

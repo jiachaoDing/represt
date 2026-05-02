@@ -12,11 +12,11 @@ import { SettingsButton } from '../components/settings/SettingsButton'
 import { useNow } from '../hooks/useNow'
 import { useSchedulePageData } from '../hooks/pages/useSchedulePageData'
 import { useSchedulePageUi } from '../hooks/pages/useSchedulePageUi'
-import { getTemplateColor } from '../lib/template-color'
+import { getPlanColor } from '../lib/plan-color'
 import { ScheduleExerciseList } from '../components/schedule/ScheduleExerciseList'
 import { ScheduleExerciseSheet } from '../components/schedule/ScheduleExerciseSheet'
-import { ScheduleTemplateImportSheet } from '../components/schedule/ScheduleTemplateImportSheet'
-import { ScheduleTemplateSaveSheet } from '../components/schedule/ScheduleTemplateSaveSheet'
+import { SchedulePlanImportSheet } from '../components/schedule/SchedulePlanImportSheet'
+import { SchedulePlanSaveSheet } from '../components/schedule/SchedulePlanSaveSheet'
 import { QuickTimerEntryButton } from '../components/exercise/QuickTimerEntryButton'
 import { ExerciseQuickTimer } from '../components/exercise/ExerciseQuickTimer'
 import { quickEaseTransition } from '../components/motion/motion-tokens'
@@ -29,11 +29,11 @@ export function SchedulePage() {
   const now = useNow()
   const schedule = useSchedulePageData()
   const ui = useSchedulePageUi(schedule)
-  const [isTemplateSaveSheetOpen, setIsTemplateSaveSheetOpen] = useState(false)
+  const [isPlanSaveSheetOpen, setIsPlanSaveSheetOpen] = useState(false)
   const [isQuickTimerOpen, setIsQuickTimerOpen] = useState(false)
-  const templateColorMap = useMemo(
-    () => new Map(schedule.templates.map((template, index) => [template.id, getTemplateColor(index)])),
-    [schedule.templates],
+  const planColorMap = useMemo(
+    () => new Map(schedule.plans.map((plan, index) => [plan.id, getPlanColor(index)])),
+    [schedule.plans],
   )
 
   const todayStr = new Intl.DateTimeFormat(i18n.resolvedLanguage, {
@@ -44,9 +44,9 @@ export function SchedulePage() {
   const completedSets =
     schedule.currentSession?.exercises.reduce((sum, exercise) => sum + exercise.completedSets, 0) ?? 0
   const totalSets = schedule.currentSession?.exercises.reduce((sum, exercise) => sum + exercise.targetSets, 0) ?? 0
-  const canSaveTodayAsTemplate =
+  const canSaveTodayAsPlan =
     !schedule.isLoading && (schedule.currentSession?.exercises.length ?? 0) > 0
-  const canShowAddExerciseButton = location.pathname === '/' && canSaveTodayAsTemplate
+  const canShowAddExerciseButton = location.pathname === '/' && canSaveTodayAsPlan
   const isStarterState =
     !schedule.isLoading &&
     schedule.currentSession !== null &&
@@ -54,10 +54,10 @@ export function SchedulePage() {
     completedSets === 0 &&
     (schedule.trainingCycle?.slots.length ?? 0) === 0
   const importConfirmDescription = [
-    ui.pendingTemplateImportConfirmation?.isDuplicateImport
-      ? t('schedule.duplicateImport', { name: ui.pendingTemplateImportConfirmation.templateName })
+    ui.pendingPlanImportConfirmation?.isDuplicateImport
+      ? t('schedule.duplicateImport', { name: ui.pendingPlanImportConfirmation.planName })
       : null,
-    ui.pendingTemplateImportConfirmation?.willContinueCompletedSession ? t('schedule.willUpdateSummary') : null,
+    ui.pendingPlanImportConfirmation?.willContinueCompletedSession ? t('schedule.willUpdateSummary') : null,
   ]
     .filter(Boolean)
     .join(' ')
@@ -70,7 +70,7 @@ export function SchedulePage() {
                 type="button"
                 disabled={schedule.isSubmitting}
                 onClick={ui.openAddEntry}
-                aria-label={schedule.hasTemplates ? t('schedule.addExercise') : t('schedule.newExercise')}
+                aria-label={schedule.hasPlans ? t('schedule.addExercise') : t('schedule.newExercise')}
                 className="pointer-events-auto flex h-12 w-12 items-center justify-center rounded-full bg-[var(--primary-container)] text-[var(--on-primary-container)] shadow-lg transition-transform hover:scale-[1.02] active:scale-95 disabled:opacity-50 tap-highlight-transparent"
               >
                 <Plus size={22} strokeWidth={2.5} />
@@ -151,35 +151,35 @@ export function SchedulePage() {
                     cycle={schedule.trainingCycle}
                     currentIndex={schedule.todayCycleDay?.index ?? null}
                     didAutoImportToday={schedule.didAutoImportToday}
-                    getTemplateColor={(templateId) => templateColorMap.get(templateId) ?? null}
-                    todayTemplateName={schedule.todayTemplate?.name ?? null}
+                    getPlanColor={(planId) => planColorMap.get(planId) ?? null}
+                    todayPlanName={schedule.todayPlan?.name ?? null}
                     completedSets={completedSets}
                     totalSets={totalSets}
                     isStarterState={isStarterState}
-                    onChooseTemplate={() => navigate('/templates/starter')}
+                    onChoosePlan={() => navigate('/plans/starter')}
                     onCreateExercise={ui.openAddEntry}
                   />
                 </div>
               ) : null}
 
-              {!schedule.isLoading && schedule.templateSyncStatus.hasUpdates ? (
+              {!schedule.isLoading && schedule.planSyncStatus.hasUpdates ? (
                 <div className="mx-4 mb-4 rounded-2xl border border-[var(--primary)]/20 bg-[var(--primary-container)]/20 px-4 py-3">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-[var(--on-surface)]">
-                        {t('schedule.templateUpdatedTitle', { name: schedule.templateSyncStatus.templateName ?? t('common.templateFallback') })}
+                        {t('schedule.planUpdatedTitle', { name: schedule.planSyncStatus.planName ?? t('common.planFallback') })}
                       </p>
                       <p className="mt-1 text-xs leading-5 text-[var(--on-surface-variant)]">
-                        {t('schedule.templateUpdatedDescription')}
+                        {t('schedule.planUpdatedDescription')}
                       </p>
                     </div>
                     <button
                       type="button"
                       disabled={schedule.isSubmitting}
-                      onClick={() => void ui.handleSyncTemplateAction()}
+                      onClick={() => void ui.handleSyncPlanAction()}
                       className="shrink-0 rounded-full bg-[var(--primary)] px-3 py-2 text-xs font-semibold text-[var(--on-primary)] transition-opacity disabled:opacity-50"
                     >
-                      {t('schedule.syncTemplate')}
+                      {t('schedule.syncPlan')}
                     </button>
                   </div>
                 </div>
@@ -195,12 +195,12 @@ export function SchedulePage() {
                 <section className="mt-2">
                   <ScheduleExerciseList
                     currentSession={schedule.currentSession}
-                    hasTemplates={schedule.hasTemplates}
+                    hasPlans={schedule.hasPlans}
                     isLoading={schedule.isLoading}
                     isSubmitting={schedule.isSubmitting}
                     now={now}
                     onOpenAdd={ui.openAddEntry}
-                    onOpenSaveTemplate={() => setIsTemplateSaveSheetOpen(true)}
+                    onOpenSavePlan={() => setIsPlanSaveSheetOpen(true)}
                     onDeleteSelected={ui.handleDeleteExercisesAction}
                     onEditExercise={schedule.handleReplaceExercise}
                     onReorder={schedule.handleReorderExercises}
@@ -221,29 +221,29 @@ export function SchedulePage() {
         onSubmit={ui.handleAddExercise}
       />
 
-      <ScheduleTemplateImportSheet
-        isOpen={ui.isTemplateSheetOpen}
+      <SchedulePlanImportSheet
+        isOpen={ui.isPlanSheetOpen}
         isSubmitting={schedule.isSubmitting}
-        selectedExerciseIds={ui.selectedTemplateExerciseIds}
-        sourceTemplates={ui.isAllTemplateImportMode ? schedule.templates : undefined}
-        template={ui.importSourceTemplate}
-        onClose={ui.closeTemplateImportSheet}
-        onCreateExercise={ui.isAllTemplateImportMode ? ui.createExerciseFromTemplateImportSheet : undefined}
-        onSubmit={() => void ui.handleImportTemplate()}
-        onToggleExercise={ui.toggleTemplateExercise}
+        selectedExerciseIds={ui.selectedPlanExerciseIds}
+        sourcePlans={ui.isAllPlanImportMode ? schedule.plans : undefined}
+        plan={ui.importSourcePlan}
+        onClose={ui.closePlanImportSheet}
+        onCreateExercise={ui.isAllPlanImportMode ? ui.createExerciseFromPlanImportSheet : undefined}
+        onSubmit={() => void ui.handleImportPlan()}
+        onToggleExercise={ui.togglePlanExercise}
       />
 
       {addExerciseButton}
 
-      <ScheduleTemplateSaveSheet
-        currentTemplateId={schedule.currentSession?.plannedTemplateId ?? null}
+      <SchedulePlanSaveSheet
+        currentPlanId={schedule.currentSession?.plannedPlanId ?? null}
         exerciseCount={schedule.currentSession?.exercises.length ?? 0}
-        isOpen={isTemplateSaveSheetOpen}
+        isOpen={isPlanSaveSheetOpen}
         isSubmitting={schedule.isSubmitting}
-        templates={schedule.templates}
-        onClose={() => setIsTemplateSaveSheetOpen(false)}
-        onCreateTemplate={schedule.handleCreateTemplateFromToday}
-        onOverwriteTemplate={schedule.handleOverwriteTemplateFromToday}
+        plans={schedule.plans}
+        onClose={() => setIsPlanSaveSheetOpen(false)}
+        onCreatePlan={schedule.handleCreatePlanFromToday}
+        onOverwritePlan={schedule.handleOverwritePlanFromToday}
       />
 
       <ConfirmDialog
@@ -256,15 +256,15 @@ export function SchedulePage() {
       />
 
       <ConfirmDialog
-        open={ui.pendingTemplateImportConfirmation !== null}
+        open={ui.pendingPlanImportConfirmation !== null}
         title={t('schedule.importConfirmTitle')}
         description={importConfirmDescription}
         confirmLabel={t('common.continue')}
         onCancel={() => {
-          ui.setPendingTemplateImportId(null)
-          ui.setPendingTemplateExerciseIds([])
+          ui.setPendingPlanImportId(null)
+          ui.setPendingPlanExerciseIds([])
         }}
-        onConfirm={() => void ui.confirmPendingTemplateImport()}
+        onConfirm={() => void ui.confirmPendingPlanImport()}
       />
     </div>
   )

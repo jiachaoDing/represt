@@ -1,151 +1,151 @@
 import { useMemo, useState, type FormEvent } from 'react'
 
-import type { TemplateSyncResult } from '../../db/sessions'
-import type { TemplateWithExercises } from '../../db/templates'
+import type { PlanSyncResult } from '../../db/sessions'
+import type { PlanWithExercises } from '../../db/plans'
 
-type TemplateImportConfirmation = {
+type PlanImportConfirmation = {
   isDuplicateImport: boolean
-  templateName: string
+  planName: string
   willContinueCompletedSession: boolean
 }
 
 type UseSchedulePageUiOptions = {
-  getTemplateImportConfirmation: (
-    templateId: string,
-    templateExerciseIds?: string[],
-  ) => TemplateImportConfirmation | null
-  handleAddTemplateExercises: (
-    templateId: string,
-    templateExerciseIds?: string[],
+  getPlanImportConfirmation: (
+    planId: string,
+    planExerciseIds?: string[],
+  ) => PlanImportConfirmation | null
+  handleAddPlanExercises: (
+    planId: string,
+    planExerciseIds?: string[],
   ) => Promise<{ count: number; name: string } | null | false>
   handleAddTemporaryExercise: () => Promise<boolean>
   handleDeleteExercises: (planItemIds: string[]) => Promise<boolean>
-  handleSyncTemplate: () => Promise<TemplateSyncResult | false>
+  handleSyncPlan: () => Promise<PlanSyncResult | false>
   shouldConfirmContinueBeforeAddingExercise: boolean
-  templates: TemplateWithExercises[]
+  plans: PlanWithExercises[]
 }
 
 export function useSchedulePageUi({
-  getTemplateImportConfirmation,
-  handleAddTemplateExercises,
+  getPlanImportConfirmation,
+  handleAddPlanExercises,
   handleAddTemporaryExercise,
   handleDeleteExercises,
-  handleSyncTemplate,
+  handleSyncPlan,
   shouldConfirmContinueBeforeAddingExercise,
-  templates,
+  plans,
 }: UseSchedulePageUiOptions) {
-  const [importSourceTemplateId, setImportSourceTemplateId] = useState<string | null>(null)
-  const [isAllTemplateImportMode, setIsAllTemplateImportMode] = useState(false)
+  const [importSourcePlanId, setImportSourcePlanId] = useState<string | null>(null)
+  const [isAllPlanImportMode, setIsAllPlanImportMode] = useState(false)
   const [isContinueDialogOpen, setIsContinueDialogOpen] = useState(false)
   const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false)
-  const [isTemplateSheetOpen, setIsTemplateSheetOpen] = useState(false)
-  const [pendingTemplateImportId, setPendingTemplateImportId] = useState<string | null>(null)
-  const [pendingTemplateExerciseIds, setPendingTemplateExerciseIds] = useState<string[]>([])
-  const [selectedTemplateExerciseIds, setSelectedTemplateExerciseIds] = useState<string[]>([])
+  const [isPlanSheetOpen, setIsPlanSheetOpen] = useState(false)
+  const [pendingPlanImportId, setPendingPlanImportId] = useState<string | null>(null)
+  const [pendingPlanExerciseIds, setPendingPlanExerciseIds] = useState<string[]>([])
+  const [selectedPlanExerciseIds, setSelectedPlanExerciseIds] = useState<string[]>([])
 
-  const importSourceTemplate = useMemo(
-    () => templates.find((template) => template.id === importSourceTemplateId) ?? null,
-    [importSourceTemplateId, templates],
+  const importSourcePlan = useMemo(
+    () => plans.find((plan) => plan.id === importSourcePlanId) ?? null,
+    [importSourcePlanId, plans],
   )
-  const pendingTemplateImportConfirmation = pendingTemplateImportId
-    ? getTemplateImportConfirmation(pendingTemplateImportId, pendingTemplateExerciseIds)
+  const pendingPlanImportConfirmation = pendingPlanImportId
+    ? getPlanImportConfirmation(pendingPlanImportId, pendingPlanExerciseIds)
     : null
 
   function openAddEntry() {
-    const hasTemplateExercises = templates.some((template) => template.exercises.length > 0)
-    if (!hasTemplateExercises) {
+    const hasPlanExercises = plans.some((plan) => plan.exercises.length > 0)
+    if (!hasPlanExercises) {
       setIsCreateSheetOpen(true)
       return
     }
 
-    setImportSourceTemplateId(null)
-    setSelectedTemplateExerciseIds([])
-    setIsAllTemplateImportMode(true)
-    setIsTemplateSheetOpen(true)
+    setImportSourcePlanId(null)
+    setSelectedPlanExerciseIds([])
+    setIsAllPlanImportMode(true)
+    setIsPlanSheetOpen(true)
   }
 
-  function selectTemplateForImport(templateId: string) {
-    const template = templates.find((item) => item.id === templateId)
-    setImportSourceTemplateId(templateId)
-    setSelectedTemplateExerciseIds(template?.exercises.map((exercise) => exercise.id) ?? [])
-    setIsAllTemplateImportMode(false)
-    setIsTemplateSheetOpen(true)
+  function selectPlanForImport(planId: string) {
+    const plan = plans.find((item) => item.id === planId)
+    setImportSourcePlanId(planId)
+    setSelectedPlanExerciseIds(plan?.exercises.map((exercise) => exercise.id) ?? [])
+    setIsAllPlanImportMode(false)
+    setIsPlanSheetOpen(true)
   }
 
-  function closeTemplateImportSheet() {
-    setIsTemplateSheetOpen(false)
-    setIsAllTemplateImportMode(false)
-    setSelectedTemplateExerciseIds([])
+  function closePlanImportSheet() {
+    setIsPlanSheetOpen(false)
+    setIsAllPlanImportMode(false)
+    setSelectedPlanExerciseIds([])
   }
 
-  function createExerciseFromTemplateImportSheet() {
-    closeTemplateImportSheet()
+  function createExerciseFromPlanImportSheet() {
+    closePlanImportSheet()
     setIsCreateSheetOpen(true)
   }
 
-  function toggleTemplateExercise(exerciseId: string) {
-    setSelectedTemplateExerciseIds((current) =>
+  function togglePlanExercise(exerciseId: string) {
+    setSelectedPlanExerciseIds((current) =>
       current.includes(exerciseId)
         ? current.filter((id) => id !== exerciseId)
         : [...current, exerciseId],
     )
   }
 
-  async function importTemplate(templateId: string, templateExerciseIds: string[]) {
-    const result = await handleAddTemplateExercises(templateId, templateExerciseIds)
+  async function importPlan(planId: string, planExerciseIds: string[]) {
+    const result = await handleAddPlanExercises(planId, planExerciseIds)
     if (result) {
-      setPendingTemplateImportId(null)
-      setPendingTemplateExerciseIds([])
-      setIsTemplateSheetOpen(false)
+      setPendingPlanImportId(null)
+      setPendingPlanExerciseIds([])
+      setIsPlanSheetOpen(false)
     }
   }
 
-  async function handleImportTemplate() {
-    if (isAllTemplateImportMode) {
-      if (selectedTemplateExerciseIds.length === 0) {
+  async function handleImportPlan() {
+    if (isAllPlanImportMode) {
+      if (selectedPlanExerciseIds.length === 0) {
         return
       }
 
-      for (const template of templates) {
-        const selectedIds = template.exercises
-          .filter((exercise) => selectedTemplateExerciseIds.includes(exercise.id))
+      for (const plan of plans) {
+        const selectedIds = plan.exercises
+          .filter((exercise) => selectedPlanExerciseIds.includes(exercise.id))
           .map((exercise) => exercise.id)
 
         if (selectedIds.length > 0) {
-          const result = await handleAddTemplateExercises(template.id, selectedIds)
+          const result = await handleAddPlanExercises(plan.id, selectedIds)
           if (!result) {
             return
           }
         }
       }
 
-      closeTemplateImportSheet()
+      closePlanImportSheet()
       return
     }
 
-    if (!importSourceTemplateId) {
+    if (!importSourcePlanId) {
       return
     }
 
-    if (selectedTemplateExerciseIds.length === 0) {
+    if (selectedPlanExerciseIds.length === 0) {
       return
     }
 
-    if (getTemplateImportConfirmation(importSourceTemplateId, selectedTemplateExerciseIds)) {
-      setPendingTemplateImportId(importSourceTemplateId)
-      setPendingTemplateExerciseIds(selectedTemplateExerciseIds)
+    if (getPlanImportConfirmation(importSourcePlanId, selectedPlanExerciseIds)) {
+      setPendingPlanImportId(importSourcePlanId)
+      setPendingPlanExerciseIds(selectedPlanExerciseIds)
       return
     }
 
-    await importTemplate(importSourceTemplateId, selectedTemplateExerciseIds)
+    await importPlan(importSourcePlanId, selectedPlanExerciseIds)
   }
 
-  async function confirmPendingTemplateImport() {
-    if (!pendingTemplateImportId) {
+  async function confirmPendingPlanImport() {
+    if (!pendingPlanImportId) {
       return
     }
 
-    await importTemplate(pendingTemplateImportId, pendingTemplateExerciseIds)
+    await importPlan(pendingPlanImportId, pendingPlanExerciseIds)
   }
 
   async function addExercise() {
@@ -171,34 +171,34 @@ export function useSchedulePageUi({
     return didDelete
   }
 
-  async function handleSyncTemplateAction() {
-    await handleSyncTemplate()
+  async function handleSyncPlanAction() {
+    await handleSyncPlan()
   }
 
   return {
     addExercise,
-    confirmPendingTemplateImport,
+    confirmPendingPlanImport,
     handleAddExercise,
     handleDeleteExercisesAction,
-    handleImportTemplate,
-    handleSyncTemplateAction,
-    importSourceTemplate,
-    isAllTemplateImportMode,
+    handleImportPlan,
+    handleSyncPlanAction,
+    importSourcePlan,
+    isAllPlanImportMode,
     isContinueDialogOpen,
     isCreateSheetOpen,
-    isTemplateSheetOpen,
-    closeTemplateImportSheet,
-    createExerciseFromTemplateImportSheet,
+    isPlanSheetOpen,
+    closePlanImportSheet,
+    createExerciseFromPlanImportSheet,
     openAddEntry,
-    pendingTemplateExerciseIds,
-    pendingTemplateImportConfirmation,
-    selectTemplateForImport,
-    selectedTemplateExerciseIds,
+    pendingPlanExerciseIds,
+    pendingPlanImportConfirmation,
+    selectPlanForImport,
+    selectedPlanExerciseIds,
     setIsContinueDialogOpen,
     setIsCreateSheetOpen,
-    setIsTemplateSheetOpen,
-    setPendingTemplateExerciseIds,
-    setPendingTemplateImportId,
-    toggleTemplateExercise,
+    setIsPlanSheetOpen,
+    setPendingPlanExerciseIds,
+    setPendingPlanImportId,
+    togglePlanExercise,
   }
 }

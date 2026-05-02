@@ -81,7 +81,7 @@ export function SortableScheduleExerciseItem({
         isDragging ? 'relative opacity-0 pointer-events-none' : 'relative',
         interactionClassName,
       ].join(' ')}
-      aria-label={t('templates.dragExercise', { name: displayName })}
+      aria-label={t('plans.dragExercise', { name: displayName })}
       onClick={isSelectionMode && canSelect ? () => onToggleSelected(exercise.id) : undefined}
       {...attributes}
       {...listeners}

@@ -5,11 +5,11 @@ import {
   parseOptionalReps,
   parseOptionalWeightKg,
 } from '../../lib/input-parsers'
-import type { TemplateExerciseDraft } from '../../lib/template-editor'
+import type { PlanExerciseDraft } from '../../lib/plan-editor'
 import type { WorkoutSessionWithExercises } from '../../db/sessions'
-import type { TemplateWithExercises } from '../../db/templates'
+import type { PlanWithExercises } from '../../db/plans'
 
-export const emptyExerciseDraft: TemplateExerciseDraft = {
+export const emptyExerciseDraft: PlanExerciseDraft = {
   name: '',
   catalogExerciseId: null,
   targetSets: '3',
@@ -20,30 +20,30 @@ export const emptyExerciseDraft: TemplateExerciseDraft = {
   distanceMeters: '',
 }
 
-export function hasImportedTemplateExercises(
+export function hasImportedPlanExercises(
   session: WorkoutSessionWithExercises,
-  template: TemplateWithExercises,
-  templateExerciseIds?: string[],
+  plan: PlanWithExercises,
+  planExerciseIds?: string[],
 ) {
-  const selectedTemplateExerciseIds = templateExerciseIds ? new Set(templateExerciseIds) : null
-  const selectedExercises = template.exercises.filter((exercise) =>
-    selectedTemplateExerciseIds ? selectedTemplateExerciseIds.has(exercise.id) : true,
+  const selectedPlanExerciseIds = planExerciseIds ? new Set(planExerciseIds) : null
+  const selectedExercises = plan.exercises.filter((exercise) =>
+    selectedPlanExerciseIds ? selectedPlanExerciseIds.has(exercise.id) : true,
   )
 
   if (selectedExercises.length === 0) {
     return false
   }
 
-  const importedTemplateExerciseIds = new Set(
+  const importedPlanExerciseIds = new Set(
     session.exercises
-      .map((exercise) => exercise.templateExerciseId)
-      .filter((templateExerciseId) => templateExerciseId !== null),
+      .map((exercise) => exercise.planExerciseId)
+      .filter((planExerciseId) => planExerciseId !== null),
   )
 
-  return selectedExercises.every((exercise) => importedTemplateExerciseIds.has(exercise.id))
+  return selectedExercises.every((exercise) => importedPlanExerciseIds.has(exercise.id))
 }
 
-export function draftToSessionPlanInput(draft: TemplateExerciseDraft) {
+export function draftToSessionPlanInput(draft: PlanExerciseDraft) {
   return {
     name: draft.name,
     catalogExerciseId: draft.catalogExerciseId,

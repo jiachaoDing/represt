@@ -18,8 +18,8 @@ import { PrimaryTabSwipeProvider } from './PrimaryTabSwipeProvider'
 const SchedulePage = lazy(() =>
   import('../../pages/SchedulePage').then((module) => ({ default: module.SchedulePage })),
 )
-const TemplatesPage = lazy(() =>
-  import('../../pages/TemplatesPage').then((module) => ({ default: module.TemplatesPage })),
+const PlansPage = lazy(() =>
+  import('../../pages/PlansPage').then((module) => ({ default: module.PlansPage })),
 )
 const SummaryPage = lazy(() =>
   import('../../pages/SummaryPage').then((module) => ({ default: module.SummaryPage })),
@@ -27,7 +27,7 @@ const SummaryPage = lazy(() =>
 
 const primaryTabs = [
   { pathname: '/', element: <SchedulePage /> },
-  { pathname: '/templates', element: <TemplatesPage /> },
+  { pathname: '/plans', element: <PlansPage /> },
   { pathname: '/summary', element: <SummaryPage /> },
 ]
 

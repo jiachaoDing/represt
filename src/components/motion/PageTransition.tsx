@@ -7,7 +7,7 @@ function getPrimaryTabIndex(pathname: string) {
     return 0
   }
 
-  if (pathname === '/templates') {
+  if (pathname === '/plans') {
     return 1
   }
 

@@ -1,6 +1,6 @@
 import i18n from '../i18n'
 
-type SeedTemplateExerciseInput = {
+type SeedPlanExerciseInput = {
   exerciseId: string
   targetSets: number
   restSeconds: number
@@ -10,9 +10,9 @@ type SeedTemplateExerciseInput = {
   distanceMeters?: number | null
 }
 
-const demoTemplateBlueprints: Array<{
+const demoPlanBlueprints: Array<{
   nameKey: string
-  exercises: SeedTemplateExerciseInput[]
+  exercises: SeedPlanExerciseInput[]
 }> = [
   {
     nameKey: 'push',
@@ -70,10 +70,10 @@ const demoTemplateBlueprints: Array<{
   },
 ]
 
-export function getLocalizedSeedTemplates() {
-  return demoTemplateBlueprints.map((template) => ({
-    name: i18n.t(`templates.seed.${template.nameKey}`),
-    exercises: template.exercises.map((exercise) => ({
+export function getLocalizedSeedPlans() {
+  return demoPlanBlueprints.map((plan) => ({
+    name: i18n.t(`plans.seed.${plan.nameKey}`),
+    exercises: plan.exercises.map((exercise) => ({
       ...exercise,
       name: i18n.t(`names.${exercise.exerciseId}`, { ns: 'exercises' }),
     })),

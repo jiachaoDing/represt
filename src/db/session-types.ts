@@ -39,12 +39,12 @@ export type SessionSummaryDetail = {
   exercises: SessionSummaryExercise[]
 }
 
-export type TemplateSyncStatus = {
+export type PlanSyncStatus = {
   hasUpdates: boolean
-  templateName: string | null
+  planName: string | null
 }
 
-export type TemplateSyncResult = {
+export type PlanSyncResult = {
   addedCount: number
   updatedCount: number
   removedCount: number

@@ -5,18 +5,18 @@ import { Link } from 'react-router-dom'
 import { useBackLinkState } from '../../hooks/useRouteBack'
 import { TrainingCycleDots } from './TrainingCycleDots'
 import type { TrainingCycle } from '../../models/types'
-import type { TemplateColor } from '../../lib/template-color'
+import type { PlanColor } from '../../lib/plan-color'
 
 type TodayTrainingPlanCardProps = {
   cycle: TrainingCycle | null
   currentIndex: number | null
   didAutoImportToday: boolean
-  getTemplateColor: (templateId: string) => TemplateColor | null
-  todayTemplateName: string | null
+  getPlanColor: (planId: string) => PlanColor | null
+  todayPlanName: string | null
   completedSets: number
   totalSets: number
   isStarterState?: boolean
-  onChooseTemplate?: () => void
+  onChoosePlan?: () => void
   onCreateExercise?: () => void
 }
 
@@ -65,12 +65,12 @@ export function TodayTrainingPlanCard({
   cycle,
   currentIndex,
   didAutoImportToday,
-  getTemplateColor,
-  todayTemplateName,
+  getPlanColor,
+  todayPlanName,
   completedSets,
   totalSets,
   isStarterState = false,
-  onChooseTemplate,
+  onChoosePlan,
   onCreateExercise,
 }: TodayTrainingPlanCardProps) {
   const { t } = useTranslation()
@@ -107,11 +107,11 @@ export function TodayTrainingPlanCard({
         <div className="mt-3 flex items-center justify-center">
           <button
             type="button"
-            onClick={onChooseTemplate}
+            onClick={onChoosePlan}
             className="min-h-10 text-sm font-semibold text-[var(--primary)] disabled:opacity-40"
-            disabled={!onChooseTemplate}
+            disabled={!onChoosePlan}
           >
-            {t('schedule.chooseTemplate')}
+            {t('schedule.choosePlan')}
           </button>
         </div>
       </section>
@@ -121,7 +121,7 @@ export function TodayTrainingPlanCard({
   return (
     <section className="mx-4 mb-6 mt-2 rounded-[1.25rem] border border-[var(--outline-variant)]/20 bg-[var(--surface)] p-1.5 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)] flex items-stretch">
       <Link 
-        to="/templates/cycle"
+        to="/plans/cycle"
         state={backLinkState}
         viewTransition
         className="group relative flex-1 flex flex-col justify-center rounded-[1rem] p-3.5 pr-9 hover:bg-[var(--on-surface)]/5 active:bg-[var(--on-surface)]/10 transition-colors"
@@ -140,8 +140,8 @@ export function TodayTrainingPlanCard({
           <h2 className="mt-1.5 text-[18px] font-bold text-[var(--on-surface)] leading-tight">
             {!isConfigured
               ? t('trainingCycle.noCycleSchedule')
-              : todayTemplateName
-                ? todayTemplateName
+              : todayPlanName
+                ? todayPlanName
                 : t('trainingCycle.restDay')}
           </h2>
           {!isConfigured ? (
@@ -156,7 +156,7 @@ export function TodayTrainingPlanCard({
             <TrainingCycleDots
               slots={cycle.slots}
               currentIndex={currentIndex}
-              getTemplateColor={getTemplateColor}
+              getPlanColor={getPlanColor}
             />
           </div>
         ) : null}

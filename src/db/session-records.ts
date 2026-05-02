@@ -12,9 +12,9 @@ function createPerformedExercise(planItem: SessionPlanItem, timestamp: string) {
     id: crypto.randomUUID(),
     sessionId: planItem.sessionId,
     planItemId: planItem.id,
-    templateExerciseId: planItem.templateExerciseId,
-    sourceTemplateId: planItem.sourceTemplateId ?? null,
-    sourceTemplateSnapshot: planItem.sourceTemplateSnapshot ?? null,
+    planExerciseId: planItem.planExerciseId,
+    sourcePlanId: planItem.sourcePlanId ?? null,
+    sourcePlanSnapshot: planItem.sourcePlanSnapshot ?? null,
     origin: planItem.origin ?? 'manual',
     name: planItem.name,
     catalogExerciseId: planItem.catalogExerciseId ?? null,
@@ -52,7 +52,7 @@ export async function completePlanItemSet(planItemId: string): Promise<SetRecord
     db.sessionPlanItems,
     db.performedExercises,
     db.setRecords,
-    db.templateExercises,
+    db.planExercises,
     async () => {
       const planItem = await db.sessionPlanItems.get(planItemId)
       if (!planItem) {
@@ -64,17 +64,17 @@ export async function completePlanItemSet(planItemId: string): Promise<SetRecord
         throw new Error('当前动作已完成，不能继续记录新的一组。')
       }
 
-      const templateExercise = exercise.templateExerciseId
-        ? await db.templateExercises.get(exercise.templateExerciseId)
+      const planExercise = exercise.planExerciseId
+        ? await db.planExercises.get(exercise.planExerciseId)
         : null
       const nextCompletedSets = exercise.completedSets + 1
       const restEndsAt = getRestEndsAt(completedAt, exercise.restSeconds)
       const measurementType = getMeasurementTypeForExercise(exercise)
       const defaultValues = buildSetRecordValuesForMeasurement(measurementType, {
-        weightKg: exercise.defaultWeightKg ?? templateExercise?.weightKg ?? null,
-        reps: exercise.defaultReps ?? templateExercise?.reps ?? null,
-        durationSeconds: exercise.defaultDurationSeconds ?? templateExercise?.durationSeconds ?? null,
-        distanceMeters: exercise.defaultDistanceMeters ?? templateExercise?.distanceMeters ?? null,
+        weightKg: exercise.defaultWeightKg ?? planExercise?.weightKg ?? null,
+        reps: exercise.defaultReps ?? planExercise?.reps ?? null,
+        durationSeconds: exercise.defaultDurationSeconds ?? planExercise?.durationSeconds ?? null,
+        distanceMeters: exercise.defaultDistanceMeters ?? planExercise?.distanceMeters ?? null,
       })
 
       const setRecord: SetRecord = {

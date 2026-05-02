@@ -81,7 +81,7 @@ export function TrainingCyclePageLoading({ showHeader = true }: TrainingCyclePag
       <PageHeader
         title={t('trainingCycle.title')}
         subtitle={t('trainingCycle.loadingSubtitle')}
-        backFallbackTo="/templates"
+        backFallbackTo="/plans"
       />
       <div className="min-h-0 flex-1 overflow-y-auto">
         <TrainingCycleLoadingBody />

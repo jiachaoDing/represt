@@ -1,23 +1,23 @@
 import type { FormEvent } from 'react'
 
-import type { TemplateWithExercises } from '../../db/templates'
-import type { TemplateExerciseDraft } from '../../lib/template-editor'
-import type { TemplateExercise } from '../../models/types'
+import type { PlanWithExercises } from '../../db/plans'
+import type { PlanExerciseDraft } from '../../lib/plan-editor'
+import type { PlanExercise } from '../../models/types'
 
-export type TemplateExerciseListProps = {
-  currentTemplate: TemplateWithExercises | null
-  draft: TemplateExerciseDraft
+export type PlanExerciseListProps = {
+  currentPlan: PlanWithExercises | null
+  draft: PlanExerciseDraft
   editExerciseId: string | null
   isCreatingExercise: boolean
   isLoading: boolean
   isSubmitting: boolean
   pendingScrollExerciseId: string | null
-  templates: TemplateWithExercises[]
-  templatesCount: number
+  plans: PlanWithExercises[]
+  plansCount: number
   onCancelEditing: () => void
   onCreate: () => void
   onDeleteSelected: (exerciseIds: string[]) => Promise<boolean>
-  onDraftChange: (draft: TemplateExerciseDraft) => void
+  onDraftChange: (draft: PlanExerciseDraft) => void
   onEdit: (exerciseId: string) => void
   onImport: (exerciseIds: string[]) => Promise<boolean>
   onReorder: (orderedExerciseIds: string[]) => Promise<boolean>
@@ -25,8 +25,8 @@ export type TemplateExerciseListProps = {
   onSubmit: (event: FormEvent<HTMLFormElement>) => void
 }
 
-export type TemplateExerciseCardProps = {
-  exercise: TemplateExercise
+export type PlanExerciseCardProps = {
+  exercise: PlanExercise
   index: number
   isDragging?: boolean
   isSelected?: boolean
@@ -35,8 +35,8 @@ export type TemplateExerciseCardProps = {
   onEdit?: (exerciseId: string) => void
 }
 
-export type SortableTemplateExerciseItemProps = {
-  exercise: TemplateExercise
+export type SortablePlanExerciseItemProps = {
+  exercise: PlanExercise
   isSelected: boolean
   index: number
   isSelectionMode: boolean

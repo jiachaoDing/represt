@@ -24,8 +24,8 @@ import { triggerHaptic } from '../../lib/haptics'
 import { ScheduleExerciseCard } from './ScheduleExerciseCard'
 import { ScheduleExerciseListToolbar } from './ScheduleExerciseListToolbar'
 import { SortableScheduleExerciseItem } from './SortableScheduleExerciseItem'
-import { TemplateExerciseInlineEditor } from '../templates/TemplateExerciseInlineEditor'
-import { toTemplateExerciseDraft, type TemplateExerciseDraft } from '../../lib/template-editor'
+import { PlanExerciseInlineEditor } from '../plans/PlanExerciseInlineEditor'
+import { toPlanExerciseDraft, type PlanExerciseDraft } from '../../lib/plan-editor'
 import { getDisplayExerciseName } from '../../lib/exercise-name'
 import {
   getOrderedScheduleExercises,
@@ -34,25 +34,25 @@ import {
 
 type ScheduleExerciseListProps = {
   currentSession: WorkoutSessionWithExercises | null
-  hasTemplates: boolean
+  hasPlans: boolean
   isLoading: boolean
   isSubmitting: boolean
   now: number
   onOpenAdd: () => void
-  onOpenSaveTemplate: () => void
+  onOpenSavePlan: () => void
   onDeleteSelected: (exerciseIds: string[]) => Promise<boolean>
-  onEditExercise: (exerciseId: string, draft: TemplateExerciseDraft) => Promise<boolean>
+  onEditExercise: (exerciseId: string, draft: PlanExerciseDraft) => Promise<boolean>
   onReorder: (orderedExerciseIds: string[]) => Promise<boolean>
 }
 
 export function ScheduleExerciseList({
   currentSession,
-  hasTemplates,
+  hasPlans,
   isLoading,
   isSubmitting,
   now,
   onOpenAdd,
-  onOpenSaveTemplate,
+  onOpenSavePlan,
   onDeleteSelected,
   onEditExercise,
   onReorder,
@@ -63,7 +63,7 @@ export function ScheduleExerciseList({
   const [isSorting, setIsSorting] = useState(false)
   const [isEditMode, setIsEditMode] = useState(false)
   const [editExerciseId, setEditExerciseId] = useState<string | null>(null)
-  const [editDraft, setEditDraft] = useState<TemplateExerciseDraft | null>(null)
+  const [editDraft, setEditDraft] = useState<PlanExerciseDraft | null>(null)
   const [isSelectionMode, setIsSelectionMode] = useState(false)
   const [selectedExerciseIds, setSelectedExerciseIds] = useState<string[]>([])
   const lastDragOverIdRef = useRef<string | null>(null)
@@ -131,7 +131,7 @@ export function ScheduleExerciseList({
     }
 
     setEditExerciseId(exercise.id)
-    setEditDraft(toTemplateExerciseDraft({
+    setEditDraft(toPlanExerciseDraft({
       ...exercise,
       name: getDisplayExerciseName(t, exercise),
       weightKg: exercise.defaultWeightKg ?? null,
@@ -247,7 +247,7 @@ export function ScheduleExerciseList({
           onClick={onOpenAdd}
           className="mt-4 text-sm font-medium text-[var(--primary)]"
         >
-          {hasTemplates ? t('schedule.addExercise') : t('schedule.newExercise')}
+          {hasPlans ? t('schedule.addExercise') : t('schedule.newExercise')}
         </button>
       </div>
     )
@@ -290,7 +290,7 @@ export function ScheduleExerciseList({
         onCloseSelection={closeSelectionMode}
         onToggleAllSelected={setSelectedExerciseIds}
         onDeleteSelected={() => void deleteSelectedExercises()}
-        onSaveTemplate={onOpenSaveTemplate}
+        onSavePlan={onOpenSavePlan}
       />
 
       <DndContext
@@ -310,7 +310,7 @@ export function ScheduleExerciseList({
             {orderedExercises.map((exercise, index) => (
               <div key={exercise.id}>
                 {editExerciseId === exercise.id && editDraft ? (
-                  <TemplateExerciseInlineEditor
+                  <PlanExerciseInlineEditor
                     draft={editDraft}
                     isEditing
                     isSubmitting={isSubmitting}

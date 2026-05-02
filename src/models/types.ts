@@ -2,7 +2,7 @@ export type SessionStatus = 'pending' | 'active' | 'completed'
 
 export type RestTimerStatus = 'idle' | 'running' | 'ready'
 
-export interface WorkoutTemplate {
+export interface WorkoutPlan {
   id: string
   name: string
   createdAt: string
@@ -11,7 +11,7 @@ export interface WorkoutTemplate {
 
 export interface TrainingCycleSlot {
   id: string
-  templateId: string | null
+  planId: string | null
 }
 
 export interface TrainingCycle {
@@ -22,9 +22,9 @@ export interface TrainingCycle {
   updatedAt: string
 }
 
-export interface TemplateExercise {
+export interface PlanExercise {
   id: string
-  templateId: string
+  planId: string
   name: string
   catalogExerciseId?: string | null
   targetSets: number
@@ -40,13 +40,13 @@ export interface WorkoutSession {
   id: string
   sessionDateKey: string
   createdAt: string
-  plannedTemplateId?: string | null
-  plannedTemplateNameSnapshot?: string | null
-  plannedTemplateSelectedAt?: string | null
-  lastSyncedTemplateUpdatedAt?: string | null
+  plannedPlanId?: string | null
+  plannedPlanNameSnapshot?: string | null
+  plannedPlanSelectedAt?: string | null
+  lastSyncedPlanUpdatedAt?: string | null
 }
 
-export interface SessionTemplateExerciseSnapshot {
+export interface SessionPlanExerciseSnapshot {
   name: string
   catalogExerciseId?: string | null
   targetSets: number
@@ -61,10 +61,10 @@ export interface SessionTemplateExerciseSnapshot {
 export interface SessionPlanItem {
   id: string
   sessionId: string
-  templateExerciseId: string | null
-  sourceTemplateId?: string | null
-  sourceTemplateSnapshot?: SessionTemplateExerciseSnapshot | null
-  origin?: 'template' | 'manual'
+  planExerciseId: string | null
+  sourcePlanId?: string | null
+  sourcePlanSnapshot?: SessionPlanExerciseSnapshot | null
+  origin?: 'plan' | 'manual'
   name: string
   catalogExerciseId?: string | null
   targetSets: number
@@ -81,10 +81,10 @@ export interface PerformedExercise {
   id: string
   sessionId: string
   planItemId: string | null
-  templateExerciseId: string | null
-  sourceTemplateId?: string | null
-  sourceTemplateSnapshot?: SessionTemplateExerciseSnapshot | null
-  origin?: 'template' | 'manual'
+  planExerciseId: string | null
+  sourcePlanId?: string | null
+  sourcePlanSnapshot?: SessionPlanExerciseSnapshot | null
+  origin?: 'plan' | 'manual'
   name: string
   catalogExerciseId?: string | null
   targetSets: number

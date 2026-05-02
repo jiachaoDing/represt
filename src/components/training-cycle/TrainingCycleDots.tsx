@@ -1,27 +1,27 @@
 import type { TrainingCycleSlot } from '../../models/types'
-import type { TemplateColor } from '../../lib/template-color'
+import type { PlanColor } from '../../lib/plan-color'
 
 type TrainingCycleDotsProps = {
   currentIndex?: number | null
-  getTemplateColor: (templateId: string) => TemplateColor | null
-  highlightedTemplateId?: string | null
+  getPlanColor: (planId: string) => PlanColor | null
+  highlightedPlanId?: string | null
   slots: TrainingCycleSlot[]
 }
 
 export function TrainingCycleDots({
   currentIndex = null,
-  getTemplateColor,
-  highlightedTemplateId = null,
+  getPlanColor,
+  highlightedPlanId = null,
   slots,
 }: TrainingCycleDotsProps) {
   return (
     <div className="flex flex-wrap items-center gap-2">
       {slots.map((slot, index) => {
-        const color = slot.templateId ? getTemplateColor(slot.templateId) : null
+        const color = slot.planId ? getPlanColor(slot.planId) : null
         const isCurrent = currentIndex === index
-        const isHighlighted = highlightedTemplateId
-          ? slot.templateId === highlightedTemplateId
-          : slot.templateId !== null
+        const isHighlighted = highlightedPlanId
+          ? slot.planId === highlightedPlanId
+          : slot.planId !== null
 
         return (
           <div key={slot.id} className="relative flex flex-col items-center">
@@ -36,7 +36,7 @@ export function TrainingCycleDots({
                       backgroundColor: color.solid,
                       borderColor: color.solid,
                     }
-                  : slot.templateId && color
+                  : slot.planId && color
                     ? {
                         backgroundColor: color.soft,
                         borderColor: color.soft,

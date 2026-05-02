@@ -112,7 +112,7 @@ export function TrainingCycleSlotList({
                     slot={activeSlotItem.slot}
                     color={activeSlotItem.color}
                     isToday={activeSlotItem.isToday}
-                    template={activeSlotItem.template}
+                    plan={activeSlotItem.plan}
                     weekdayLabel={activeSlotItem.weekdayLabel}
                   />
                 </div>

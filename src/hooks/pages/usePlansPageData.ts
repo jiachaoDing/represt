@@ -2,22 +2,22 @@ import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import {
-  createTemplate,
-  createTemplateExercise,
-  deleteTemplate,
-  deleteTemplateExercise,
-  importTemplateExercises,
-  listTemplatesWithExercises,
-  reorderTemplateExercises,
-  updateTemplateExercise,
-  updateTemplateName,
-  type TemplateWithExercises,
-} from '../../db/templates'
+  createPlan,
+  createPlanExercise,
+  deletePlan,
+  deletePlanExercise,
+  importPlanExercises,
+  listPlansWithExercises,
+  reorderPlanExercises,
+  updatePlanExercise,
+  updatePlanName,
+  type PlanWithExercises,
+} from '../../db/plans'
 import {
   getTodayTrainingCycleDay,
   getTrainingCycle,
-  getTrainingCycleTemplateDaysUntil,
-  getTrainingCycleTemplateIndexes,
+  getTrainingCyclePlanDaysUntil,
+  getTrainingCyclePlanIndexes,
 } from '../../db/training-cycle'
 import {
   parseOptionalDistanceMeters,
@@ -27,32 +27,32 @@ import {
   parseOptionalWeightKg,
 } from '../../lib/input-parsers'
 import { triggerHaptic } from '../../lib/haptics'
-import type { TemplateExerciseDraft } from '../../lib/template-editor'
+import type { PlanExerciseDraft } from '../../lib/plan-editor'
 import type { TrainingCycle } from '../../models/types'
 
-export function useTemplatesPageData() {
+export function usePlansPageData() {
   const { t } = useTranslation()
-  const [templates, setTemplates] = useState<TemplateWithExercises[]>([])
+  const [plans, setPlans] = useState<PlanWithExercises[]>([])
   const [trainingCycle, setTrainingCycle] = useState<TrainingCycle | null>(null)
-  const [newTemplateName, setNewTemplateName] = useState('')
-  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null)
+  const [newPlanName, setNewPlanName] = useState('')
+  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [lastCreatedExerciseId, setLastCreatedExerciseId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  async function loadTemplates(preferredTemplateId?: string | null) {
-    const [items, cycle] = await Promise.all([listTemplatesWithExercises(), getTrainingCycle()])
-    setTemplates(items)
+  async function loadPlans(preferredPlanId?: string | null) {
+    const [items, cycle] = await Promise.all([listPlansWithExercises(), getTrainingCycle()])
+    setPlans(items)
     setTrainingCycle(cycle)
-    setSelectedTemplateId((current) => {
-      if (preferredTemplateId !== undefined) {
-        return items.some((template) => template.id === preferredTemplateId)
-          ? preferredTemplateId
+    setSelectedPlanId((current) => {
+      if (preferredPlanId !== undefined) {
+        return items.some((plan) => plan.id === preferredPlanId)
+          ? preferredPlanId
           : (items[0]?.id ?? null)
       }
 
-      return items.some((template) => template.id === current) ? current : (items[0]?.id ?? null)
+      return items.some((plan) => plan.id === current) ? current : (items[0]?.id ?? null)
     })
   }
 
@@ -64,7 +64,7 @@ export function useTemplatesPageData() {
       return true
     } catch (mutationError) {
       console.error(mutationError)
-      setError(t('templates.saveFailed'))
+      setError(t('plans.saveFailed'))
       void triggerHaptic('error')
       return false
     } finally {
@@ -76,10 +76,10 @@ export function useTemplatesPageData() {
     async function initialize() {
       try {
         setError(null)
-        await loadTemplates()
+        await loadPlans()
       } catch (loadError) {
         console.error(loadError)
-        setError(t('templates.loadFailed'))
+        setError(t('plans.loadFailed'))
       } finally {
         setIsLoading(false)
       }
@@ -88,11 +88,11 @@ export function useTemplatesPageData() {
     void initialize()
   }, [t])
 
-  async function handleCreateTemplate() {
+  async function handleCreatePlan() {
     const didCreate = await runMutation(async () => {
-      const template = await createTemplate(newTemplateName || t('common.unnamedTemplate'))
-      setNewTemplateName('')
-      await loadTemplates(template.id)
+      const plan = await createPlan(newPlanName || t('common.unnamedPlan'))
+      setNewPlanName('')
+      await loadPlans(plan.id)
     })
 
     if (didCreate) {
@@ -102,10 +102,10 @@ export function useTemplatesPageData() {
     return didCreate
   }
 
-  async function handleSaveTemplateName(templateId: string, name: string) {
+  async function handleSavePlanName(planId: string, name: string) {
     const didSave = await runMutation(async () => {
-      await updateTemplateName(templateId, name || t('common.unnamedTemplate'))
-      await loadTemplates(templateId)
+      await updatePlanName(planId, name || t('common.unnamedPlan'))
+      await loadPlans(planId)
     })
 
     if (didSave) {
@@ -115,10 +115,10 @@ export function useTemplatesPageData() {
     return didSave
   }
 
-  async function handleDeleteTemplate(templateId: string) {
+  async function handleDeletePlan(planId: string) {
     const didDelete = await runMutation(async () => {
-      await deleteTemplate(templateId)
-      await loadTemplates()
+      await deletePlan(planId)
+      await loadPlans()
     })
 
     if (didDelete) {
@@ -128,9 +128,9 @@ export function useTemplatesPageData() {
     return didDelete
   }
 
-  async function handleCreateExercise(templateId: string, draft: TemplateExerciseDraft) {
+  async function handleCreateExercise(planId: string, draft: PlanExerciseDraft) {
     return runMutation(async () => {
-      const exercise = await createTemplateExercise(templateId, {
+      const exercise = await createPlanExercise(planId, {
         name: draft.name || t('common.unnamedExercise'),
         catalogExerciseId: draft.catalogExerciseId,
         targetSets: parseIntegerInput(draft.targetSets),
@@ -141,15 +141,15 @@ export function useTemplatesPageData() {
         distanceMeters: parseOptionalDistanceMeters(draft.distanceMeters),
       })
       setLastCreatedExerciseId(exercise.id)
-      await loadTemplates(templateId)
+      await loadPlans(planId)
     })
   }
 
-  async function handleImportExercises(templateId: string, exerciseIds: string[]) {
+  async function handleImportExercises(planId: string, exerciseIds: string[]) {
     const didImport = await runMutation(async () => {
-      const importedExercises = await importTemplateExercises(templateId, exerciseIds)
+      const importedExercises = await importPlanExercises(planId, exerciseIds)
       setLastCreatedExerciseId(importedExercises.at(-1)?.id ?? null)
-      await loadTemplates(templateId)
+      await loadPlans(planId)
     })
 
     if (didImport) {
@@ -160,12 +160,12 @@ export function useTemplatesPageData() {
   }
 
   async function handleSaveExercise(
-    templateId: string,
+    planId: string,
     exerciseId: string,
-    draft: TemplateExerciseDraft,
+    draft: PlanExerciseDraft,
   ) {
     return runMutation(async () => {
-      await updateTemplateExercise(exerciseId, {
+      await updatePlanExercise(exerciseId, {
         name: draft.name || t('common.unnamedExercise'),
         catalogExerciseId: draft.catalogExerciseId,
         targetSets: parseIntegerInput(draft.targetSets),
@@ -175,20 +175,20 @@ export function useTemplatesPageData() {
         durationSeconds: parseOptionalDurationSeconds(draft.durationSeconds),
         distanceMeters: parseOptionalDistanceMeters(draft.distanceMeters),
       })
-      await loadTemplates(templateId)
+      await loadPlans(planId)
     })
   }
 
-  async function handleDeleteExercises(templateId: string, exerciseIds: string[]) {
+  async function handleDeleteExercises(planId: string, exerciseIds: string[]) {
     if (exerciseIds.length === 0) {
       return false
     }
 
     const didDelete = await runMutation(async () => {
       for (const exerciseId of exerciseIds) {
-        await deleteTemplateExercise(exerciseId)
+        await deletePlanExercise(exerciseId)
       }
-      await loadTemplates(templateId)
+      await loadPlans(planId)
     })
 
     if (didDelete) {
@@ -198,57 +198,57 @@ export function useTemplatesPageData() {
     return didDelete
   }
 
-  async function handleReorderExercises(templateId: string, orderedExerciseIds: string[]) {
+  async function handleReorderExercises(planId: string, orderedExerciseIds: string[]) {
     return runMutation(async () => {
-      await reorderTemplateExercises(templateId, orderedExerciseIds)
-      await loadTemplates(templateId)
+      await reorderPlanExercises(planId, orderedExerciseIds)
+      await loadPlans(planId)
     })
   }
 
-  const currentTemplate =
-    templates.find((template) => template.id === selectedTemplateId) ?? null
+  const currentPlan =
+    plans.find((plan) => plan.id === selectedPlanId) ?? null
   const todayCycleDay = useMemo(() => getTodayTrainingCycleDay(trainingCycle), [trainingCycle])
-  const todayTemplate = useMemo(() => {
-    if (!todayCycleDay?.slot.templateId) {
+  const todayPlan = useMemo(() => {
+    if (!todayCycleDay?.slot.planId) {
       return null
     }
 
-    return templates.find((template) => template.id === todayCycleDay.slot.templateId) ?? null
-  }, [templates, todayCycleDay])
-  const currentTemplateCyclePreview = useMemo(() => {
-    if (!currentTemplate) {
+    return plans.find((plan) => plan.id === todayCycleDay.slot.planId) ?? null
+  }, [plans, todayCycleDay])
+  const currentPlanCyclePreview = useMemo(() => {
+    if (!currentPlan) {
       return null
     }
 
     return {
-      daysUntil: getTrainingCycleTemplateDaysUntil(trainingCycle, currentTemplate.id),
-      slotIndexes: getTrainingCycleTemplateIndexes(trainingCycle, currentTemplate.id),
+      daysUntil: getTrainingCyclePlanDaysUntil(trainingCycle, currentPlan.id),
+      slotIndexes: getTrainingCyclePlanIndexes(trainingCycle, currentPlan.id),
     }
-  }, [currentTemplate, trainingCycle])
+  }, [currentPlan, trainingCycle])
 
   return {
     clearLastCreatedExerciseId: () => setLastCreatedExerciseId(null),
-    currentTemplate,
-    currentTemplateCyclePreview,
+    currentPlan,
+    currentPlanCyclePreview,
     error,
     handleCreateExercise,
-    handleCreateTemplate,
+    handleCreatePlan,
     handleDeleteExercises,
-    handleDeleteTemplate,
+    handleDeletePlan,
     handleImportExercises,
     handleReorderExercises,
     handleSaveExercise,
-    handleSaveTemplateName,
+    handleSavePlanName,
     isLoading,
     isSubmitting,
     lastCreatedExerciseId,
-    newTemplateName,
-    setNewTemplateName,
-    selectedTemplateId,
-    setSelectedTemplateId,
+    newPlanName,
+    setNewPlanName,
+    selectedPlanId,
+    setSelectedPlanId,
     todayCycleDay,
-    todayTemplate,
+    todayPlan,
     trainingCycle,
-    templates,
+    plans,
   }
 }

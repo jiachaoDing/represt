@@ -6,7 +6,7 @@ import { initNotificationNavigation } from '../native/notification-navigation'
 
 function App() {
   useEffect(() => {
-    void import('../db/templates').then(({ ensureTemplateSeedData }) => ensureTemplateSeedData())
+    void import('../db/plans').then(({ ensurePlanSeedData }) => ensurePlanSeedData())
   }, [])
 
   useEffect(() => {

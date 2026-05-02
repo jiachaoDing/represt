@@ -2,40 +2,40 @@ import { Plus } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { BottomSheet } from '../ui/BottomSheet'
-import type { TemplateWithExercises } from '../../db/templates'
+import type { PlanWithExercises } from '../../db/plans'
 import { getDisplayExerciseName } from '../../lib/exercise-name'
 
-type ScheduleTemplateImportSheetProps = {
+type SchedulePlanImportSheetProps = {
   isOpen: boolean
   isSubmitting: boolean
   selectedExerciseIds: string[]
-  sourceTemplates?: TemplateWithExercises[]
-  template: TemplateWithExercises | null
+  sourcePlans?: PlanWithExercises[]
+  plan: PlanWithExercises | null
   onClose: () => void
   onCreateExercise?: () => void
   onSubmit: () => void
   onToggleExercise: (exerciseId: string) => void
 }
 
-export function ScheduleTemplateImportSheet({
+export function SchedulePlanImportSheet({
   isOpen,
   isSubmitting,
   selectedExerciseIds,
-  sourceTemplates = [],
-  template,
+  sourcePlans = [],
+  plan,
   onClose,
   onCreateExercise,
   onSubmit,
   onToggleExercise,
-}: ScheduleTemplateImportSheetProps) {
+}: SchedulePlanImportSheetProps) {
   const { t } = useTranslation()
-  const templates = template ? [template] : sourceTemplates.filter((item) => item.exercises.length > 0)
-  const totalExerciseCount = templates.reduce((count, item) => count + item.exercises.length, 0)
-  const title = template?.name ?? t('templates.importFromTemplates')
+  const plans = plan ? [plan] : sourcePlans.filter((item) => item.exercises.length > 0)
+  const totalExerciseCount = plans.reduce((count, item) => count + item.exercises.length, 0)
+  const title = plan?.name ?? t('plans.importFromPlans')
 
   return (
-    <BottomSheet open={isOpen && templates.length > 0} title={title} onClose={onClose}>
-      {templates.length > 0 ? (
+    <BottomSheet open={isOpen && plans.length > 0} title={title} onClose={onClose}>
+      {plans.length > 0 ? (
         <div className="space-y-4">
           {onCreateExercise ? (
             <button
@@ -57,15 +57,15 @@ export function ScheduleTemplateImportSheet({
           </p>
 
           <div className="-mx-2 max-h-[50vh] space-y-4 overflow-y-auto px-2">
-            {templates.map((sourceTemplate) => (
-              <section key={sourceTemplate.id}>
-                {template ? null : (
+            {plans.map((sourcePlan) => (
+              <section key={sourcePlan.id}>
+                {plan ? null : (
                   <h3 className="px-2 pb-1 text-xs font-semibold text-[var(--on-surface-variant)]">
-                    {sourceTemplate.name}
+                    {sourcePlan.name}
                   </h3>
                 )}
                 <div className="space-y-1">
-                  {sourceTemplate.exercises.map((exercise) => {
+                  {sourcePlan.exercises.map((exercise) => {
                     const displayName = getDisplayExerciseName(t, exercise)
 
                     return (

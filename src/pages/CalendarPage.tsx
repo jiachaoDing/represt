@@ -5,7 +5,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { CalendarMonthGrid } from '../components/calendar/CalendarMonthGrid'
 import { PageHeader } from '../components/ui/PageHeader'
 import { getSessionSummaryDetailByDateKey } from '../db/sessions'
-import { listTemplatesWithExercises, type TemplateWithExercises } from '../db/templates'
+import { listPlansWithExercises, type PlanWithExercises } from '../db/plans'
 import { getTrainingCycle, getTrainingCycleDayForDate } from '../db/training-cycle'
 import { useSessionDateKeys } from '../hooks/pages/useSessionDateKeys'
 import {
@@ -31,7 +31,7 @@ export function CalendarPage() {
     return isSessionDateKey(currentDate) ? currentDate : todayDateKey
   }, [searchParams, todayDateKey])
   const [visibleMonthDateKey, setVisibleMonthDateKey] = useState(selectedDateKey)
-  const [templates, setTemplates] = useState<TemplateWithExercises[]>([])
+  const [plans, setPlans] = useState<PlanWithExercises[]>([])
   const [trainingCycle, setTrainingCycle] = useState<TrainingCycle | null>(null)
   const [selectedSummary, setSelectedSummary] =
     useState<Awaited<ReturnType<typeof getSessionSummaryDetailByDateKey>>>(null)
@@ -46,13 +46,13 @@ export function CalendarPage() {
     async function loadCalendarContext() {
       try {
         setDetailError(null)
-        const [templateItems, cycle] = await Promise.all([
-          listTemplatesWithExercises(),
+        const [planItems, cycle] = await Promise.all([
+          listPlansWithExercises(),
           getTrainingCycle(),
         ])
 
         if (!isCancelled) {
-          setTemplates(templateItems)
+          setPlans(planItems)
           setTrainingCycle(cycle)
         }
       } catch (loadError) {
@@ -129,28 +129,28 @@ export function CalendarPage() {
         : t('calendar.pastDate')
   const selectedDateHasSession = sessionDateKeySet.has(selectedDateKey)
   const selectedCycleDay = getTrainingCycleDayForDate(trainingCycle, selectedDateKey)
-  const recordedTemplate = selectedSummary?.session.plannedTemplateId
-    ? templates.find((template) => template.id === selectedSummary.session.plannedTemplateId) ?? null
+  const recordedPlan = selectedSummary?.session.plannedPlanId
+    ? plans.find((plan) => plan.id === selectedSummary.session.plannedPlanId) ?? null
     : null
-  const plannedTemplate = selectedCycleDay?.slot.templateId
-    ? templates.find((template) => template.id === selectedCycleDay.slot.templateId) ?? null
+  const plannedPlan = selectedCycleDay?.slot.planId
+    ? plans.find((plan) => plan.id === selectedCycleDay.slot.planId) ?? null
     : null
   const completedSetCount =
     selectedSummary?.exercises.reduce((sum, exercise) => sum + exercise.completedSets, 0) ?? 0
   const completedExerciseCount =
     selectedSummary?.exercises.filter((exercise) => exercise.completedSets > 0).length ?? 0
-  const selectedTemplateLabel = selectedSummary
-    ? selectedSummary.session.plannedTemplateNameSnapshot ??
-      recordedTemplate?.name ??
-      (selectedSummary.session.plannedTemplateId ? t('calendar.deletedTemplate') : t('calendar.manualPlan'))
-    : plannedTemplate?.name ?? (selectedCycleDay ? t('calendar.restDay') : t('calendar.cycleNotSet'))
+  const selectedPlanLabel = selectedSummary
+    ? selectedSummary.session.plannedPlanNameSnapshot ??
+      recordedPlan?.name ??
+      (selectedSummary.session.plannedPlanId ? t('calendar.deletedPlan') : t('calendar.manualPlan'))
+    : plannedPlan?.name ?? (selectedCycleDay ? t('calendar.restDay') : t('calendar.cycleNotSet'))
   const selectedDateSummary = selectedDateHasSession
     ? completedSetCount > 0
       ? t('calendar.completedSummary', { completedSetCount, completedExerciseCount })
       : t('calendar.recordedNoSets')
     : selectedDateDistance > 0
-      ? plannedTemplate
-        ? t('calendar.plannedSummary', { exerciseCount: plannedTemplate.exercises.length })
+      ? plannedPlan
+        ? t('calendar.plannedSummary', { exerciseCount: plannedPlan.exercises.length })
         : selectedCycleDay
           ? t('calendar.plannedRest')
           : t('calendar.noRecord')
@@ -252,9 +252,9 @@ export function CalendarPage() {
 
           <div className="mt-4 grid grid-cols-2 gap-2">
             <div className="rounded-2xl bg-[var(--surface-container)] px-3 py-3">
-              <p className="text-[11px] text-[var(--on-surface-variant)]">{t('calendar.template')}</p>
+              <p className="text-[11px] text-[var(--on-surface-variant)]">{t('calendar.plan')}</p>
               <p className="mt-1 truncate text-[15px] font-bold text-[var(--on-surface)]">
-                {selectedTemplateLabel}
+                {selectedPlanLabel}
               </p>
             </div>
             <div className="rounded-2xl bg-[var(--surface-container)] px-3 py-3">

@@ -1,7 +1,7 @@
 import { ListChecks, ListX } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
-type TemplateExerciseListToolbarProps = {
+type PlanExerciseListToolbarProps = {
   exerciseCount: number
   isAllSelected: boolean
   isSelectionMode: boolean
@@ -14,7 +14,7 @@ type TemplateExerciseListToolbarProps = {
   onToggleSelectAll: () => void
 }
 
-export function TemplateExerciseListToolbar({
+export function PlanExerciseListToolbar({
   exerciseCount,
   isAllSelected,
   isSelectionMode,
@@ -25,28 +25,28 @@ export function TemplateExerciseListToolbar({
   onDeleteSelected,
   onOpenSelectionMode,
   onToggleSelectAll,
-}: TemplateExerciseListToolbarProps) {
+}: PlanExerciseListToolbarProps) {
   const { t } = useTranslation()
 
   return (
     <div className="flex items-center justify-between px-2 pb-2">
       <div className="flex min-w-0 items-center gap-2">
         <span className="whitespace-nowrap text-[12px] text-[var(--on-surface-variant)]">
-          {isSelectionMode ? t('templates.selectedCount', { count: selectedExerciseCount }) : t('templates.longPressSort')}
+          {isSelectionMode ? t('plans.selectedCount', { count: selectedExerciseCount }) : t('plans.longPressSort')}
         </span>
         {isSelectionMode ? (
           <button
             type="button"
             onClick={onToggleSelectAll}
             className="flex h-8 items-center gap-1 rounded-full px-2.5 text-xs font-medium text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/10"
-            aria-label={isAllSelected ? t('templates.clearAll') : t('templates.selectAll')}
+            aria-label={isAllSelected ? t('plans.clearAll') : t('plans.selectAll')}
           >
             {isAllSelected ? (
               <ListX size={16} strokeWidth={2.25} />
             ) : (
               <ListChecks size={16} strokeWidth={2.25} />
             )}
-            <span>{isAllSelected ? t('templates.clearAll') : t('templates.selectAll')}</span>
+            <span>{isAllSelected ? t('plans.clearAll') : t('plans.selectAll')}</span>
           </button>
         ) : null}
       </div>
@@ -82,7 +82,7 @@ export function TemplateExerciseListToolbar({
             type="button"
             onClick={onOpenSelectionMode}
             className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--error)] transition-colors hover:bg-[var(--error)]/10"
-            aria-label={t('templates.bulkDeleteExercise')}
+            aria-label={t('plans.bulkDeleteExercise')}
           >
             <svg
               viewBox="0 0 24 24"
@@ -104,7 +104,7 @@ export function TemplateExerciseListToolbar({
             type="button"
             onClick={onCreate}
             className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/10"
-            aria-label={t('templates.addExercise')}
+            aria-label={t('plans.addExercise')}
           >
             <svg
               viewBox="0 0 24 24"

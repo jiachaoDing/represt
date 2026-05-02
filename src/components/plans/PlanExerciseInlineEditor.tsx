@@ -4,19 +4,19 @@ import { useTranslation } from 'react-i18next'
 
 import { ExerciseNameInput } from '../exercise/ExerciseNameInput'
 import { getMeasurementTypeForExercise } from '../../lib/set-record-measurement'
-import type { TemplateExerciseDraft } from '../../lib/template-editor'
+import type { PlanExerciseDraft } from '../../lib/plan-editor'
 
-type TemplateExerciseInlineEditorProps = {
-  draft: TemplateExerciseDraft
+type PlanExerciseInlineEditorProps = {
+  draft: PlanExerciseDraft
   isEditing: boolean
   isSubmitting: boolean
   onCancel: () => void
-  onDraftChange: (draft: TemplateExerciseDraft) => void
+  onDraftChange: (draft: PlanExerciseDraft) => void
   onImportClick?: () => void
   onSubmit: (event: FormEvent<HTMLFormElement>) => void
 }
 
-export function TemplateExerciseInlineEditor({
+export function PlanExerciseInlineEditor({
   draft,
   isEditing,
   isSubmitting,
@@ -24,7 +24,7 @@ export function TemplateExerciseInlineEditor({
   onDraftChange,
   onImportClick,
   onSubmit,
-}: TemplateExerciseInlineEditorProps) {
+}: PlanExerciseInlineEditorProps) {
   const { t } = useTranslation()
   const formRef = useRef<HTMLFormElement>(null)
   const measurementType = getMeasurementTypeForExercise(draft)
@@ -32,7 +32,7 @@ export function TemplateExerciseInlineEditor({
     measurementType === 'weightReps' || measurementType === 'weightDistance'
       ? {
           inputMode: 'decimal' as const,
-          label: t('templates.defaultWeight'),
+          label: t('plans.defaultWeight'),
           min: 0,
           onChange: (value: string) => onDraftChange({ ...draft, weightKg: value }),
           step: '0.5',
@@ -42,7 +42,7 @@ export function TemplateExerciseInlineEditor({
     measurementType === 'weightReps' || measurementType === 'reps'
       ? {
           inputMode: 'numeric' as const,
-          label: t('templates.defaultReps'),
+          label: t('plans.defaultReps'),
           min: 0,
           onChange: (value: string) => onDraftChange({ ...draft, reps: value }),
           step: '1',
@@ -52,7 +52,7 @@ export function TemplateExerciseInlineEditor({
     measurementType === 'duration'
       ? {
           inputMode: 'numeric' as const,
-          label: t('templates.defaultDurationSeconds'),
+          label: t('plans.defaultDurationSeconds'),
           min: 0,
           onChange: (value: string) => onDraftChange({ ...draft, durationSeconds: value }),
           step: '1',
@@ -62,7 +62,7 @@ export function TemplateExerciseInlineEditor({
     measurementType === 'distance' || measurementType === 'weightDistance'
       ? {
           inputMode: 'decimal' as const,
-          label: t('templates.defaultDistanceMeters'),
+          label: t('plans.defaultDistanceMeters'),
           min: 0,
           onChange: (value: string) => onDraftChange({ ...draft, distanceMeters: value }),
           step: '1',
@@ -95,21 +95,21 @@ export function TemplateExerciseInlineEditor({
       <div className="space-y-4">
         <div className="block">
           <span className="mb-1 ml-1 block text-xs font-medium text-[var(--on-surface-variant)]">
-            {t('templates.exerciseName')}
+            {t('plans.exerciseName')}
           </span>
           <ExerciseNameInput
             value={draft.name}
             disabled={isSubmitting}
             onChange={(nameValue) => onDraftChange({ ...draft, ...nameValue })}
             className="w-full rounded-xl bg-[var(--surface-container)] px-4 py-3 text-base text-[var(--on-surface)] outline-none ring-1 ring-transparent transition-all focus:ring-[var(--primary)]"
-            placeholder={t('templates.exercisePlaceholder')}
+            placeholder={t('plans.exercisePlaceholder')}
           />
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <label className="block">
             <span className="mb-1 ml-1 block text-xs font-medium text-[var(--on-surface-variant)]">
-              {t('templates.defaultSets')}
+              {t('plans.defaultSets')}
             </span>
             <input
               type="number"
@@ -124,7 +124,7 @@ export function TemplateExerciseInlineEditor({
 
           <label className="block">
             <span className="mb-1 ml-1 block text-xs font-medium text-[var(--on-surface-variant)]">
-              {t('templates.restSeconds')}
+              {t('plans.restSeconds')}
             </span>
             <input
               type="number"
@@ -153,7 +153,7 @@ export function TemplateExerciseInlineEditor({
               disabled={isSubmitting}
               onChange={(event) => field.onChange(event.target.value)}
               className="w-full rounded-xl bg-[var(--surface-container)] px-4 py-3 text-base text-[var(--on-surface)] outline-none ring-1 ring-transparent transition-all focus:ring-[var(--primary)]"
-              placeholder={t('templates.optional')}
+              placeholder={t('plans.optional')}
             />
           </label>
           ))}
@@ -168,7 +168,7 @@ export function TemplateExerciseInlineEditor({
               className="inline-flex h-10 items-center gap-2 rounded-xl px-2 text-sm font-medium text-[var(--primary)] transition-opacity disabled:opacity-40"
             >
               <CopyPlus size={17} strokeWidth={2.2} aria-hidden="true" />
-              <span>{t('templates.importExercise')}</span>
+              <span>{t('plans.importExercise')}</span>
             </button>
           ) : (
             <span />

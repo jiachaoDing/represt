@@ -2,60 +2,60 @@ import { useCallback, useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 
 import {
-  addTemplateExercisesToSessionPlan,
+  addPlanExercisesToSessionPlan,
   addTemporarySessionPlanItem,
   deletePendingSessionPlanItem,
   getCurrentSession,
   getOrCreateTodaySession,
-  getSessionTemplateSyncStatus,
-  markSessionTemplateSynced,
+  getSessionPlanSyncStatus,
+  markSessionPlanSynced,
   replaceSessionPlanItem,
   reorderSessionPlanItems,
-  syncSessionPlanFromTemplate,
-  type TemplateSyncResult,
-  type TemplateSyncStatus,
+  syncSessionPlanFromPlan,
+  type PlanSyncResult,
+  type PlanSyncStatus,
   type WorkoutSessionWithExercises,
 } from '../../db/sessions'
 import { getTodayTrainingCycleDay, getTrainingCycle } from '../../db/training-cycle'
 import {
-  createTemplateFromSessionPlanItems,
-  listTemplatesWithExercises,
-  replaceTemplateExercisesFromSessionPlanItems,
-  type TemplateWithExercises,
-} from '../../db/templates'
+  createPlanFromSessionPlanItems,
+  listPlansWithExercises,
+  replacePlanExercisesFromSessionPlanItems,
+  type PlanWithExercises,
+} from '../../db/plans'
 import {
   draftToSessionPlanInput,
   emptyExerciseDraft,
-  hasImportedTemplateExercises,
+  hasImportedPlanExercises,
 } from './schedule-page-data.utils'
 import { triggerHaptic } from '../../lib/haptics'
-import type { TemplateExerciseDraft } from '../../lib/template-editor'
+import type { PlanExerciseDraft } from '../../lib/plan-editor'
 import type { TrainingCycle } from '../../models/types'
 
-type TemplateImportConfirmation = {
+type PlanImportConfirmation = {
   isDuplicateImport: boolean
-  templateName: string
+  planName: string
   willContinueCompletedSession: boolean
 }
 
 export function useSchedulePageData() {
   const location = useLocation()
-  const [templates, setTemplates] = useState<TemplateWithExercises[]>([])
+  const [plans, setPlans] = useState<PlanWithExercises[]>([])
   const [trainingCycle, setTrainingCycle] = useState<TrainingCycle | null>(null)
   const [currentSession, setCurrentSession] = useState<WorkoutSessionWithExercises | null>(null)
-  const [templateSyncStatus, setTemplateSyncStatus] = useState<TemplateSyncStatus>({
+  const [planSyncStatus, setPlanSyncStatus] = useState<PlanSyncStatus>({
     hasUpdates: false,
-    templateName: null,
+    planName: null,
   })
-  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null)
-  const [newExerciseDraft, setNewExerciseDraft] = useState<TemplateExerciseDraft>(emptyExerciseDraft)
+  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null)
+  const [newExerciseDraft, setNewExerciseDraft] = useState<PlanExerciseDraft>(emptyExerciseDraft)
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const fetchData = useCallback(async () => {
-    const [templateItems, session, cycle] = await Promise.all([
-      listTemplatesWithExercises(),
+    const [planItems, session, cycle] = await Promise.all([
+      listPlansWithExercises(),
       getCurrentSession(),
       getTrainingCycle(),
     ])
@@ -63,33 +63,33 @@ export function useSchedulePageData() {
     return {
       cycle,
       session,
-      templateItems,
+      planItems,
     }
   }, [])
 
-  const loadData = useCallback(async (preferredTemplateId?: string | null) => {
-    const { cycle, session, templateItems } = await fetchData()
-    const nextTemplateSyncStatus = session
-      ? await getSessionTemplateSyncStatus(session.id)
-      : { hasUpdates: false, templateName: null }
+  const loadData = useCallback(async (preferredPlanId?: string | null) => {
+    const { cycle, session, planItems } = await fetchData()
+    const nextPlanSyncStatus = session
+      ? await getSessionPlanSyncStatus(session.id)
+      : { hasUpdates: false, planName: null }
 
-    setTemplates(templateItems)
+    setPlans(planItems)
     setTrainingCycle(cycle)
     setCurrentSession(session)
-    setTemplateSyncStatus(nextTemplateSyncStatus)
-    setSelectedTemplateId((current) => {
+    setPlanSyncStatus(nextPlanSyncStatus)
+    setSelectedPlanId((current) => {
       if (
-        preferredTemplateId &&
-        templateItems.some((template) => template.id === preferredTemplateId)
+        preferredPlanId &&
+        planItems.some((plan) => plan.id === preferredPlanId)
       ) {
-        return preferredTemplateId
+        return preferredPlanId
       }
 
-      if (current && templateItems.some((template) => template.id === current)) {
+      if (current && planItems.some((plan) => plan.id === current)) {
         return current
       }
 
-      return templateItems[0]?.id ?? null
+      return planItems[0]?.id ?? null
     })
   }, [fetchData])
 
@@ -116,8 +116,8 @@ export function useSchedulePageData() {
       try {
         setError(null)
         await getOrCreateTodaySession()
-        const { templateItems } = await fetchData()
-        await loadData(templateItems[0]?.id ?? null)
+        const { planItems } = await fetchData()
+        await loadData(planItems[0]?.id ?? null)
       } catch (loadError) {
         console.error(loadError)
         setError('训练安排加载失败，请刷新页面后重试。')
@@ -136,7 +136,7 @@ export function useSchedulePageData() {
 
     async function refreshData() {
       try {
-        await loadData(selectedTemplateId)
+        await loadData(selectedPlanId)
       } catch (loadError) {
         console.error(loadError)
         setError('训练安排加载失败，请刷新页面后重试。')
@@ -144,54 +144,54 @@ export function useSchedulePageData() {
     }
 
     void refreshData()
-  }, [isLoading, loadData, location.pathname, selectedTemplateId])
+  }, [isLoading, loadData, location.pathname, selectedPlanId])
 
-  async function handleAddTemplateExercises(templateId: string, templateExerciseIds?: string[]) {
+  async function handleAddPlanExercises(planId: string, planExerciseIds?: string[]) {
     if (!currentSession) {
       return false
     }
 
-    setSelectedTemplateId(templateId)
+    setSelectedPlanId(planId)
 
     const didSucceed = await runMutation(async () => {
-      await addTemplateExercisesToSessionPlan(currentSession.id, templateId, templateExerciseIds)
-      await loadData(templateId)
+      await addPlanExercisesToSessionPlan(currentSession.id, planId, planExerciseIds)
+      await loadData(planId)
     })
 
     if (!didSucceed) {
       return null
     }
 
-    const selectedTemplateExerciseIds = templateExerciseIds ? new Set(templateExerciseIds) : null
-    const template = templates.find((item) => item.id === templateId)
+    const selectedPlanExerciseIds = planExerciseIds ? new Set(planExerciseIds) : null
+    const plan = plans.find((item) => item.id === planId)
 
-    return template
+    return plan
       ? {
-          count: template.exercises.filter((exercise) =>
-            selectedTemplateExerciseIds ? selectedTemplateExerciseIds.has(exercise.id) : true,
+          count: plan.exercises.filter((exercise) =>
+            selectedPlanExerciseIds ? selectedPlanExerciseIds.has(exercise.id) : true,
           ).length,
-          name: template.name,
+          name: plan.name,
         }
       : null
   }
 
-  function getTemplateImportConfirmation(
-    templateId: string,
-    templateExerciseIds?: string[],
-  ): TemplateImportConfirmation | null {
+  function getPlanImportConfirmation(
+    planId: string,
+    planExerciseIds?: string[],
+  ): PlanImportConfirmation | null {
     if (!currentSession) {
       return null
     }
 
-    const template = templates.find((item) => item.id === templateId)
-    if (!template) {
+    const plan = plans.find((item) => item.id === planId)
+    if (!plan) {
       return null
     }
 
-    const isDuplicateImport = hasImportedTemplateExercises(
+    const isDuplicateImport = hasImportedPlanExercises(
       currentSession,
-      template,
-      templateExerciseIds,
+      plan,
+      planExerciseIds,
     )
     const willContinueCompletedSession = currentSession.status === 'completed'
 
@@ -201,7 +201,7 @@ export function useSchedulePageData() {
 
     return {
       isDuplicateImport,
-      templateName: template.name,
+      planName: plan.name,
       willContinueCompletedSession,
     }
   }
@@ -214,18 +214,18 @@ export function useSchedulePageData() {
     return runMutation(async () => {
       await addTemporarySessionPlanItem(currentSession.id, draftToSessionPlanInput(newExerciseDraft))
       setNewExerciseDraft(emptyExerciseDraft)
-      await loadData(selectedTemplateId)
+      await loadData(selectedPlanId)
     })
   }
 
-  async function handleReplaceExercise(planItemId: string, draft: TemplateExerciseDraft) {
+  async function handleReplaceExercise(planItemId: string, draft: PlanExerciseDraft) {
     if (!currentSession) {
       return false
     }
 
     return runMutation(async () => {
       await replaceSessionPlanItem(currentSession.id, planItemId, draftToSessionPlanInput(draft))
-      await loadData(selectedTemplateId)
+      await loadData(selectedPlanId)
     })
   }
 
@@ -236,7 +236,7 @@ export function useSchedulePageData() {
 
     return runMutation(async () => {
       await reorderSessionPlanItems(currentSession.id, orderedExerciseIds)
-      await loadData(selectedTemplateId)
+      await loadData(selectedPlanId)
     })
   }
 
@@ -249,7 +249,7 @@ export function useSchedulePageData() {
       for (const planItemId of planItemIds) {
         await deletePendingSessionPlanItem(currentSession.id, planItemId)
       }
-      await loadData(selectedTemplateId)
+      await loadData(selectedPlanId)
     })
 
     if (didDelete) {
@@ -259,74 +259,74 @@ export function useSchedulePageData() {
     return didDelete
   }
 
-  async function handleSyncTemplate(): Promise<TemplateSyncResult | false> {
+  async function handleSyncPlan(): Promise<PlanSyncResult | false> {
     if (!currentSession) {
       return false
     }
 
-    let result: TemplateSyncResult | false = false
+    let result: PlanSyncResult | false = false
     const didSucceed = await runMutation(async () => {
-      result = await syncSessionPlanFromTemplate(currentSession.id)
-      await loadData(selectedTemplateId)
+      result = await syncSessionPlanFromPlan(currentSession.id)
+      await loadData(selectedPlanId)
     })
 
     return didSucceed ? result : false
   }
 
-  async function handleCreateTemplateFromToday(name: string) {
+  async function handleCreatePlanFromToday(name: string) {
     if (!currentSession || currentSession.exercises.length === 0) {
       return false
     }
 
-    let savedTemplateId: string | null = null
+    let savedPlanId: string | null = null
     const didSucceed = await runMutation(async () => {
-      const template = await createTemplateFromSessionPlanItems(name, currentSession.exercises)
-      savedTemplateId = template?.id ?? null
-      await loadData(savedTemplateId)
+      const plan = await createPlanFromSessionPlanItems(name, currentSession.exercises)
+      savedPlanId = plan?.id ?? null
+      await loadData(savedPlanId)
     })
 
-    return didSucceed && savedTemplateId !== null
+    return didSucceed && savedPlanId !== null
   }
 
-  async function handleOverwriteTemplateFromToday(templateId: string) {
+  async function handleOverwritePlanFromToday(planId: string) {
     if (!currentSession || currentSession.exercises.length === 0) {
       return false
     }
 
     let didSave = false
     const didSucceed = await runMutation(async () => {
-      const template = await replaceTemplateExercisesFromSessionPlanItems(
-        templateId,
+      const plan = await replacePlanExercisesFromSessionPlanItems(
+        planId,
         currentSession.exercises,
       )
-      if (!template) {
+      if (!plan) {
         return
       }
 
-      if (currentSession.plannedTemplateId === templateId) {
-        await markSessionTemplateSynced(currentSession.id, templateId, template.updatedAt)
+      if (currentSession.plannedPlanId === planId) {
+        await markSessionPlanSynced(currentSession.id, planId, plan.updatedAt)
       }
 
       didSave = true
-      await loadData(templateId)
+      await loadData(planId)
     })
 
     return didSucceed && didSave
   }
 
   const todayCycleDay = getTodayTrainingCycleDay(trainingCycle)
-  const todayTemplate =
-    todayCycleDay?.slot.templateId
-      ? templates.find((template) => template.id === todayCycleDay.slot.templateId) ?? null
+  const todayPlan =
+    todayCycleDay?.slot.planId
+      ? plans.find((plan) => plan.id === todayCycleDay.slot.planId) ?? null
       : null
   const canAddTemporaryExercise = currentSession !== null
   const didAutoImportToday =
     currentSession !== null &&
-    todayTemplate !== null &&
-    currentSession.plannedTemplateId === todayTemplate.id &&
-    currentSession.plannedTemplateSelectedAt !== null
+    todayPlan !== null &&
+    currentSession.plannedPlanId === todayPlan.id &&
+    currentSession.plannedPlanSelectedAt !== null
   const shouldConfirmContinueBeforeAddingExercise = currentSession?.status === 'completed'
-  const hasTemplates = templates.length > 0
+  const hasPlans = plans.length > 0
 
   return {
     canAddTemporaryExercise,
@@ -334,26 +334,26 @@ export function useSchedulePageData() {
     didAutoImportToday,
     error,
     handleAddTemporaryExercise,
-    handleAddTemplateExercises,
+    handleAddPlanExercises,
     handleDeleteExercises,
-    handleCreateTemplateFromToday,
-    handleOverwriteTemplateFromToday,
+    handleCreatePlanFromToday,
+    handleOverwritePlanFromToday,
     handleReplaceExercise,
     handleReorderExercises,
-    handleSyncTemplate,
-    hasTemplates,
-    getTemplateImportConfirmation,
+    handleSyncPlan,
+    hasPlans,
+    getPlanImportConfirmation,
     isLoading,
     isSubmitting,
     newExerciseDraft,
-    selectedTemplateId,
+    selectedPlanId,
     setNewExerciseDraft,
-    setSelectedTemplateId,
+    setSelectedPlanId,
     shouldConfirmContinueBeforeAddingExercise,
-    templateSyncStatus,
+    planSyncStatus,
     todayCycleDay,
-    todayTemplate,
+    todayPlan,
     trainingCycle,
-    templates,
+    plans,
   }
 }

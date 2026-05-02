@@ -15,7 +15,7 @@ type ScheduleExerciseListToolbarProps = {
   onCloseSelection: () => void
   onToggleAllSelected: (exerciseIds: string[]) => void
   onDeleteSelected: () => void
-  onSaveTemplate: () => void
+  onSavePlan: () => void
 }
 
 export function ScheduleExerciseListToolbar({
@@ -32,7 +32,7 @@ export function ScheduleExerciseListToolbar({
   onCloseSelection,
   onToggleAllSelected,
   onDeleteSelected,
-  onSaveTemplate,
+  onSavePlan,
 }: ScheduleExerciseListToolbarProps) {
   const { t } = useTranslation()
 
@@ -44,21 +44,21 @@ export function ScheduleExerciseListToolbar({
             ? t('schedule.editExercises')
             : isSelectionMode
             ? t('schedule.selectedDeletableCount', { count: selectedCount })
-            : t('templates.longPressSort')}
+            : t('plans.longPressSort')}
         </span>
         {isSelectionMode ? (
           <button
             type="button"
             onClick={() => onToggleAllSelected(isAllSelected ? [] : selectableExerciseIds)}
             className="flex h-8 items-center gap-1 rounded-full px-2.5 text-xs font-medium text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/10"
-            aria-label={isAllSelected ? t('templates.clearAll') : t('templates.selectAll')}
+            aria-label={isAllSelected ? t('plans.clearAll') : t('plans.selectAll')}
           >
             {isAllSelected ? (
               <ListX size={16} strokeWidth={2.25} />
             ) : (
               <ListChecks size={16} strokeWidth={2.25} />
             )}
-            <span>{isAllSelected ? t('templates.clearAll') : t('templates.selectAll')}</span>
+            <span>{isAllSelected ? t('plans.clearAll') : t('plans.selectAll')}</span>
           </button>
         ) : null}
       </div>
@@ -106,7 +106,7 @@ export function ScheduleExerciseListToolbar({
             type="button"
             onClick={onOpenSelection}
             className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--error)] transition-colors hover:bg-[var(--error)]/10"
-            aria-label={t('templates.bulkDeleteExercise')}
+            aria-label={t('plans.bulkDeleteExercise')}
           >
             <svg
               viewBox="0 0 24 24"
@@ -136,9 +136,9 @@ export function ScheduleExerciseListToolbar({
         {!isSelectionMode && !isEditMode ? (
           <button
             type="button"
-            onClick={onSaveTemplate}
+            onClick={onSavePlan}
             className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/10"
-            aria-label={t('schedule.saveTodayAsTemplate')}
+            aria-label={t('schedule.saveTodayAsPlan')}
           >
             <BookmarkPlus size={18} strokeWidth={2.25} />
           </button>

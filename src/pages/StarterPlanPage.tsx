@@ -2,41 +2,41 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 
-import { TemplateNameSheet } from '../components/templates/TemplateNameSheet'
+import { PlanNameSheet } from '../components/plans/PlanNameSheet'
 import { PageHeader } from '../components/ui/PageHeader'
-import { createTemplate, listTemplatesWithExercises, type TemplateWithExercises } from '../db/templates'
+import { createPlan, listPlansWithExercises, type PlanWithExercises } from '../db/plans'
 import { setTrainRestTrainingCycle } from '../db/training-cycle'
 import { triggerHaptic } from '../lib/haptics'
 
-export function StarterTemplatePage() {
+export function StarterPlanPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const [templates, setTemplates] = useState<TemplateWithExercises[]>([])
-  const [newTemplateName, setNewTemplateName] = useState('')
+  const [plans, setPlans] = useState<PlanWithExercises[]>([])
+  const [newPlanName, setNewPlanName] = useState('')
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  async function loadTemplates(preferredTemplateId?: string) {
-    const items = await listTemplatesWithExercises()
-    const orderedItems = preferredTemplateId
+  async function loadPlans(preferredPlanId?: string) {
+    const items = await listPlansWithExercises()
+    const orderedItems = preferredPlanId
       ? [
-          ...items.filter((template) => template.id === preferredTemplateId),
-          ...items.filter((template) => template.id !== preferredTemplateId),
+          ...items.filter((plan) => plan.id === preferredPlanId),
+          ...items.filter((plan) => plan.id !== preferredPlanId),
         ]
       : items
-    setTemplates(orderedItems)
+    setPlans(orderedItems)
   }
 
   useEffect(() => {
     async function initialize() {
       try {
         setError(null)
-        await loadTemplates()
+        await loadPlans()
       } catch (loadError) {
         console.error(loadError)
-        setError(t('templates.loadFailed'))
+        setError(t('plans.loadFailed'))
       } finally {
         setIsLoading(false)
       }
@@ -53,7 +53,7 @@ export function StarterTemplatePage() {
       return true
     } catch (mutationError) {
       console.error(mutationError)
-      setError(t('starterTemplate.saveFailed'))
+      setError(t('starterPlan.saveFailed'))
       void triggerHaptic('error')
       return false
     } finally {
@@ -61,9 +61,9 @@ export function StarterTemplatePage() {
     }
   }
 
-  async function selectTemplate(templateId: string) {
+  async function selectPlan(planId: string) {
     const didSave = await runMutation(async () => {
-      await setTrainRestTrainingCycle(templateId)
+      await setTrainRestTrainingCycle(planId)
     })
 
     if (didSave) {
@@ -72,13 +72,13 @@ export function StarterTemplatePage() {
     }
   }
 
-  async function handleCreateTemplate(event: FormEvent<HTMLFormElement>) {
+  async function handleCreatePlan(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const didCreate = await runMutation(async () => {
-      const template = await createTemplate(newTemplateName || t('common.unnamedTemplate'))
-      setNewTemplateName('')
+      const plan = await createPlan(newPlanName || t('common.unnamedPlan'))
+      setNewPlanName('')
       setIsCreateOpen(false)
-      await loadTemplates(template.id)
+      await loadPlans(plan.id)
     })
 
     if (didCreate) {
@@ -89,8 +89,8 @@ export function StarterTemplatePage() {
   return (
     <div className="pb-4">
       <PageHeader
-        title={t('starterTemplate.title')}
-        subtitle={t('starterTemplate.subtitle')}
+        title={t('starterPlan.title')}
+        subtitle={t('starterPlan.subtitle')}
         backFallbackTo="/"
       />
 
@@ -104,10 +104,10 @@ export function StarterTemplatePage() {
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
             <h2 className="text-base font-bold text-[var(--on-surface)]">
-              {t('starterTemplate.pickTitle')}
+              {t('starterPlan.pickTitle')}
             </h2>
             <p className="mt-1 text-sm leading-5 text-[var(--on-surface-variant)]">
-              {t('starterTemplate.pickDescription')}
+              {t('starterPlan.pickDescription')}
             </p>
           </div>
           <button
@@ -115,7 +115,7 @@ export function StarterTemplatePage() {
             onClick={() => setIsCreateOpen(true)}
             className="shrink-0 rounded-full border border-[var(--outline-variant)] px-3 py-2 text-xs font-semibold text-[var(--primary)]"
           >
-            {t('templates.newTemplate')}
+            {t('plans.newPlan')}
           </button>
         </div>
 
@@ -127,44 +127,44 @@ export function StarterTemplatePage() {
                   className="h-[4.5rem] animate-pulse rounded-xl bg-[var(--surface-container)] opacity-60"
                 />
               ))
-            : templates.map((template) => (
+            : plans.map((plan) => (
                 <button
-                  key={template.id}
+                  key={plan.id}
                   type="button"
                   disabled={isSubmitting}
                   onClick={() =>
-                    template.exercises.length > 0
-                      ? void selectTemplate(template.id)
-                      : navigate('/templates')
+                    plan.exercises.length > 0
+                      ? void selectPlan(plan.id)
+                      : navigate('/plans')
                   }
                   className="flex min-h-[4.5rem] w-full items-center justify-between gap-3 rounded-xl bg-[var(--surface-container)] px-4 text-left transition-opacity disabled:opacity-50"
                 >
                   <span className="min-w-0">
                     <span className="block truncate text-base font-semibold text-[var(--on-surface)]">
-                      {template.name}
+                      {plan.name}
                     </span>
                     <span className="mt-1 block text-xs font-medium text-[var(--on-surface-variant)]">
-                      {t('summary.exerciseCount', { count: template.exercises.length })}
+                      {t('summary.exerciseCount', { count: plan.exercises.length })}
                     </span>
                   </span>
                   <span className="shrink-0 text-sm font-semibold text-[var(--primary)]">
-                    {template.exercises.length > 0 ? t('starterTemplate.useToday') : t('common.edit')}
+                    {plan.exercises.length > 0 ? t('starterPlan.useToday') : t('common.edit')}
                   </span>
                 </button>
               ))}
         </div>
       </section>
 
-      <TemplateNameSheet
-        createName={newTemplateName}
+      <PlanNameSheet
+        createName={newPlanName}
         isOpen={isCreateOpen}
         isSubmitting={isSubmitting}
         mode="create"
         renameName=""
         onClose={() => setIsCreateOpen(false)}
-        onCreateNameChange={setNewTemplateName}
+        onCreateNameChange={setNewPlanName}
         onRenameNameChange={() => undefined}
-        onSubmit={(event) => void handleCreateTemplate(event)}
+        onSubmit={(event) => void handleCreatePlan(event)}
       />
     </div>
   )

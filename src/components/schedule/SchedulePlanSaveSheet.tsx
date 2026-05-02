@@ -2,57 +2,57 @@ import { useMemo, useState, type FormEvent } from 'react'
 import { ChevronLeft, CopyPlus, Plus, RefreshCw } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
-import type { TemplateWithExercises } from '../../db/templates'
+import type { PlanWithExercises } from '../../db/plans'
 import { BottomSheet } from '../ui/BottomSheet'
 import { ConfirmDialog } from '../ui/ConfirmDialog'
 
 type SaveSheetMode = 'actions' | 'create' | 'overwrite'
 
-type ScheduleTemplateSaveSheetProps = {
-  currentTemplateId: string | null
+type SchedulePlanSaveSheetProps = {
+  currentPlanId: string | null
   exerciseCount: number
   isOpen: boolean
   isSubmitting: boolean
-  templates: TemplateWithExercises[]
+  plans: PlanWithExercises[]
   onClose: () => void
-  onCreateTemplate: (name: string) => Promise<boolean>
-  onOverwriteTemplate: (templateId: string) => Promise<boolean>
+  onCreatePlan: (name: string) => Promise<boolean>
+  onOverwritePlan: (planId: string) => Promise<boolean>
 }
 
-export function ScheduleTemplateSaveSheet({
-  currentTemplateId,
+export function SchedulePlanSaveSheet({
+  currentPlanId,
   exerciseCount,
   isOpen,
   isSubmitting,
-  templates,
+  plans,
   onClose,
-  onCreateTemplate,
-  onOverwriteTemplate,
-}: ScheduleTemplateSaveSheetProps) {
+  onCreatePlan,
+  onOverwritePlan,
+}: SchedulePlanSaveSheetProps) {
   const { t } = useTranslation()
   const [mode, setMode] = useState<SaveSheetMode>('actions')
-  const [templateName, setTemplateName] = useState('')
-  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null)
-  const [pendingOverwriteTemplateId, setPendingOverwriteTemplateId] = useState<string | null>(null)
+  const [planName, setPlanName] = useState('')
+  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null)
+  const [pendingOverwritePlanId, setPendingOverwritePlanId] = useState<string | null>(null)
 
-  const currentTemplate = useMemo(
-    () => templates.find((template) => template.id === currentTemplateId) ?? null,
-    [currentTemplateId, templates],
+  const currentPlan = useMemo(
+    () => plans.find((plan) => plan.id === currentPlanId) ?? null,
+    [currentPlanId, plans],
   )
-  const selectedTemplate = useMemo(
-    () => templates.find((template) => template.id === selectedTemplateId) ?? null,
-    [selectedTemplateId, templates],
+  const selectedPlan = useMemo(
+    () => plans.find((plan) => plan.id === selectedPlanId) ?? null,
+    [selectedPlanId, plans],
   )
-  const pendingOverwriteTemplate = useMemo(
-    () => templates.find((template) => template.id === pendingOverwriteTemplateId) ?? null,
-    [pendingOverwriteTemplateId, templates],
+  const pendingOverwritePlan = useMemo(
+    () => plans.find((plan) => plan.id === pendingOverwritePlanId) ?? null,
+    [pendingOverwritePlanId, plans],
   )
 
   function resetSheet() {
     setMode('actions')
-    setTemplateName('')
-    setSelectedTemplateId(null)
-    setPendingOverwriteTemplateId(null)
+    setPlanName('')
+    setSelectedPlanId(null)
+    setPendingOverwritePlanId(null)
   }
 
   function closeSheet() {
@@ -60,20 +60,20 @@ export function ScheduleTemplateSaveSheet({
     onClose()
   }
 
-  async function handleCreateTemplate(event: FormEvent<HTMLFormElement>) {
+  async function handleCreatePlan(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    const didCreate = await onCreateTemplate(templateName)
+    const didCreate = await onCreatePlan(planName)
     if (didCreate) {
       closeSheet()
     }
   }
 
-  async function confirmOverwriteTemplate() {
-    if (!pendingOverwriteTemplateId) {
+  async function confirmOverwritePlan() {
+    if (!pendingOverwritePlanId) {
       return
     }
 
-    const didOverwrite = await onOverwriteTemplate(pendingOverwriteTemplateId)
+    const didOverwrite = await onOverwritePlan(pendingOverwritePlanId)
     if (didOverwrite) {
       closeSheet()
     }
@@ -81,26 +81,26 @@ export function ScheduleTemplateSaveSheet({
 
   const title =
     mode === 'create'
-      ? t('schedule.createTemplateFromToday')
+      ? t('schedule.createPlanFromToday')
       : mode === 'overwrite'
-        ? t('schedule.overwriteAnyTemplate')
-        : t('schedule.saveTodayAsTemplate')
+        ? t('schedule.overwriteAnyPlan')
+        : t('schedule.saveTodayAsPlan')
 
   return (
     <>
       <BottomSheet
         open={isOpen}
         title={title}
-        description={t('schedule.saveTodayAsTemplateDescription', { count: exerciseCount })}
+        description={t('schedule.saveTodayAsPlanDescription', { count: exerciseCount })}
         onClose={closeSheet}
       >
         {mode === 'actions' ? (
           <div className="space-y-2">
-            {currentTemplate ? (
+            {currentPlan ? (
               <button
                 type="button"
                 disabled={isSubmitting}
-                onClick={() => setPendingOverwriteTemplateId(currentTemplate.id)}
+                onClick={() => setPendingOverwritePlanId(currentPlan.id)}
                 className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition-colors hover:bg-[var(--surface-container)] disabled:opacity-50"
               >
                 <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--primary-container)] text-[var(--primary)]">
@@ -108,10 +108,10 @@ export function ScheduleTemplateSaveSheet({
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block text-base font-medium text-[var(--on-surface)]">
-                    {t('schedule.overwriteCurrentTemplate')}
+                    {t('schedule.overwriteCurrentPlan')}
                   </span>
                   <span className="mt-0.5 block truncate text-xs text-[var(--on-surface-variant)]">
-                    {currentTemplate.name}
+                    {currentPlan.name}
                   </span>
                 </span>
               </button>
@@ -127,11 +127,11 @@ export function ScheduleTemplateSaveSheet({
                 <Plus size={18} strokeWidth={2.25} />
               </span>
               <span className="text-base font-medium text-[var(--on-surface)]">
-                {t('schedule.createTemplateFromToday')}
+                {t('schedule.createPlanFromToday')}
               </span>
             </button>
 
-            {templates.length > 0 ? (
+            {plans.length > 0 ? (
               <button
                 type="button"
                 disabled={isSubmitting}
@@ -142,7 +142,7 @@ export function ScheduleTemplateSaveSheet({
                   <CopyPlus size={18} strokeWidth={2.25} />
                 </span>
                 <span className="text-base font-medium text-[var(--on-surface)]">
-                  {t('schedule.overwriteAnyTemplate')}
+                  {t('schedule.overwriteAnyPlan')}
                 </span>
               </button>
             ) : null}
@@ -150,7 +150,7 @@ export function ScheduleTemplateSaveSheet({
         ) : null}
 
         {mode === 'create' ? (
-          <form className="mt-2 space-y-5" onSubmit={handleCreateTemplate}>
+          <form className="mt-2 space-y-5" onSubmit={handleCreatePlan}>
             <button
               type="button"
               onClick={() => setMode('actions')}
@@ -162,24 +162,24 @@ export function ScheduleTemplateSaveSheet({
 
             <label className="block">
               <span className="mb-1 ml-1 block text-xs font-medium text-[var(--on-surface-variant)]">
-                {t('templates.templateName')}
+                {t('plans.planName')}
               </span>
               <input
-                value={templateName}
+                value={planName}
                 disabled={isSubmitting}
-                onChange={(event) => setTemplateName(event.target.value)}
+                onChange={(event) => setPlanName(event.target.value)}
                 className="w-full rounded-none border-b border-[var(--on-surface)] bg-[var(--surface-container)] px-4 py-3 text-base text-[var(--on-surface)] outline-none transition-all focus:border-b-2 focus:border-[var(--primary)]"
-                placeholder={t('templates.templatePlaceholder')}
+                placeholder={t('plans.planPlaceholder')}
               />
             </label>
 
             <div className="pt-2">
               <button
                 type="submit"
-                disabled={isSubmitting || !templateName.trim()}
+                disabled={isSubmitting || !planName.trim()}
                 className="w-full rounded-full bg-[var(--primary)] px-6 py-3.5 text-sm font-medium text-[var(--on-primary)] transition-opacity disabled:opacity-40"
               >
-                {t('schedule.saveAsTemplate')}
+                {t('schedule.saveAsPlan')}
               </button>
             </div>
           </form>
@@ -197,29 +197,29 @@ export function ScheduleTemplateSaveSheet({
             </button>
 
             <p className="px-1 text-sm text-[var(--on-surface-variant)]">
-              {t('schedule.selectTemplateToOverwrite')}
+              {t('schedule.selectPlanToOverwrite')}
             </p>
 
             <div className="-mx-2 max-h-[42vh] space-y-1 overflow-y-auto px-2">
-              {templates.map((template) => (
+              {plans.map((plan) => (
                 <label
-                  key={template.id}
+                  key={plan.id}
                   className="flex cursor-pointer items-center gap-4 rounded-xl px-2 py-3 transition-colors hover:bg-[var(--surface-container)]"
                 >
                   <input
                     type="radio"
-                    name="overwriteTemplate"
-                    checked={selectedTemplateId === template.id}
+                    name="overwritePlan"
+                    checked={selectedPlanId === plan.id}
                     disabled={isSubmitting}
-                    onChange={() => setSelectedTemplateId(template.id)}
+                    onChange={() => setSelectedPlanId(plan.id)}
                     className="h-5 w-5 accent-[var(--primary)]"
                   />
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-base text-[var(--on-surface)]">
-                      {template.name}
+                      {plan.name}
                     </span>
                     <span className="mt-0.5 block text-xs text-[var(--on-surface-variant)]">
-                      {t('summary.exerciseCount', { count: template.exercises.length })}
+                      {t('summary.exerciseCount', { count: plan.exercises.length })}
                     </span>
                   </span>
                 </label>
@@ -229,15 +229,15 @@ export function ScheduleTemplateSaveSheet({
             <div className="pt-2">
               <button
                 type="button"
-                disabled={isSubmitting || !selectedTemplate}
+                disabled={isSubmitting || !selectedPlan}
                 onClick={() => {
-                  if (selectedTemplate) {
-                    setPendingOverwriteTemplateId(selectedTemplate.id)
+                  if (selectedPlan) {
+                    setPendingOverwritePlanId(selectedPlan.id)
                   }
                 }}
                 className="w-full rounded-full bg-[var(--primary)] px-6 py-3.5 text-sm font-medium text-[var(--on-primary)] transition-opacity disabled:opacity-40"
               >
-                {t('schedule.overwriteTemplate')}
+                {t('schedule.overwritePlan')}
               </button>
             </div>
           </div>
@@ -245,20 +245,20 @@ export function ScheduleTemplateSaveSheet({
       </BottomSheet>
 
       <ConfirmDialog
-        open={pendingOverwriteTemplate !== null}
+        open={pendingOverwritePlan !== null}
         danger
-        title={t('schedule.confirmOverwriteTemplateTitle')}
+        title={t('schedule.confirmOverwritePlanTitle')}
         description={
-          pendingOverwriteTemplate
-            ? t('schedule.confirmOverwriteTemplateDescription', {
-                name: pendingOverwriteTemplate.name,
+          pendingOverwritePlan
+            ? t('schedule.confirmOverwritePlanDescription', {
+                name: pendingOverwritePlan.name,
                 count: exerciseCount,
               })
             : ''
         }
-        confirmLabel={t('schedule.overwriteTemplate')}
-        onCancel={() => setPendingOverwriteTemplateId(null)}
-        onConfirm={() => void confirmOverwriteTemplate()}
+        confirmLabel={t('schedule.overwritePlan')}
+        onCancel={() => setPendingOverwritePlanId(null)}
+        onConfirm={() => void confirmOverwritePlan()}
       />
     </>
   )

@@ -1,9 +1,9 @@
 import type { WorkoutSession } from '../models/types'
 import { getTodaySessionDateKey } from '../lib/session-date-key'
 import { db } from './app-db'
-import { ensureTemplateSeedData } from './templates'
+import { ensurePlanSeedData } from './plans'
 import { attachDerivedSessionStatus, getPerformedExercises, getSessionRecord, nowIso } from './session-core'
-import { maybeAutoImportTrainingCycleTemplate } from './session-plan'
+import { maybeAutoImportTrainingCyclePlan } from './session-plan'
 import { getScheduleExercises } from './session-schedule'
 import type { WorkoutSessionWithExercises } from './session-types'
 
@@ -11,20 +11,20 @@ export type {
   ScheduleExercise,
   ScheduleExerciseDetail,
   SessionSummaryDetail,
-  TemplateSyncResult,
-  TemplateSyncStatus,
+  PlanSyncResult,
+  PlanSyncStatus,
   WorkoutSessionWithExercises,
 } from './session-types'
 
 export {
-  addTemplateExercisesToSessionPlan,
+  addPlanExercisesToSessionPlan,
   addTemporarySessionPlanItem,
   deletePendingSessionPlanItem,
-  getSessionTemplateSyncStatus,
-  markSessionTemplateSynced,
+  getSessionPlanSyncStatus,
+  markSessionPlanSynced,
   replaceSessionPlanItem,
   reorderSessionPlanItems,
-  syncSessionPlanFromTemplate,
+  syncSessionPlanFromPlan,
 } from './session-plan'
 export {
   completePlanItemSet,
@@ -88,10 +88,10 @@ async function createSessionRecord() {
     id: crypto.randomUUID(),
     sessionDateKey: getTodaySessionDateKey(),
     createdAt: timestamp,
-    plannedTemplateId: null,
-    plannedTemplateNameSnapshot: null,
-    plannedTemplateSelectedAt: null,
-    lastSyncedTemplateUpdatedAt: null,
+    plannedPlanId: null,
+    plannedPlanNameSnapshot: null,
+    plannedPlanSelectedAt: null,
+    lastSyncedPlanUpdatedAt: null,
   }
 
   await db.workoutSessions.add(session)
@@ -101,7 +101,7 @@ async function createSessionRecord() {
 }
 
 export async function getCurrentSession() {
-  await ensureTemplateSeedData()
+  await ensurePlanSeedData()
 
   const sessionId = await resolveCurrentSessionId()
   if (!sessionId) {
@@ -114,7 +114,7 @@ export async function getCurrentSession() {
     return null
   }
 
-  const hydratedSession = await maybeAutoImportTrainingCycleTemplate(session)
+  const hydratedSession = await maybeAutoImportTrainingCyclePlan(session)
   const [exercises, performedExercises] = await Promise.all([
     getScheduleExercises(hydratedSession.id),
     getPerformedExercises(hydratedSession.id),
@@ -138,7 +138,7 @@ export async function getOrCreateTodaySession() {
     }
 
     const session = await createSessionRecord()
-    const hydratedSession = await maybeAutoImportTrainingCycleTemplate(session)
+    const hydratedSession = await maybeAutoImportTrainingCyclePlan(session)
     const exercises = await getScheduleExercises(hydratedSession.id)
 
     return {

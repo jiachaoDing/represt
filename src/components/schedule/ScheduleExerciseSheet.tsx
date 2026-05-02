@@ -3,14 +3,14 @@ import { useTranslation } from 'react-i18next'
 
 import { ExerciseNameInput } from '../exercise/ExerciseNameInput'
 import { BottomSheet } from '../ui/BottomSheet'
-import type { TemplateExerciseDraft } from '../../lib/template-editor'
+import type { PlanExerciseDraft } from '../../lib/plan-editor'
 
 type ScheduleExerciseSheetProps = {
-  draft: TemplateExerciseDraft
+  draft: PlanExerciseDraft
   isOpen: boolean
   isSubmitting: boolean
   onClose: () => void
-  onDraftChange: (draft: TemplateExerciseDraft) => void
+  onDraftChange: (draft: PlanExerciseDraft) => void
   onSubmit: (event: FormEvent<HTMLFormElement>) => void
 }
 
@@ -29,21 +29,21 @@ export function ScheduleExerciseSheet({
       <form className="mt-2 space-y-5" onSubmit={onSubmit}>
         <div className="block">
           <span className="mb-1 ml-1 block text-xs font-medium text-[var(--on-surface-variant)]">
-            {t('templates.exerciseName')}
+            {t('plans.exerciseName')}
           </span>
           <ExerciseNameInput
             value={draft.name}
             disabled={isSubmitting}
             onChange={(nameValue) => onDraftChange({ ...draft, ...nameValue })}
             className="w-full rounded-none border-b border-[var(--on-surface)] bg-[var(--surface-container)] px-4 py-3 text-base text-[var(--on-surface)] outline-none transition-all focus:border-b-2 focus:border-[var(--primary)]"
-            placeholder={t('templates.exercisePlaceholder')}
+            placeholder={t('plans.exercisePlaceholder')}
           />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <label className="block">
             <span className="mb-1 ml-1 block text-xs font-medium text-[var(--on-surface-variant)]">
-              {t('templates.defaultSets')}
+              {t('plans.defaultSets')}
             </span>
             <input
               type="number"
@@ -58,7 +58,7 @@ export function ScheduleExerciseSheet({
 
           <label className="block">
             <span className="mb-1 ml-1 block text-xs font-medium text-[var(--on-surface-variant)]">
-              {t('templates.restSeconds')}
+              {t('plans.restSeconds')}
             </span>
             <input
               type="number"
@@ -75,7 +75,7 @@ export function ScheduleExerciseSheet({
         <div className="grid grid-cols-2 gap-4">
           <label className="block">
             <span className="mb-1 ml-1 block text-xs font-medium text-[var(--on-surface-variant)]">
-              {t('templates.defaultWeight')}
+              {t('plans.defaultWeight')}
             </span>
             <input
               type="number"
@@ -86,13 +86,13 @@ export function ScheduleExerciseSheet({
               disabled={isSubmitting}
               onChange={(event) => onDraftChange({ ...draft, weightKg: event.target.value })}
               className="w-full rounded-none border-b border-[var(--on-surface)] bg-[var(--surface-container)] px-4 py-3 text-base text-[var(--on-surface)] outline-none transition-all focus:border-b-2 focus:border-[var(--primary)]"
-              placeholder={t('templates.optional')}
+              placeholder={t('plans.optional')}
             />
           </label>
 
           <label className="block">
             <span className="mb-1 ml-1 block text-xs font-medium text-[var(--on-surface-variant)]">
-              {t('templates.defaultReps')}
+              {t('plans.defaultReps')}
             </span>
             <input
               type="number"
@@ -102,7 +102,7 @@ export function ScheduleExerciseSheet({
               disabled={isSubmitting}
               onChange={(event) => onDraftChange({ ...draft, reps: event.target.value })}
               className="w-full rounded-none border-b border-[var(--on-surface)] bg-[var(--surface-container)] px-4 py-3 text-base text-[var(--on-surface)] outline-none transition-all focus:border-b-2 focus:border-[var(--primary)]"
-              placeholder={t('templates.optional')}
+              placeholder={t('plans.optional')}
             />
           </label>
         </div>
