@@ -34,6 +34,7 @@ public class TrainingTimerForegroundService extends Service {
     private Runnable stopRunnable;
     private int primaryId;
     private static final int TONE_SAMPLE_RATE = 44100;
+    private static final long FINAL_DOUBLE_BEEP_GAP_MS = 170L;
 
     private static final class TimerRecord {
         final int id;
@@ -46,6 +47,7 @@ public class TrainingTimerForegroundService extends Service {
         final int totalSeconds;
         Runnable finishRunnable;
         Runnable beepRunnable;
+        Runnable doubleBeepRunnable;
         Runnable refreshRunnable;
 
         TimerRecord(int id, Intent intent, long endsAt, boolean playFinalBeeps, float beepVolume, boolean isPaused, long remainingMs, int totalSeconds) {
@@ -297,6 +299,14 @@ public class TrainingTimerForegroundService extends Service {
                 }
 
                 playBeep(record.beepVolume);
+                if (beepCount == 2) {
+                    record.doubleBeepRunnable = () -> {
+                        if (timers.containsKey(record.id)) {
+                            playBeep(record.beepVolume);
+                        }
+                    };
+                    handler.postDelayed(record.doubleBeepRunnable, FINAL_DOUBLE_BEEP_GAP_MS);
+                }
                 beepCount += 1;
                 handler.postDelayed(this, 1000L);
             }
@@ -324,10 +334,6 @@ public class TrainingTimerForegroundService extends Service {
 
     private void playBeep(float volume) {
         playTone(false, 120, volume, 0.75f);
-    }
-
-    private void playFinishTone(float volume) {
-        playTone(true, 620, volume, 1.0f);
     }
 
     private void playTone(boolean isFinishTone, int durationMs, float volume, float scale) {
@@ -463,11 +469,7 @@ public class TrainingTimerForegroundService extends Service {
         }
 
         clearTimerCallbacks(record);
-        if (record.playFinalBeeps) {
-            playFinishTone(record.beepVolume);
-        } else {
-            releaseAudioTrack();
-        }
+        releaseAudioTrack();
         if (id == primaryId) {
             if (timers.isEmpty()) {
                 primaryId = 0;
@@ -486,7 +488,7 @@ public class TrainingTimerForegroundService extends Service {
                 stopSelf();
             }
         };
-        handler.postDelayed(stopRunnable, record.playFinalBeeps ? 650L : 0L);
+        handler.postDelayed(stopRunnable, 0L);
     }
 
     private void refreshTimer(int id) {
@@ -565,6 +567,10 @@ public class TrainingTimerForegroundService extends Service {
         if (record.beepRunnable != null) {
             handler.removeCallbacks(record.beepRunnable);
             record.beepRunnable = null;
+        }
+        if (record.doubleBeepRunnable != null) {
+            handler.removeCallbacks(record.doubleBeepRunnable);
+            record.doubleBeepRunnable = null;
         }
         if (record.refreshRunnable != null) {
             handler.removeCallbacks(record.refreshRunnable);
