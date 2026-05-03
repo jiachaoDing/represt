@@ -177,7 +177,7 @@ const common = {
     createPlan: '创建计划',
     noPlans: '还没有计划',
     aiImport: {
-      entry: 'AI 导入',
+      entry: 'AI',
       title: 'AI 导入计划',
       promptTitle: 'AI 提示词',
       copyPrompt: '复制提示词',

@@ -177,7 +177,7 @@ const common = {
     createPlan: 'Create plan',
     noPlans: 'No plans yet',
     aiImport: {
-      entry: 'AI import',
+      entry: 'AI',
       title: 'AI plan import',
       promptTitle: 'AI prompt',
       copyPrompt: 'Copy prompt',

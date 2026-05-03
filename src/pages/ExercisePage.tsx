@@ -218,7 +218,7 @@ export function ExercisePage() {
   } as const
 
   return (
-    <div className="relative flex h-[100dvh] overflow-hidden flex-col">
+    <div className="relative flex h-full min-h-0 flex-col overflow-hidden">
       <PageHeader
         title={displayExerciseName ?? t('exercise.pageTitle')}
         backFallbackTo="/"
@@ -274,7 +274,7 @@ export function ExercisePage() {
                     initial="initial"
                     animate="animate"
                     exit="exit"
-                    className="absolute inset-0 flex min-h-0 flex-col"
+                    className="absolute inset-0 flex min-h-0 flex-col overflow-y-auto overscroll-contain scrollbar-hide"
                     style={pageFlipStyle}
                   >
                     <ExerciseQuickTimer now={now} />
@@ -287,7 +287,7 @@ export function ExercisePage() {
                     initial="initial"
                     animate="animate"
                     exit="exit"
-                    className="absolute inset-0 flex min-h-0 flex-col overflow-hidden"
+                    className="absolute inset-0 flex min-h-0 flex-col overflow-y-auto overscroll-contain scrollbar-hide"
                     style={pageFlipStyle}
                   >
                     <ExerciseHero detail={detail} now={now} />

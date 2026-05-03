@@ -4,61 +4,62 @@
   color-scheme: light;
   font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
   
-  /* Material 3 Token System for TrainRe */
+  /* TrainRe Theme Token System */
   
   /* Background & Surface */
-  --surface: #FAFAFA;
-  --surface-container: #F3F4F6;
+  --surface: #FBFAF8;
+  --surface-container: #F1F0EE;
+  --surface-container-high: #E8E7E4;
   
   /* Text & Icons */
-  --on-surface: #1C1B1F;
-  --on-surface-variant: #49454F;
+  --on-surface: #202124;
+  --on-surface-variant: #5F6368;
   
   /* Lines & Borders */
-  --outline-variant: #CAC4D0;
-  --outline: #79747E;
+  --outline-variant: #D7D5D2;
+  --outline: #8C8984;
   
   /* State Colors */
   /* Completed (Green) */
-  --primary: #2E6B5E;
-  --primary-container: #D2E8E3;
+  --primary: #202124;
+  --primary-container: #E9E7E4;
   --on-primary: #FFFFFF;
-  --on-primary-container: #04201A;
+  --on-primary-container: #202124;
   
   /* Active / Resting (Amber/Yellow) */
-  --tertiary: #B68D40;
-  --tertiary-container: #FDECC8;
+  --tertiary: #7A5B1D;
+  --tertiary-container: #F4E7C7;
   --on-tertiary: #FFFFFF;
-  --on-tertiary-container: #261900;
+  --on-tertiary-container: #2D210A;
   
   /* Error (Red) */
-  --error: #BA1A1A;
-  --error-container: #FFDAD6;
+  --error: #B4232A;
+  --error-container: #FFD7DA;
   --on-error: #FFFFFF;
-  --on-error-container: #410002;
+  --on-error-container: #3A1115;
   
   /* Secondary Actions */
-  --secondary: #5B5E66;
-  --secondary-container: #DFE2EB;
+  --secondary: #5F6368;
+  --secondary-container: #E5E3DF;
   --on-secondary: #FFFFFF;
-  --on-secondary-container: #181B22;
+  --on-secondary-container: #202124;
 
   /* Plan Palette */
-  --plan-1: #2E6B5E;
-  --plan-1-container: #D2E8E3;
-  --on-plan-1-container: #04201A;
-  --plan-2: #2F5D9A;
-  --plan-2-container: #D8E4FF;
-  --on-plan-2-container: #0F1F35;
-  --plan-3: #8B5E34;
-  --plan-3-container: #F5DFCB;
-  --on-plan-3-container: #2F1905;
-  --plan-4: #8A4B7A;
-  --plan-4-container: #F4D8EB;
-  --on-plan-4-container: #311128;
-  --plan-5: #8A6A16;
-  --plan-5-container: #F7E8B3;
-  --on-plan-5-container: #2F2400;
+  --plan-1: #0B65B9;
+  --plan-1-container: #D8F0FF;
+  --on-plan-1-container: #102A3D;
+  --plan-2: #7E3FD6;
+  --plan-2-container: #EFDBFF;
+  --on-plan-2-container: #2B1D3F;
+  --plan-3: #258A50;
+  --plan-3-container: #D8FFE6;
+  --on-plan-3-container: #132819;
+  --plan-4: #007D77;
+  --plan-4-container: #D6FFFB;
+  --on-plan-4-container: #11302E;
+  --plan-5: #C74365;
+  --plan-5-container: #FFE0E8;
+  --on-plan-5-container: #3A1A24;
 
   /* Shadows */
   --shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.05);
@@ -67,50 +68,51 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
     color-scheme: dark;
-    --surface: #121212;
-    --surface-container: #1E1E1E;
+    --surface: #111111;
+    --surface-container: #1A1A1A;
+    --surface-container-high: #242424;
     
-    --on-surface: #E6E1E5;
-    --on-surface-variant: #CAC4D0;
+    --on-surface: #FCFCFC;
+    --on-surface-variant: #C7C7C7;
     
-    --outline-variant: #49454F;
-    --outline: #938F99;
+    --outline-variant: #3A3A3A;
+    --outline: #8A8A8A;
     
-    --primary: #9CD4C8;
-    --primary-container: #105144;
-    --on-primary: #00382E;
-    --on-primary-container: #B7F0E3;
+    --primary: #0169CC;
+    --primary-container: #0D2B45;
+    --on-primary: #FFFFFF;
+    --on-primary-container: #D7EBFF;
     
-    --tertiary: #D7A64A;
-    --tertiary-container: #332713;
-    --on-tertiary: #211500;
-    --on-tertiary-container: #F6DDA8;
+    --tertiary: #D8A935;
+    --tertiary-container: #2A1D05;
+    --on-tertiary: #111111;
+    --on-tertiary-container: #F2D99A;
     
-    --error: #FFB4AB;
-    --error-container: #93000A;
-    --on-error: #690005;
-    --on-error-container: #FFDAD6;
+    --error: #FA4D56;
+    --error-container: #3A1115;
+    --on-error: #111111;
+    --on-error-container: #FFD7DA;
     
     --secondary: #C3C6CF;
     --secondary-container: #43474E;
     --on-secondary: #2D3037;
     --on-secondary-container: #DFE2EB;
 
-    --plan-1: #82C8B9;
-    --plan-1-container: #17332E;
-    --on-plan-1-container: #BEEDE4;
-    --plan-2: #A9C7FF;
-    --plan-2-container: #182A43;
-    --on-plan-2-container: #D8E4FF;
-    --plan-3: #E0B78E;
-    --plan-3-container: #35261A;
-    --on-plan-3-container: #F5DFCB;
-    --plan-4: #E7B4DA;
-    --plan-4-container: #351E2F;
-    --on-plan-4-container: #F4D8EB;
-    --plan-5: #D8BD5D;
-    --plan-5-container: #332B12;
-    --on-plan-5-container: #F7E8B3;
+    --plan-1: #7CC7FF;
+    --plan-1-container: #102A3D;
+    --on-plan-1-container: #D8F0FF;
+    --plan-2: #B06DFF;
+    --plan-2-container: #2B1D3F;
+    --on-plan-2-container: #EFDBFF;
+    --plan-3: #9EE2B8;
+    --plan-3-container: #132819;
+    --on-plan-3-container: #D8FFE6;
+    --plan-4: #64D2C8;
+    --plan-4-container: #11302E;
+    --on-plan-4-container: #D6FFFB;
+    --plan-5: #FF9BB3;
+    --plan-5-container: #3A1A24;
+    --on-plan-5-container: #FFE0E8;
     
     --shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.2);
   }
@@ -118,50 +120,51 @@
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --surface: #121212;
-  --surface-container: #1E1E1E;
+  --surface: #111111;
+  --surface-container: #1A1A1A;
+  --surface-container-high: #242424;
   
-  --on-surface: #E6E1E5;
-  --on-surface-variant: #CAC4D0;
+  --on-surface: #FCFCFC;
+  --on-surface-variant: #C7C7C7;
   
-  --outline-variant: #49454F;
-  --outline: #938F99;
+  --outline-variant: #3A3A3A;
+  --outline: #8A8A8A;
   
-  --primary: #9CD4C8;
-  --primary-container: #105144;
-  --on-primary: #00382E;
-  --on-primary-container: #B7F0E3;
+  --primary: #0169CC;
+  --primary-container: #0D2B45;
+  --on-primary: #FFFFFF;
+  --on-primary-container: #D7EBFF;
   
-  --tertiary: #D7A64A;
-  --tertiary-container: #332713;
-  --on-tertiary: #211500;
-  --on-tertiary-container: #F6DDA8;
+  --tertiary: #D8A935;
+  --tertiary-container: #2A1D05;
+  --on-tertiary: #111111;
+  --on-tertiary-container: #F2D99A;
   
-  --error: #FFB4AB;
-  --error-container: #93000A;
-  --on-error: #690005;
-  --on-error-container: #FFDAD6;
+  --error: #FA4D56;
+  --error-container: #3A1115;
+  --on-error: #111111;
+  --on-error-container: #FFD7DA;
   
   --secondary: #C3C6CF;
   --secondary-container: #43474E;
   --on-secondary: #2D3037;
   --on-secondary-container: #DFE2EB;
 
-  --plan-1: #82C8B9;
-  --plan-1-container: #17332E;
-  --on-plan-1-container: #BEEDE4;
-  --plan-2: #A9C7FF;
-  --plan-2-container: #182A43;
-  --on-plan-2-container: #D8E4FF;
-  --plan-3: #E0B78E;
-  --plan-3-container: #35261A;
-  --on-plan-3-container: #F5DFCB;
-  --plan-4: #E7B4DA;
-  --plan-4-container: #351E2F;
-  --on-plan-4-container: #F4D8EB;
-  --plan-5: #D8BD5D;
-  --plan-5-container: #332B12;
-  --on-plan-5-container: #F7E8B3;
+  --plan-1: #7CC7FF;
+  --plan-1-container: #102A3D;
+  --on-plan-1-container: #D8F0FF;
+  --plan-2: #B06DFF;
+  --plan-2-container: #2B1D3F;
+  --on-plan-2-container: #EFDBFF;
+  --plan-3: #9EE2B8;
+  --plan-3-container: #132819;
+  --on-plan-3-container: #D8FFE6;
+  --plan-4: #64D2C8;
+  --plan-4-container: #11302E;
+  --on-plan-4-container: #D6FFFB;
+  --plan-5: #FF9BB3;
+  --plan-5-container: #3A1A24;
+  --on-plan-5-container: #FFE0E8;
   
   --shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
