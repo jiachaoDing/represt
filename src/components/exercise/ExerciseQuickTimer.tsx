@@ -3,10 +3,7 @@ import { Pause, Pencil, Play, RotateCcw } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { useQuickTimer } from '../../hooks/useQuickTimer'
-
-type ExerciseQuickTimerProps = {
-  now: number
-}
+import { useNow } from '../../hooks/useNow'
 
 function formatRemainingTime(remainingMs: number) {
   const totalSeconds = Math.ceil(Math.max(0, remainingMs) / 1000)
@@ -16,9 +13,10 @@ function formatRemainingTime(remainingMs: number) {
   return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
 }
 
-export function ExerciseQuickTimer({ now }: ExerciseQuickTimerProps) {
+export function ExerciseQuickTimer() {
   const { t } = useTranslation()
   const { finish, pause, reset, selectSeconds, start, state: timerState, updateOptionSeconds } = useQuickTimer()
+  const now = useNow(timerState.status === 'running' ? 16 : 1000)
   const [isEditingOptions, setIsEditingOptions] = useState(false)
   const [draftOptionSeconds, setDraftOptionSeconds] = useState(() =>
     timerState.optionSeconds.map((seconds) => String(seconds)),

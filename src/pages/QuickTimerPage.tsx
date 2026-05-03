@@ -2,17 +2,15 @@ import { useTranslation } from 'react-i18next'
 
 import { ExerciseQuickTimer } from '../components/exercise/ExerciseQuickTimer'
 import { PageHeader } from '../components/ui/PageHeader'
-import { useNow } from '../hooks/useNow'
 
 export function QuickTimerPage() {
   const { t } = useTranslation()
-  const now = useNow(16)
 
   return (
     <div className="flex h-full min-h-0 flex-col">
       <PageHeader title={t('exercise.quickTimerTitle')} backFallbackTo="/" />
       <main className="flex min-h-0 flex-1 flex-col px-4">
-        <ExerciseQuickTimer now={now} />
+        <ExerciseQuickTimer />
       </main>
     </div>
   )

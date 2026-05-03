@@ -2,6 +2,7 @@ package com.trainre.app;
 
 final class TrainingTimerNotificationConstants {
     static final String CHANNEL_ID = "trainre-training-timer-foreground";
+    static final String FINISHED_CHANNEL_ID = "trainre-training-timer-finished";
     static final String GROUP = "trainre-training-timers";
     static final String ACTION_START = "com.trainre.app.TRAINING_TIMER_START";
     static final String ACTION_CANCEL = "com.trainre.app.TRAINING_TIMER_CANCEL";

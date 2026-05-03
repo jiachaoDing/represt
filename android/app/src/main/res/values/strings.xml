@@ -4,6 +4,8 @@
     <string name="title_activity_main">组间记</string>
     <string name="training_timer_channel_name">训练倒计时</string>
     <string name="training_timer_channel_description">休息和快捷计时器的常驻倒计时通知</string>
+    <string name="training_timer_finished_channel_name">训练提醒</string>
+    <string name="training_timer_finished_channel_description">动作或倒计时结束时的弹窗提醒</string>
     <string name="training_timer_default_title">训练倒计时</string>
     <string name="training_timer_default_body">倒计时进行中</string>
     <string name="training_timer_finished_title">倒计时结束</string>

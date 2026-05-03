@@ -277,7 +277,7 @@ export function ExercisePage() {
                     className="absolute inset-0 flex min-h-0 flex-col overflow-y-auto overscroll-contain scrollbar-hide"
                     style={pageFlipStyle}
                   >
-                    <ExerciseQuickTimer now={now} />
+                    <ExerciseQuickTimer />
                   </motion.div>
                 ) : (
                   <motion.div

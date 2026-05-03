@@ -17,6 +17,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.widget.RemoteViews;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
@@ -128,6 +129,15 @@ public class TrainingTimerForegroundService extends Service {
         channel.setSound(null, null);
         channel.enableVibration(false);
         manager.createNotificationChannel(channel);
+
+        NotificationChannel finishedChannel = new NotificationChannel(
+            TrainingTimerNotificationConstants.FINISHED_CHANNEL_ID,
+            context.getString(R.string.training_timer_finished_channel_name),
+            NotificationManager.IMPORTANCE_HIGH
+        );
+        finishedChannel.setDescription(context.getString(R.string.training_timer_finished_channel_description));
+        finishedChannel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
+        manager.createNotificationChannel(finishedChannel);
     }
 
     private void startTimer(Intent intent, int startId) {
@@ -206,26 +216,57 @@ public class TrainingTimerForegroundService extends Service {
             .setGroup(TrainingTimerNotificationConstants.GROUP)
             .setShowWhen(false);
 
-        if (isExerciseRestTimer) {
+        if (isQuickTimer) {
+            builder.setCustomContentView(buildQuickTimerContentView(intent, notificationTitle, text, isPaused));
+        } else if (isExerciseRestTimer) {
             builder.addAction(
                 R.drawable.ic_notification_check,
                 getString(R.string.training_timer_complete_set_action),
                 buildCompleteSetIntent(intent)
             );
-        } else if (isQuickTimer) {
-            builder.addAction(
-                isPaused ? R.drawable.ic_notification_play : R.drawable.ic_notification_pause,
-                getString(isPaused ? R.string.training_timer_quick_start_action : R.string.training_timer_quick_pause_action),
-                buildQuickTimerActionIntent(intent, TrainingTimerNotificationConstants.LAUNCH_ACTION_QUICK_TIMER_TOGGLE, 100000)
-            );
-            builder.addAction(
-                R.drawable.ic_notification_repeat,
-                getString(R.string.training_timer_quick_repeat_action),
-                buildQuickTimerActionIntent(intent, TrainingTimerNotificationConstants.LAUNCH_ACTION_QUICK_TIMER_REPEAT, 200000)
-            );
         }
 
         return builder.build();
+    }
+
+    private RemoteViews buildQuickTimerContentView(Intent intent, String title, String text, boolean isPaused) {
+        RemoteViews contentView = new RemoteViews(getPackageName(), R.layout.notification_quick_timer);
+        contentView.setTextViewText(R.id.quick_timer_notification_title, title);
+        contentView.setTextViewText(R.id.quick_timer_notification_text, text);
+        contentView.setTextViewText(
+            R.id.quick_timer_notification_toggle,
+            getString(isPaused ? R.string.training_timer_quick_start_action : R.string.training_timer_quick_pause_action)
+        );
+        contentView.setTextViewText(R.id.quick_timer_notification_repeat, getString(R.string.training_timer_quick_repeat_action));
+        contentView.setOnClickPendingIntent(
+            R.id.quick_timer_notification_toggle,
+            buildQuickTimerActionIntent(intent, TrainingTimerNotificationConstants.LAUNCH_ACTION_QUICK_TIMER_TOGGLE, 100000)
+        );
+        contentView.setOnClickPendingIntent(
+            R.id.quick_timer_notification_repeat,
+            buildQuickTimerActionIntent(intent, TrainingTimerNotificationConstants.LAUNCH_ACTION_QUICK_TIMER_REPEAT, 200000)
+        );
+        return contentView;
+    }
+
+    private Notification buildFinishedNotification(Intent intent) {
+        String title = getStringExtra(intent, TrainingTimerNotificationConstants.EXTRA_FINISHED_TITLE, getString(R.string.training_timer_finished_title));
+        String body = getStringExtra(intent, TrainingTimerNotificationConstants.EXTRA_FINISHED_BODY, getString(R.string.training_timer_finished_body));
+
+        return new NotificationCompat.Builder(this, TrainingTimerNotificationConstants.FINISHED_CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_stat_trainre_notification)
+            .setContentTitle(title)
+            .setContentText(body)
+            .setStyle(new NotificationCompat.BigTextStyle().bigText(body))
+            .setContentIntent(buildLaunchIntent(intent))
+            .setAutoCancel(true)
+            .setOnlyAlertOnce(false)
+            .setCategory(NotificationCompat.CATEGORY_ALARM)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setDefaults(NotificationCompat.DEFAULT_ALL)
+            .setShowWhen(true)
+            .build();
     }
 
     private PendingIntent buildLaunchIntent(Intent sourceIntent) {
@@ -370,10 +411,6 @@ public class TrainingTimerForegroundService extends Service {
             return false;
         }
 
-        if (audioManager.getRingerMode() != AudioManager.RINGER_MODE_NORMAL) {
-            return false;
-        }
-
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             return true;
         }
@@ -468,6 +505,7 @@ public class TrainingTimerForegroundService extends Service {
             return;
         }
 
+        Notification finishedNotification = buildFinishedNotification(record.intent);
         clearTimerCallbacks(record);
         releaseAudioTrack();
         if (id == primaryId) {
@@ -481,6 +519,7 @@ public class TrainingTimerForegroundService extends Service {
         } else {
             NotificationManagerCompat.from(this).cancel(id);
         }
+        notifyTimerFinished(id, finishedNotification);
         releaseStopCallback();
         stopRunnable = () -> {
             releaseAudioTrack();
@@ -532,6 +571,18 @@ public class TrainingTimerForegroundService extends Service {
         if (timers.isEmpty()) {
             releaseAudioTrack();
             stopSelf();
+        }
+    }
+
+    private void notifyTimerFinished(int id, Notification notification) {
+        if (!canPostNotifications()) {
+            return;
+        }
+
+        try {
+            NotificationManagerCompat.from(this).notify(id, notification);
+        } catch (SecurityException notificationError) {
+            // Notification permission can change while the timer is running.
         }
     }
 
