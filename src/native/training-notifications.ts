@@ -4,9 +4,14 @@ import type { PermissionState } from '@capacitor/core'
 import i18n from '../i18n'
 import { isNativeApp, isNativePluginAvailable } from './capacitor-platform'
 import { RestTimerAlarm, type RestTimerAlarmStatus } from './rest-timer-alarm-plugin'
+import {
+  TrainingTimerNotification,
+  type TrainingTimerNotificationStatus,
+} from './training-timer-notification-plugin'
 import type {
   ExactAlarmPermission,
   LocalReminderStatus,
+  QuickTimerNotificationInput,
   RestTimerNotificationInput,
   RestTimerPermissionPrepareResult,
   RestTimerScheduleResult,
@@ -15,6 +20,7 @@ import type {
 export type {
   ExactAlarmPermission,
   LocalReminderStatus,
+  QuickTimerNotificationInput,
   RestTimerNotificationInput,
   RestTimerPermissionPrepareResult,
   RestTimerScheduleResult,
@@ -25,6 +31,8 @@ const REST_TIMER_CHANNEL_ID = 'trainre-rest-timer-alarm-v3'
 const REST_TIMER_FALLBACK_CHANNEL_ID = 'trainre-rest-timer-local'
 const REST_TIMER_NOTIFICATION_GROUP = 'trainre-rest-timers'
 const TEST_REST_TIMER_NOTIFICATION_ID = 910001
+const LEGACY_REST_TIMER_FOREGROUND_NOTIFICATION_ID = 920001
+const QUICK_TIMER_FOREGROUND_NOTIFICATION_ID = 920002
 
 let isChannelReady = false
 let hasTriedRestTimerChannel = false
@@ -52,6 +60,23 @@ async function getStrongReminderStatus(): Promise<RestTimerAlarmStatus | null> {
     return await RestTimerAlarm.status()
   } catch (alarmStatusError) {
     console.warn(alarmStatusError)
+    return null
+  }
+}
+
+function isTimerForegroundNotificationAvailable() {
+  return isNativePluginAvailable('TrainingTimerNotification')
+}
+
+async function getTimerForegroundStatus(): Promise<TrainingTimerNotificationStatus | null> {
+  if (!isTimerForegroundNotificationAvailable()) {
+    return null
+  }
+
+  try {
+    return await TrainingTimerNotification.status()
+  } catch (timerStatusError) {
+    console.warn(timerStatusError)
     return null
   }
 }
@@ -183,11 +208,13 @@ export async function getLocalReminderStatus(): Promise<LocalReminderStatus> {
     await ensureRestTimerChannel()
   }
 
-  const [displayPermission, exactAlarmPermission, channelStatus, strongStatus] = await Promise.all([
+  const [displayPermission, exactAlarmPermission, channelStatus, strongStatus, timerForegroundStatus] =
+    await Promise.all([
     checkDisplayPermission(),
     checkExactAlarmPermission(),
     getRestTimerChannelStatus(),
     getStrongReminderStatus(),
+    getTimerForegroundStatus(),
   ])
 
   return {
@@ -206,6 +233,11 @@ export async function getLocalReminderStatus(): Promise<LocalReminderStatus> {
     strongReminderCanScheduleExactAlarms: strongStatus?.canScheduleExactAlarms ?? null,
     strongReminderCanUseFullScreenIntent: strongStatus?.canUseFullScreenIntent ?? null,
     strongReminderChannelSound: strongStatus?.channelSound ?? null,
+    isTimerForegroundServiceAvailable: Boolean(timerForegroundStatus?.available),
+    isTimerForegroundChannelReady: Boolean(timerForegroundStatus?.channelReady),
+    timerForegroundChannelImportance: timerForegroundStatus?.channelImportance ?? null,
+    isIgnoringBatteryOptimizations:
+      timerForegroundStatus?.isIgnoringBatteryOptimizations ?? null,
   }
 }
 
@@ -281,6 +313,29 @@ export async function openStrongReminderSettings() {
   }
 }
 
+export async function openBatteryOptimizationSettings() {
+  if (!isTimerForegroundNotificationAvailable()) {
+    return {
+      didOpen: false,
+      message: i18n.t('notification.batterySettingsUnavailable'),
+    }
+  }
+
+  try {
+    await TrainingTimerNotification.openBatteryOptimizationSettings()
+    return {
+      didOpen: true,
+      message: i18n.t('notification.batterySettingsOpened'),
+    }
+  } catch (settingsError) {
+    console.warn(settingsError)
+    return {
+      didOpen: false,
+      message: i18n.t('notification.batterySettingsFailed'),
+    }
+  }
+}
+
 export async function openAppNotificationSettings() {
   return {
     didOpen: false,
@@ -291,9 +346,23 @@ export async function openAppNotificationSettings() {
 export async function cancelRestTimerNotification(exerciseId: string) {
   const notificationId = getRestTimerNotificationId(exerciseId)
 
+  if (isTimerForegroundNotificationAvailable()) {
+    try {
+      await TrainingTimerNotification.cancelTimerNotification({
+        id: notificationId,
+      })
+      await TrainingTimerNotification.cancelTimerNotification({
+        id: LEGACY_REST_TIMER_FOREGROUND_NOTIFICATION_ID,
+      })
+    } catch (timerCancelError) {
+      console.warn(timerCancelError)
+    }
+  }
+
   if (isRestTimerAlarmAvailable()) {
     try {
       await RestTimerAlarm.cancel({ id: notificationId })
+      await RestTimerAlarm.cancel({ id: LEGACY_REST_TIMER_FOREGROUND_NOTIFICATION_ID })
     } catch (alarmCancelError) {
       console.warn(alarmCancelError)
     }
@@ -301,8 +370,22 @@ export async function cancelRestTimerNotification(exerciseId: string) {
 
   if (isNativePluginAvailable('LocalNotifications')) {
     await LocalNotifications.cancel({
-      notifications: [{ id: notificationId }],
+      notifications: [{ id: notificationId }, { id: LEGACY_REST_TIMER_FOREGROUND_NOTIFICATION_ID }],
     })
+  }
+}
+
+export async function cancelRestTimerForegroundNotification() {
+  if (!isTimerForegroundNotificationAvailable()) {
+    return
+  }
+
+  try {
+    await TrainingTimerNotification.cancelTimerNotification({
+      id: LEGACY_REST_TIMER_FOREGROUND_NOTIFICATION_ID,
+    })
+  } catch (timerCancelError) {
+    console.warn(timerCancelError)
   }
 }
 
@@ -343,6 +426,90 @@ async function scheduleStrongRestTimerAlarm({
   }
 }
 
+export async function startRestTimerForegroundNotification(input: RestTimerNotificationInput) {
+  if (!isTimerForegroundNotificationAvailable() || !input.restEndsAt) {
+    return false
+  }
+
+  const endsAt = new Date(input.restEndsAt).getTime()
+  if (Number.isNaN(endsAt) || endsAt <= Date.now()) {
+    return false
+  }
+
+  try {
+    const result = await TrainingTimerNotification.startTimerNotification({
+      id: getRestTimerNotificationId(input.exerciseId),
+      timerType: 'rest',
+      title: i18n.t('notification.restTimerRunningTitle'),
+      body: i18n.t('notification.restTimerRunningBody', { exerciseName: input.exerciseName }),
+      finishedTitle: i18n.t('notification.restEndedTitle'),
+      finishedBody: i18n.t('notification.restEndedBody', { exerciseName: input.exerciseName }),
+      endsAt,
+      path: `/exercise/${input.exerciseId}`,
+      playFinalBeeps: true,
+    })
+    return result.started
+  } catch (timerStartError) {
+    console.warn(timerStartError)
+    return false
+  }
+}
+
+export async function startQuickTimerForegroundNotification(input: QuickTimerNotificationInput) {
+  if (!isTimerForegroundNotificationAvailable() || !input.endsAt) {
+    return { scheduled: false, reason: 'plugin-unavailable', exactAlarmPermission: 'unknown' } satisfies RestTimerScheduleResult
+  }
+
+  if (input.endsAt <= Date.now()) {
+    await cancelQuickTimerForegroundNotification()
+    return { scheduled: false, reason: 'invalid-time', exactAlarmPermission: 'unknown' }
+  }
+
+  const hasPermission = await ensureNotificationPermission()
+  if (!hasPermission) {
+    return {
+      scheduled: false,
+      reason: 'permission-denied',
+      exactAlarmPermission: await checkExactAlarmPermission(),
+    }
+  }
+
+  try {
+    const result = await TrainingTimerNotification.startTimerNotification({
+      id: QUICK_TIMER_FOREGROUND_NOTIFICATION_ID,
+      timerType: 'quick',
+      title: i18n.t('notification.quickTimerRunningTitle'),
+      body: i18n.t('notification.quickTimerRunningBody'),
+      finishedTitle: i18n.t('notification.quickTimerFinishedTitle'),
+      finishedBody: i18n.t('notification.quickTimerFinishedBody'),
+      endsAt: input.endsAt,
+      path: '/quick-timer',
+      playFinalBeeps: true,
+    })
+    return {
+      scheduled: result.started,
+      exactAlarmPermission: await checkExactAlarmPermission(),
+    }
+  } catch (timerStartError) {
+    console.warn(timerStartError)
+    return { scheduled: false, reason: 'plugin-unavailable', exactAlarmPermission: 'unknown' }
+  }
+}
+
+export async function cancelQuickTimerForegroundNotification() {
+  if (!isTimerForegroundNotificationAvailable()) {
+    return
+  }
+
+  try {
+    await TrainingTimerNotification.cancelTimerNotification({
+      id: QUICK_TIMER_FOREGROUND_NOTIFICATION_ID,
+    })
+  } catch (timerCancelError) {
+    console.warn(timerCancelError)
+  }
+}
+
 export async function scheduleRestTimerNotification(
   input: RestTimerNotificationInput,
 ): Promise<RestTimerScheduleResult> {
@@ -377,6 +544,11 @@ export async function scheduleRestTimerNotification(
   const title = i18n.t('notification.restEndedTitle')
   const body = i18n.t('notification.restEndedBody', { exerciseName: input.exerciseName })
   const path = `/exercise/${input.exerciseId}`
+
+  const didStartForegroundTimer = await startRestTimerForegroundNotification(input)
+  if (didStartForegroundTimer) {
+    return { scheduled: true, exactAlarmPermission }
+  }
 
   const didScheduleStrongAlarm = await scheduleStrongRestTimerAlarm({
     id: notificationId,

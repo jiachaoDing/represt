@@ -6,6 +6,12 @@
     <string name="rest_timer_channel_description">休息倒计时结束时尽量使用闹钟级本地提醒</string>
     <string name="rest_timer_default_title">休息结束</string>
     <string name="rest_timer_default_body">可以继续下一组</string>
+    <string name="training_timer_channel_name">训练倒计时</string>
+    <string name="training_timer_channel_description">休息和快捷计时器的常驻倒计时通知</string>
+    <string name="training_timer_default_title">训练倒计时</string>
+    <string name="training_timer_default_body">倒计时进行中</string>
+    <string name="training_timer_finished_title">倒计时结束</string>
+    <string name="training_timer_finished_body">可以继续训练</string>
     <string name="package_name">com.trainre.app</string>
     <string name="custom_url_scheme">com.trainre.app</string>
 </resources>

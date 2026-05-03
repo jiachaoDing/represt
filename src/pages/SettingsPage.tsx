@@ -1,4 +1,5 @@
-import { useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
+import { App as CapacitorApp } from '@capacitor/app'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import type { LucideIcon } from 'lucide-react'
@@ -28,8 +29,9 @@ import {
   setDebugTodaySessionDateKey,
 } from '../lib/session-date-key'
 import { useThemePreference, type ThemePreference } from '../lib/theme'
+import { isNativePluginAvailable } from '../native/capacitor-platform'
 
-const APP_VERSION = '1.0.0'
+const WEB_APP_VERSION = __APP_VERSION__
 const PRIVACY_POLICY_URL = 'https://trainre.app/privacy'
 const FEEDBACK_EMAIL = 'mailto:support@trainre.app?subject=RepRest%20feedback'
 
@@ -134,6 +136,34 @@ function HapticsSettingsRow() {
       right={<SwitchControl checked={isEnabled} label={t('settings.haptics.title')} />}
     />
   )
+}
+
+function useAppVersion() {
+  const [appVersion, setAppVersion] = useState(WEB_APP_VERSION)
+
+  useEffect(() => {
+    if (!isNativePluginAvailable('App')) {
+      return
+    }
+
+    let isMounted = true
+
+    CapacitorApp.getInfo()
+      .then((info) => {
+        if (isMounted && info.version) {
+          setAppVersion(info.version)
+        }
+      })
+      .catch(() => {
+        // Keep the web build version when native app info is unavailable.
+      })
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  return appVersion
 }
 
 type PreferenceOption<T extends string> = {
@@ -324,6 +354,7 @@ function DebugDateSettingsCard() {
 
 export function SettingsPage() {
   const { t } = useTranslation()
+  const appVersion = useAppVersion()
   const showDebugSettings = import.meta.env.DEV
 
   return (
@@ -364,7 +395,7 @@ export function SettingsPage() {
             icon={Info}
             label={t('settings.support.about')}
             supporting={t('common.appName')}
-            right={<span className="text-xs font-medium text-[var(--on-surface-variant)]">{APP_VERSION}</span>}
+            right={<span className="text-xs font-medium text-[var(--on-surface-variant)]">{appVersion}</span>}
           />
         </SettingsSection>
 

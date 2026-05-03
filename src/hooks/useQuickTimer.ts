@@ -1,5 +1,10 @@
 import { useCallback, useSyncExternalStore } from 'react'
 
+import {
+  cancelQuickTimerForegroundNotification,
+  startQuickTimerForegroundNotification,
+} from '../native/training-notifications'
+
 export const QUICK_TIMER_OPTIONS = [180, 90, 60, 30] as const
 
 export type QuickTimerStatus = 'idle' | 'running' | 'paused' | 'finished'
@@ -127,6 +132,7 @@ export function useQuickTimer() {
       selectedSeconds: nextSeconds,
       status: 'idle',
     })
+    void cancelQuickTimerForegroundNotification()
   }, [])
 
   const updateOptionSeconds = useCallback((index: number, seconds: number) => {
@@ -156,13 +162,16 @@ export function useQuickTimer() {
         : quickTimerState.remainingMs
     const nextRemainingMs = currentRemainingMs > 0 ? currentRemainingMs : quickTimerState.selectedSeconds * 1000
 
+    const endsAt = Date.now() + nextRemainingMs
+
     emitQuickTimerState({
       ...quickTimerState,
-      endsAt: Date.now() + nextRemainingMs,
+      endsAt,
       isFinishAcknowledged: false,
       remainingMs: nextRemainingMs,
       status: 'running',
     })
+    void startQuickTimerForegroundNotification({ endsAt })
   }, [])
 
   const pause = useCallback(() => {
@@ -176,6 +185,7 @@ export function useQuickTimer() {
       remainingMs: Math.max(0, quickTimerState.endsAt - Date.now()),
       status: 'paused',
     })
+    void cancelQuickTimerForegroundNotification()
   }, [])
 
   const reset = useCallback(() => {
@@ -186,6 +196,7 @@ export function useQuickTimer() {
       remainingMs: quickTimerState.selectedSeconds * 1000,
       status: 'idle',
     })
+    void cancelQuickTimerForegroundNotification()
   }, [])
 
   const finish = useCallback(() => {
@@ -216,6 +227,7 @@ export function useQuickTimer() {
       remainingMs: 0,
       status: 'finished',
     })
+    void cancelQuickTimerForegroundNotification()
   }, [])
 
   return {

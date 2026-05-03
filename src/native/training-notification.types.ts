@@ -6,6 +6,10 @@ export type RestTimerNotificationInput = {
   restEndsAt: string | null
 }
 
+export type QuickTimerNotificationInput = {
+  endsAt: number | null
+}
+
 export type ExactAlarmPermission = 'granted' | 'denied' | 'unknown'
 
 export type LocalReminderStatus = {
@@ -24,6 +28,10 @@ export type LocalReminderStatus = {
   strongReminderCanScheduleExactAlarms: boolean | null
   strongReminderCanUseFullScreenIntent: boolean | null
   strongReminderChannelSound: string | null
+  isTimerForegroundServiceAvailable: boolean
+  isTimerForegroundChannelReady: boolean
+  timerForegroundChannelImportance: number | null
+  isIgnoringBatteryOptimizations: boolean | null
 }
 
 export type RestTimerScheduleResult = {

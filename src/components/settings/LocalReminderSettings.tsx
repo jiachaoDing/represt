@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 
 import {
   getLocalReminderStatus,
+  openBatteryOptimizationSettings,
   openExactAlarmSettings,
   openStrongReminderSettings,
   requestLocalReminderPermission,
@@ -11,7 +12,7 @@ import {
   type LocalReminderStatus,
 } from '../../native/training-notifications'
 
-type BusyAction = 'permission' | 'settings' | 'test' | null
+type BusyAction = 'battery' | 'permission' | 'settings' | 'test' | null
 
 type T = ReturnType<typeof useTranslation>['t']
 
@@ -45,6 +46,18 @@ function getExactAlarmStatusLabel(status: LocalReminderStatus | null, t: T) {
   }
 
   return t('settings.reminder.systemLimited')
+}
+
+function getBatteryStatusLabel(status: LocalReminderStatus | null, t: T) {
+  if (!status?.isNative || !status.isTimerForegroundServiceAvailable) {
+    return t('settings.reminder.systemLimited')
+  }
+
+  if (status.isIgnoringBatteryOptimizations === true) {
+    return t('settings.reminder.batteryAllowed')
+  }
+
+  return t('settings.reminder.batteryNeedsSetup')
 }
 
 function getPrimaryActionLabel(status: LocalReminderStatus | null, t: T) {
@@ -136,6 +149,7 @@ export function LocalReminderSettings() {
   const isAvailable = Boolean(status?.isLocalNotificationsAvailable)
   const isGranted = Boolean(status?.isDisplayPermissionGranted)
   const shouldShowExactAlarmStatus = Boolean(status?.isNative && status.isStrongReminderAvailable)
+  const shouldShowBatteryStatus = Boolean(status?.isNative && status.isTimerForegroundServiceAvailable)
 
   return (
     <div className="px-4 py-4">
@@ -159,6 +173,14 @@ export function LocalReminderSettings() {
                 {t('settings.reminder.exactAlarmTitle')}
               </span>{' '}
               {getExactAlarmStatusLabel(status, t)}
+            </p>
+          ) : null}
+          {shouldShowBatteryStatus ? (
+            <p className="mt-1 text-xs leading-5 text-[var(--on-surface-variant)]">
+              <span className="font-medium text-[var(--on-surface)]">
+                {t('settings.reminder.batteryTitle')}
+              </span>{' '}
+              {getBatteryStatusLabel(status, t)}
             </p>
           ) : null}
           <p className="mt-1 text-xs leading-5 text-[var(--on-surface-variant)]">
@@ -225,6 +247,17 @@ export function LocalReminderSettings() {
           }
         >
           {t('settings.reminder.sendTest')}
+        </ReminderActionButton>
+        <ReminderActionButton
+          disabled={!shouldShowBatteryStatus || busyAction !== null}
+          onClick={() =>
+            void runAction('battery', async () => {
+              const result = await openBatteryOptimizationSettings()
+              setNotice(result.message)
+            })
+          }
+        >
+          {t('settings.reminder.batterySettings')}
         </ReminderActionButton>
       </div>
     </div>
