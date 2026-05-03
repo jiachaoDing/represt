@@ -6,48 +6,26 @@ import { useBackLinkState } from '../../hooks/useRouteBack'
 
 type SummaryDateSwitcherProps = {
   calendarTo: string
-  canGoNext: boolean
   dateLabels: {
     compact: string
     full: string
     short: string
   }
-  onNext: () => void
-  onPrevious: () => void
 }
 
 export function SummaryDateSwitcher({
   calendarTo,
-  canGoNext,
   dateLabels,
-  onNext,
-  onPrevious,
 }: SummaryDateSwitcherProps) {
   const { t } = useTranslation()
   const backLinkState = useBackLinkState()
 
   return (
-    <section className="mx-4 mt-2 overflow-hidden rounded-[1.25rem] border border-[var(--outline-variant)]/20 bg-[var(--surface)] p-3 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)]">
-      <div className="grid grid-cols-[5.5rem_minmax(0,1fr)_5.5rem] items-center gap-2">
-        <div className="flex justify-start">
-          <button
-            type="button"
-            onClick={onPrevious}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-[var(--on-surface)] transition-colors hover:bg-[var(--surface-container)]"
-            aria-label={t('summary.previousDay')}
-          >
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M15 18l-6-6 6-6" />
-            </svg>
-          </button>
-        </div>
-
-        <div className="min-w-0 overflow-hidden text-center">
-          <p className="truncate text-[10px] min-[390px]:text-[11px] text-[var(--on-surface-variant)]">
-            {t('summary.dateLabel')}
-          </p>
+    <section className="mx-4 mt-2 px-1 py-1">
+      <div className="relative min-h-11">
+        <div className="mx-auto flex min-h-11 max-w-[15rem] min-w-0 items-center justify-center overflow-hidden px-12 text-center">
           <p
-            className="mt-1 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-[14px] font-semibold text-[var(--on-surface)] min-[390px]:text-[15px]"
+            className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-[16px] font-semibold text-[var(--on-surface)]"
             aria-label={dateLabels.full}
           >
             <AnimatedContentSwap
@@ -63,7 +41,7 @@ export function SummaryDateSwitcher({
           </p>
         </div>
 
-        <div className="flex justify-end gap-2">
+        <div className="absolute right-0 top-1/2 -translate-y-1/2">
           <Link
             to={calendarTo}
             state={backLinkState}
@@ -78,18 +56,6 @@ export function SummaryDateSwitcher({
               <line x1="3" y1="10" x2="21" y2="10"/>
             </svg>
           </Link>
-
-          <button
-            type="button"
-            disabled={!canGoNext}
-            onClick={onNext}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-[var(--on-surface)] transition-colors hover:bg-[var(--surface-container)] disabled:opacity-30"
-            aria-label={t('summary.nextDay')}
-          >
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9 18l6-6-6-6" />
-            </svg>
-          </button>
         </div>
       </div>
     </section>

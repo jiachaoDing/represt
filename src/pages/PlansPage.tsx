@@ -17,13 +17,20 @@ export function PlansPage() {
   const { t } = useTranslation()
   const location = useLocation()
   const navigate = useNavigate()
-  const plans = usePlansPageData()
-  const ui = usePlansPageUi(plans)
   const shouldOpenPlanCreateSheet =
     typeof location.state === 'object' &&
     location.state !== null &&
     'openPlanCreateSheet' in location.state &&
     location.state.openPlanCreateSheet === true
+  const preferredSelectedPlanId =
+    typeof location.state === 'object' &&
+    location.state !== null &&
+    'selectedPlanId' in location.state &&
+    typeof location.state.selectedPlanId === 'string'
+      ? location.state.selectedPlanId
+      : null
+  const plans = usePlansPageData(preferredSelectedPlanId)
+  const ui = usePlansPageUi(plans)
   const planColorMap = useMemo(
     () => new Map(plans.plans.map((plan, index) => [plan.id, getPlanColor(index)])),
     [plans.plans],
@@ -63,6 +70,7 @@ export function PlansPage() {
         isSubmitting={plans.isSubmitting}
         selectedPlanId={plans.selectedPlanId}
         plans={plans.plans}
+        onAiImport={() => navigate('/plans/ai-import')}
         onCreate={() => ui.openPlanSheet('create')}
         onSelect={(planId) => {
           ui.closeExerciseEditor()

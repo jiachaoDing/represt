@@ -9,7 +9,6 @@ import { PageHeader } from '../components/ui/PageHeader'
 import { useSessionSummaryData } from '../hooks/pages/useSessionSummaryData'
 import { useBackLinkState } from '../hooks/useRouteBack'
 import {
-  addDaysToSessionDateKey,
   formatSessionDateKey,
   getTodaySessionDateKey,
   isSessionDateKey,
@@ -22,7 +21,7 @@ function buildSummarySearch(dateKey: string) {
 export function SummaryPage() {
   const { i18n, t } = useTranslation()
   const { sessionId } = useParams()
-  const [searchParams, setSearchParams] = useSearchParams()
+  const [searchParams] = useSearchParams()
   const backLinkState = useBackLinkState()
   const todayDateKey = getTodaySessionDateKey()
   const selectedDateKey = useMemo(() => {
@@ -34,10 +33,6 @@ export function SummaryPage() {
     sessionDateKey: isDateMode ? selectedDateKey : undefined,
     sessionId,
   })
-
-  function updateSelectedDate(dateKey: string) {
-    setSearchParams({ date: dateKey })
-  }
 
   const dateLabels = {
     compact: formatSessionDateKey(selectedDateKey, {
@@ -96,9 +91,6 @@ export function SummaryPage() {
         <SummaryDateSwitcher
           dateLabels={dateLabels}
           calendarTo={calendarTo}
-          canGoNext={selectedDateKey < todayDateKey}
-          onPrevious={() => updateSelectedDate(addDaysToSessionDateKey(selectedDateKey, -1))}
-          onNext={() => updateSelectedDate(addDaysToSessionDateKey(selectedDateKey, 1))}
         />
       ) : null}
 

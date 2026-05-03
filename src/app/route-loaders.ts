@@ -7,6 +7,7 @@ export const loadSummaryPage = () => import('../pages/SummaryPage')
 export const loadStarterPlanPage = () => import('../pages/StarterPlanPage')
 export const loadTrainingCyclePage = () => import('../pages/TrainingCyclePage')
 export const loadPlansPage = () => import('../pages/PlansPage')
+export const loadPlanAiImportPage = () => import('../pages/PlanAiImportPage')
 
 export function preloadPrimaryRouteModules() {
   void loadPlansPage()

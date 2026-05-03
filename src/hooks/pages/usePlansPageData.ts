@@ -30,7 +30,7 @@ import { triggerHaptic } from '../../lib/haptics'
 import type { PlanExerciseDraft } from '../../lib/plan-editor'
 import type { TrainingCycle } from '../../models/types'
 
-export function usePlansPageData() {
+export function usePlansPageData(preferredSelectedPlanId?: string | null) {
   const { t } = useTranslation()
   const [plans, setPlans] = useState<PlanWithExercises[]>([])
   const [trainingCycle, setTrainingCycle] = useState<TrainingCycle | null>(null)
@@ -76,7 +76,7 @@ export function usePlansPageData() {
     async function initialize() {
       try {
         setError(null)
-        await loadPlans()
+        await loadPlans(preferredSelectedPlanId)
       } catch (loadError) {
         console.error(loadError)
         setError(t('plans.loadFailed'))
@@ -86,7 +86,7 @@ export function usePlansPageData() {
     }
 
     void initialize()
-  }, [t])
+  }, [preferredSelectedPlanId, t])
 
   async function handleCreatePlan() {
     const didCreate = await runMutation(async () => {

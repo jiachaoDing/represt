@@ -1,3 +1,4 @@
+import { ClipboardPaste } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import type { PlanWithExercises } from '../../db/plans'
@@ -8,6 +9,7 @@ type PlanSwitcherProps = {
   selectedPlanId: string | null
   plans: PlanWithExercises[]
   onCreate: () => void
+  onAiImport: () => void
   onSelect: (planId: string) => void
 }
 
@@ -15,6 +17,7 @@ export function PlanSwitcher({
   isSubmitting,
   selectedPlanId,
   plans,
+  onAiImport,
   onCreate,
   onSelect,
 }: PlanSwitcherProps) {
@@ -47,6 +50,16 @@ export function PlanSwitcher({
             <line x1="5" y1="12" x2="19" y2="12" />
           </svg>
           {t('common.add')}
+        </button>
+        <button
+          type="button"
+          onClick={onAiImport}
+          disabled={isSubmitting}
+          aria-label={t('plans.aiImport.entry')}
+          className="flex h-8 items-center justify-center rounded-lg border border-[var(--outline-variant)] px-3 text-[var(--primary)] transition-colors whitespace-nowrap tap-highlight-transparent hover:bg-[var(--primary)]/10"
+        >
+          <ClipboardPaste size={16} strokeWidth={2.3} className="mr-1" />
+          {t('plans.aiImport.entry')}
         </button>
         {plans.map((plan, index) => {
           const isSelected = plan.id === selectedPlanId

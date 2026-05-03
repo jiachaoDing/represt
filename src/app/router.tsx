@@ -12,6 +12,7 @@ import {
   SettingsPage,
   StarterPlanPage,
   SummaryPage,
+  PlanAiImportPage,
   PlansPage,
   TrainingCyclePage,
 } from './route-components'
@@ -50,6 +51,11 @@ export const router = createBrowserRouter([
         path: 'plans/starter',
         element: lazyRoute(<StarterPlanPage />),
         handle: { titleKey: 'routes.starterPlan' },
+      },
+      {
+        path: 'plans/ai-import',
+        element: lazyRoute(<PlanAiImportPage />),
+        handle: { titleKey: 'routes.planAiImport' },
       },
       {
         path: 'plans/cycle',

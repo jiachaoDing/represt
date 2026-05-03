@@ -234,15 +234,10 @@ export async function openExactAlarmSettings() {
 
 export async function prepareRestTimerReminderPermissions(): Promise<RestTimerPermissionPrepareResult> {
   const displayPermission = await requestLocalReminderPermission()
-  let exactAlarmPermission = await checkExactAlarmPermission()
-
-  if (exactAlarmPermission !== 'granted') {
-    exactAlarmPermission = await openExactAlarmSettings()
-  }
 
   return {
     displayPermission,
-    exactAlarmPermission,
+    exactAlarmPermission: await checkExactAlarmPermission(),
   }
 }
 

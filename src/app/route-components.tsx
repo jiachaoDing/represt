@@ -9,6 +9,7 @@ import {
   loadSummaryPage,
   loadStarterPlanPage,
   loadPlansPage,
+  loadPlanAiImportPage,
   loadTrainingCyclePage,
 } from './route-loaders'
 
@@ -38,4 +39,7 @@ export const TrainingCyclePage = lazy(() =>
 )
 export const PlansPage = lazy(() =>
   loadPlansPage().then((module) => ({ default: module.PlansPage })),
+)
+export const PlanAiImportPage = lazy(() =>
+  loadPlanAiImportPage().then((module) => ({ default: module.PlanAiImportPage })),
 )

@@ -1,7 +1,6 @@
 package com.trainre.app;
 
 import android.Manifest;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -47,10 +46,6 @@ public class RestTimerAlarmReceiver extends BroadcastReceiver {
             builder.setSound(sound).setVibrate(new long[] { 0, 350, 120, 350 });
         }
 
-        if (canUseFullScreenIntent(context)) {
-            builder.setFullScreenIntent(contentIntent, true);
-        }
-
         NotificationManagerCompat.from(context).notify(id, builder.build());
     }
 
@@ -60,15 +55,6 @@ public class RestTimerAlarmReceiver extends BroadcastReceiver {
         }
 
         return ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED;
-    }
-
-    private boolean canUseFullScreenIntent(Context context) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            return true;
-        }
-
-        NotificationManager manager = context.getSystemService(NotificationManager.class);
-        return manager != null && manager.canUseFullScreenIntent();
     }
 
     private PendingIntent buildLaunchIntent(Context context, int id, String path) {

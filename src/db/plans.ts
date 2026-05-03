@@ -9,7 +9,7 @@ export type PlanWithExercises = WorkoutPlan & {
   exercises: PlanExercise[]
 }
 
-type PlanExerciseInput = {
+export type PlanExerciseInput = {
   name: string
   catalogExerciseId?: string | null
   targetSets: number
@@ -200,6 +200,36 @@ export async function createPlanFromSessionPlanItems(
     updatedAt: timestamp,
   }
   const exercises = buildPlanExercisesFromSessionPlanItems(plan.id, planItems)
+
+  await db.transaction('rw', db.workoutPlans, db.planExercises, async () => {
+    await db.workoutPlans.add(plan)
+    await db.planExercises.bulkAdd(exercises)
+  })
+
+  return { ...plan, exercises } satisfies PlanWithExercises
+}
+
+export async function createPlanWithExercises(
+  name: string,
+  exerciseInputs: Partial<PlanExerciseInput>[],
+) {
+  if (exerciseInputs.length === 0) {
+    return null
+  }
+
+  const timestamp = nowIso()
+  const plan: WorkoutPlan = {
+    id: crypto.randomUUID(),
+    name: normalizePlanName(name),
+    createdAt: timestamp,
+    updatedAt: timestamp,
+  }
+  const exercises = exerciseInputs.map((input, order) => ({
+    id: crypto.randomUUID(),
+    planId: plan.id,
+    order,
+    ...normalizeExercise(input),
+  }))
 
   await db.transaction('rw', db.workoutPlans, db.planExercises, async () => {
     await db.workoutPlans.add(plan)
