@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.trainre.app',
-  appName: '训练间歇记录器',
+  appName: '组间记',
   webDir: 'dist'
 };
 

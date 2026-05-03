@@ -15,9 +15,9 @@ export default defineConfig({
       },
       includeAssets: ['icon.png', 'icon-maskable.png'],
       manifest: {
-        name: '训练间歇记录器',
-        short_name: '训练间歇',
-        description: '面向力量训练场景的极简训练安排、间歇倒计时与组记录 PWA。',
+        name: '组间记',
+        short_name: '组间记',
+        description: '一个带自动组间计时的极简力量训练记录器。',
         theme_color: '#0f172a',
         background_color: '#f5f7fb',
         display: 'standalone',

@@ -1,6 +1,6 @@
 const common = {
   common: {
-    appName: 'TrainRe',
+    appName: '组间记',
     cancel: '取消',
     continue: '继续',
     delete: '删除',
@@ -105,7 +105,7 @@ const common = {
     support: {
       privacy: '隐私政策',
       feedback: '反馈',
-      about: '关于 TrainRe',
+      about: '关于组间记',
     },
   },
   calendar: {

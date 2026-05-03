@@ -1,6 +1,6 @@
 const common = {
   common: {
-    appName: 'TrainRe',
+    appName: 'RepRest',
     cancel: 'Cancel',
     continue: 'Continue',
     delete: 'Delete',
@@ -105,7 +105,7 @@ const common = {
     support: {
       privacy: 'Privacy policy',
       feedback: 'Feedback',
-      about: 'About TrainRe',
+      about: 'About RepRest',
     },
   },
   calendar: {

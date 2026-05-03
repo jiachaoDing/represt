@@ -31,7 +31,7 @@ import { useThemePreference, type ThemePreference } from '../lib/theme'
 
 const APP_VERSION = '1.0.0'
 const PRIVACY_POLICY_URL = 'https://trainre.app/privacy'
-const FEEDBACK_EMAIL = 'mailto:support@trainre.app?subject=TrainRe%20feedback'
+const FEEDBACK_EMAIL = 'mailto:support@trainre.app?subject=RepRest%20feedback'
 
 type SettingsSectionProps = {
   children: ReactNode
