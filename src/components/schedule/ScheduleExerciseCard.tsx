@@ -170,8 +170,12 @@ export function ScheduleExerciseCard({
     : cardState.statusClassName
   const content = (
     <div className="min-w-0 flex items-center justify-between">
-      <div className="flex min-w-0 flex-col">
-        <p className={`truncate text-[16px] font-bold ${cardState.nameClassName}`}>{displayName}</p>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <p
+          className={`overflow-hidden text-[16px] font-bold leading-tight [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2] ${cardState.nameClassName}`}
+        >
+          {displayName}
+        </p>
         <p className={`mt-0.5 text-[12px] ${cardState.metaClassName}`}>{cardState.metaText}</p>
       </div>
       <div className="ml-2 flex shrink-0 items-center gap-2">

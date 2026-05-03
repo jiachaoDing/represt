@@ -117,10 +117,9 @@ export function ExerciseQuickTimer({ now }: ExerciseQuickTimerProps) {
             fill="none"
             stroke="var(--primary)"
             strokeDasharray={circumference}
-            strokeDashoffset={strokeOffset}
             strokeLinecap="round"
             strokeWidth="2.4"
-            className="transition-[stroke-dashoffset] duration-200"
+            style={{ strokeDashoffset: strokeOffset }}
           />
         </svg>
         <p

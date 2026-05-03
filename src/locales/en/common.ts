@@ -325,6 +325,8 @@ const common = {
     syncPlan: 'Sync plan',
     saveTodayAsPlan: 'Save today as plan',
     saveTodayAsPlanDescription: 'Use today\'s {{count}} exercises and defaults.',
+    saveTodayAsPlanTip: 'Your custom training is complete. Tap the save button on the right to save today as a plan.',
+    dontShowAgain: 'Don\'t show again',
     createPlanFromToday: 'Create new plan',
     overwriteAnyPlan: 'Overwrite existing plan',
     overwriteCurrentPlan: 'Overwrite current plan',

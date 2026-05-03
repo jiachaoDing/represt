@@ -325,6 +325,8 @@ const common = {
     syncPlan: '同步计划',
     saveTodayAsPlan: '保存今日为计划',
     saveTodayAsPlanDescription: '使用今天的 {{count}} 个动作和默认配置。',
+    saveTodayAsPlanTip: '今天的自定义训练已完成。可以点击右侧的保存按钮，把今日动作保存为计划。',
+    dontShowAgain: '下次不提示',
     createPlanFromToday: '创建新计划',
     overwriteAnyPlan: '覆盖已有计划',
     overwriteCurrentPlan: '覆盖当前计划',

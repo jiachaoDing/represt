@@ -38,8 +38,10 @@ type ScheduleExerciseListProps = {
   isLoading: boolean
   isSubmitting: boolean
   now: number
+  showSavePlanTip: boolean
   onOpenAdd: () => void
   onOpenSavePlan: () => void
+  onDismissSavePlanTip: () => void
   onDeleteSelected: (exerciseIds: string[]) => Promise<boolean>
   onEditExercise: (exerciseId: string, draft: PlanExerciseDraft) => Promise<boolean>
   onReorder: (orderedExerciseIds: string[]) => Promise<boolean>
@@ -51,8 +53,10 @@ export function ScheduleExerciseList({
   isLoading,
   isSubmitting,
   now,
+  showSavePlanTip,
   onOpenAdd,
   onOpenSavePlan,
+  onDismissSavePlanTip,
   onDeleteSelected,
   onEditExercise,
   onReorder,
@@ -292,6 +296,21 @@ export function ScheduleExerciseList({
         onDeleteSelected={() => void deleteSelectedExercises()}
         onSavePlan={onOpenSavePlan}
       />
+
+      {showSavePlanTip ? (
+        <div className="rounded-2xl border border-[var(--primary)]/20 bg-[var(--primary-container)]/30 px-4 py-3">
+          <p className="text-sm leading-5 text-[var(--on-surface)]">
+            {t('schedule.saveTodayAsPlanTip')}
+          </p>
+          <button
+            type="button"
+            onClick={onDismissSavePlanTip}
+            className="mt-2 text-sm font-medium text-[var(--primary)]"
+          >
+            {t('schedule.dontShowAgain')}
+          </button>
+        </div>
+      ) : null}
 
       <DndContext
         sensors={sensors}

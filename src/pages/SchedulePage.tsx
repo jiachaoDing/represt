@@ -21,6 +21,16 @@ import { QuickTimerEntryButton } from '../components/exercise/QuickTimerEntryBut
 import { ExerciseQuickTimer } from '../components/exercise/ExerciseQuickTimer'
 import { quickEaseTransition } from '../components/motion/motion-tokens'
 
+const saveTodayAsPlanTipStorageKey = 'trainre.saveTodayAsPlanTipHidden.v1'
+
+function getStoredSaveTodayAsPlanTipHidden() {
+  if (typeof window === 'undefined') {
+    return false
+  }
+
+  return window.localStorage.getItem(saveTodayAsPlanTipStorageKey) === 'true'
+}
+
 export function SchedulePage() {
   const { i18n, t } = useTranslation()
   const location = useLocation()
@@ -31,6 +41,9 @@ export function SchedulePage() {
   const ui = useSchedulePageUi(schedule)
   const [isPlanSaveSheetOpen, setIsPlanSaveSheetOpen] = useState(false)
   const [isQuickTimerOpen, setIsQuickTimerOpen] = useState(false)
+  const [isSaveTodayAsPlanTipHidden, setIsSaveTodayAsPlanTipHidden] = useState(
+    getStoredSaveTodayAsPlanTipHidden,
+  )
   const planColorMap = useMemo(
     () => new Map(schedule.plans.map((plan, index) => [plan.id, getPlanColor(index)])),
     [schedule.plans],
@@ -52,6 +65,17 @@ export function SchedulePage() {
   const totalSets = schedule.currentSession?.exercises.reduce((sum, exercise) => sum + exercise.targetSets, 0) ?? 0
   const canSaveTodayAsPlan =
     !schedule.isLoading && (schedule.currentSession?.exercises.length ?? 0) > 0
+  const shouldShowSaveTodayAsPlanTip =
+    !schedule.isLoading &&
+    !isSaveTodayAsPlanTipHidden &&
+    schedule.currentSession !== null &&
+    schedule.currentSession.plannedPlanId === null &&
+    schedule.currentSession.exercises.length > 0 &&
+    schedule.currentSession.exercises.every(
+      (exercise) =>
+        (exercise.origin === 'manual' || !exercise.sourcePlanId) &&
+        exercise.completedSets >= exercise.targetSets,
+    )
   const canShowAddExerciseButton = location.pathname === '/' && canSaveTodayAsPlan
   const isStarterState =
     !schedule.isLoading &&
@@ -107,6 +131,11 @@ export function SchedulePage() {
     backfaceVisibility: 'hidden',
     transformOrigin: 'center top',
   } as const
+
+  function hideSaveTodayAsPlanTip() {
+    window.localStorage.setItem(saveTodayAsPlanTipStorageKey, 'true')
+    setIsSaveTodayAsPlanTipHidden(true)
+  }
 
   return (
     <div className="flex h-full min-h-0 flex-col pb-4">
@@ -205,8 +234,10 @@ export function SchedulePage() {
                     isLoading={schedule.isLoading}
                     isSubmitting={schedule.isSubmitting}
                     now={now}
+                    showSavePlanTip={shouldShowSaveTodayAsPlanTip}
                     onOpenAdd={ui.openAddEntry}
                     onOpenSavePlan={() => setIsPlanSaveSheetOpen(true)}
+                    onDismissSavePlanTip={hideSaveTodayAsPlanTip}
                     onDeleteSelected={ui.handleDeleteExercisesAction}
                     onEditExercise={schedule.handleReplaceExercise}
                     onReorder={schedule.handleReorderExercises}

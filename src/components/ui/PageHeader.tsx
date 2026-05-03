@@ -26,6 +26,9 @@ export function PageHeader({
   const useFloatingTitle = !backTo && titleAlign !== 'start'
   const titleAlignmentClass =
     titleAlign === 'center' ? 'items-center text-center' : 'items-end text-right'
+  const titleClassName = subtitle
+    ? 'truncate text-[22px] leading-8'
+    : 'overflow-hidden text-[22px] leading-[1.15] [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]'
 
   useEffect(() => {
     const handleScroll = () => {
@@ -63,7 +66,7 @@ export function PageHeader({
               : 'flex',
           ].join(' ')}
         >
-          <h1 className="truncate text-[22px] leading-8 font-bold tracking-normal text-[var(--on-surface)]">
+          <h1 className={`${titleClassName} font-bold tracking-normal text-[var(--on-surface)]`}>
             {title}
           </h1>
           {subtitle ? (
