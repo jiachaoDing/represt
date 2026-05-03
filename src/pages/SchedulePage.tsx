@@ -35,6 +35,12 @@ export function SchedulePage() {
     () => new Map(schedule.plans.map((plan, index) => [plan.id, getPlanColor(index)])),
     [schedule.plans],
   )
+  const customImportExercises = useMemo(() => {
+    const customPlanItemIdSet = new Set(ui.customPlanItemIds)
+    return schedule.currentSession?.exercises.filter((exercise) =>
+      customPlanItemIdSet.has(exercise.id),
+    ) ?? []
+  }, [schedule.currentSession?.exercises, ui.customPlanItemIds])
 
   const todayStr = new Intl.DateTimeFormat(i18n.resolvedLanguage, {
     month: 'long',
@@ -216,7 +222,7 @@ export function SchedulePage() {
         draft={schedule.newExerciseDraft}
         isOpen={ui.isCreateSheetOpen}
         isSubmitting={schedule.isSubmitting}
-        onClose={() => ui.setIsCreateSheetOpen(false)}
+        onClose={ui.closeCreateSheet}
         onDraftChange={schedule.setNewExerciseDraft}
         onSubmit={ui.handleAddExercise}
       />
@@ -225,6 +231,7 @@ export function SchedulePage() {
         isOpen={ui.isPlanSheetOpen}
         isSubmitting={schedule.isSubmitting}
         selectedExerciseIds={ui.selectedPlanExerciseIds}
+        customExercises={customImportExercises}
         sourcePlans={ui.isAllPlanImportMode ? schedule.plans : undefined}
         plan={ui.importSourcePlan}
         onClose={ui.closePlanImportSheet}

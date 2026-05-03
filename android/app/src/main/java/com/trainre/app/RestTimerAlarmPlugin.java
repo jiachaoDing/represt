@@ -50,10 +50,25 @@ public class RestTimerAlarmPlugin extends Plugin {
             call.reject("AlarmManager unavailable.");
             return;
         }
+        if (!canScheduleExactAlarms(context)) {
+            JSObject result = new JSObject();
+            result.put("scheduled", false);
+            result.put("canScheduleExactAlarms", false);
+            call.resolve(result);
+            return;
+        }
 
         PendingIntent alarmIntent = buildAlarmIntent(context, id, call, PendingIntent.FLAG_UPDATE_CURRENT);
         PendingIntent showIntent = buildLaunchIntent(context, id, call.getString("path"));
-        alarmManager.setAlarmClock(new AlarmManager.AlarmClockInfo(triggerAt, showIntent), alarmIntent);
+        try {
+            alarmManager.setAlarmClock(new AlarmManager.AlarmClockInfo(triggerAt, showIntent), alarmIntent);
+        } catch (SecurityException alarmPermissionError) {
+            JSObject result = new JSObject();
+            result.put("scheduled", false);
+            result.put("canScheduleExactAlarms", false);
+            call.resolve(result);
+            return;
+        }
 
         JSObject result = new JSObject();
         result.put("scheduled", true);

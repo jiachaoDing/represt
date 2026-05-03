@@ -18,7 +18,7 @@ type UseSchedulePageUiOptions = {
     planId: string,
     planExerciseIds?: string[],
   ) => Promise<{ count: number; name: string } | null | false>
-  handleAddTemporaryExercise: () => Promise<boolean>
+  handleAddTemporaryExercise: () => Promise<string | false | null>
   handleDeleteExercises: (planItemIds: string[]) => Promise<boolean>
   handleSyncPlan: () => Promise<PlanSyncResult | false>
   shouldConfirmContinueBeforeAddingExercise: boolean
@@ -42,6 +42,8 @@ export function useSchedulePageUi({
   const [pendingPlanImportId, setPendingPlanImportId] = useState<string | null>(null)
   const [pendingPlanExerciseIds, setPendingPlanExerciseIds] = useState<string[]>([])
   const [selectedPlanExerciseIds, setSelectedPlanExerciseIds] = useState<string[]>([])
+  const [customPlanItemIds, setCustomPlanItemIds] = useState<string[]>([])
+  const [shouldReturnToPlanImportSheet, setShouldReturnToPlanImportSheet] = useState(false)
 
   const importSourcePlan = useMemo(
     () => plans.find((plan) => plan.id === importSourcePlanId) ?? null,
@@ -76,11 +78,19 @@ export function useSchedulePageUi({
     setIsPlanSheetOpen(false)
     setIsAllPlanImportMode(false)
     setSelectedPlanExerciseIds([])
+    setCustomPlanItemIds([])
   }
 
   function createExerciseFromPlanImportSheet() {
-    closePlanImportSheet()
+    setIsPlanSheetOpen(false)
+    setIsAllPlanImportMode(false)
+    setShouldReturnToPlanImportSheet(true)
     setIsCreateSheetOpen(true)
+  }
+
+  function closeCreateSheet() {
+    setIsCreateSheetOpen(false)
+    setShouldReturnToPlanImportSheet(false)
   }
 
   function togglePlanExercise(exerciseId: string) {
@@ -149,10 +159,17 @@ export function useSchedulePageUi({
   }
 
   async function addExercise() {
-    const didCreate = await handleAddTemporaryExercise()
-    if (didCreate) {
+    const createdPlanItemId = await handleAddTemporaryExercise()
+    if (createdPlanItemId) {
       setIsContinueDialogOpen(false)
       setIsCreateSheetOpen(false)
+      if (shouldReturnToPlanImportSheet) {
+        setShouldReturnToPlanImportSheet(false)
+        setCustomPlanItemIds((current) => [...current, createdPlanItemId])
+        setSelectedPlanExerciseIds((current) => [...current, createdPlanItemId])
+        setIsAllPlanImportMode(true)
+        setIsPlanSheetOpen(true)
+      }
     }
   }
 
@@ -178,6 +195,7 @@ export function useSchedulePageUi({
   return {
     addExercise,
     confirmPendingPlanImport,
+    customPlanItemIds,
     handleAddExercise,
     handleDeleteExercisesAction,
     handleImportPlan,
@@ -187,6 +205,7 @@ export function useSchedulePageUi({
     isContinueDialogOpen,
     isCreateSheetOpen,
     isPlanSheetOpen,
+    closeCreateSheet,
     closePlanImportSheet,
     createExerciseFromPlanImportSheet,
     openAddEntry,

@@ -98,6 +98,14 @@ async function checkExactAlarmPermission(): Promise<ExactAlarmPermission> {
     console.warn(exactAlarmError)
   }
 
+  const strongStatus = await getStrongReminderStatus()
+  if (strongStatus?.canScheduleExactAlarms === true) {
+    return 'granted'
+  }
+  if (strongStatus?.canScheduleExactAlarms === false) {
+    return 'denied'
+  }
+
   return 'unknown'
 }
 
@@ -216,6 +224,15 @@ export async function requestLocalReminderPermission() {
 }
 
 export async function openExactAlarmSettings() {
+  if (isRestTimerAlarmAvailable()) {
+    try {
+      await RestTimerAlarm.openExactAlarmSettings()
+      return checkExactAlarmPermission()
+    } catch (exactAlarmError) {
+      console.warn(exactAlarmError)
+    }
+  }
+
   if (!isNativePluginAvailable('LocalNotifications')) {
     return 'unknown' satisfies ExactAlarmPermission
   }
@@ -307,6 +324,11 @@ async function scheduleStrongRestTimerAlarm({
   }
 
   try {
+    const status = await getStrongReminderStatus()
+    if (!status?.canScheduleExactAlarms) {
+      return false
+    }
+
     const result = await RestTimerAlarm.schedule({
       id,
       title,
@@ -375,7 +397,7 @@ export async function scheduleRestTimerNotification(
         body,
         schedule: {
           at: notifyAt,
-          allowWhileIdle: true,
+          ...(exactAlarmPermission === 'granted' ? { allowWhileIdle: true } : {}),
         },
         channelId: REST_TIMER_FALLBACK_CHANNEL_ID,
         group: REST_TIMER_NOTIFICATION_GROUP,
@@ -438,7 +460,7 @@ export async function scheduleRestTimerTestNotification(): Promise<RestTimerSche
         body: i18n.t('notification.localTestBody'),
         schedule: {
           at: notifyAt,
-          allowWhileIdle: true,
+          ...(exactAlarmPermission === 'granted' ? { allowWhileIdle: true } : {}),
         },
         channelId: REST_TIMER_FALLBACK_CHANNEL_ID,
         group: REST_TIMER_NOTIFICATION_GROUP,

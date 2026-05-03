@@ -130,7 +130,7 @@ export function findExerciseNameSuggestions(
 ): ExerciseNameSuggestion[] {
   const normalizedKeyword = normalizeKeyword(keyword)
 
-  return exerciseDictionary
+  const matchedSuggestions = exerciseDictionary
     .map((entry) => {
       const name = getExerciseName(t, entry.id)
       const searchableValues = [
@@ -148,6 +148,7 @@ export function findExerciseNameSuggestions(
 
       return searchableValues.some((value) => normalizeKeyword(value).includes(normalizedKeyword))
     })
-    .slice(0, limit)
     .map(({ entry, name }) => ({ id: entry.id, name }))
+
+  return normalizedKeyword ? matchedSuggestions.slice(0, limit) : matchedSuggestions
 }

@@ -3,12 +3,14 @@ import { useTranslation } from 'react-i18next'
 
 import { BottomSheet } from '../ui/BottomSheet'
 import type { PlanWithExercises } from '../../db/plans'
+import type { ScheduleExercise } from '../../db/sessions'
 import { getDisplayExerciseName } from '../../lib/exercise-name'
 
 type SchedulePlanImportSheetProps = {
   isOpen: boolean
   isSubmitting: boolean
   selectedExerciseIds: string[]
+  customExercises?: ScheduleExercise[]
   sourcePlans?: PlanWithExercises[]
   plan: PlanWithExercises | null
   onClose: () => void
@@ -21,6 +23,7 @@ export function SchedulePlanImportSheet({
   isOpen,
   isSubmitting,
   selectedExerciseIds,
+  customExercises = [],
   sourcePlans = [],
   plan,
   onClose,
@@ -30,7 +33,8 @@ export function SchedulePlanImportSheet({
 }: SchedulePlanImportSheetProps) {
   const { t } = useTranslation()
   const plans = plan ? [plan] : sourcePlans.filter((item) => item.exercises.length > 0)
-  const totalExerciseCount = plans.reduce((count, item) => count + item.exercises.length, 0)
+  const totalExerciseCount =
+    customExercises.length + plans.reduce((count, item) => count + item.exercises.length, 0)
   const title = plan?.name ?? t('plans.importFromPlans')
 
   return (
@@ -57,6 +61,52 @@ export function SchedulePlanImportSheet({
           </p>
 
           <div className="-mx-2 max-h-[50vh] space-y-4 overflow-y-auto px-2">
+            {customExercises.length > 0 ? (
+              <section>
+                <h3 className="px-2 pb-1 text-xs font-semibold text-[var(--on-surface-variant)]">
+                  {t('schedule.customExercises')}
+                </h3>
+                <div className="space-y-1">
+                  {customExercises.map((exercise) => {
+                    const displayName = getDisplayExerciseName(t, exercise)
+
+                    return (
+                      <label
+                        key={exercise.id}
+                        className="flex items-center gap-4 rounded-xl px-2 py-3"
+                      >
+                        <div className="relative flex h-5 w-5 items-center justify-center">
+                          <input
+                            type="checkbox"
+                            checked={selectedExerciseIds.includes(exercise.id)}
+                            disabled
+                            readOnly
+                            className="peer h-5 w-5 shrink-0 appearance-none rounded-sm border-2 border-[var(--primary)] bg-[var(--primary)]"
+                          />
+                          <svg
+                            viewBox="0 0 24 24"
+                            className="pointer-events-none absolute h-4 w-4 text-[var(--on-primary)] opacity-100"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="3"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-base text-[var(--on-surface)]">{displayName}</p>
+                          <p className="mt-0.5 text-xs text-[var(--on-surface-variant)]">
+                            {t('schedule.restMeta', { sets: exercise.targetSets, seconds: exercise.restSeconds })}
+                          </p>
+                        </div>
+                      </label>
+                    )
+                  })}
+                </div>
+              </section>
+            ) : null}
             {plans.map((sourcePlan) => (
               <section key={sourcePlan.id}>
                 {plan ? null : (

@@ -211,11 +211,18 @@ export function useSchedulePageData() {
       return false
     }
 
-    return runMutation(async () => {
-      await addTemporarySessionPlanItem(currentSession.id, draftToSessionPlanInput(newExerciseDraft))
+    let createdPlanItemId: string | null = null
+    const didSucceed = await runMutation(async () => {
+      const planItem = await addTemporarySessionPlanItem(
+        currentSession.id,
+        draftToSessionPlanInput(newExerciseDraft),
+      )
+      createdPlanItemId = planItem.id
       setNewExerciseDraft(emptyExerciseDraft)
       await loadData(selectedPlanId)
     })
+
+    return didSucceed ? createdPlanItemId : false
   }
 
   async function handleReplaceExercise(planItemId: string, draft: PlanExerciseDraft) {

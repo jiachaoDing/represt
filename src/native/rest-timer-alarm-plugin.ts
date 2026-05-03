@@ -19,7 +19,7 @@ export type RestTimerAlarmPlugin = {
     body: string
     triggerAt: number
     path?: string
-  }) => Promise<{ scheduled: boolean }>
+  }) => Promise<{ scheduled: boolean; canScheduleExactAlarms?: boolean }>
   cancel: (input: { id: number }) => Promise<void>
   openExactAlarmSettings: () => Promise<void>
   openChannelSettings: () => Promise<void>

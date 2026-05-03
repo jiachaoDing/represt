@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 
 import {
   getLocalReminderStatus,
+  openExactAlarmSettings,
   openStrongReminderSettings,
   requestLocalReminderPermission,
   scheduleRestTimerTestNotification,
@@ -22,7 +23,35 @@ function getReminderStatusLabel(status: LocalReminderStatus | null, t: T) {
   return status.isDisplayPermissionGranted ? t('settings.reminder.enabled') : t('settings.reminder.disabled')
 }
 
+function needsExactAlarmSettings(status: LocalReminderStatus | null) {
+  return Boolean(
+    status?.isDisplayPermissionGranted &&
+      status.isStrongReminderAvailable &&
+      (status.exactAlarmPermission === 'denied' ||
+        status.strongReminderCanScheduleExactAlarms === false),
+  )
+}
+
+function getExactAlarmStatusLabel(status: LocalReminderStatus | null, t: T) {
+  if (
+    status?.exactAlarmPermission === 'granted' ||
+    status?.strongReminderCanScheduleExactAlarms === true
+  ) {
+    return t('settings.reminder.exactAlarmEnabled')
+  }
+
+  if (needsExactAlarmSettings(status)) {
+    return t('settings.reminder.exactAlarmNeedsSetup')
+  }
+
+  return t('settings.reminder.systemLimited')
+}
+
 function getPrimaryActionLabel(status: LocalReminderStatus | null, t: T) {
+  if (needsExactAlarmSettings(status)) {
+    return t('settings.reminder.openSystemSettings')
+  }
+
   if (status?.isDisplayPermissionGranted) {
     return t('settings.reminder.checkSettings')
   }
@@ -47,7 +76,7 @@ function ReminderActionButton({
       disabled={disabled}
       onClick={onClick}
       className={[
-        'min-h-10 rounded-full px-4 py-2 text-xs font-semibold transition-opacity disabled:opacity-40',
+        'min-h-10 whitespace-nowrap rounded-full px-4 py-2 text-[11px] leading-none font-semibold transition-opacity disabled:opacity-40',
         primary
           ? 'bg-[var(--primary)] text-[var(--on-primary)]'
           : 'border border-[var(--outline-variant)] text-[var(--on-surface)]',
@@ -74,7 +103,20 @@ export function LocalReminderSettings() {
       void refreshStatus()
     }, 0)
 
-    return () => window.clearTimeout(timeoutId)
+    function handleRefreshSignal() {
+      if (document.visibilityState === 'visible') {
+        void refreshStatus()
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleRefreshSignal)
+    window.addEventListener('focus', handleRefreshSignal)
+
+    return () => {
+      window.clearTimeout(timeoutId)
+      document.removeEventListener('visibilitychange', handleRefreshSignal)
+      window.removeEventListener('focus', handleRefreshSignal)
+    }
   }, [refreshStatus])
 
   async function runAction(action: Exclude<BusyAction, null>, task: () => Promise<void>) {
@@ -93,6 +135,7 @@ export function LocalReminderSettings() {
 
   const isAvailable = Boolean(status?.isLocalNotificationsAvailable)
   const isGranted = Boolean(status?.isDisplayPermissionGranted)
+  const shouldShowExactAlarmStatus = Boolean(status?.isNative && status.isStrongReminderAvailable)
 
   return (
     <div className="px-4 py-4">
@@ -110,6 +153,17 @@ export function LocalReminderSettings() {
           <p className="mt-1 text-xs leading-5 text-[var(--on-surface-variant)]">
             {t('settings.reminder.description')}
           </p>
+          {shouldShowExactAlarmStatus ? (
+            <p className="mt-2 text-xs leading-5 text-[var(--on-surface-variant)]">
+              <span className="font-medium text-[var(--on-surface)]">
+                {t('settings.reminder.exactAlarmTitle')}
+              </span>{' '}
+              {getExactAlarmStatusLabel(status, t)}
+            </p>
+          ) : null}
+          <p className="mt-1 text-xs leading-5 text-[var(--on-surface-variant)]">
+            {t('settings.reminder.reliabilityHint')}
+          </p>
         </div>
       </div>
 
@@ -125,6 +179,16 @@ export function LocalReminderSettings() {
           onClick={() =>
             void runAction(isGranted ? 'settings' : 'permission', async () => {
               if (isGranted) {
+                if (needsExactAlarmSettings(status)) {
+                  const exactPermission = await openExactAlarmSettings()
+                  setNotice(
+                    exactPermission === 'granted'
+                      ? t('settings.reminder.exactAlarmGranted')
+                      : t('settings.reminder.exactAlarmNeedsSettings'),
+                  )
+                  return
+                }
+
                 const result = await openStrongReminderSettings()
                 setNotice(result.message)
                 return
