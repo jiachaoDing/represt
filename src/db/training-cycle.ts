@@ -160,6 +160,19 @@ export async function setTrainRestTrainingCycle(planId: string) {
   })
 }
 
+export async function setTrainingCycleSlots(planIds: Array<string | null>) {
+  return saveTrainingCycle({
+    id: TRAINING_CYCLE_ID,
+    slots: planIds.map((planId) => ({
+      id: crypto.randomUUID(),
+      planId,
+    })),
+    anchorDateKey: getTodaySessionDateKey(),
+    anchorIndex: 0,
+    updatedAt: nowIso(),
+  })
+}
+
 export async function removeTrainingCycleSlot(slotId: string) {
   const cycle = await getOrCreateTrainingCycle()
   const slotIndex = cycle.slots.findIndex((slot) => slot.id === slotId)
