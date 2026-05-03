@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { createPortal } from 'react-dom'
+import { BookmarkPlus } from 'lucide-react'
 import {
   DndContext,
   DragOverlay,
@@ -299,8 +300,15 @@ export function ScheduleExerciseList({
 
       {showSavePlanTip ? (
         <div className="rounded-2xl border border-[var(--primary)]/20 bg-[var(--primary-container)]/30 px-4 py-3">
-          <p className="text-sm leading-5 text-[var(--on-surface)]">
-            {t('schedule.saveTodayAsPlanTip')}
+          <p className="inline-flex flex-wrap items-center gap-1 text-sm leading-5 text-[var(--on-surface)]">
+            <span>{t('schedule.saveTodayAsPlanTipPrefix')}</span>
+            <BookmarkPlus
+              size={17}
+              strokeWidth={2.25}
+              aria-label={t('schedule.saveTodayAsPlan')}
+              className="text-[var(--primary)]"
+            />
+            <span>{t('schedule.saveTodayAsPlanTipSuffix')}</span>
           </p>
           <button
             type="button"

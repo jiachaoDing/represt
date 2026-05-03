@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Plus } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { createPortal } from 'react-dom'
@@ -22,6 +22,7 @@ import { ExerciseQuickTimer } from '../components/exercise/ExerciseQuickTimer'
 import { quickEaseTransition } from '../components/motion/motion-tokens'
 
 const saveTodayAsPlanTipStorageKey = 'trainre.saveTodayAsPlanTipHidden.v1'
+const saveTodayAsPlanUsedStorageKey = 'trainre.saveTodayAsPlanUsed.v1'
 
 function getStoredSaveTodayAsPlanTipHidden() {
   if (typeof window === 'undefined') {
@@ -29,6 +30,14 @@ function getStoredSaveTodayAsPlanTipHidden() {
   }
 
   return window.localStorage.getItem(saveTodayAsPlanTipStorageKey) === 'true'
+}
+
+function getStoredSaveTodayAsPlanUsed() {
+  if (typeof window === 'undefined') {
+    return false
+  }
+
+  return window.localStorage.getItem(saveTodayAsPlanUsedStorageKey) === 'true'
 }
 
 export function SchedulePage() {
@@ -44,6 +53,11 @@ export function SchedulePage() {
   const [isSaveTodayAsPlanTipHidden, setIsSaveTodayAsPlanTipHidden] = useState(
     getStoredSaveTodayAsPlanTipHidden,
   )
+  const [isSaveTodayAsPlanUsed, setIsSaveTodayAsPlanUsed] = useState(
+    getStoredSaveTodayAsPlanUsed,
+  )
+  const [canShowSaveTodayAsPlanTipForEntry, setCanShowSaveTodayAsPlanTipForEntry] = useState(false)
+  const isScheduleEntryPendingRef = useRef(location.pathname === '/')
   const planColorMap = useMemo(
     () => new Map(schedule.plans.map((plan, index) => [plan.id, getPlanColor(index)])),
     [schedule.plans],
@@ -65,17 +79,19 @@ export function SchedulePage() {
   const totalSets = schedule.currentSession?.exercises.reduce((sum, exercise) => sum + exercise.targetSets, 0) ?? 0
   const canSaveTodayAsPlan =
     !schedule.isLoading && (schedule.currentSession?.exercises.length ?? 0) > 0
-  const shouldShowSaveTodayAsPlanTip =
+  const canPromptSaveTodayAsPlan =
     !schedule.isLoading &&
-    !isSaveTodayAsPlanTipHidden &&
+    !isSaveTodayAsPlanUsed &&
     schedule.currentSession !== null &&
-    schedule.currentSession.plannedPlanId === null &&
     schedule.currentSession.exercises.length > 0 &&
     schedule.currentSession.exercises.every(
-      (exercise) =>
-        (exercise.origin === 'manual' || !exercise.sourcePlanId) &&
-        exercise.completedSets >= exercise.targetSets,
+      (exercise) => exercise.completedSets >= exercise.targetSets,
     )
+  const shouldShowSaveTodayAsPlanTip =
+    location.pathname === '/' &&
+    !isSaveTodayAsPlanTipHidden &&
+    canShowSaveTodayAsPlanTipForEntry &&
+    canPromptSaveTodayAsPlan
   const canShowAddExerciseButton = location.pathname === '/' && canSaveTodayAsPlan
   const isStarterState =
     !schedule.isLoading &&
@@ -132,13 +148,51 @@ export function SchedulePage() {
     transformOrigin: 'center top',
   } as const
 
+  useEffect(() => {
+    isScheduleEntryPendingRef.current = location.pathname === '/'
+    setCanShowSaveTodayAsPlanTipForEntry(false)
+  }, [location.key, location.pathname])
+
+  useEffect(() => {
+    if (location.pathname !== '/' || schedule.isLoading || !isScheduleEntryPendingRef.current) {
+      return
+    }
+
+    setCanShowSaveTodayAsPlanTipForEntry(canPromptSaveTodayAsPlan)
+    isScheduleEntryPendingRef.current = false
+  }, [canPromptSaveTodayAsPlan, location.pathname, schedule.isLoading])
+
   function hideSaveTodayAsPlanTip() {
     window.localStorage.setItem(saveTodayAsPlanTipStorageKey, 'true')
     setIsSaveTodayAsPlanTipHidden(true)
   }
 
+  function markSaveTodayAsPlanUsed() {
+    window.localStorage.setItem(saveTodayAsPlanUsedStorageKey, 'true')
+    setIsSaveTodayAsPlanUsed(true)
+    setCanShowSaveTodayAsPlanTipForEntry(false)
+  }
+
+  async function handleCreatePlanFromToday(name: string) {
+    const didCreate = await schedule.handleCreatePlanFromToday(name)
+    if (didCreate) {
+      markSaveTodayAsPlanUsed()
+    }
+
+    return didCreate
+  }
+
+  async function handleOverwritePlanFromToday(planId: string) {
+    const didOverwrite = await schedule.handleOverwritePlanFromToday(planId)
+    if (didOverwrite) {
+      markSaveTodayAsPlanUsed()
+    }
+
+    return didOverwrite
+  }
+
   return (
-    <div className="flex h-full min-h-0 flex-col pb-4">
+    <div className="pb-4">
       <PageHeader 
         title={todayStr} 
         titleAlign="start"
@@ -154,7 +208,7 @@ export function SchedulePage() {
         }
       />
 
-      <div className="relative min-h-0 flex-1 overflow-hidden [perspective:1200px]">
+      <div className="relative overflow-x-hidden [perspective:1200px]">
         <AnimatePresence custom={flipDirection} initial={false} mode="wait">
           {isQuickTimerOpen ? (
             <motion.div
@@ -164,7 +218,7 @@ export function SchedulePage() {
               initial="initial"
               animate="animate"
               exit="exit"
-              className="absolute inset-0 flex min-h-0 flex-col px-4"
+              className="px-4"
               style={pageFlipStyle}
             >
               <ExerciseQuickTimer now={now} />
@@ -177,7 +231,7 @@ export function SchedulePage() {
               initial="initial"
               animate="animate"
               exit="exit"
-              className="absolute inset-0 overflow-hidden"
+              className="overflow-x-hidden"
               style={pageFlipStyle}
             >
               {!schedule.isLoading ? (
@@ -280,8 +334,8 @@ export function SchedulePage() {
         isSubmitting={schedule.isSubmitting}
         plans={schedule.plans}
         onClose={() => setIsPlanSaveSheetOpen(false)}
-        onCreatePlan={schedule.handleCreatePlanFromToday}
-        onOverwritePlan={schedule.handleOverwritePlanFromToday}
+        onCreatePlan={handleCreatePlanFromToday}
+        onOverwritePlan={handleOverwritePlanFromToday}
       />
 
       <ConfirmDialog
