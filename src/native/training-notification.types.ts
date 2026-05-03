@@ -8,26 +8,16 @@ export type RestTimerNotificationInput = {
 
 export type QuickTimerNotificationInput = {
   endsAt: number | null
+  isPaused?: boolean
+  remainingMs?: number
+  totalSeconds?: number
 }
-
-export type ExactAlarmPermission = 'granted' | 'denied' | 'unknown'
 
 export type LocalReminderStatus = {
   isNative: boolean
   isLocalNotificationsAvailable: boolean
   displayPermission: PermissionState | 'unknown'
   isDisplayPermissionGranted: boolean
-  exactAlarmPermission: ExactAlarmPermission
-  hasTriedRestTimerChannel: boolean
-  isRestTimerChannelReady: boolean
-  restTimerChannelImportance: number | null
-  restTimerChannelVibration: boolean | null
-  restTimerChannelSound: string | null
-  isStrongReminderAvailable: boolean
-  isStrongReminderChannelReady: boolean
-  strongReminderCanScheduleExactAlarms: boolean | null
-  strongReminderCanUseFullScreenIntent: boolean | null
-  strongReminderChannelSound: string | null
   isTimerForegroundServiceAvailable: boolean
   isTimerForegroundChannelReady: boolean
   timerForegroundChannelImportance: number | null
@@ -37,10 +27,8 @@ export type LocalReminderStatus = {
 export type RestTimerScheduleResult = {
   scheduled: boolean
   reason?: 'invalid-time' | 'permission-denied' | 'plugin-unavailable'
-  exactAlarmPermission: ExactAlarmPermission
 }
 
 export type RestTimerPermissionPrepareResult = {
   displayPermission: PermissionState | 'unknown'
-  exactAlarmPermission: ExactAlarmPermission
 }

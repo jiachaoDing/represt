@@ -21,6 +21,8 @@ import com.getcapacitor.annotation.CapacitorPlugin;
 public class TrainingTimerNotificationPlugin extends Plugin {
     private String pendingLaunchPath;
     private String pendingTimerType;
+    private String pendingLaunchAction;
+    private String pendingExerciseId;
 
     @Override
     public void load() {
@@ -39,6 +41,8 @@ public class TrainingTimerNotificationPlugin extends Plugin {
         JSObject event = new JSObject();
         event.put("path", pendingLaunchPath);
         event.put("timerType", pendingTimerType);
+        event.put("launchAction", pendingLaunchAction);
+        event.put("exerciseId", pendingExerciseId);
         notifyListeners(TrainingTimerNotificationConstants.EVENT_NOTIFICATION_TAPPED, event, true);
     }
 
@@ -74,7 +78,11 @@ public class TrainingTimerNotificationPlugin extends Plugin {
             .putExtra(TrainingTimerNotificationConstants.EXTRA_FINISHED_BODY, call.getString("finishedBody"))
             .putExtra(TrainingTimerNotificationConstants.EXTRA_ENDS_AT, endsAt)
             .putExtra(TrainingTimerNotificationConstants.EXTRA_PATH, call.getString("path"))
-            .putExtra(TrainingTimerNotificationConstants.EXTRA_PLAY_FINAL_BEEPS, call.getBoolean("playFinalBeeps", false));
+            .putExtra(TrainingTimerNotificationConstants.EXTRA_PLAY_FINAL_BEEPS, call.getBoolean("playFinalBeeps", false))
+            .putExtra(TrainingTimerNotificationConstants.EXTRA_BEEP_VOLUME, clampBeepVolume(call.getDouble("beepVolume", 0.2)))
+            .putExtra(TrainingTimerNotificationConstants.EXTRA_IS_PAUSED, call.getBoolean("isPaused", false))
+            .putExtra(TrainingTimerNotificationConstants.EXTRA_REMAINING_MS, call.getLong("remainingMs", 0L))
+            .putExtra(TrainingTimerNotificationConstants.EXTRA_TOTAL_SECONDS, call.getInt("totalSeconds", 0));
 
         try {
             ContextCompat.startForegroundService(getContext(), intent);
@@ -120,6 +128,10 @@ public class TrainingTimerNotificationPlugin extends Plugin {
 
     @PluginMethod
     public void openBatteryOptimizationSettings(PluginCall call) {
+        openBatteryOptimizationSettingsFallback(call);
+    }
+
+    private void openBatteryOptimizationSettingsFallback(PluginCall call) {
         Context context = getContext();
         Intent intent = new Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS);
         try {
@@ -151,7 +163,7 @@ public class TrainingTimerNotificationPlugin extends Plugin {
             getActivity().startActivity(intent);
             call.resolve();
         } catch (Exception settingsError) {
-            openBatteryOptimizationSettings(call);
+            openBatteryOptimizationSettingsFallback(call);
         }
     }
 
@@ -160,8 +172,12 @@ public class TrainingTimerNotificationPlugin extends Plugin {
         JSObject result = new JSObject();
         result.put("path", pendingLaunchPath);
         result.put("timerType", pendingTimerType);
+        result.put("launchAction", pendingLaunchAction);
+        result.put("exerciseId", pendingExerciseId);
         pendingLaunchPath = null;
         pendingTimerType = null;
+        pendingLaunchAction = null;
+        pendingExerciseId = null;
         call.resolve(result);
     }
 
@@ -177,6 +193,8 @@ public class TrainingTimerNotificationPlugin extends Plugin {
 
         pendingLaunchPath = path;
         pendingTimerType = intent.getStringExtra(TrainingTimerNotificationConstants.EXTRA_TIMER_TYPE);
+        pendingLaunchAction = intent.getStringExtra(TrainingTimerNotificationConstants.EXTRA_LAUNCH_ACTION);
+        pendingExerciseId = intent.getStringExtra(TrainingTimerNotificationConstants.EXTRA_EXERCISE_ID);
         return true;
     }
 
@@ -187,6 +205,14 @@ public class TrainingTimerNotificationPlugin extends Plugin {
 
         PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
         return powerManager != null && powerManager.isIgnoringBatteryOptimizations(context.getPackageName());
+    }
+
+    private double clampBeepVolume(double volume) {
+        if (Double.isNaN(volume)) {
+            return 0.2;
+        }
+
+        return Math.max(0.0, Math.min(1.0, volume));
     }
 
     private void addChannelStatus(Context context, JSObject result) {

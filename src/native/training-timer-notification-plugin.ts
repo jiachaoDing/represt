@@ -1,6 +1,14 @@
 import { registerPlugin, type PluginListenerHandle } from '@capacitor/core'
 
 export type TrainingTimerType = 'rest' | 'quick'
+export type TrainingTimerLaunchAction = 'completeSet' | 'quickTimerToggle' | 'quickTimerRepeat'
+
+export type TrainingTimerNotificationLaunch = {
+  path?: string | null
+  timerType?: TrainingTimerType | null
+  launchAction?: TrainingTimerLaunchAction | null
+  exerciseId?: string | null
+}
 
 export type TrainingTimerNotificationStatus = {
   available: boolean
@@ -20,6 +28,10 @@ export type TrainingTimerNotificationInput = {
   endsAt: number
   path?: string
   playFinalBeeps?: boolean
+  beepVolume?: number
+  isPaused?: boolean
+  remainingMs?: number
+  totalSeconds?: number
 }
 
 export type TrainingTimerNotificationPlugin = {
@@ -31,10 +43,10 @@ export type TrainingTimerNotificationPlugin = {
   isIgnoringBatteryOptimizations: () => Promise<{ isIgnoringBatteryOptimizations: boolean }>
   openBatteryOptimizationSettings: () => Promise<void>
   requestIgnoreBatteryOptimization: () => Promise<void>
-  consumeLaunchPath: () => Promise<{ path?: string | null; timerType?: TrainingTimerType | null }>
+  consumeLaunchPath: () => Promise<TrainingTimerNotificationLaunch>
   addListener: (
     eventName: 'trainingTimerNotificationTapped',
-    listenerFunc: (event: { path?: string | null; timerType?: TrainingTimerType | null }) => void,
+    listenerFunc: (event: TrainingTimerNotificationLaunch) => void,
   ) => Promise<PluginListenerHandle>
 }
 

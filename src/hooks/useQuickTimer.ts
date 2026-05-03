@@ -118,6 +118,90 @@ function getSnapshot() {
   return quickTimerState
 }
 
+export function startQuickTimer() {
+  const currentRemainingMs =
+    quickTimerState.status === 'running' && quickTimerState.endsAt
+      ? Math.max(0, quickTimerState.endsAt - Date.now())
+      : quickTimerState.remainingMs
+  const nextRemainingMs = currentRemainingMs > 0 ? currentRemainingMs : quickTimerState.selectedSeconds * 1000
+  const endsAt = Date.now() + nextRemainingMs
+
+  emitQuickTimerState({
+    ...quickTimerState,
+    endsAt,
+    isFinishAcknowledged: false,
+    remainingMs: nextRemainingMs,
+    status: 'running',
+  })
+  void startQuickTimerForegroundNotification({
+    endsAt,
+    totalSeconds: quickTimerState.selectedSeconds,
+  })
+}
+
+export function pauseQuickTimer() {
+  if (quickTimerState.status !== 'running' || !quickTimerState.endsAt) {
+    return
+  }
+
+  const remainingMs = Math.max(0, quickTimerState.endsAt - Date.now())
+  emitQuickTimerState({
+    ...quickTimerState,
+    endsAt: null,
+    remainingMs,
+    status: 'paused',
+  })
+
+  if (remainingMs > 0) {
+    void startQuickTimerForegroundNotification({
+      endsAt: Date.now() + remainingMs,
+      isPaused: true,
+      remainingMs,
+      totalSeconds: quickTimerState.selectedSeconds,
+    })
+    return
+  }
+
+  void cancelQuickTimerForegroundNotification()
+}
+
+export function resetQuickTimer() {
+  emitQuickTimerState({
+    ...quickTimerState,
+    endsAt: null,
+    isFinishAcknowledged: true,
+    remainingMs: quickTimerState.selectedSeconds * 1000,
+    status: 'idle',
+  })
+  void cancelQuickTimerForegroundNotification()
+}
+
+export function repeatQuickTimer() {
+  const remainingMs = quickTimerState.selectedSeconds * 1000
+  const endsAt = Date.now() + remainingMs
+
+  emitQuickTimerState({
+    ...quickTimerState,
+    endsAt,
+    isFinishAcknowledged: false,
+    remainingMs,
+    status: 'running',
+  })
+  void startQuickTimerForegroundNotification({
+    endsAt,
+    totalSeconds: quickTimerState.selectedSeconds,
+  })
+}
+
+export function toggleQuickTimer() {
+  if (quickTimerState.status === 'running') {
+    pauseQuickTimer()
+    return
+  }
+
+  startQuickTimer()
+}
+
 export function useQuickTimer() {
   const state = useSyncExternalStore(subscribe, getSnapshot, getSnapshot)
 
@@ -156,47 +240,15 @@ export function useQuickTimer() {
   }, [])
 
   const start = useCallback(() => {
-    const currentRemainingMs =
-      quickTimerState.status === 'running' && quickTimerState.endsAt
-        ? Math.max(0, quickTimerState.endsAt - Date.now())
-        : quickTimerState.remainingMs
-    const nextRemainingMs = currentRemainingMs > 0 ? currentRemainingMs : quickTimerState.selectedSeconds * 1000
-
-    const endsAt = Date.now() + nextRemainingMs
-
-    emitQuickTimerState({
-      ...quickTimerState,
-      endsAt,
-      isFinishAcknowledged: false,
-      remainingMs: nextRemainingMs,
-      status: 'running',
-    })
-    void startQuickTimerForegroundNotification({ endsAt })
+    startQuickTimer()
   }, [])
 
   const pause = useCallback(() => {
-    if (quickTimerState.status !== 'running' || !quickTimerState.endsAt) {
-      return
-    }
-
-    emitQuickTimerState({
-      ...quickTimerState,
-      endsAt: null,
-      remainingMs: Math.max(0, quickTimerState.endsAt - Date.now()),
-      status: 'paused',
-    })
-    void cancelQuickTimerForegroundNotification()
+    pauseQuickTimer()
   }, [])
 
   const reset = useCallback(() => {
-    emitQuickTimerState({
-      ...quickTimerState,
-      endsAt: null,
-      isFinishAcknowledged: true,
-      remainingMs: quickTimerState.selectedSeconds * 1000,
-      status: 'idle',
-    })
-    void cancelQuickTimerForegroundNotification()
+    resetQuickTimer()
   }, [])
 
   const finish = useCallback(() => {

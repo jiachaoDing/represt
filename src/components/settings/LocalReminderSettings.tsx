@@ -3,12 +3,13 @@ import { Bell } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import {
+  getTrainingTimerBeepVolume,
   getLocalReminderStatus,
+  openAppNotificationSettings,
   openBatteryOptimizationSettings,
-  openExactAlarmSettings,
-  openStrongReminderSettings,
   requestLocalReminderPermission,
   scheduleRestTimerTestNotification,
+  setTrainingTimerBeepVolume,
   type LocalReminderStatus,
 } from '../../native/training-notifications'
 
@@ -24,30 +25,6 @@ function getReminderStatusLabel(status: LocalReminderStatus | null, t: T) {
   return status.isDisplayPermissionGranted ? t('settings.reminder.enabled') : t('settings.reminder.disabled')
 }
 
-function needsExactAlarmSettings(status: LocalReminderStatus | null) {
-  return Boolean(
-    status?.isDisplayPermissionGranted &&
-      status.isStrongReminderAvailable &&
-      (status.exactAlarmPermission === 'denied' ||
-        status.strongReminderCanScheduleExactAlarms === false),
-  )
-}
-
-function getExactAlarmStatusLabel(status: LocalReminderStatus | null, t: T) {
-  if (
-    status?.exactAlarmPermission === 'granted' ||
-    status?.strongReminderCanScheduleExactAlarms === true
-  ) {
-    return t('settings.reminder.exactAlarmEnabled')
-  }
-
-  if (needsExactAlarmSettings(status)) {
-    return t('settings.reminder.exactAlarmNeedsSetup')
-  }
-
-  return t('settings.reminder.systemLimited')
-}
-
 function getBatteryStatusLabel(status: LocalReminderStatus | null, t: T) {
   if (!status?.isNative || !status.isTimerForegroundServiceAvailable) {
     return t('settings.reminder.systemLimited')
@@ -61,10 +38,6 @@ function getBatteryStatusLabel(status: LocalReminderStatus | null, t: T) {
 }
 
 function getPrimaryActionLabel(status: LocalReminderStatus | null, t: T) {
-  if (needsExactAlarmSettings(status)) {
-    return t('settings.reminder.openSystemSettings')
-  }
-
   if (status?.isDisplayPermissionGranted) {
     return t('settings.reminder.checkSettings')
   }
@@ -89,7 +62,7 @@ function ReminderActionButton({
       disabled={disabled}
       onClick={onClick}
       className={[
-        'min-h-10 whitespace-nowrap rounded-full px-4 py-2 text-[11px] leading-none font-semibold transition-opacity disabled:opacity-40',
+        'min-h-10 rounded-full px-4 py-2 text-center text-[11px] leading-4 font-semibold transition-opacity disabled:opacity-40',
         primary
           ? 'bg-[var(--primary)] text-[var(--on-primary)]'
           : 'border border-[var(--outline-variant)] text-[var(--on-surface)]',
@@ -105,6 +78,7 @@ export function LocalReminderSettings() {
   const [status, setStatus] = useState<LocalReminderStatus | null>(null)
   const [busyAction, setBusyAction] = useState<BusyAction>(null)
   const [notice, setNotice] = useState<string | null>(null)
+  const [beepVolume, setBeepVolume] = useState(() => getTrainingTimerBeepVolume())
 
   const refreshStatus = useCallback(async () => {
     const nextStatus = await getLocalReminderStatus()
@@ -146,9 +120,13 @@ export function LocalReminderSettings() {
     }
   }
 
+  function updateBeepVolume(nextVolume: number) {
+    setBeepVolume(nextVolume)
+    setTrainingTimerBeepVolume(nextVolume)
+  }
+
   const isAvailable = Boolean(status?.isLocalNotificationsAvailable)
   const isGranted = Boolean(status?.isDisplayPermissionGranted)
-  const shouldShowExactAlarmStatus = Boolean(status?.isNative && status.isStrongReminderAvailable)
   const shouldShowBatteryStatus = Boolean(status?.isNative && status.isTimerForegroundServiceAvailable)
 
   return (
@@ -167,14 +145,6 @@ export function LocalReminderSettings() {
           <p className="mt-1 text-xs leading-5 text-[var(--on-surface-variant)]">
             {t('settings.reminder.description')}
           </p>
-          {shouldShowExactAlarmStatus ? (
-            <p className="mt-2 text-xs leading-5 text-[var(--on-surface-variant)]">
-              <span className="font-medium text-[var(--on-surface)]">
-                {t('settings.reminder.exactAlarmTitle')}
-              </span>{' '}
-              {getExactAlarmStatusLabel(status, t)}
-            </p>
-          ) : null}
           {shouldShowBatteryStatus ? (
             <p className="mt-1 text-xs leading-5 text-[var(--on-surface-variant)]">
               <span className="font-medium text-[var(--on-surface)]">
@@ -186,6 +156,37 @@ export function LocalReminderSettings() {
           <p className="mt-1 text-xs leading-5 text-[var(--on-surface-variant)]">
             {t('settings.reminder.reliabilityHint')}
           </p>
+          {shouldShowBatteryStatus ? (
+            <div className="mt-3">
+              <div className="flex items-center justify-between gap-3">
+                <label
+                  htmlFor="training-timer-beep-volume"
+                  className="text-xs font-medium text-[var(--on-surface)]"
+                >
+                  {t('settings.reminder.serviceSoundVolumeTitle')}
+                </label>
+                <span className="text-xs font-medium text-[var(--on-surface-variant)]">
+                  {t('settings.reminder.serviceSoundVolumeValue', {
+                    value: Math.round(beepVolume * 100),
+                  })}
+                </span>
+              </div>
+              <input
+                id="training-timer-beep-volume"
+                type="range"
+                min={0}
+                max={100}
+                step={5}
+                value={Math.round(beepVolume * 100)}
+                aria-label={t('settings.reminder.serviceSoundVolumeTitle')}
+                onChange={(event) => updateBeepVolume(Number(event.currentTarget.value) / 100)}
+                className="mt-2 w-full accent-[var(--primary)]"
+              />
+              <p className="mt-1 text-xs leading-5 text-[var(--on-surface-variant)]">
+                {t('settings.reminder.serviceSoundVolumeDescription')}
+              </p>
+            </div>
+          ) : null}
         </div>
       </div>
 
@@ -195,23 +196,13 @@ export function LocalReminderSettings() {
         </p>
       ) : null}
 
-      <div className="mt-4 grid grid-cols-2 gap-2">
+      <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
         <ReminderActionButton
           disabled={!isAvailable || busyAction !== null}
           onClick={() =>
             void runAction(isGranted ? 'settings' : 'permission', async () => {
               if (isGranted) {
-                if (needsExactAlarmSettings(status)) {
-                  const exactPermission = await openExactAlarmSettings()
-                  setNotice(
-                    exactPermission === 'granted'
-                      ? t('settings.reminder.exactAlarmGranted')
-                      : t('settings.reminder.exactAlarmNeedsSettings'),
-                  )
-                  return
-                }
-
-                const result = await openStrongReminderSettings()
+                const result = await openAppNotificationSettings()
                 setNotice(result.message)
                 return
               }

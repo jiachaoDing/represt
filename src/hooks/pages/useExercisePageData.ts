@@ -23,6 +23,7 @@ import {
   prepareRestTimerReminderPermissions,
   scheduleRestTimerNotification,
 } from '../../native/training-notifications'
+import { TRAINING_NOTIFICATION_EXERCISE_UPDATED_EVENT } from '../../native/notification-navigation'
 import { getMeasurementTypeForExercise } from '../../lib/set-record-measurement'
 
 function syncLatestSetInputs(
@@ -105,6 +106,31 @@ export function useExercisePageData(id: string) {
 
     return () => {
       isCancelled = true
+    }
+  }, [id])
+
+  useEffect(() => {
+    function handleNotificationExerciseUpdated(event: Event) {
+      const exerciseId = (event as CustomEvent<{ exerciseId?: string }>).detail?.exerciseId
+      if (exerciseId !== id) {
+        return
+      }
+
+      void getScheduleExerciseDetail(id).then((nextDetail) => {
+        setDetail(nextDetail)
+        syncLatestSetInputs(nextDetail, setWeightInput, setRepsInput, setDurationInput, setDistanceInput)
+      })
+    }
+
+    window.addEventListener(
+      TRAINING_NOTIFICATION_EXERCISE_UPDATED_EVENT,
+      handleNotificationExerciseUpdated,
+    )
+    return () => {
+      window.removeEventListener(
+        TRAINING_NOTIFICATION_EXERCISE_UPDATED_EVENT,
+        handleNotificationExerciseUpdated,
+      )
     }
   }, [id])
 
