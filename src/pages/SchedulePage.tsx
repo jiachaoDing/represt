@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useReducer, useState } from 'react'
 import { Plus } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { createPortal } from 'react-dom'
@@ -23,6 +23,33 @@ import { quickEaseTransition } from '../components/motion/motion-tokens'
 
 const saveTodayAsPlanTipStorageKey = 'trainre.saveTodayAsPlanTipHidden.v1'
 const saveTodayAsPlanUsedStorageKey = 'trainre.saveTodayAsPlanUsed.v1'
+
+type SaveTodayAsPlanTipState = {
+  canShow: boolean
+  didCheck: boolean
+  key: string | null
+}
+
+type SaveTodayAsPlanTipAction =
+  | { type: 'enter'; key: string | null }
+  | { type: 'check'; canShow: boolean; key: string }
+  | { type: 'hide' }
+
+function saveTodayAsPlanTipReducer(
+  state: SaveTodayAsPlanTipState,
+  action: SaveTodayAsPlanTipAction,
+): SaveTodayAsPlanTipState {
+  switch (action.type) {
+    case 'enter':
+      return state.key === action.key ? state : { canShow: false, didCheck: false, key: action.key }
+    case 'check':
+      return state.key === action.key
+        ? { canShow: action.canShow, didCheck: true, key: action.key }
+        : state
+    case 'hide':
+      return { ...state, canShow: false }
+  }
+}
 
 function getStoredSaveTodayAsPlanTipHidden() {
   if (typeof window === 'undefined') {
@@ -56,8 +83,11 @@ export function SchedulePage() {
   const [isSaveTodayAsPlanUsed, setIsSaveTodayAsPlanUsed] = useState(
     getStoredSaveTodayAsPlanUsed,
   )
-  const [canShowSaveTodayAsPlanTipForEntry, setCanShowSaveTodayAsPlanTipForEntry] = useState(false)
-  const isScheduleEntryPendingRef = useRef(location.pathname === '/')
+  const [saveTodayAsPlanTip, dispatchSaveTodayAsPlanTip] = useReducer(
+    saveTodayAsPlanTipReducer,
+    location.pathname === '/' ? location.key : null,
+    (key): SaveTodayAsPlanTipState => ({ canShow: false, didCheck: false, key }),
+  )
   const planColorMap = useMemo(
     () => new Map(schedule.plans.map((plan, index) => [plan.id, getPlanColor(index)])),
     [schedule.plans],
@@ -87,10 +117,12 @@ export function SchedulePage() {
     schedule.currentSession.exercises.every(
       (exercise) => exercise.completedSets >= exercise.targetSets,
     )
+  const currentSaveTodayAsPlanTipEntryKey = location.pathname === '/' ? location.key : null
   const shouldShowSaveTodayAsPlanTip =
     location.pathname === '/' &&
     !isSaveTodayAsPlanTipHidden &&
-    canShowSaveTodayAsPlanTipForEntry &&
+    saveTodayAsPlanTip.key === currentSaveTodayAsPlanTipEntryKey &&
+    saveTodayAsPlanTip.canShow &&
     canPromptSaveTodayAsPlan
   const canShowAddExerciseButton = location.pathname === '/' && canSaveTodayAsPlan
   const isStarterState =
@@ -149,18 +181,31 @@ export function SchedulePage() {
   } as const
 
   useEffect(() => {
-    isScheduleEntryPendingRef.current = location.pathname === '/'
-    setCanShowSaveTodayAsPlanTipForEntry(false)
-  }, [location.key, location.pathname])
+    dispatchSaveTodayAsPlanTip({ type: 'enter', key: currentSaveTodayAsPlanTipEntryKey })
+  }, [currentSaveTodayAsPlanTipEntryKey])
 
   useEffect(() => {
-    if (location.pathname !== '/' || schedule.isLoading || !isScheduleEntryPendingRef.current) {
+    if (
+      currentSaveTodayAsPlanTipEntryKey === null ||
+      schedule.isLoading ||
+      saveTodayAsPlanTip.key !== currentSaveTodayAsPlanTipEntryKey ||
+      saveTodayAsPlanTip.didCheck
+    ) {
       return
     }
 
-    setCanShowSaveTodayAsPlanTipForEntry(canPromptSaveTodayAsPlan)
-    isScheduleEntryPendingRef.current = false
-  }, [canPromptSaveTodayAsPlan, location.pathname, schedule.isLoading])
+    dispatchSaveTodayAsPlanTip({
+      canShow: canPromptSaveTodayAsPlan,
+      key: currentSaveTodayAsPlanTipEntryKey,
+      type: 'check',
+    })
+  }, [
+    canPromptSaveTodayAsPlan,
+    currentSaveTodayAsPlanTipEntryKey,
+    saveTodayAsPlanTip.didCheck,
+    saveTodayAsPlanTip.key,
+    schedule.isLoading,
+  ])
 
   function hideSaveTodayAsPlanTip() {
     window.localStorage.setItem(saveTodayAsPlanTipStorageKey, 'true')
@@ -170,7 +215,7 @@ export function SchedulePage() {
   function markSaveTodayAsPlanUsed() {
     window.localStorage.setItem(saveTodayAsPlanUsedStorageKey, 'true')
     setIsSaveTodayAsPlanUsed(true)
-    setCanShowSaveTodayAsPlanTipForEntry(false)
+    dispatchSaveTodayAsPlanTip({ type: 'hide' })
   }
 
   async function handleCreatePlanFromToday(name: string) {
