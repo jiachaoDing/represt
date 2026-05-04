@@ -13,9 +13,6 @@
     <string name="training_timer_remaining_format">%1$s · %2$s</string>
     <string name="training_timer_total_time_format">总时长 %1$s</string>
     <string name="training_timer_complete_set_action">✓</string>
-    <string name="training_timer_quick_pause_action">⏸</string>
-    <string name="training_timer_quick_start_action">▶</string>
-    <string name="training_timer_quick_repeat_action">↻</string>
     <string name="package_name">com.trainre.app</string>
     <string name="custom_url_scheme">com.trainre.app</string>
 </resources>

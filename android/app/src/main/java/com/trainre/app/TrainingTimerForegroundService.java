@@ -17,7 +17,8 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
-import android.widget.RemoteViews;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
@@ -34,8 +35,11 @@ public class TrainingTimerForegroundService extends Service {
     private AudioTrack audioTrack;
     private Runnable stopRunnable;
     private int primaryId;
+    private static final int RUNNING_NOTIFICATION_ID = 1;
     private static final int TONE_SAMPLE_RATE = 44100;
-    private static final long FINAL_DOUBLE_BEEP_GAP_MS = 170L;
+    private static final int FINISH_TONE_DURATION_MS = 420;
+    private static final long FINISH_ALERT_RELEASE_DELAY_MS = 700L;
+    private static final long[] FINISH_VIBRATION_PATTERN_MS = {0L, 60L, 80L, 90L};
 
     private static final class TimerRecord {
         final int id;
@@ -47,8 +51,6 @@ public class TrainingTimerForegroundService extends Service {
         final long remainingMs;
         final int totalSeconds;
         Runnable finishRunnable;
-        Runnable beepRunnable;
-        Runnable doubleBeepRunnable;
         Runnable refreshRunnable;
 
         TimerRecord(int id, Intent intent, long endsAt, boolean playFinalBeeps, float beepVolume, boolean isPaused, long remainingMs, int totalSeconds) {
@@ -151,6 +153,7 @@ public class TrainingTimerForegroundService extends Service {
         }
 
         clearTimer(id);
+        cancelLegacyRunningNotification(id);
         releaseStopCallback();
         TimerRecord record = new TimerRecord(
             id,
@@ -164,22 +167,13 @@ public class TrainingTimerForegroundService extends Service {
         );
         timers.put(id, record);
 
-        Notification notification = buildRunningNotification(intent, endsAt);
-        try {
-            if (primaryId == 0 || primaryId == id) {
-                startForeground(id, notification);
-                primaryId = id;
-            } else {
-                NotificationManagerCompat.from(this).notify(id, notification);
-            }
-        } catch (SecurityException notificationError) {
-            timers.remove(id);
+        if (!updatePrimaryTimerNotification()) {
+            clearTimer(id);
             stopSelf(startId);
             return;
         }
 
         if (!record.isPaused) {
-            scheduleFinalBeeps(record);
             scheduleNotificationRefresh(record);
             record.finishRunnable = () -> finishTimer(id);
             handler.postDelayed(record.finishRunnable, Math.max(0L, endsAt - System.currentTimeMillis()));
@@ -216,9 +210,7 @@ public class TrainingTimerForegroundService extends Service {
             .setGroup(TrainingTimerNotificationConstants.GROUP)
             .setShowWhen(false);
 
-        if (isQuickTimer) {
-            builder.setCustomContentView(buildQuickTimerContentView(intent, notificationTitle, text, isPaused));
-        } else if (isExerciseRestTimer) {
+        if (isExerciseRestTimer) {
             builder.addAction(
                 R.drawable.ic_notification_check,
                 getString(R.string.training_timer_complete_set_action),
@@ -227,26 +219,6 @@ public class TrainingTimerForegroundService extends Service {
         }
 
         return builder.build();
-    }
-
-    private RemoteViews buildQuickTimerContentView(Intent intent, String title, String text, boolean isPaused) {
-        RemoteViews contentView = new RemoteViews(getPackageName(), R.layout.notification_quick_timer);
-        contentView.setTextViewText(R.id.quick_timer_notification_title, title);
-        contentView.setTextViewText(R.id.quick_timer_notification_text, text);
-        contentView.setTextViewText(
-            R.id.quick_timer_notification_toggle,
-            getString(isPaused ? R.string.training_timer_quick_start_action : R.string.training_timer_quick_pause_action)
-        );
-        contentView.setTextViewText(R.id.quick_timer_notification_repeat, getString(R.string.training_timer_quick_repeat_action));
-        contentView.setOnClickPendingIntent(
-            R.id.quick_timer_notification_toggle,
-            buildQuickTimerActionIntent(intent, TrainingTimerNotificationConstants.LAUNCH_ACTION_QUICK_TIMER_TOGGLE, 100000)
-        );
-        contentView.setOnClickPendingIntent(
-            R.id.quick_timer_notification_repeat,
-            buildQuickTimerActionIntent(intent, TrainingTimerNotificationConstants.LAUNCH_ACTION_QUICK_TIMER_REPEAT, 200000)
-        );
-        return contentView;
     }
 
     private Notification buildFinishedNotification(Intent intent) {
@@ -264,7 +236,7 @@ public class TrainingTimerForegroundService extends Service {
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setDefaults(NotificationCompat.DEFAULT_ALL)
+            .setSilent(true)
             .setShowWhen(true)
             .build();
     }
@@ -299,18 +271,6 @@ public class TrainingTimerForegroundService extends Service {
         return PendingIntent.getActivity(this, id + 100000, launchIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
     }
 
-    private PendingIntent buildQuickTimerActionIntent(Intent sourceIntent, String launchAction, int requestCodeOffset) {
-        int id = sourceIntent.getIntExtra(TrainingTimerNotificationConstants.EXTRA_ID, 0);
-        Intent launchIntent = new Intent(this, MainActivity.class)
-            .setAction(Intent.ACTION_MAIN)
-            .addCategory(Intent.CATEGORY_LAUNCHER)
-            .putExtra(TrainingTimerNotificationConstants.EXTRA_PATH, sourceIntent.getStringExtra(TrainingTimerNotificationConstants.EXTRA_PATH))
-            .putExtra(TrainingTimerNotificationConstants.EXTRA_TIMER_TYPE, sourceIntent.getStringExtra(TrainingTimerNotificationConstants.EXTRA_TIMER_TYPE))
-            .putExtra(TrainingTimerNotificationConstants.EXTRA_LAUNCH_ACTION, launchAction);
-
-        return PendingIntent.getActivity(this, id + requestCodeOffset, launchIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-    }
-
     private PendingIntent buildRefreshIntent(Intent sourceIntent) {
         int id = sourceIntent.getIntExtra(TrainingTimerNotificationConstants.EXTRA_ID, 0);
         Intent refreshIntent = new Intent(this, TrainingTimerForegroundService.class)
@@ -320,39 +280,13 @@ public class TrainingTimerForegroundService extends Service {
         return PendingIntent.getService(this, id + 200000, refreshIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
     }
 
-    private void scheduleFinalBeeps(TimerRecord record) {
+    private void playFinishAlert(TimerRecord record) {
         if (!record.playFinalBeeps) {
             return;
         }
 
-        long firstBeepDelay = record.endsAt - System.currentTimeMillis() - 3000L;
-        if (firstBeepDelay < 0L) {
-            firstBeepDelay = 0L;
-        }
-
-        record.beepRunnable = new Runnable() {
-            private int beepCount = 0;
-
-            @Override
-            public void run() {
-                if (beepCount >= 3 || !timers.containsKey(record.id)) {
-                    return;
-                }
-
-                playBeep(record.beepVolume);
-                if (beepCount == 2) {
-                    record.doubleBeepRunnable = () -> {
-                        if (timers.containsKey(record.id)) {
-                            playBeep(record.beepVolume);
-                        }
-                    };
-                    handler.postDelayed(record.doubleBeepRunnable, FINAL_DOUBLE_BEEP_GAP_MS);
-                }
-                beepCount += 1;
-                handler.postDelayed(this, 1000L);
-            }
-        };
-        handler.postDelayed(record.beepRunnable, firstBeepDelay);
+        playFinishTone(record.beepVolume);
+        vibrateFinishAlert();
     }
 
     private void scheduleNotificationRefresh(TimerRecord record) {
@@ -373,8 +307,25 @@ public class TrainingTimerForegroundService extends Service {
         handler.postDelayed(record.refreshRunnable, 1000L);
     }
 
-    private void playBeep(float volume) {
-        playTone(false, 120, volume, 0.75f);
+    private void playFinishTone(float volume) {
+        playTone(true, FINISH_TONE_DURATION_MS, volume, 0.9f);
+    }
+
+    private void vibrateFinishAlert() {
+        Vibrator vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+        if (vibrator == null || !vibrator.hasVibrator()) {
+            return;
+        }
+
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                vibrator.vibrate(VibrationEffect.createWaveform(FINISH_VIBRATION_PATTERN_MS, -1));
+            } else {
+                vibrator.vibrate(FINISH_VIBRATION_PATTERN_MS, -1);
+            }
+        } catch (RuntimeException vibrationError) {
+            // The ending sound still carries the alert if vibration is unavailable.
+        }
     }
 
     private void playTone(boolean isFinishTone, int durationMs, float volume, float scale) {
@@ -438,20 +389,41 @@ public class TrainingTimerForegroundService extends Service {
         short[] samples = new short[sampleCount];
         double twoPi = Math.PI * 2;
         int fadeSamples = Math.min(sampleCount / 2, TONE_SAMPLE_RATE / 200);
+        int firstFinishToneEnd = TONE_SAMPLE_RATE * 170 / 1000;
+        int secondFinishToneStart = TONE_SAMPLE_RATE * 220 / 1000;
 
         for (int index = 0; index < sampleCount; index += 1) {
             double elapsedSeconds = index / (double) TONE_SAMPLE_RATE;
-            double frequency = isFinishTone ? 880.0 + 420.0 * index / sampleCount : 1280.0;
-            double wave = Math.sin(twoPi * frequency * elapsedSeconds);
-            if (isFinishTone) {
-                wave += 0.45 * Math.sin(twoPi * frequency * 1.5 * elapsedSeconds);
-            }
-
+            double frequency = 1280.0;
             double envelope = 1.0;
-            if (fadeSamples > 0 && index < fadeSamples) {
+
+            if (isFinishTone) {
+                if (index >= firstFinishToneEnd && index < secondFinishToneStart) {
+                    envelope = 0.0;
+                } else {
+                    boolean isSecondTone = index >= secondFinishToneStart;
+                    int segmentStart = isSecondTone ? secondFinishToneStart : 0;
+                    int segmentEnd = isSecondTone ? sampleCount : firstFinishToneEnd;
+                    int segmentIndex = index - segmentStart;
+                    int segmentLength = Math.max(1, segmentEnd - segmentStart);
+                    int segmentFadeSamples = Math.min(segmentLength / 2, TONE_SAMPLE_RATE / 200);
+
+                    frequency = isSecondTone ? 1174.66 : 880.0;
+                    if (segmentFadeSamples > 0 && segmentIndex < segmentFadeSamples) {
+                        envelope = segmentIndex / (double) segmentFadeSamples;
+                    } else if (segmentFadeSamples > 0 && segmentIndex > segmentLength - segmentFadeSamples) {
+                        envelope = (segmentLength - segmentIndex) / (double) segmentFadeSamples;
+                    }
+                }
+            } else if (fadeSamples > 0 && index < fadeSamples) {
                 envelope = index / (double) fadeSamples;
             } else if (fadeSamples > 0 && index > sampleCount - fadeSamples) {
                 envelope = (sampleCount - index) / (double) fadeSamples;
+            }
+
+            double wave = Math.sin(twoPi * frequency * elapsedSeconds);
+            if (isFinishTone) {
+                wave += 0.25 * Math.sin(twoPi * frequency * 2.0 * elapsedSeconds);
             }
 
             samples[index] = (short) Math.round(
@@ -508,26 +480,19 @@ public class TrainingTimerForegroundService extends Service {
         Notification finishedNotification = buildFinishedNotification(record.intent);
         clearTimerCallbacks(record);
         releaseAudioTrack();
-        if (id == primaryId) {
-            if (timers.isEmpty()) {
-                primaryId = 0;
-                removeForegroundNotification();
-            } else {
-                promotePrimaryTimer();
-                NotificationManagerCompat.from(this).cancel(id);
-            }
-        } else {
-            NotificationManagerCompat.from(this).cancel(id);
-        }
+        playFinishAlert(record);
+        cancelLegacyRunningNotification(id);
+        updatePrimaryTimerNotification();
         notifyTimerFinished(id, finishedNotification);
         releaseStopCallback();
+        long stopDelayMs = record.playFinalBeeps ? FINISH_ALERT_RELEASE_DELAY_MS : 0L;
         stopRunnable = () -> {
             releaseAudioTrack();
             if (timers.isEmpty()) {
                 stopSelf();
             }
         };
-        handler.postDelayed(stopRunnable, 0L);
+        handler.postDelayed(stopRunnable, stopDelayMs);
     }
 
     private void refreshTimer(int id) {
@@ -536,14 +501,7 @@ public class TrainingTimerForegroundService extends Service {
             return;
         }
 
-        Notification notification = buildRunningNotification(record.intent, record.endsAt);
-        try {
-            if (id == primaryId) {
-                startForeground(id, notification);
-            } else {
-                NotificationManagerCompat.from(this).notify(id, notification);
-            }
-        } catch (SecurityException notificationError) {
+        if (!updatePrimaryTimerNotification()) {
             cancelTimer(id);
         }
     }
@@ -557,17 +515,9 @@ public class TrainingTimerForegroundService extends Service {
             return;
         }
 
-        boolean wasPrimary = id == primaryId;
         clearTimer(id);
-        NotificationManagerCompat.from(this).cancel(id);
-        if (wasPrimary) {
-            if (timers.isEmpty()) {
-                primaryId = 0;
-                removeForegroundNotification();
-            } else {
-                promotePrimaryTimer();
-            }
-        }
+        cancelLegacyRunningNotification(id);
+        updatePrimaryTimerNotification();
         if (timers.isEmpty()) {
             releaseAudioTrack();
             stopSelf();
@@ -590,16 +540,50 @@ public class TrainingTimerForegroundService extends Service {
         stopForeground(Service.STOP_FOREGROUND_REMOVE);
     }
 
-    private void promotePrimaryTimer() {
+    private void cancelLegacyRunningNotification(int id) {
+        NotificationManagerCompat.from(this).cancel(id);
+    }
+
+    private boolean updatePrimaryTimerNotification() {
         if (timers.isEmpty()) {
             primaryId = 0;
             removeForegroundNotification();
-            return;
+            return true;
         }
 
-        TimerRecord nextRecord = timers.values().iterator().next();
+        TimerRecord nextRecord = getNextPrimaryTimer();
         primaryId = nextRecord.id;
-        startForeground(nextRecord.id, buildRunningNotification(nextRecord.intent, nextRecord.endsAt));
+        try {
+            startForeground(
+                RUNNING_NOTIFICATION_ID,
+                buildRunningNotification(nextRecord.intent, nextRecord.endsAt)
+            );
+            return true;
+        } catch (SecurityException notificationError) {
+            return false;
+        }
+    }
+
+    private TimerRecord getNextPrimaryTimer() {
+        TimerRecord nextRecord = null;
+        for (TimerRecord record : timers.values()) {
+            if (nextRecord == null || compareTimerPriority(record, nextRecord) < 0) {
+                nextRecord = record;
+            }
+        }
+
+        return nextRecord;
+    }
+
+    private int compareTimerPriority(TimerRecord left, TimerRecord right) {
+        if (left.isPaused != right.isPaused) {
+            return left.isPaused ? 1 : -1;
+        }
+
+        long leftTime = left.isPaused ? left.remainingMs : left.endsAt;
+        long rightTime = right.isPaused ? right.remainingMs : right.endsAt;
+        int timeComparison = Long.compare(leftTime, rightTime);
+        return timeComparison != 0 ? timeComparison : Integer.compare(left.id, right.id);
     }
 
     private void clearTimer(int id) {
@@ -614,14 +598,6 @@ public class TrainingTimerForegroundService extends Service {
         if (record.finishRunnable != null) {
             handler.removeCallbacks(record.finishRunnable);
             record.finishRunnable = null;
-        }
-        if (record.beepRunnable != null) {
-            handler.removeCallbacks(record.beepRunnable);
-            record.beepRunnable = null;
-        }
-        if (record.doubleBeepRunnable != null) {
-            handler.removeCallbacks(record.doubleBeepRunnable);
-            record.doubleBeepRunnable = null;
         }
         if (record.refreshRunnable != null) {
             handler.removeCallbacks(record.refreshRunnable);
