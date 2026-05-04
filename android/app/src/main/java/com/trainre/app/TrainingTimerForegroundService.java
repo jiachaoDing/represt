@@ -9,10 +9,10 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.AssetFileDescriptor;
 import android.media.AudioAttributes;
-import android.media.AudioFormat;
 import android.media.AudioManager;
-import android.media.AudioTrack;
+import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
@@ -26,20 +26,19 @@ import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 
 import java.util.HashMap;
+import java.io.IOException;
 import java.util.Locale;
 import java.util.Map;
 
 public class TrainingTimerForegroundService extends Service {
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final Map<Integer, TimerRecord> timers = new HashMap<>();
-    private AudioTrack audioTrack;
+    private MediaPlayer finishSoundPlayer;
     private Runnable stopRunnable;
     private int primaryId;
     private static final int RUNNING_NOTIFICATION_ID = 1;
-    private static final int TONE_SAMPLE_RATE = 44100;
-    private static final int FINISH_TONE_DURATION_MS = 420;
-    private static final long FINISH_ALERT_RELEASE_DELAY_MS = 700L;
-    private static final long[] FINISH_VIBRATION_PATTERN_MS = {0L, 60L, 80L, 90L};
+    private static final long FINISH_ALERT_RELEASE_DELAY_MS = 1300L;
+    private static final long[] FINISH_VIBRATION_PATTERN_MS = {500L, 240L};
 
     private static final class TimerRecord {
         final int id;
@@ -101,7 +100,7 @@ public class TrainingTimerForegroundService extends Service {
     @Override
     public void onDestroy() {
         clearAllTimers();
-        releaseAudioTrack();
+        releaseFinishSoundPlayer();
         super.onDestroy();
     }
 
@@ -308,7 +307,35 @@ public class TrainingTimerForegroundService extends Service {
     }
 
     private void playFinishTone(float volume) {
-        playTone(true, FINISH_TONE_DURATION_MS, volume, 0.9f);
+        if (volume <= 0f || !shouldPlayServiceTone()) {
+            return;
+        }
+
+        try (AssetFileDescriptor soundFile =
+                 getResources().openRawResourceFd(R.raw.timer_finish_notification)) {
+            releaseFinishSoundPlayer();
+            finishSoundPlayer = new MediaPlayer();
+            finishSoundPlayer.setAudioAttributes(new AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_MEDIA)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .build());
+            finishSoundPlayer.setDataSource(
+                soundFile.getFileDescriptor(),
+                soundFile.getStartOffset(),
+                soundFile.getLength()
+            );
+            float normalizedVolume = clampBeepVolume(volume);
+            finishSoundPlayer.setVolume(normalizedVolume, normalizedVolume);
+            finishSoundPlayer.setOnCompletionListener(player -> releaseFinishSoundPlayer());
+            finishSoundPlayer.setOnErrorListener((player, what, extra) -> {
+                releaseFinishSoundPlayer();
+                return true;
+            });
+            finishSoundPlayer.prepare();
+            finishSoundPlayer.start();
+        } catch (IOException | RuntimeException audioError) {
+            releaseFinishSoundPlayer();
+        }
     }
 
     private void vibrateFinishAlert() {
@@ -325,34 +352,6 @@ public class TrainingTimerForegroundService extends Service {
             }
         } catch (RuntimeException vibrationError) {
             // The ending sound still carries the alert if vibration is unavailable.
-        }
-    }
-
-    private void playTone(boolean isFinishTone, int durationMs, float volume, float scale) {
-        if (volume <= 0f || !shouldPlayServiceTone()) {
-            return;
-        }
-
-        try {
-            releaseAudioTrack();
-            short[] samples = buildToneSamples(isFinishTone, durationMs, getToneAmplitude(volume, scale));
-            audioTrack = new AudioTrack.Builder()
-                .setAudioAttributes(new AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_MEDIA)
-                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                    .build())
-                .setAudioFormat(new AudioFormat.Builder()
-                    .setSampleRate(TONE_SAMPLE_RATE)
-                    .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
-                    .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
-                    .build())
-                .setBufferSizeInBytes(samples.length * 2)
-                .setTransferMode(AudioTrack.MODE_STATIC)
-                .build();
-            audioTrack.write(samples, 0, samples.length);
-            audioTrack.play();
-        } catch (RuntimeException audioError) {
-            releaseAudioTrack();
         }
     }
 
@@ -373,65 +372,6 @@ public class TrainingTimerForegroundService extends Service {
         } catch (SecurityException policyError) {
             return true;
         }
-    }
-
-    private float getToneAmplitude(float volume, float scale) {
-        float normalizedVolume = clampBeepVolume(volume);
-        if (normalizedVolume <= 0f) {
-            return 0f;
-        }
-
-        return Math.min(1f, (0.45f + normalizedVolume * 0.55f) * scale);
-    }
-
-    private short[] buildToneSamples(boolean isFinishTone, int durationMs, float amplitude) {
-        int sampleCount = Math.max(1, TONE_SAMPLE_RATE * durationMs / 1000);
-        short[] samples = new short[sampleCount];
-        double twoPi = Math.PI * 2;
-        int fadeSamples = Math.min(sampleCount / 2, TONE_SAMPLE_RATE / 200);
-        int firstFinishToneEnd = TONE_SAMPLE_RATE * 170 / 1000;
-        int secondFinishToneStart = TONE_SAMPLE_RATE * 220 / 1000;
-
-        for (int index = 0; index < sampleCount; index += 1) {
-            double elapsedSeconds = index / (double) TONE_SAMPLE_RATE;
-            double frequency = 1280.0;
-            double envelope = 1.0;
-
-            if (isFinishTone) {
-                if (index >= firstFinishToneEnd && index < secondFinishToneStart) {
-                    envelope = 0.0;
-                } else {
-                    boolean isSecondTone = index >= secondFinishToneStart;
-                    int segmentStart = isSecondTone ? secondFinishToneStart : 0;
-                    int segmentEnd = isSecondTone ? sampleCount : firstFinishToneEnd;
-                    int segmentIndex = index - segmentStart;
-                    int segmentLength = Math.max(1, segmentEnd - segmentStart);
-                    int segmentFadeSamples = Math.min(segmentLength / 2, TONE_SAMPLE_RATE / 200);
-
-                    frequency = isSecondTone ? 1174.66 : 880.0;
-                    if (segmentFadeSamples > 0 && segmentIndex < segmentFadeSamples) {
-                        envelope = segmentIndex / (double) segmentFadeSamples;
-                    } else if (segmentFadeSamples > 0 && segmentIndex > segmentLength - segmentFadeSamples) {
-                        envelope = (segmentLength - segmentIndex) / (double) segmentFadeSamples;
-                    }
-                }
-            } else if (fadeSamples > 0 && index < fadeSamples) {
-                envelope = index / (double) fadeSamples;
-            } else if (fadeSamples > 0 && index > sampleCount - fadeSamples) {
-                envelope = (sampleCount - index) / (double) fadeSamples;
-            }
-
-            double wave = Math.sin(twoPi * frequency * elapsedSeconds);
-            if (isFinishTone) {
-                wave += 0.25 * Math.sin(twoPi * frequency * 2.0 * elapsedSeconds);
-            }
-
-            samples[index] = (short) Math.round(
-                Math.max(-1.0, Math.min(1.0, wave)) * envelope * amplitude * Short.MAX_VALUE
-            );
-        }
-
-        return samples;
     }
 
     private float clampBeepVolume(float volume) {
@@ -479,7 +419,7 @@ public class TrainingTimerForegroundService extends Service {
 
         Notification finishedNotification = buildFinishedNotification(record.intent);
         clearTimerCallbacks(record);
-        releaseAudioTrack();
+        releaseFinishSoundPlayer();
         playFinishAlert(record);
         cancelLegacyRunningNotification(id);
         updatePrimaryTimerNotification();
@@ -487,7 +427,7 @@ public class TrainingTimerForegroundService extends Service {
         releaseStopCallback();
         long stopDelayMs = record.playFinalBeeps ? FINISH_ALERT_RELEASE_DELAY_MS : 0L;
         stopRunnable = () -> {
-            releaseAudioTrack();
+            releaseFinishSoundPlayer();
             if (timers.isEmpty()) {
                 stopSelf();
             }
@@ -519,7 +459,7 @@ public class TrainingTimerForegroundService extends Service {
         cancelLegacyRunningNotification(id);
         updatePrimaryTimerNotification();
         if (timers.isEmpty()) {
-            releaseAudioTrack();
+            releaseFinishSoundPlayer();
             stopSelf();
         }
     }
@@ -621,10 +561,10 @@ public class TrainingTimerForegroundService extends Service {
         }
     }
 
-    private void releaseAudioTrack() {
-        if (audioTrack != null) {
-            audioTrack.release();
-            audioTrack = null;
+    private void releaseFinishSoundPlayer() {
+        if (finishSoundPlayer != null) {
+            finishSoundPlayer.release();
+            finishSoundPlayer = null;
         }
     }
 
