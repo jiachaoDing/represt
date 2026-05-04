@@ -284,7 +284,7 @@ public class TrainingTimerForegroundService extends Service {
             return;
         }
 
-        playFinishTone(record.beepVolume);
+        playFinishTone(record.intent, record.beepVolume);
         vibrateFinishAlert();
     }
 
@@ -306,13 +306,16 @@ public class TrainingTimerForegroundService extends Service {
         handler.postDelayed(record.refreshRunnable, 1000L);
     }
 
-    private void playFinishTone(float volume) {
+    private void playFinishTone(Intent intent, float volume) {
         if (volume <= 0f || !shouldPlayServiceTone()) {
             return;
         }
 
+        int soundResourceId = isQuickTimer(intent)
+            ? R.raw.quick_timer_finish_notification
+            : R.raw.timer_finish_notification;
         try (AssetFileDescriptor soundFile =
-                 getResources().openRawResourceFd(R.raw.timer_finish_notification)) {
+                 getResources().openRawResourceFd(soundResourceId)) {
             releaseFinishSoundPlayer();
             finishSoundPlayer = new MediaPlayer();
             finishSoundPlayer.setAudioAttributes(new AudioAttributes.Builder()

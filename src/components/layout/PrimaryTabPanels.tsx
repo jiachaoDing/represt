@@ -4,6 +4,8 @@ import {
   startTransition,
   useCallback,
   useEffect,
+  useLayoutEffect,
+  useRef,
   useSyncExternalStore,
   type PropsWithChildren,
 } from 'react'
@@ -42,6 +44,32 @@ function getPrimaryTabIndex(pathname: string) {
   return primaryTabs.findIndex((tab) => tab.pathname === pathname)
 }
 
+function snapPrimaryTabToIndex(
+  emblaApi: EmblaCarouselType,
+  index: number,
+  shouldScrollTo = true,
+) {
+  const engine = emblaApi.internalEngine()
+  const snap = engine.scrollSnaps[index]
+
+  if (snap === undefined) {
+    return
+  }
+
+  engine.animation.stop()
+  engine.index.set(index)
+  engine.indexPrevious.set(index)
+  engine.location.set(snap)
+  engine.offsetLocation.set(snap)
+  engine.previousLocation.set(snap)
+  engine.target.set(snap)
+  engine.translate.to(snap)
+
+  if (shouldScrollTo) {
+    emblaApi.scrollTo(index, true)
+  }
+}
+
 export function PrimaryTabPanels() {
   return (
     <PrimaryTabSwipeProvider>
@@ -55,6 +83,7 @@ function PrimaryTabPanelsContent() {
   const navigate = useNavigate()
   const shouldReduceMotion = useReducedMotion() === true
   const { isPrimaryTabSwipeDisabled, primaryTabSwipeDisabledRef } = usePrimaryTabSwipeLock()
+  const wasPrimaryTabSwipeDisabledRef = useRef(false)
   const activeIndex = getPrimaryTabIndex(location.pathname)
   const activeTabIndex = activeIndex === -1 ? 0 : activeIndex
   const watchDrag = useCallback(
@@ -113,12 +142,38 @@ function PrimaryTabPanelsContent() {
     emblaApi.scrollTo(activeTabIndex, shouldReduceMotion)
   }, [activeTabIndex, emblaApi, shouldReduceMotion])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!emblaApi || !isPrimaryTabSwipeDisabled) {
       return
     }
 
-    emblaApi.scrollTo(activeTabIndex, true)
+    wasPrimaryTabSwipeDisabledRef.current = true
+    emblaApi.reInit({ startIndex: activeTabIndex })
+    snapPrimaryTabToIndex(emblaApi, activeTabIndex)
+  }, [activeTabIndex, emblaApi, isPrimaryTabSwipeDisabled])
+
+  useLayoutEffect(() => {
+    if (!emblaApi || isPrimaryTabSwipeDisabled || !wasPrimaryTabSwipeDisabledRef.current) {
+      return
+    }
+
+    wasPrimaryTabSwipeDisabledRef.current = false
+    snapPrimaryTabToIndex(emblaApi, activeTabIndex)
+  }, [activeTabIndex, emblaApi, isPrimaryTabSwipeDisabled])
+
+  useLayoutEffect(() => {
+    if (!emblaApi || !isPrimaryTabSwipeDisabled) {
+      return
+    }
+
+    const keepCurrentTabSnapped = () => {
+      snapPrimaryTabToIndex(emblaApi, activeTabIndex, false)
+    }
+
+    emblaApi.on('scroll', keepCurrentTabSnapped)
+    return () => {
+      emblaApi.off('scroll', keepCurrentTabSnapped)
+    }
   }, [activeTabIndex, emblaApi, isPrimaryTabSwipeDisabled])
 
   const handleSelect = useCallback(() => {
