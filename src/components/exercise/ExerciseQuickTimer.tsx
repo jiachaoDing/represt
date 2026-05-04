@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Pause, Pencil, Play, RotateCcw } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
@@ -13,14 +13,22 @@ function formatRemainingTime(remainingMs: number) {
   return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
 }
 
-export function ExerciseQuickTimer() {
+type ExerciseQuickTimerProps = {
+  notificationPath?: string
+}
+
+export function ExerciseQuickTimer({ notificationPath }: ExerciseQuickTimerProps) {
   const { t } = useTranslation()
-  const { finish, pause, reset, selectSeconds, start, state: timerState, updateOptionSeconds } = useQuickTimer()
+  const { finish, pause, reset, selectSeconds, start, state: timerState, updateOptionSeconds } =
+    useQuickTimer(notificationPath)
   const now = useNow(timerState.status === 'running' ? 16 : 1000)
   const [isEditingOptions, setIsEditingOptions] = useState(false)
   const [draftOptionSeconds, setDraftOptionSeconds] = useState(() =>
     timerState.optionSeconds.map((seconds) => String(seconds)),
   )
+  const editOptionsRef = useRef<HTMLDivElement | null>(null)
+  const controlsRef = useRef<HTMLDivElement | null>(null)
+  const lastEditedOptionIndexRef = useRef<number | null>(null)
 
   const selectedMs = timerState.selectedSeconds * 1000
   const remainingMs =
@@ -31,36 +39,52 @@ export function ExerciseQuickTimer() {
   const circumference = 2 * Math.PI * 45
   const strokeOffset = circumference * (1 - progress)
   const isRunning = timerState.status === 'running'
+  const StartPauseIcon = isRunning ? Pause : Play
 
-  const controlItems = useMemo(
-    () => [
-      {
-        key: 'edit',
-        icon: Pencil,
-        label: t('exercise.quickTimerEdit'),
-        onClick: () => {
-          setDraftOptionSeconds(timerState.optionSeconds.map((seconds) => String(seconds)))
-          setIsEditingOptions((current) => !current)
-        },
-        primary: true,
-      },
-      {
-        key: 'startPause',
-        icon: isRunning ? Pause : Play,
-        label: isRunning ? t('exercise.quickTimerPause') : t('exercise.quickTimerStart'),
-        onClick: isRunning ? pause : start,
-        primary: false,
-      },
-      {
-        key: 'reset',
-        icon: RotateCcw,
-        label: t('exercise.quickTimerReset'),
-        onClick: reset,
-        primary: false,
-      },
-    ],
-    [isRunning, pause, reset, start, t, timerState.optionSeconds],
-  )
+  const commitEditedOptionSelection = useCallback(() => {
+    if (!isEditingOptions) {
+      return
+    }
+
+    const lastEditedOptionIndex = lastEditedOptionIndexRef.current
+    if (lastEditedOptionIndex !== null) {
+      const lastEditedSeconds = timerState.optionSeconds[lastEditedOptionIndex]
+      if (lastEditedSeconds) {
+        selectSeconds(lastEditedSeconds)
+      }
+    }
+
+    lastEditedOptionIndexRef.current = null
+    setIsEditingOptions(false)
+  }, [isEditingOptions, selectSeconds, timerState.optionSeconds])
+
+  const handleEditClick = useCallback(() => {
+    if (isEditingOptions) {
+      commitEditedOptionSelection()
+      return
+    }
+
+    lastEditedOptionIndexRef.current = null
+    setDraftOptionSeconds(timerState.optionSeconds.map((seconds) => String(seconds)))
+    setIsEditingOptions(true)
+  }, [commitEditedOptionSelection, isEditingOptions, timerState.optionSeconds])
+
+  const handleStartPauseClick = useCallback(() => {
+    if (isRunning) {
+      lastEditedOptionIndexRef.current = null
+      setIsEditingOptions(false)
+      pause()
+      return
+    }
+
+    commitEditedOptionSelection()
+    start()
+  }, [commitEditedOptionSelection, isRunning, pause, start])
+
+  const handleResetClick = useCallback(() => {
+    commitEditedOptionSelection()
+    reset()
+  }, [commitEditedOptionSelection, reset])
 
   useEffect(() => {
     if (timerState.status !== 'running' || !timerState.endsAt) {
@@ -73,6 +97,28 @@ export function ExerciseQuickTimer() {
 
     return () => window.clearTimeout(timeoutId)
   }, [finish, timerState.endsAt, timerState.status])
+
+  useEffect(() => {
+    if (!isEditingOptions) {
+      return
+    }
+
+    function handlePointerDown(event: PointerEvent) {
+      if (!(event.target instanceof Node)) {
+        return
+      }
+
+      if (editOptionsRef.current?.contains(event.target) || controlsRef.current?.contains(event.target)) {
+        return
+      }
+
+      commitEditedOptionSelection()
+    }
+
+    document.addEventListener('pointerdown', handlePointerDown)
+
+    return () => document.removeEventListener('pointerdown', handlePointerDown)
+  }, [commitEditedOptionSelection, isEditingOptions])
 
   function commitOptionSeconds(index: number) {
     const currentValue = draftOptionSeconds[index]
@@ -128,7 +174,7 @@ export function ExerciseQuickTimer() {
         </p>
       </div>
 
-      <div className="grid w-full grid-cols-4 gap-2">
+      <div ref={editOptionsRef} className="grid w-full grid-cols-4 gap-2">
         {timerState.optionSeconds.map((seconds, index) => {
           const isSelected = timerState.selectedSeconds === seconds
 
@@ -149,6 +195,7 @@ export function ExerciseQuickTimer() {
                     current.map((value, valueIndex) => (valueIndex === index ? nextValue : value)),
                   )
                   if (nextValue) {
+                    lastEditedOptionIndexRef.current = index
                     updateOptionSeconds(index, Number(nextValue))
                   }
                 }}
@@ -180,31 +227,37 @@ export function ExerciseQuickTimer() {
         })}
       </div>
 
-      <div className="mt-4 grid w-full grid-cols-3 border-y border-[var(--outline-variant)]/55 py-4">
-        {controlItems.map((item) => {
-          const Icon = item.icon
-
-          return (
-            <button
-              key={item.key}
-              type="button"
-              onClick={item.onClick}
-              className="flex flex-col items-center gap-2 text-[15px] font-medium text-[var(--on-surface)] tap-highlight-transparent"
-            >
-              <span
-                className={[
-                  'flex size-14 items-center justify-center rounded-full border transition-colors',
-                  item.primary
-                    ? 'border-[var(--primary)] text-[var(--primary)]'
-                    : 'border-[var(--outline)] text-[var(--on-surface-variant)]',
-                ].join(' ')}
-              >
-                <Icon size={25} fill={item.key === 'startPause' && !isRunning ? 'currentColor' : 'none'} strokeWidth={2.4} aria-hidden="true" />
-              </span>
-              <span>{item.label}</span>
-            </button>
-          )
-        })}
+      <div ref={controlsRef} className="mt-4 grid w-full grid-cols-3 border-y border-[var(--outline-variant)]/55 py-4">
+        <button
+          type="button"
+          onClick={handleEditClick}
+          className="flex flex-col items-center gap-2 text-[15px] font-medium text-[var(--on-surface)] tap-highlight-transparent"
+        >
+          <span className="flex size-14 items-center justify-center rounded-full border border-[var(--primary)] text-[var(--primary)] transition-colors">
+            <Pencil size={25} strokeWidth={2.4} aria-hidden="true" />
+          </span>
+          <span>{t('exercise.quickTimerEdit')}</span>
+        </button>
+        <button
+          type="button"
+          onClick={handleStartPauseClick}
+          className="flex flex-col items-center gap-2 text-[15px] font-medium text-[var(--on-surface)] tap-highlight-transparent"
+        >
+          <span className="flex size-14 items-center justify-center rounded-full border border-[var(--outline)] text-[var(--on-surface-variant)] transition-colors">
+            <StartPauseIcon size={25} fill={!isRunning ? 'currentColor' : 'none'} strokeWidth={2.4} aria-hidden="true" />
+          </span>
+          <span>{isRunning ? t('exercise.quickTimerPause') : t('exercise.quickTimerStart')}</span>
+        </button>
+        <button
+          type="button"
+          onClick={handleResetClick}
+          className="flex flex-col items-center gap-2 text-[15px] font-medium text-[var(--on-surface)] tap-highlight-transparent"
+        >
+          <span className="flex size-14 items-center justify-center rounded-full border border-[var(--outline)] text-[var(--on-surface-variant)] transition-colors">
+            <RotateCcw size={25} strokeWidth={2.4} aria-hidden="true" />
+          </span>
+          <span>{t('exercise.quickTimerReset')}</span>
+        </button>
       </div>
     </section>
   )

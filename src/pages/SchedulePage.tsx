@@ -221,7 +221,7 @@ export function SchedulePage() {
               className="px-4"
               style={pageFlipStyle}
             >
-              <ExerciseQuickTimer />
+              <ExerciseQuickTimer notificationPath="/" />
             </motion.div>
           ) : (
             <motion.div

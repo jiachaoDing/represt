@@ -272,7 +272,7 @@ export async function startQuickTimerForegroundNotification(input: QuickTimerNot
       finishedTitle: i18n.t('notification.quickTimerFinishedTitle'),
       finishedBody: i18n.t('notification.quickTimerFinishedBody'),
       endsAt: input.endsAt,
-      path: '/quick-timer',
+      path: input.path ?? '/quick-timer',
       playFinalBeeps: true,
       beepVolume: getTrainingTimerBeepVolume(),
       isPaused: input.isPaused,

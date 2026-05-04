@@ -10,7 +10,7 @@ export function QuickTimerPage() {
     <div className="flex h-full min-h-0 flex-col">
       <PageHeader title={t('exercise.quickTimerTitle')} backFallbackTo="/" />
       <main className="flex min-h-0 flex-1 flex-col px-4">
-        <ExerciseQuickTimer />
+        <ExerciseQuickTimer notificationPath="/quick-timer" />
       </main>
     </div>
   )

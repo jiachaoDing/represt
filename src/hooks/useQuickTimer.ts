@@ -12,6 +12,7 @@ export type QuickTimerStatus = 'idle' | 'running' | 'paused' | 'finished'
 export type QuickTimerState = {
   endsAt: number | null
   isFinishAcknowledged: boolean
+  notificationPath: string
   optionSeconds: number[]
   remainingMs: number
   selectedSeconds: number
@@ -24,6 +25,7 @@ type StoredQuickTimerState = Partial<Omit<QuickTimerState, 'optionSeconds' | 'se
 }
 
 const STORAGE_KEY = 'trainre:exercise-quick-timer'
+const DEFAULT_NOTIFICATION_PATH = '/quick-timer'
 const DEFAULT_SECONDS = QUICK_TIMER_OPTIONS[0]
 const listeners = new Set<() => void>()
 
@@ -41,10 +43,15 @@ function getStoredOptionSeconds(value: unknown) {
   return value.map((option, index) => normalizeSeconds(option, QUICK_TIMER_OPTIONS[index]))
 }
 
+function normalizeNotificationPath(value: unknown) {
+  return typeof value === 'string' && value.startsWith('/') ? value : DEFAULT_NOTIFICATION_PATH
+}
+
 function getFallbackState(): QuickTimerState {
   return {
     endsAt: null,
     isFinishAcknowledged: true,
+    notificationPath: DEFAULT_NOTIFICATION_PATH,
     optionSeconds: [...QUICK_TIMER_OPTIONS],
     remainingMs: DEFAULT_SECONDS * 1000,
     selectedSeconds: DEFAULT_SECONDS,
@@ -67,12 +74,14 @@ function readStoredState(): QuickTimerState {
     const optionSeconds = getStoredOptionSeconds(stored.optionSeconds)
     const selectedSeconds = normalizeSeconds(stored.selectedSeconds, optionSeconds[0])
     const remainingMs = Math.max(0, stored.remainingMs ?? selectedSeconds * 1000)
+    const notificationPath = normalizeNotificationPath(stored.notificationPath)
 
     if (stored.status === 'running' && stored.endsAt) {
       const nextRemainingMs = Math.max(0, stored.endsAt - Date.now())
       return {
         endsAt: nextRemainingMs > 0 ? stored.endsAt : null,
         isFinishAcknowledged: nextRemainingMs > 0 ? stored.isFinishAcknowledged === true : false,
+        notificationPath,
         optionSeconds,
         remainingMs: nextRemainingMs,
         selectedSeconds,
@@ -83,6 +92,7 @@ function readStoredState(): QuickTimerState {
     return {
       endsAt: null,
       isFinishAcknowledged: stored.status === 'finished' ? stored.isFinishAcknowledged === true : true,
+      notificationPath,
       optionSeconds,
       remainingMs,
       selectedSeconds,
@@ -118,7 +128,8 @@ function getSnapshot() {
   return quickTimerState
 }
 
-export function startQuickTimer() {
+export function startQuickTimer(notificationPath = quickTimerState.notificationPath) {
+  const nextNotificationPath = normalizeNotificationPath(notificationPath)
   const currentRemainingMs =
     quickTimerState.status === 'running' && quickTimerState.endsAt
       ? Math.max(0, quickTimerState.endsAt - Date.now())
@@ -130,11 +141,13 @@ export function startQuickTimer() {
     ...quickTimerState,
     endsAt,
     isFinishAcknowledged: false,
+    notificationPath: nextNotificationPath,
     remainingMs: nextRemainingMs,
     status: 'running',
   })
   void startQuickTimerForegroundNotification({
     endsAt,
+    path: nextNotificationPath,
     totalSeconds: quickTimerState.selectedSeconds,
   })
 }
@@ -156,6 +169,7 @@ export function pauseQuickTimer() {
     void startQuickTimerForegroundNotification({
       endsAt: Date.now() + remainingMs,
       isPaused: true,
+      path: quickTimerState.notificationPath,
       remainingMs,
       totalSeconds: quickTimerState.selectedSeconds,
     })
@@ -176,7 +190,8 @@ export function resetQuickTimer() {
   void cancelQuickTimerForegroundNotification()
 }
 
-export function repeatQuickTimer() {
+export function repeatQuickTimer(notificationPath = quickTimerState.notificationPath) {
+  const nextNotificationPath = normalizeNotificationPath(notificationPath)
   const remainingMs = quickTimerState.selectedSeconds * 1000
   const endsAt = Date.now() + remainingMs
 
@@ -184,25 +199,27 @@ export function repeatQuickTimer() {
     ...quickTimerState,
     endsAt,
     isFinishAcknowledged: false,
+    notificationPath: nextNotificationPath,
     remainingMs,
     status: 'running',
   })
   void startQuickTimerForegroundNotification({
     endsAt,
+    path: nextNotificationPath,
     totalSeconds: quickTimerState.selectedSeconds,
   })
 }
 
-export function toggleQuickTimer() {
+export function toggleQuickTimer(notificationPath = quickTimerState.notificationPath) {
   if (quickTimerState.status === 'running') {
     pauseQuickTimer()
     return
   }
 
-  startQuickTimer()
+  startQuickTimer(notificationPath)
 }
 
-export function useQuickTimer() {
+export function useQuickTimer(notificationPath = DEFAULT_NOTIFICATION_PATH) {
   const state = useSyncExternalStore(subscribe, getSnapshot, getSnapshot)
 
   const selectSeconds = useCallback((seconds: number) => {
@@ -211,6 +228,7 @@ export function useQuickTimer() {
     emitQuickTimerState({
       endsAt: null,
       isFinishAcknowledged: true,
+      notificationPath: quickTimerState.notificationPath,
       optionSeconds: quickTimerState.optionSeconds,
       remainingMs: nextSeconds * 1000,
       selectedSeconds: nextSeconds,
@@ -240,8 +258,8 @@ export function useQuickTimer() {
   }, [])
 
   const start = useCallback(() => {
-    startQuickTimer()
-  }, [])
+    startQuickTimer(notificationPath)
+  }, [notificationPath])
 
   const pause = useCallback(() => {
     pauseQuickTimer()

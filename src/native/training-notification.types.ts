@@ -9,6 +9,7 @@ export type RestTimerNotificationInput = {
 export type QuickTimerNotificationInput = {
   endsAt: number | null
   isPaused?: boolean
+  path?: string
   remainingMs?: number
   totalSeconds?: number
 }
