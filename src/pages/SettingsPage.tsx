@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { App as CapacitorApp } from '@capacitor/app'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
@@ -6,11 +6,16 @@ import type { LucideIcon } from 'lucide-react'
 import {
   Check,
   ChevronRight,
+  ClipboardPaste,
+  Copy,
+  Download,
+  FileJson,
   Info,
   Languages,
   Mail,
   Palette,
   ShieldCheck,
+  Upload,
   Vibrate,
 } from 'lucide-react'
 
@@ -22,6 +27,16 @@ import { useHapticsPreference } from '../hooks/useHapticsPreference'
 import { useLanguagePreference } from '../i18n/useLanguagePreference'
 import type { LanguagePreference } from '../i18n/languages'
 import { triggerHaptic } from '../lib/haptics'
+import {
+  buildPlanTemplateExport,
+  buildTrainingCycleExport,
+  importPlanTransferData,
+  listPlanTemplateExportOptions,
+  parsePlanTransferJson,
+  type PlanTemplateExportOption,
+  type PlanTransferData,
+  type PlanTransferParseError,
+} from '../lib/plan-transfer'
 import {
   getDebugDateOffsetDays,
   getTodaySessionDateKey,
@@ -96,6 +111,31 @@ function RowDivider() {
   return <div className="ml-16 h-px bg-[var(--outline-variant)]/35" />
 }
 
+function downloadJsonFile(data: unknown, filename: string) {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  link.click()
+  URL.revokeObjectURL(url)
+}
+
+function getTodayFileDate() {
+  return new Date().toISOString().slice(0, 10)
+}
+
+function formatJson(data: unknown) {
+  return JSON.stringify(data, null, 2)
+}
+
+type PlanTransferExportDraft = {
+  data: PlanTransferData
+  filename: string
+  successMessage: string
+  title: string
+}
+
 function SwitchControl({ checked, label }: { checked: boolean; label: string }) {
   return (
     <span
@@ -136,6 +176,22 @@ function HapticsSettingsRow() {
       right={<SwitchControl checked={isEnabled} label={t('settings.haptics.title')} />}
     />
   )
+}
+
+function getPlanTransferErrorMessage(t: ReturnType<typeof useTranslation>['t'], error: PlanTransferParseError) {
+  if (error === 'missingJson') {
+    return t('settings.planTransfer.errors.missingJson')
+  }
+
+  if (error === 'invalidJson') {
+    return t('settings.planTransfer.errors.invalidJson')
+  }
+
+  if (error === 'emptyExercises') {
+    return t('settings.planTransfer.errors.emptyExercises')
+  }
+
+  return t('settings.planTransfer.errors.invalidShape')
 }
 
 function useAppVersion() {
@@ -289,6 +345,402 @@ function ThemeSettingsRow() {
   )
 }
 
+function PlanTransferSettingsRow() {
+  const { t } = useTranslation()
+  const inputRef = useRef<HTMLInputElement>(null)
+  const [isOpen, setIsOpen] = useState(false)
+  const [message, setMessage] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [isBusy, setIsBusy] = useState(false)
+  const [planOptions, setPlanOptions] = useState<PlanTemplateExportOption[] | null>(null)
+  const [selectedPlanIds, setSelectedPlanIds] = useState<string[]>([])
+  const [exportDraft, setExportDraft] = useState<PlanTransferExportDraft | null>(null)
+  const [isPasteImportOpen, setIsPasteImportOpen] = useState(false)
+  const [importText, setImportText] = useState('')
+
+  function resetFeedback() {
+    setMessage(null)
+    setError(null)
+  }
+
+  function resetExportFlow() {
+    setPlanOptions(null)
+    setSelectedPlanIds([])
+    setExportDraft(null)
+    setIsPasteImportOpen(false)
+    resetFeedback()
+  }
+
+  async function openPlanSelection() {
+    try {
+      setIsBusy(true)
+      resetFeedback()
+      setExportDraft(null)
+      const options = await listPlanTemplateExportOptions()
+      if (options.length === 0) {
+        setError(t('settings.planTransfer.errors.noPlans'))
+        void triggerHaptic('error')
+        return
+      }
+      setPlanOptions(options)
+      setSelectedPlanIds([])
+    } catch (exportError) {
+      console.error(exportError)
+      setError(t('settings.planTransfer.errors.exportFailed'))
+      void triggerHaptic('error')
+    } finally {
+      setIsBusy(false)
+    }
+  }
+
+  function togglePlanSelection(planId: string) {
+    setSelectedPlanIds((current) =>
+      current.includes(planId) ? current.filter((id) => id !== planId) : [...current, planId],
+    )
+  }
+
+  async function preparePlanExport() {
+    try {
+      setIsBusy(true)
+      resetFeedback()
+      const data = await buildPlanTemplateExport(selectedPlanIds)
+      if (!data) {
+        setError(t('settings.planTransfer.errors.exportFailed'))
+        void triggerHaptic('error')
+        return
+      }
+
+      setExportDraft({
+        data,
+        filename: `trainre-plan-${getTodayFileDate()}.json`,
+        successMessage: t('settings.planTransfer.exportedPlans', { count: data.plans.length }),
+        title:
+          data.plans.length === 1
+            ? data.plans[0]?.planName ?? t('common.unnamedPlan')
+            : t('settings.planTransfer.selectedPlansTitle', { count: data.plans.length }),
+      })
+      setPlanOptions(null)
+      setSelectedPlanIds([])
+    } catch (exportError) {
+      console.error(exportError)
+      setError(t('settings.planTransfer.errors.exportFailed'))
+      void triggerHaptic('error')
+    } finally {
+      setIsBusy(false)
+    }
+  }
+
+  async function exportCycle() {
+    try {
+      setIsBusy(true)
+      resetFeedback()
+      const data = await buildTrainingCycleExport()
+      if (data.cycle.length === 0) {
+        setError(t('settings.planTransfer.errors.emptyCycle'))
+        void triggerHaptic('error')
+        return
+      }
+      setPlanOptions(null)
+      setExportDraft({
+        data,
+        filename: `trainre-cycle-${getTodayFileDate()}.json`,
+        successMessage: t('settings.planTransfer.exportedCycle', { count: data.plans.length }),
+        title: t('settings.planTransfer.cycleExportTitle'),
+      })
+    } catch (exportError) {
+      console.error(exportError)
+      setError(t('settings.planTransfer.errors.exportFailed'))
+      void triggerHaptic('error')
+    } finally {
+      setIsBusy(false)
+    }
+  }
+
+  async function importJsonText(text: string) {
+    try {
+      setIsBusy(true)
+      resetFeedback()
+      const result = parsePlanTransferJson(text, t('common.unnamedPlan'))
+      if (!result.ok) {
+        setError(getPlanTransferErrorMessage(t, result.error))
+        void triggerHaptic('error')
+        return
+      }
+
+      const plans = await importPlanTransferData(result.data)
+      if (plans.length === 0) {
+        setError(t('settings.planTransfer.errors.emptyExercises'))
+        void triggerHaptic('error')
+        return
+      }
+
+      setMessage(t('settings.planTransfer.imported', { count: plans.length }))
+      setImportText('')
+      setIsPasteImportOpen(false)
+      void triggerHaptic('success')
+    } catch (importError) {
+      console.error(importError)
+      setError(t('settings.planTransfer.errors.importFailed'))
+      void triggerHaptic('error')
+    } finally {
+      setIsBusy(false)
+    }
+  }
+
+  async function importFile(file: File) {
+    try {
+      await importJsonText(await file.text())
+    } finally {
+      if (inputRef.current) {
+        inputRef.current.value = ''
+      }
+    }
+  }
+
+  async function copyExportJson() {
+    if (!exportDraft) {
+      return
+    }
+
+    try {
+      resetFeedback()
+      await navigator.clipboard.writeText(formatJson(exportDraft.data))
+      setMessage(t('settings.planTransfer.copiedJson'))
+      void triggerHaptic('success')
+    } catch (copyError) {
+      console.error(copyError)
+      setError(t('settings.planTransfer.errors.copyFailed'))
+      void triggerHaptic('error')
+    }
+  }
+
+  function downloadExportJson() {
+    if (!exportDraft) {
+      return
+    }
+
+    resetFeedback()
+    downloadJsonFile(exportDraft.data, exportDraft.filename)
+    setMessage(exportDraft.successMessage)
+    void triggerHaptic('success')
+  }
+
+  return (
+    <>
+      <SettingsRow
+        icon={FileJson}
+        label={t('settings.planTransfer.title')}
+        supporting={t('settings.planTransfer.description')}
+        onClick={() => {
+          resetExportFlow()
+          setIsOpen(true)
+        }}
+        right={<ChevronRight size={16} strokeWidth={2.2} aria-hidden="true" />}
+      />
+      <input
+        ref={inputRef}
+        type="file"
+        accept="application/json,.json"
+        className="hidden"
+        onChange={(event) => {
+          const file = event.target.files?.[0]
+          if (file) {
+            void importFile(file)
+          }
+        }}
+      />
+      <AnimatedSheet open={isOpen} onClose={() => setIsOpen(false)} title={t('settings.planTransfer.title')}>
+        {exportDraft ? (
+          <div className="space-y-2">
+            <p className="px-1 text-sm font-semibold text-[var(--on-surface)]">{exportDraft.title}</p>
+            <div className="rounded-xl bg-[var(--surface)] p-2">
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <span className="px-1 text-xs font-medium text-[var(--on-surface-variant)]">
+                  {t('settings.planTransfer.jsonContent')}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => void copyExportJson()}
+                  disabled={isBusy}
+                  className="inline-flex h-9 shrink-0 items-center gap-2 rounded-full bg-[var(--primary-container)] px-3 text-xs font-semibold text-[var(--on-primary-container)] disabled:opacity-50"
+                >
+                  <Copy size={16} strokeWidth={2.2} aria-hidden="true" />
+                  <span>{t('settings.planTransfer.copyJson')}</span>
+                </button>
+              </div>
+              <textarea
+                readOnly
+                value={formatJson(exportDraft.data)}
+                className="max-h-64 min-h-40 w-full resize-none rounded-lg bg-[var(--surface-container)] px-3 py-2 font-mono text-xs leading-5 text-[var(--on-surface)] outline-none"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={downloadExportJson}
+              disabled={isBusy}
+              className="flex min-h-12 w-full items-center gap-3 rounded-xl bg-[var(--surface)] px-4 text-left text-sm font-medium text-[var(--on-surface)] transition-colors hover:bg-[var(--surface-container)] disabled:opacity-50"
+            >
+              <Download size={18} strokeWidth={2.2} className="text-[var(--primary)]" aria-hidden="true" />
+              <span>{t('settings.planTransfer.downloadJson')}</span>
+            </button>
+            <button
+              type="button"
+              onClick={resetExportFlow}
+              className="min-h-10 rounded-full px-4 text-sm font-medium text-[var(--primary)]"
+            >
+              {t('common.back')}
+            </button>
+          </div>
+        ) : null}
+        {!exportDraft && planOptions ? (
+          <div className="space-y-2">
+            <p className="px-1 text-sm font-semibold text-[var(--on-surface)]">
+              {t('settings.planTransfer.selectPlanTitle')}
+            </p>
+            <div className="flex items-center justify-between gap-2 px-1">
+              <span className="text-xs font-medium text-[var(--on-surface-variant)]">
+                {t('settings.planTransfer.selectedCount', { count: selectedPlanIds.length })}
+              </span>
+              <button
+                type="button"
+                onClick={() =>
+                  setSelectedPlanIds(
+                    selectedPlanIds.length === planOptions.length ? [] : planOptions.map((plan) => plan.id),
+                  )
+                }
+                className="rounded-full px-3 py-1.5 text-xs font-semibold text-[var(--primary)]"
+              >
+                {selectedPlanIds.length === planOptions.length ? t('plans.clearAll') : t('plans.selectAll')}
+              </button>
+            </div>
+            {planOptions.map((plan) => (
+              <button
+                key={plan.id}
+                type="button"
+                aria-pressed={selectedPlanIds.includes(plan.id)}
+                onClick={() => togglePlanSelection(plan.id)}
+                disabled={isBusy}
+                className={[
+                  'flex min-h-12 w-full items-center justify-between gap-3 rounded-xl px-4 text-left text-sm font-medium transition-colors disabled:opacity-50',
+                  selectedPlanIds.includes(plan.id)
+                    ? 'bg-[var(--primary-container)] text-[var(--on-primary-container)]'
+                    : 'bg-[var(--surface)] text-[var(--on-surface)] hover:bg-[var(--surface-container)]',
+                ].join(' ')}
+              >
+                <span className="flex min-w-0 flex-1 items-center gap-3">
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-[var(--outline-variant)]">
+                    {selectedPlanIds.includes(plan.id) ? <Check size={14} strokeWidth={2.5} aria-hidden="true" /> : null}
+                  </span>
+                  <span className="min-w-0 flex-1 truncate">{plan.name}</span>
+                </span>
+                <span className="shrink-0 text-xs text-[var(--on-surface-variant)]">
+                  {t('summary.exerciseCount', { count: plan.exerciseCount })}
+                </span>
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={() => void preparePlanExport()}
+              disabled={isBusy || selectedPlanIds.length === 0}
+              className="mt-2 min-h-12 w-full rounded-xl bg-[var(--primary)] px-4 text-sm font-bold text-[var(--on-primary)] disabled:opacity-50"
+            >
+              {t('settings.planTransfer.exportSelected')}
+            </button>
+            <button
+              type="button"
+              onClick={resetExportFlow}
+              className="min-h-10 rounded-full px-4 text-sm font-medium text-[var(--primary)]"
+            >
+              {t('common.back')}
+            </button>
+          </div>
+        ) : null}
+        {!exportDraft && !planOptions && isPasteImportOpen ? (
+          <div className="space-y-3">
+            <textarea
+              value={importText}
+              onChange={(event) => setImportText(event.target.value)}
+              placeholder={t('settings.planTransfer.pasteJsonPlaceholder')}
+              className="min-h-40 w-full resize-none rounded-xl bg-[var(--surface)] px-3 py-3 text-sm leading-6 text-[var(--on-surface)] outline-none ring-1 ring-[var(--outline-variant)] transition-all focus:ring-[var(--primary)]"
+            />
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={resetExportFlow}
+                className="rounded-full px-4 py-2.5 text-sm font-medium text-[var(--primary)]"
+              >
+                {t('common.back')}
+              </button>
+              <button
+                type="button"
+                onClick={() => void importJsonText(importText)}
+                disabled={isBusy || !importText.trim()}
+                className="rounded-full bg-[var(--primary)] px-4 py-2.5 text-sm font-semibold text-[var(--on-primary)] disabled:opacity-50"
+              >
+                {t('settings.planTransfer.importPastedJson')}
+              </button>
+            </div>
+          </div>
+        ) : null}
+        {!exportDraft && !planOptions && !isPasteImportOpen ? (
+          <div className="space-y-2">
+            <button
+              type="button"
+              onClick={() => void openPlanSelection()}
+              disabled={isBusy}
+              className="flex min-h-12 w-full items-center gap-3 rounded-xl bg-[var(--surface)] px-4 text-left text-sm font-medium text-[var(--on-surface)] transition-colors hover:bg-[var(--surface-container)] disabled:opacity-50"
+            >
+              <Download size={18} strokeWidth={2.2} className="text-[var(--primary)]" aria-hidden="true" />
+              <span>{t('settings.planTransfer.exportPlans')}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => void exportCycle()}
+              disabled={isBusy}
+              className="flex min-h-12 w-full items-center gap-3 rounded-xl bg-[var(--surface)] px-4 text-left text-sm font-medium text-[var(--on-surface)] transition-colors hover:bg-[var(--surface-container)] disabled:opacity-50"
+            >
+              <Download size={18} strokeWidth={2.2} className="text-[var(--primary)]" aria-hidden="true" />
+              <span>{t('settings.planTransfer.exportCycle')}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setImportText('')
+                resetFeedback()
+                setIsPasteImportOpen(true)
+              }}
+              disabled={isBusy}
+              className="flex min-h-12 w-full items-center gap-3 rounded-xl bg-[var(--surface)] px-4 text-left text-sm font-medium text-[var(--on-surface)] transition-colors hover:bg-[var(--surface-container)] disabled:opacity-50"
+            >
+              <ClipboardPaste size={18} strokeWidth={2.2} className="text-[var(--primary)]" aria-hidden="true" />
+              <span>{t('settings.planTransfer.pasteJson')}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => inputRef.current?.click()}
+              disabled={isBusy}
+              className="flex min-h-12 w-full items-center gap-3 rounded-xl bg-[var(--surface)] px-4 text-left text-sm font-medium text-[var(--on-surface)] transition-colors hover:bg-[var(--surface-container)] disabled:opacity-50"
+            >
+              <Upload size={18} strokeWidth={2.2} className="text-[var(--primary)]" aria-hidden="true" />
+              <span>{t('settings.planTransfer.importJson')}</span>
+            </button>
+          </div>
+        ) : null}
+        {message ? (
+          <p className="mt-3 rounded-xl bg-[var(--primary-container)] px-4 py-3 text-sm leading-5 text-[var(--on-primary-container)]">
+            {message}
+          </p>
+        ) : null}
+        {error ? (
+          <p className="mt-3 rounded-xl bg-[var(--error-container)] px-4 py-3 text-sm leading-5 text-[var(--on-error-container)]">
+            {error}
+          </p>
+        ) : null}
+      </AnimatedSheet>
+    </>
+  )
+}
+
 function DebugDateSettingsCard() {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -372,6 +824,10 @@ export function SettingsPage() {
 
         <SettingsSection title={t('settings.sections.reminders')}>
           <LocalReminderSettings />
+        </SettingsSection>
+
+        <SettingsSection title={t('settings.sections.data')}>
+          <PlanTransferSettingsRow />
         </SettingsSection>
 
         <SettingsSection title={t('settings.sections.support')}>
