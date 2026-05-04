@@ -8,11 +8,17 @@ export type MovementPattern = (typeof movementPatterns)[number]
 
 export type MuscleGroup = (typeof muscleGroups)[number]
 
+export type MuscleDistributionItem = {
+  muscleGroupId: MuscleGroup
+  ratio: number
+}
+
 export type Exercise = {
   id: string
   slug: string
   primaryMuscleGroupIds: MuscleGroup[]
   secondaryMuscleGroupIds: MuscleGroup[]
+  muscleDistribution: MuscleDistributionItem[]
   movementPattern: MovementPattern
   measurementType: MeasurementType
   sourceUrls: string[]

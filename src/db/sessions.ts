@@ -39,6 +39,14 @@ export {
   getSessionSummaryDetailByDateKey,
   listSessionDateKeys,
 } from './session-summary'
+export {
+  getSummaryRangeAnalytics,
+  getSummaryRangeBounds,
+  type SummaryMetricKind,
+  type SummaryRange,
+  type SummaryRangeAnalytics,
+  type SummaryRecordHighlight,
+} from './summary-analytics'
 
 const CURRENT_SESSION_KEY = 'trainre.current-session-id.v1'
 let getOrCreateTodaySessionPromise: Promise<WorkoutSessionWithExercises> | null = null
