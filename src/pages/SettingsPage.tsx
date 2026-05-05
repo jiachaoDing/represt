@@ -47,8 +47,8 @@ import { useThemePreference, type ThemePreference } from '../lib/theme'
 import { isNativePluginAvailable } from '../native/capacitor-platform'
 
 const WEB_APP_VERSION = __APP_VERSION__
-const PRIVACY_POLICY_URL = 'https://trainre.app/privacy'
-const FEEDBACK_EMAIL = 'mailto:support@trainre.app?subject=RepRest%20feedback'
+const PRIVACY_POLICY_URL = 'https://represt.app/privacy'
+const FEEDBACK_EMAIL = 'mailto:support@represt.app?subject=RepRest%20feedback'
 
 type SettingsSectionProps = {
   children: ReactNode
