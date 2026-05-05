@@ -2,8 +2,8 @@
 <resources>
     <string name="app_name">RepRest</string>
     <string name="title_activity_main">RepRest</string>
-    <string name="package_name">com.trainre.app</string>
-    <string name="custom_url_scheme">com.trainre.app</string>
+    <string name="package_name">com.represt.app</string>
+    <string name="custom_url_scheme">com.represt.app</string>
     <string name="training_timer_channel_name">Training timers</string>
     <string name="training_timer_channel_description">Ongoing countdown notifications for rest and quick timers</string>
     <string name="training_timer_finished_channel_name">Training alerts</string>

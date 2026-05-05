@@ -113,7 +113,7 @@ android/app/src/main/res/drawable/ic_stat_trainre_notification.xml
 调用点是：
 
 ```text
-android/app/src/main/java/com/trainre/app/RestTimerAlarmReceiver.java
+android/app/src/main/java/com/represt/app/RestTimerAlarmReceiver.java
 ```
 
 通知小图标应保持透明背景和单色填充。修改后运行：

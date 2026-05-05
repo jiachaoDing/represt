@@ -1,4 +1,4 @@
-package com.trainre.app;
+package com.represt.app;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
