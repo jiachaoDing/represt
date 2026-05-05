@@ -52,6 +52,8 @@ export {
   type ExerciseRecordMetricKind,
   type ExerciseRecordSummary,
   type ExerciseRecordTrendPoint,
+  type ExerciseRecordTrendKind,
+  type ExerciseRecordTrendSeries,
 } from './exercise-records'
 export {
   getSummaryRangeAnalytics,
@@ -60,6 +62,7 @@ export {
   type SummaryRange,
   type SummaryRangeAnalytics,
   type SummaryRecordHighlight,
+  type SummaryTrendPoint,
 } from './summary-analytics'
 
 const CURRENT_SESSION_KEY = 'trainre.current-session-id.v1'

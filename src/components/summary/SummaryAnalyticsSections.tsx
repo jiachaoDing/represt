@@ -1,10 +1,13 @@
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
+import { Link } from 'react-router-dom'
 
+import { getExerciseProfileId } from '../../db/sessions'
 import type {
   SummaryMetricKind,
   SummaryRangeAnalytics,
   SummaryRecordHighlight,
+  SummaryTrendPoint,
 } from '../../db/sessions'
 import { getMuscleGroupName } from '../../lib/exercise-catalog-i18n'
 import { getDisplayExerciseName } from '../../lib/exercise-name'
@@ -41,6 +44,15 @@ function formatMetricValue(kind: SummaryMetricKind, value: number, t: TFunction)
 
 function getMetricLabel(kind: SummaryMetricKind, t: TFunction) {
   return t(`summary.analytics.metrics.${kind}`)
+}
+
+function getExerciseRecordPath(input: { catalogExerciseId: string | null; exerciseName: string }) {
+  const profileId = getExerciseProfileId({
+    catalogExerciseId: input.catalogExerciseId,
+    name: input.exerciseName,
+  })
+
+  return `/summary/exercises/${encodeURIComponent(profileId)}`
 }
 
 function getSecondaryMetric(analytics: SummaryRangeAnalytics, t: TFunction) {
@@ -110,9 +122,14 @@ function HighlightRow({ item }: { item: SummaryRecordHighlight }) {
     catalogExerciseId: item.catalogExerciseId,
     name: item.exerciseName,
   })
+  const detailPath = getExerciseRecordPath(item)
 
   return (
-    <div className="flex items-center justify-between gap-3 rounded-2xl bg-[var(--surface-container)] px-3 py-3">
+    <Link
+      to={detailPath}
+      viewTransition
+      className="flex items-center justify-between gap-3 rounded-2xl bg-[var(--surface-container)] px-3 py-3"
+    >
       <div className="min-w-0">
         <p className="truncate text-[14px] font-bold text-[var(--on-surface)]">{displayName}</p>
         <p className="mt-1 text-[12px] text-[var(--on-surface-variant)]">
@@ -122,7 +139,7 @@ function HighlightRow({ item }: { item: SummaryRecordHighlight }) {
       <p className="shrink-0 text-[15px] font-bold text-[var(--on-surface)]">
         {formatMetricValue(item.metricKind, item.value, t)}
       </p>
-    </div>
+    </Link>
   )
 }
 
@@ -186,6 +203,31 @@ function TrendCard({ analytics }: { analytics: SummaryRangeAnalytics }) {
   )
 }
 
+function getTrendPointLabel(point: SummaryTrendPoint, analytics: SummaryRangeAnalytics, t: TFunction) {
+  return analytics.range === 'month' ? t('summary.analytics.weekNumber', { value: point.label }) : point.label
+}
+
+function buildSparklinePoints(points: SummaryTrendPoint[]) {
+  const width = 240
+  const height = 88
+  const paddingX = 8
+  const paddingY = 12
+  const values = points.map((point) => point.value)
+  const minValue = Math.min(...values)
+  const maxValue = Math.max(...values)
+  const valueRange = maxValue - minValue
+  const plotWidth = width - paddingX * 2
+  const plotHeight = height - paddingY * 2
+
+  return points.map((point, index) => {
+    const x = paddingX + (plotWidth / Math.max(points.length - 1, 1)) * index
+    const normalized = valueRange === 0 ? 0.5 : (point.value - minValue) / valueRange
+    const y = paddingY + (1 - normalized) * plotHeight
+
+    return { ...point, x, y }
+  })
+}
+
 function ExerciseTrendCard({ analytics }: { analytics: SummaryRangeAnalytics }) {
   const { t } = useTranslation()
   const trend = analytics.topExerciseTrend
@@ -193,35 +235,47 @@ function ExerciseTrendCard({ analytics }: { analytics: SummaryRangeAnalytics }) 
     return null
   }
 
-  const maxValue = Math.max(...trend.points.map((point) => point.value), 1)
   const displayName = getDisplayExerciseName(t, {
     catalogExerciseId: trend.catalogExerciseId,
     name: trend.exerciseName,
   })
+  const metricLabel = getMetricLabel(trend.metricKind, t)
+  const chartPoints = buildSparklinePoints(trend.points)
+  const linePoints = chartPoints.map((point) => `${point.x},${point.y}`).join(' ')
+  const firstPoint = trend.points[0]
+  const lastPoint = trend.points[trend.points.length - 1]
+  const detailPath = getExerciseRecordPath(trend)
 
   return (
-    <section className="mx-4 mt-3 rounded-[1.25rem] border border-[var(--outline-variant)]/20 bg-[var(--surface)] p-4 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)]">
+    <Link
+      to={detailPath}
+      viewTransition
+      className="mx-4 mt-3 block rounded-[1.25rem] border border-[var(--outline-variant)]/20 bg-[var(--surface)] p-4 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)]"
+    >
       <h2 className="text-[16px] font-bold text-[var(--on-surface)]">{t('summary.analytics.exerciseTrend')}</h2>
       <p className="mt-1 text-[13px] text-[var(--on-surface-variant)]">
-        {displayName} · {getMetricLabel(trend.metricKind, t)}
+        {displayName} · {metricLabel}
       </p>
-      <div className="mt-4 flex items-end gap-2">
-        {trend.points.map((point) => (
-          <div key={point.key} className="min-w-0 flex-1">
-            <div className="h-2 rounded-full bg-[var(--surface-container)]">
-              <div
-                className="h-2 rounded-full bg-[var(--plan-1)]"
-                style={{ width: `${Math.max((point.value / maxValue) * 100, 8)}%` }}
-              />
-            </div>
-            <div className="mt-2 flex items-center justify-between gap-2 text-[11px] text-[var(--on-surface-variant)]">
-              <span className="truncate">{point.label}</span>
-              <span>{formatMetricValue(trend.metricKind, point.value, t)}</span>
-            </div>
+      <div className="mt-3 rounded-2xl bg-[var(--surface-container)] px-2 py-3">
+        <svg viewBox="0 0 240 88" className="h-24 w-full overflow-visible" role="img" aria-label={`${displayName} ${metricLabel}`}>
+          <line x1="8" y1="76" x2="232" y2="76" stroke="var(--outline-variant)" strokeWidth="1" opacity="0.45" />
+          <polyline points={linePoints} fill="none" stroke="var(--plan-1)" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+          {chartPoints.map((point) => (
+            <circle key={point.key} cx={point.x} cy={point.y} r="4" fill="var(--surface)" stroke="var(--plan-1)" strokeWidth="3" />
+          ))}
+        </svg>
+        <div className="mt-2 grid grid-cols-2 gap-3 text-[11px] text-[var(--on-surface-variant)]">
+          <div className="min-w-0">
+            <p className="truncate">{getTrendPointLabel(firstPoint, analytics, t)}</p>
+            <p className="mt-1 font-semibold text-[var(--on-surface)]">{formatMetricValue(trend.metricKind, firstPoint.value, t)}</p>
           </div>
-        ))}
+          <div className="min-w-0 text-right">
+            <p className="truncate">{getTrendPointLabel(lastPoint, analytics, t)}</p>
+            <p className="mt-1 font-semibold text-[var(--on-surface)]">{formatMetricValue(trend.metricKind, lastPoint.value, t)}</p>
+          </div>
+        </div>
       </div>
-    </section>
+    </Link>
   )
 }
 

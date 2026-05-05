@@ -4,6 +4,7 @@ import { Link, useParams } from 'react-router-dom'
 import { ChevronRight, Search, SlidersHorizontal } from 'lucide-react'
 
 import { BottomSheet } from '../components/ui/BottomSheet'
+import { ExerciseTrendChart } from '../components/exercise-records/ExerciseTrendChart'
 import { PageHeader } from '../components/ui/PageHeader'
 import { muscleGroups, type MuscleDistributionItem } from '../domain/exercise-catalog'
 import {
@@ -28,6 +29,32 @@ import {
   type ExerciseRecordMetricKind,
   type ExerciseRecordSummary,
 } from '../db/sessions'
+
+const trendKinds = ['personalBest', 'bestSet', 'volume', 'frequency'] as const
+type DefaultTrendKind = (typeof trendKinds)[number]
+
+const trendTextKeys: Record<DefaultTrendKind, { label: string; title: string; description: string }> = {
+  personalBest: {
+    label: 'summary.exerciseRecords.trends.personalBest',
+    title: 'summary.exerciseRecords.trends.personalBestTitle',
+    description: 'summary.exerciseRecords.trends.personalBestDescription',
+  },
+  bestSet: {
+    label: 'summary.exerciseRecords.trends.bestSet',
+    title: 'summary.exerciseRecords.trends.bestSetTitle',
+    description: 'summary.exerciseRecords.trends.bestSetDescription',
+  },
+  volume: {
+    label: 'summary.exerciseRecords.trends.volume',
+    title: 'summary.exerciseRecords.trends.volumeTitle',
+    description: 'summary.exerciseRecords.trends.volumeDescription',
+  },
+  frequency: {
+    label: 'summary.exerciseRecords.trends.frequency',
+    title: 'summary.exerciseRecords.trends.frequencyTitle',
+    description: 'summary.exerciseRecords.trends.frequencyDescription',
+  },
+}
 
 function formatMetricValue(kind: ExerciseRecordMetricKind, value: number, t: ReturnType<typeof useTranslation>['t']) {
   if (kind === 'highestWeight') {
@@ -212,139 +239,68 @@ function ExerciseRecordsListPage() {
   )
 }
 
-function TrendChart({ detail }: { detail: ExerciseRecordDetail }) {
-  const { i18n, t } = useTranslation()
-  const points = detail.trendPoints
-  const [selectedPointKey, setSelectedPointKey] = useState<string | null>(null)
-  const maxValue = Math.max(...points.map((point) => point.value), 1)
-  const minValue = Math.min(...points.map((point) => point.value), 0)
-  const valueRange = Math.max(maxValue - minValue, 1)
-  const width = 320
-  const height = 144
-  const paddingLeft = 58
-  const paddingRight = 12
-  const paddingTop = 18
-  const paddingBottom = 24
-  const chartWidth = width - paddingLeft - paddingRight
-  const chartHeight = height - paddingTop - paddingBottom
-  const yAxisTicks = [maxValue, minValue + valueRange / 2, minValue]
-  const coordinates = points.map((point, index) => {
-    const x = points.length === 1
-      ? paddingLeft + chartWidth / 2
-      : paddingLeft + (index / (points.length - 1)) * chartWidth
-    const y = paddingTop + ((maxValue - point.value) / valueRange) * chartHeight
-    return { ...point, x, y }
-  })
-  const path = coordinates.map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`).join(' ')
-  const selectedPoint = coordinates.find((point) => point.key === selectedPointKey) ?? null
-  const primaryMetricKind = detail.primaryMetric?.kind ?? 'highestWeight'
+function TrendCard({ detail }: { detail: ExerciseRecordDetail }) {
+  const { t } = useTranslation()
+  const [selectedTrend, setSelectedTrend] = useState<DefaultTrendKind>('personalBest')
+  const series = detail.trendSeries.find((item) => item.kind === selectedTrend) ?? null
+  const textKeys = trendTextKeys[selectedTrend]
+  const title = t(textKeys.title)
+  const valueFormatter = (value: number) => {
+    if (selectedTrend === 'frequency') {
+      return formatNumber(value)
+    }
 
-  if (points.length === 0) {
-    return (
-      <section className="mx-4 mt-3 rounded-[1.25rem] border border-[var(--outline-variant)]/20 bg-[var(--surface)] p-4">
-        <h2 className="text-[16px] font-bold text-[var(--on-surface)]">{t('summary.exerciseRecords.pbTrend')}</h2>
-        <p className="mt-3 text-sm text-[var(--on-surface-variant)]">{t('summary.exerciseRecords.noTrend')}</p>
-      </section>
-    )
+    return formatMetricValue(series?.metricKind ?? 'highestWeight', value, t)
   }
 
   return (
     <section className="mx-4 mt-3 rounded-[1.25rem] border border-[var(--outline-variant)]/20 bg-[var(--surface)] p-4 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)]">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <h2 className="text-[16px] font-bold text-[var(--on-surface)]">{t('summary.exerciseRecords.pbTrend')}</h2>
-          <p className="mt-1 text-[12px] text-[var(--on-surface-variant)]">
-            {t(`summary.analytics.metrics.${primaryMetricKind}`)}
+          <p className="text-[12px] font-semibold text-[var(--on-surface-variant)]">
+            {t('summary.exerciseRecords.trends.title')}
           </p>
+          <h2 className="mt-1 text-[16px] font-bold text-[var(--on-surface)]">{title}</h2>
         </div>
-        <p className="shrink-0 text-[13px] font-semibold text-[var(--primary)]">
-          <MetricValue metric={detail.primaryMetric} />
-        </p>
-      </div>
-      <div className="relative mt-4">
-        <svg className="h-40 w-full overflow-visible" viewBox={`0 0 ${width} ${height}`} role="img" aria-label={t('summary.exerciseRecords.pbTrend')}>
-          {yAxisTicks.map((tick, index) => {
-            const y = paddingTop + ((maxValue - tick) / valueRange) * chartHeight
-
-            return (
-              <g key={`${tick}:${index}`}>
-                <path
-                  d={`M ${paddingLeft} ${y} H ${width - paddingRight}`}
-                  fill="none"
-                  stroke="var(--outline-variant)"
-                  strokeWidth="1"
-                  strokeOpacity={tick === minValue ? 0.9 : 0.45}
-                />
-                <text
-                  x={paddingLeft - 8}
-                  y={y + 3}
-                  fill="var(--on-surface-variant)"
-                  fontSize="10"
-                  fontWeight="600"
-                  textAnchor="end"
-                >
-                  {formatMetricValue(primaryMetricKind, tick, t)}
-                </text>
-              </g>
-            )
-          })}
-          <path d={`M ${paddingLeft} ${paddingTop} V ${height - paddingBottom}`} fill="none" stroke="var(--outline-variant)" strokeWidth="1" />
-          {path ? <path d={path} fill="none" stroke="var(--plan-1)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" /> : null}
-          {coordinates.map((point) => {
-            const isSelected = point.key === selectedPointKey
-
-            return (
-              <g
-                key={point.key}
-                role="button"
-                tabIndex={0}
-                aria-label={t('summary.exerciseRecords.trendPointLabel', {
-                  date: formatSessionDateKey(point.key, { month: 'short', day: 'numeric' }, i18n.resolvedLanguage),
-                  value: formatMetricValue(primaryMetricKind, point.value, t),
-                })}
-                className="cursor-pointer outline-none"
-                onClick={() => setSelectedPointKey(isSelected ? null : point.key)}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault()
-                    setSelectedPointKey(isSelected ? null : point.key)
-                  }
-                }}
-              >
-                <circle cx={point.x} cy={point.y} r="12" fill="transparent" />
-                <circle
-                  cx={point.x}
-                  cy={point.y}
-                  r={isSelected ? '6' : '4'}
-                  fill="var(--surface)"
-                  stroke="var(--plan-1)"
-                  strokeWidth={isSelected ? '4' : '3'}
-                />
-              </g>
-            )
-          })}
-        </svg>
-        {selectedPoint ? (
-          <div
-            className="pointer-events-none absolute z-10 min-w-24 -translate-x-1/2 rounded-xl bg-[var(--surface-container-high)] px-3 py-2 text-center shadow-lg ring-1 ring-[var(--outline-variant)]/30"
-            style={{
-              left: `${(selectedPoint.x / width) * 100}%`,
-              top: `${Math.max((selectedPoint.y / height) * 100 - 24, 0)}%`,
-            }}
-          >
-            <p className="text-[11px] font-medium text-[var(--on-surface-variant)]">
-              {formatSessionDateKey(selectedPoint.key, { month: 'short', day: 'numeric' }, i18n.resolvedLanguage)}
-            </p>
-            <p className="mt-0.5 text-[13px] font-bold text-[var(--on-surface)]">
-              {formatMetricValue(primaryMetricKind, selectedPoint.value, t)}
-            </p>
-          </div>
+        {series?.latestValue !== null && series?.latestValue !== undefined ? (
+          <p className="shrink-0 text-[13px] font-semibold text-[var(--primary)]">
+            {valueFormatter(series.latestValue)}
+          </p>
         ) : null}
       </div>
-      <div className="mt-1 flex justify-between gap-3 text-[11px] text-[var(--on-surface-variant)]">
-        <span>{points[0]?.label}</span>
-        <span>{points[points.length - 1]?.label}</span>
+
+      <div className="mt-3 grid grid-cols-4 gap-1 rounded-2xl bg-[var(--surface-container)] p-1">
+        {trendKinds.map((kind) => {
+          const isSelected = kind === selectedTrend
+
+          return (
+            <button
+              key={kind}
+              type="button"
+              onClick={() => setSelectedTrend(kind)}
+              className={[
+                'min-w-0 rounded-xl px-2 py-2 text-[12px] font-semibold transition-colors',
+                isSelected
+                  ? 'bg-[var(--primary-container)] text-[var(--on-primary-container)]'
+                  : 'text-[var(--on-surface-variant)]',
+              ].join(' ')}
+            >
+              {t(trendTextKeys[kind].label)}
+            </button>
+          )
+        })}
       </div>
+
+      <p className="mt-3 text-[12px] text-[var(--on-surface-variant)]">{t(textKeys.description)}</p>
+      {(series?.points.length ?? 0) > 0 ? (
+        <div className="mt-3">
+          <ExerciseTrendChart ariaLabel={title} points={series?.points ?? []} valueFormatter={valueFormatter} />
+        </div>
+      ) : (
+        <p className="mt-4 rounded-2xl bg-[var(--surface-container)] px-4 py-6 text-center text-sm text-[var(--on-surface-variant)]">
+          {t('summary.exerciseRecords.trends.noData')}
+        </p>
+      )}
     </section>
   )
 }
@@ -639,7 +595,7 @@ function ExerciseRecordDetailPage({ profileId }: { profileId: string }) {
       {detail ? (
         <>
           <MetricCards detail={detail} />
-          <TrendChart detail={detail} />
+          <TrendCard detail={detail} />
           <section className="mx-4 mt-3 grid grid-cols-2 gap-3">
             <div className="rounded-[1.25rem] bg-[var(--surface-container)] p-4">
               <p className="text-[12px] font-semibold text-[var(--on-surface-variant)]">{t('summary.exerciseRecords.trainingDays')}</p>

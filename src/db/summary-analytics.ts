@@ -276,7 +276,11 @@ function buildRangeTrendPoints(input: {
     })
   }
 
-  const weekKeys = new Map<string, { label: string; value: number }>()
+  const weekPoints = Array.from({ length: 4 }, (_, index) => ({
+    key: addDaysToSessionDateKey(input.startDateKey, index * 7),
+    label: `${index + 1}`,
+    value: 0,
+  }))
 
   for (const record of input.records) {
     const dateKey = input.sessionsById.get(record.sessionId)?.sessionDateKey
@@ -284,18 +288,12 @@ function buildRangeTrendPoints(input: {
       continue
     }
 
-    const bounds = getSummaryRangeBounds(dateKey, 'week')
-    const current = weekKeys.get(bounds.startDateKey) ?? {
-      label: `${weekKeys.size + 1}`,
-      value: 0,
-    }
-    current.value += 1
-    weekKeys.set(bounds.startDateKey, current)
+    const dayOfMonth = Number(dateKey.slice(8, 10))
+    const weekIndex = Math.min(Math.floor((dayOfMonth - 1) / 7), weekPoints.length - 1)
+    weekPoints[weekIndex].value += 1
   }
 
-  return Array.from(weekKeys.entries())
-    .sort(([left], [right]) => left.localeCompare(right))
-    .map(([key, point]) => ({ key, label: point.label, value: point.value }))
+  return weekPoints
 }
 
 function buildDistribution(input: {
@@ -352,10 +350,25 @@ function pickTrendMetric(measurementType: MeasurementType): SummaryMetricKind {
 }
 
 function buildTopExerciseTrend(input: {
+  endDateKey: string
   performedExercisesById: Map<string, PerformedExercise>
+  range: SummaryRange
   records: SetRecord[]
   sessionsById: Map<string, WorkoutSession>
+  startDateKey: string
 }) {
+  const monthWeekLabels = new Map<string, string>()
+  if (input.range === 'month') {
+    let weekStart = getSummaryRangeBounds(input.startDateKey, 'week').startDateKey
+    let weekIndex = 1
+
+    while (compareDateKeys(weekStart, input.endDateKey) <= 0) {
+      monthWeekLabels.set(weekStart, String(weekIndex))
+      weekStart = addDaysToSessionDateKey(weekStart, 7)
+      weekIndex += 1
+    }
+  }
+
   const groups = new Map<string, { exercise: PerformedExercise; records: SetRecord[] }>()
 
   for (const record of input.records) {
@@ -374,7 +387,7 @@ function buildTopExerciseTrend(input: {
     .map((group) => {
       const measurementType = getExerciseMeasurementType(group.exercise)
       const metricKind = pickTrendMetric(measurementType)
-      const pointsByDate = new Map<string, number>()
+      const pointsByBucket = new Map<string, { label: string; value: number }>()
 
       for (const record of group.records) {
         const dateKey = input.sessionsById.get(record.sessionId)?.sessionDateKey
@@ -383,9 +396,12 @@ function buildTopExerciseTrend(input: {
           continue
         }
 
-        const current = pointsByDate.get(dateKey)
-        if (current === undefined || value > current) {
-          pointsByDate.set(dateKey, value)
+        const weekStart = input.range === 'month' ? getSummaryRangeBounds(dateKey, 'week').startDateKey : null
+        const key = weekStart ?? dateKey
+        const label = weekStart ? monthWeekLabels.get(weekStart) ?? '' : dateKey.slice(5)
+        const current = pointsByBucket.get(key)
+        if (current === undefined || value > current.value) {
+          pointsByBucket.set(key, { label, value })
         }
       }
 
@@ -393,9 +409,9 @@ function buildTopExerciseTrend(input: {
         catalogExerciseId: resolveCatalogExerciseId(group.exercise),
         exerciseName: group.exercise.name,
         metricKind,
-        points: Array.from(pointsByDate.entries())
+        points: Array.from(pointsByBucket.entries())
           .sort(([left], [right]) => left.localeCompare(right))
-          .map(([key, value]) => ({ key, label: key.slice(5), value })),
+          .map(([key, point]) => ({ key, label: point.label, value: point.value })),
       }
     })
     .filter((candidate) => candidate.points.length >= 2)
@@ -475,9 +491,12 @@ export async function getSummaryRangeAnalytics(dateKey: string, range: SummaryRa
       startDateKey,
     }),
     topExerciseTrend: buildTopExerciseTrend({
+      endDateKey,
       performedExercisesById,
+      range,
       records: periodRecords,
       sessionsById,
+      startDateKey,
     }),
   } satisfies SummaryRangeAnalytics
 }

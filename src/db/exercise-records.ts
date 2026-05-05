@@ -39,6 +39,21 @@ export type ExerciseRecordTrendPoint = {
   value: number
 }
 
+export type ExerciseRecordTrendKind =
+  | 'personalBest'
+  | 'bestSet'
+  | 'volume'
+  | 'frequency'
+  | 'averageSet'
+  | 'averageWeight'
+
+export type ExerciseRecordTrendSeries = {
+  kind: ExerciseRecordTrendKind
+  metricKind: ExerciseRecordMetricKind
+  points: ExerciseRecordTrendPoint[]
+  latestValue: number | null
+}
+
 export type ExerciseRecordHistoryItem = {
   id: string
   completedAt: string
@@ -68,7 +83,7 @@ export type ExerciseRecordDetail = ExerciseRecordSummary & {
   totalDurationSeconds: number
   totalReps: number
   totalVolume: number
-  trendPoints: ExerciseRecordTrendPoint[]
+  trendSeries: ExerciseRecordTrendSeries[]
 }
 
 type ExerciseSource = Pick<PlanExercise | SessionPlanItem | PerformedExercise, 'catalogExerciseId' | 'id' | 'name'>
@@ -139,6 +154,22 @@ function pickPrimaryMetricKind(measurementType: MeasurementType): ExerciseRecord
     return 'loadDistanceVolume'
   }
   return 'highestWeight'
+}
+
+function pickVolumeMetricKind(measurementType: MeasurementType): ExerciseRecordMetricKind {
+  if (measurementType === 'weightReps') {
+    return 'weightRepsVolume'
+  }
+  if (measurementType === 'duration') {
+    return 'longestDuration'
+  }
+  if (measurementType === 'distance') {
+    return 'longestDistance'
+  }
+  if (measurementType === 'weightDistance') {
+    return 'loadDistanceVolume'
+  }
+  return 'maxReps'
 }
 
 function pickBestMetric(metrics: ExerciseRecordMetric[], kind: ExerciseRecordMetricKind) {
@@ -306,26 +337,98 @@ export async function resetExerciseProfileMuscleDistribution(profileId: string) 
   await db.exerciseProfiles.delete(profileId)
 }
 
-function buildTrendPoints(group: ExerciseRecordGroup, measurementType: MeasurementType) {
-  const primaryKind = pickPrimaryMetricKind(measurementType)
-  const valuesByDate = new Map<string, number>()
+function getTrendMetricValue(setRecord: SetRecord, measurementType: MeasurementType, kind: ExerciseRecordMetricKind) {
+  return getMetricValues(setRecord, measurementType).find((metric) => metric.kind === kind)?.value
+}
 
-  for (const record of group.records) {
-    const value = getMetricValues(record.setRecord, measurementType)
-      .find((metric) => metric.kind === primaryKind)?.value
-    if (value === undefined) {
-      continue
-    }
-
-    const current = valuesByDate.get(record.session.sessionDateKey)
-    if (current === undefined || value > current) {
-      valuesByDate.set(record.session.sessionDateKey, value)
-    }
+function getSetVolumeValue(setRecord: SetRecord, measurementType: MeasurementType) {
+  if (measurementType === 'weightReps' && setRecord.weightKg !== null && setRecord.reps !== null) {
+    return setRecord.weightKg * setRecord.reps
+  }
+  if (measurementType === 'reps' && setRecord.reps !== null) {
+    return setRecord.reps
+  }
+  if (measurementType === 'duration' && setRecord.durationSeconds !== null) {
+    return setRecord.durationSeconds
+  }
+  if (measurementType === 'distance' && setRecord.distanceMeters !== null) {
+    return setRecord.distanceMeters
+  }
+  if (measurementType === 'weightDistance' && setRecord.weightKg !== null && setRecord.distanceMeters !== null) {
+    return setRecord.weightKg * setRecord.distanceMeters
   }
 
+  return null
+}
+
+function makeTrendPoints(valuesByDate: Map<string, number>) {
   return Array.from(valuesByDate.entries())
     .sort(([left], [right]) => left.localeCompare(right))
     .map(([key, value]) => ({ key, label: key.slice(5), value }))
+}
+
+function buildTrendSeries(group: ExerciseRecordGroup, measurementType: MeasurementType) {
+  const primaryKind = pickPrimaryMetricKind(measurementType)
+  const volumeKind = pickVolumeMetricKind(measurementType)
+  const dailyBestByDate = new Map<string, number>()
+  const volumeByDate = new Map<string, number>()
+  const frequencyByDate = new Map<string, number>()
+
+  for (const record of group.records) {
+    const dateKey = record.session.sessionDateKey
+    const value = getTrendMetricValue(record.setRecord, measurementType, primaryKind)
+    if (value !== undefined) {
+      const current = dailyBestByDate.get(dateKey)
+      if (current === undefined || value > current) {
+        dailyBestByDate.set(dateKey, value)
+      }
+    }
+
+    const volume = getSetVolumeValue(record.setRecord, measurementType)
+    if (volume !== null) {
+      volumeByDate.set(dateKey, (volumeByDate.get(dateKey) ?? 0) + volume)
+    }
+
+    if (value !== undefined || volume !== null) {
+      frequencyByDate.set(dateKey, 1)
+    }
+  }
+
+  const dailyBestPoints = makeTrendPoints(dailyBestByDate)
+  let personalBest = 0
+  const personalBestPoints = dailyBestPoints.map((point) => {
+    personalBest = Math.max(personalBest, point.value)
+    return { ...point, value: personalBest }
+  })
+  const volumePoints = makeTrendPoints(volumeByDate)
+  const frequencyPoints = makeTrendPoints(frequencyByDate)
+
+  return [
+    {
+      kind: 'personalBest',
+      metricKind: primaryKind,
+      points: personalBestPoints,
+      latestValue: personalBestPoints.at(-1)?.value ?? null,
+    },
+    {
+      kind: 'bestSet',
+      metricKind: primaryKind,
+      points: dailyBestPoints,
+      latestValue: dailyBestPoints.at(-1)?.value ?? null,
+    },
+    {
+      kind: 'volume',
+      metricKind: volumeKind,
+      points: volumePoints,
+      latestValue: volumePoints.at(-1)?.value ?? null,
+    },
+    {
+      kind: 'frequency',
+      metricKind: 'maxReps',
+      points: frequencyPoints,
+      latestValue: frequencyPoints.at(-1)?.value ?? null,
+    },
+  ] satisfies ExerciseRecordTrendSeries[]
 }
 
 export async function getExerciseRecordDetail(profileId: string) {
@@ -379,6 +482,6 @@ export async function getExerciseRecordDetail(profileId: string) {
     totalDurationSeconds,
     totalReps,
     totalVolume,
-    trendPoints: buildTrendPoints(group, summary.measurementType),
+    trendSeries: buildTrendSeries(group, summary.measurementType),
   } satisfies ExerciseRecordDetail
 }
