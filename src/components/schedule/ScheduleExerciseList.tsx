@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { createPortal } from 'react-dom'
 import { BookmarkPlus } from 'lucide-react'
@@ -73,6 +73,7 @@ export function ScheduleExerciseList({
   const [editDraft, setEditDraft] = useState<PlanExerciseDraft | null>(null)
   const [isSelectionMode, setIsSelectionMode] = useState(false)
   const [selectedExerciseIds, setSelectedExerciseIds] = useState<string[]>([])
+  const [continuousQueueExerciseIds, setContinuousQueueExerciseIds] = useState<string[]>([])
   const lastDragOverIdRef = useRef<string | null>(null)
   const itemRefs = useRef(new Map<string, HTMLDivElement>())
   const editStateRef = useRef<{ draft: PlanExerciseDraft | null; exerciseId: string | null }>({
@@ -118,28 +119,22 @@ export function ScheduleExerciseList({
     editStateRef.current = { draft: editDraft, exerciseId: editExerciseId }
   }, [editDraft, editExerciseId])
 
-  function openSelectionMode() {
-    void closeEditMode()
-    setSelectedExerciseIds([])
-    setIsSelectionMode(true)
-  }
-
-  function closeSelectionMode() {
+  const closeSelectionMode = useCallback(() => {
     setSelectedExerciseIds([])
     setIsSelectionMode(false)
-  }
+  }, [])
 
   function openEditMode() {
     closeSelectionMode()
     setIsEditMode(true)
   }
 
-  function clearExerciseEditor(exerciseId: string) {
+  const clearExerciseEditor = useCallback((exerciseId: string) => {
     setEditExerciseId((current) => (current === exerciseId ? null : current))
     setEditDraft((current) =>
       editStateRef.current.exerciseId === exerciseId ? null : current,
     )
-  }
+  }, [])
 
   function cancelCurrentExerciseEdit() {
     const exerciseId = editStateRef.current.exerciseId
@@ -150,7 +145,7 @@ export function ScheduleExerciseList({
     clearExerciseEditor(exerciseId)
   }
 
-  async function saveCurrentExerciseEdit() {
+  const saveCurrentExerciseEdit = useCallback(async () => {
     const exerciseId = editStateRef.current.exerciseId
     const draft = editStateRef.current.draft
     if (!exerciseId || !draft) {
@@ -167,19 +162,23 @@ export function ScheduleExerciseList({
     }
 
     return didEdit
-  }
+  }, [clearExerciseEditor, onEditExercise])
 
-  async function closeEditMode() {
+  const closeEditMode = useCallback(async () => {
     await saveCurrentExerciseEdit()
     setIsEditMode(false)
     setEditExerciseId(null)
     setEditDraft(null)
     setContinuousQueueExerciseIds([])
+  }, [saveCurrentExerciseEdit])
+
+  function openSelectionMode() {
+    void closeEditMode()
+    setSelectedExerciseIds([])
+    setIsSelectionMode(true)
   }
 
-  const [continuousQueueExerciseIds, setContinuousQueueExerciseIds] = useState<string[]>([])
-
-  function openExerciseEditor(exerciseId: string) {
+  const openExerciseEditor = useCallback((exerciseId: string) => {
     const exercise = orderedExercises.find((item) => item.id === exerciseId)
     if (!exercise) {
       return false
@@ -196,7 +195,7 @@ export function ScheduleExerciseList({
       distanceMeters: exercise.defaultDistanceMeters ?? null,
     }))
     return true
-  }
+  }, [orderedExercises, t])
 
   async function switchExerciseEditor(exerciseId: string) {
     if (editStateRef.current.exerciseId === exerciseId) {
@@ -256,11 +255,15 @@ export function ScheduleExerciseList({
       return
     }
 
-    closeSelectionMode()
-    if (openExerciseEditor(nextExerciseIds[0])) {
-      setContinuousQueueExerciseIds(nextExerciseIds)
-    }
-  }, [continuousEditExerciseIds, orderedExercises])
+    const frameId = window.requestAnimationFrame(() => {
+      closeSelectionMode()
+      if (openExerciseEditor(nextExerciseIds[0])) {
+        setContinuousQueueExerciseIds(nextExerciseIds)
+      }
+    })
+
+    return () => window.cancelAnimationFrame(frameId)
+  }, [closeSelectionMode, continuousEditExerciseIds, openExerciseEditor, orderedExercises])
 
   useEffect(() => {
     const exerciseId = continuousQueueExerciseIds[0]
@@ -297,7 +300,7 @@ export function ScheduleExerciseList({
 
     document.addEventListener('pointerdown', handlePointerDown, true)
     return () => document.removeEventListener('pointerdown', handlePointerDown, true)
-  }, [editExerciseId])
+  }, [editExerciseId, saveCurrentExerciseEdit])
 
   function handleDragStart(event: DragStartEvent) {
     setActiveExerciseId(String(event.active.id))

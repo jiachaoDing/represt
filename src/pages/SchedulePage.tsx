@@ -70,13 +70,16 @@ export function SchedulePage() {
   const reduceMotion = useReducedMotion()
   const now = useNow()
   const schedule = useSchedulePageData()
-  const addedExerciseIds: string[] =
-    typeof location.state === 'object' &&
-    location.state !== null &&
-    'addedExerciseIds' in location.state &&
-    Array.isArray(location.state.addedExerciseIds)
-      ? location.state.addedExerciseIds.filter((id: unknown): id is string => typeof id === 'string')
-      : []
+  const addedExerciseIds = useMemo<string[]>(
+    () =>
+      typeof location.state === 'object' &&
+      location.state !== null &&
+      'addedExerciseIds' in location.state &&
+      Array.isArray(location.state.addedExerciseIds)
+        ? location.state.addedExerciseIds.filter((id: unknown): id is string => typeof id === 'string')
+        : [],
+    [location.state],
+  )
   const [isPlanSaveSheetOpen, setIsPlanSaveSheetOpen] = useState(false)
   const [isQuickTimerOpen, setIsQuickTimerOpen] = useState(false)
   const [isSaveTodayAsPlanTipHidden, setIsSaveTodayAsPlanTipHidden] = useState(

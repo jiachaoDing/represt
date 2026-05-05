@@ -29,13 +29,16 @@ export function PlansPage() {
     typeof location.state.selectedPlanId === 'string'
       ? location.state.selectedPlanId
       : null
-  const addedExerciseIds: string[] =
-    typeof location.state === 'object' &&
-    location.state !== null &&
-    'addedExerciseIds' in location.state &&
-    Array.isArray(location.state.addedExerciseIds)
-      ? location.state.addedExerciseIds.filter((id: unknown): id is string => typeof id === 'string')
-      : []
+  const addedExerciseIds = useMemo<string[]>(
+    () =>
+      typeof location.state === 'object' &&
+      location.state !== null &&
+      'addedExerciseIds' in location.state &&
+      Array.isArray(location.state.addedExerciseIds)
+        ? location.state.addedExerciseIds.filter((id: unknown): id is string => typeof id === 'string')
+        : [],
+    [location.state],
+  )
   const plans = usePlansPageData(preferredSelectedPlanId)
   const ui = usePlansPageUi(plans)
   const planColorMap = useMemo(
