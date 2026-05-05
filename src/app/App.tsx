@@ -1,10 +1,18 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { RouterProvider } from 'react-router-dom'
 
+import { AppStartup } from '../components/layout/AppStartup'
 import { preloadPrimaryRouteModules, router } from './router'
 import { initNotificationNavigation } from '../native/notification-navigation'
 
 function App() {
+  const [showStartup, setShowStartup] = useState(true)
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => setShowStartup(false), 760)
+    return () => window.clearTimeout(timeoutId)
+  }, [])
+
   useEffect(() => {
     void import('../db/plans').then(({ ensurePlanSeedData }) => ensurePlanSeedData())
   }, [])
@@ -31,7 +39,12 @@ function App() {
     return () => clearTimeout(timeoutId)
   }, [])
 
-  return <RouterProvider router={router} />
+  return (
+    <>
+      <RouterProvider router={router} />
+      <AppStartup visible={showStartup} />
+    </>
+  )
 }
 
 export default App

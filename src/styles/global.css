@@ -20,6 +20,12 @@
   --outline: #8C8984;
   
   /* State Colors */
+  /* Brand Mark */
+  --brand-mark: #192F24;
+  --brand-dot-1: #BCC7AF;
+  --brand-dot-2: #839D80;
+  --brand-dot-3: #3C5843;
+
   /* Completed (Green) */
   --primary: #202124;
   --primary-container: #E9E7E4;
@@ -77,6 +83,11 @@
     
     --outline-variant: #3A3A3A;
     --outline: #8A8A8A;
+
+    --brand-mark: #D7E5D2;
+    --brand-dot-1: #F0F6E8;
+    --brand-dot-2: #B7C9AE;
+    --brand-dot-3: #7E967A;
     
     --primary: #0169CC;
     --primary-container: #0D2B45;
@@ -129,6 +140,11 @@
   
   --outline-variant: #3A3A3A;
   --outline: #8A8A8A;
+
+  --brand-mark: #D7E5D2;
+  --brand-dot-1: #F0F6E8;
+  --brand-dot-2: #B7C9AE;
+  --brand-dot-3: #7E967A;
   
   --primary: #0169CC;
   --primary-container: #0D2B45;
