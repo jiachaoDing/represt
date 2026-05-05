@@ -317,6 +317,13 @@ export function ExercisePickerPage() {
                 </button>
               )
             })}
+            <button
+              type="button"
+              onClick={() => navigate('/summary/exercises/catalog/new')}
+              className="relative mt-1 flex min-h-12 w-full items-center gap-1.5 border-t border-[var(--outline-variant)]/40 px-2.5 py-2 text-left text-xs font-medium text-[var(--primary)] transition-colors"
+            >
+              <span className="min-w-0 flex-1 leading-4">{t('summary.exerciseRecords.addCustomTitle')}</span>
+            </button>
           </nav>
 
           <div className="min-w-0 flex-1 bg-[var(--surface)]">

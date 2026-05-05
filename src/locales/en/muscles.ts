@@ -8,6 +8,15 @@ const muscles = {
     legs: 'Legs',
     fullBody: 'Full body',
   },
+  shortGroups: {
+    chest: 'Pec',
+    back: 'Back',
+    shoulders: 'Delt',
+    arms: 'Arm',
+    core: 'Core',
+    legs: 'Leg',
+    fullBody: 'All',
+  },
   groupAliases: {
     chest: ['chest', 'pecs', 'pectorals'],
     back: ['lats', 'upper back', 'lower back'],

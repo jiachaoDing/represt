@@ -117,12 +117,12 @@ export function SummaryPage() {
         {t('summary.emptyDescription')}
       </p>
       <Link
-        to={calendarTo}
+        to="/summary/exercises"
         state={backLinkState}
         viewTransition
         className="mt-4 inline-flex h-10 items-center justify-center rounded-xl bg-[var(--surface-container)] px-4 text-sm font-medium text-[var(--on-surface)]"
       >
-        {t('summary.openCalendar')}
+        {t('summary.exerciseRecords.entry')}
       </Link>
     </div>
   ) : undefined

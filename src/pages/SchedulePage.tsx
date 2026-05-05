@@ -256,7 +256,7 @@ export function SchedulePage() {
         }
       />
 
-      <div className="relative overflow-x-hidden [perspective:1200px]">
+      <div className="relative overflow-hidden [perspective:1200px]">
         <AnimatePresence custom={flipDirection} initial={false} mode="wait">
           {isQuickTimerOpen ? (
             <motion.div

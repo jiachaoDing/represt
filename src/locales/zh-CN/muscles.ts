@@ -8,6 +8,15 @@ const muscles = {
     legs: '腿部肌群',
     fullBody: '全身肌群',
   },
+  shortGroups: {
+    chest: '胸',
+    back: '背',
+    shoulders: '肩',
+    arms: '臂',
+    core: '核',
+    legs: '腿',
+    fullBody: '全',
+  },
   groupAliases: {
     chest: ['胸', '胸肌'],
     back: ['背', '背部', '背阔'],

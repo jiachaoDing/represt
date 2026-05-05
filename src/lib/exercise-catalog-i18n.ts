@@ -24,6 +24,10 @@ export function getMuscleGroupName(t: TFunction, groupId: MuscleGroup) {
   return getLocalizedString(t, `muscles:groups.${groupId}`, groupId)
 }
 
+export function getMuscleGroupShortName(t: TFunction, groupId: MuscleGroup) {
+  return getLocalizedString(t, `muscles:shortGroups.${groupId}`, getMuscleGroupName(t, groupId))
+}
+
 export function getMuscleGroupAliases(t: TFunction, groupId: MuscleGroup) {
   return getLocalizedStringArray(t, `muscles:groupAliases.${groupId}`)
 }
