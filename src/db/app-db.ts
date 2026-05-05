@@ -1,6 +1,7 @@
 import Dexie, { type EntityTable } from 'dexie'
 
 import type {
+  ExerciseProfile,
   PerformedExercise,
   PlanExercise,
   SessionPlanItem,
@@ -18,11 +19,12 @@ class TrainReDatabase extends Dexie {
   sessionPlanItems!: EntityTable<SessionPlanItem, 'id'>
   performedExercises!: EntityTable<PerformedExercise, 'id'>
   setRecords!: EntityTable<SetRecord, 'id'>
+  exerciseProfiles!: EntityTable<ExerciseProfile, 'id'>
 
   constructor() {
     super('trainre')
 
-    this.version(15)
+    this.version(16)
       .stores({
         trainingCycles: 'id, updatedAt',
         workoutPlans: 'id, name, updatedAt',
@@ -31,6 +33,7 @@ class TrainReDatabase extends Dexie {
         sessionPlanItems: 'id, sessionId, planExerciseId, sourcePlanId, [sessionId+order]',
         performedExercises: 'id, sessionId, planItemId, restEndsAt, [sessionId+order]',
         setRecords: 'id, sessionId, performedExerciseId, [performedExerciseId+setNumber], completedAt',
+        exerciseProfiles: 'id, catalogExerciseId, name, updatedAt',
       })
   }
 }

@@ -6,8 +6,9 @@ import {
 } from '../domain/exercise-catalog'
 import { resolveCatalogExerciseId } from '../lib/exercise-name'
 import { addDaysToSessionDateKey, parseSessionDateKey } from '../lib/session-date-key'
-import type { PerformedExercise, SetRecord, WorkoutSession } from '../models/types'
+import type { ExerciseProfile, PerformedExercise, SetRecord, WorkoutSession } from '../models/types'
 import { db } from './app-db'
+import { getExerciseProfileId } from './exercise-records'
 
 export type SummaryRange = 'day' | 'week' | 'month'
 
@@ -128,7 +129,13 @@ function getExerciseMeasurementType(exercise: Pick<PerformedExercise, 'catalogEx
 
 function getExerciseMuscleDistribution(
   exercise: Pick<PerformedExercise, 'catalogExerciseId' | 'name'>,
+  exerciseProfilesById: Map<string, ExerciseProfile>,
 ): MuscleDistributionItem[] | null {
+  const profile = exerciseProfilesById.get(getExerciseProfileId(exercise))
+  if (profile) {
+    return profile.muscleDistribution
+  }
+
   const catalogExerciseId = resolveCatalogExerciseId(exercise)
   return catalogExerciseId ? catalogExercisesById.get(catalogExerciseId)?.muscleDistribution ?? null : null
 }
@@ -292,6 +299,7 @@ function buildRangeTrendPoints(input: {
 }
 
 function buildDistribution(input: {
+  exerciseProfilesById: Map<string, ExerciseProfile>
   performedExercisesById: Map<string, PerformedExercise>
   records: SetRecord[]
 }) {
@@ -299,7 +307,9 @@ function buildDistribution(input: {
 
   for (const record of input.records) {
     const exercise = input.performedExercisesById.get(record.performedExerciseId)
-    const muscleDistribution = exercise ? getExerciseMuscleDistribution(exercise) : null
+    const muscleDistribution = exercise
+      ? getExerciseMuscleDistribution(exercise, input.exerciseProfilesById)
+      : null
 
     if (!muscleDistribution || muscleDistribution.length === 0) {
       counts.set('other', (counts.get('other') ?? 0) + 1)
@@ -396,13 +406,15 @@ function buildTopExerciseTrend(input: {
 
 export async function getSummaryRangeAnalytics(dateKey: string, range: SummaryRange) {
   const { startDateKey, endDateKey } = getSummaryRangeBounds(dateKey, range)
-  const [sessions, performedExercises, allSetRecords] = await Promise.all([
+  const [sessions, performedExercises, allSetRecords, exerciseProfiles] = await Promise.all([
     db.workoutSessions.toArray(),
     db.performedExercises.toArray(),
     db.setRecords.orderBy('completedAt').toArray(),
+    db.exerciseProfiles.toArray(),
   ])
   const sessionsById = new Map(sessions.map((session) => [session.id, session]))
   const performedExercisesById = new Map(performedExercises.map((exercise) => [exercise.id, exercise]))
+  const exerciseProfilesById = new Map(exerciseProfiles.map((profile) => [profile.id, profile]))
   const periodRecords = allSetRecords.filter((record) => {
     const sessionDateKey = sessionsById.get(record.sessionId)?.sessionDateKey
     return sessionDateKey ? isDateKeyInRange(sessionDateKey, startDateKey, endDateKey) : false
@@ -444,7 +456,7 @@ export async function getSummaryRangeAnalytics(dateKey: string, range: SummaryRa
 
   return {
     completedSets: periodRecords.length,
-    distribution: buildDistribution({ performedExercisesById, records: periodRecords }),
+    distribution: buildDistribution({ exerciseProfilesById, performedExercisesById, records: periodRecords }),
     endDateKey,
     exerciseCount: exerciseKeys.size,
     highlights: buildHighlights({ performedExercisesById, periodRecordIds, setRecords: allSetRecords }),

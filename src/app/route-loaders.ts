@@ -1,5 +1,6 @@
 export const loadCalendarPage = () => import('../pages/CalendarPage')
 export const loadExercisePage = () => import('../pages/ExercisePage')
+export const loadExerciseRecordsPage = () => import('../pages/ExerciseRecordsPage')
 export const loadQuickTimerPage = () => import('../pages/QuickTimerPage')
 export const loadSchedulePage = () => import('../pages/SchedulePage')
 export const loadSettingsPage = () => import('../pages/SettingsPage')

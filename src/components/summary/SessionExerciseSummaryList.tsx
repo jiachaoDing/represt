@@ -119,10 +119,10 @@ export function SessionExerciseSummaryList({ detail }: SessionExerciseSummaryLis
 
       <div className="mt-8 px-4 pb-12 flex justify-center">
         <Link 
-          to="/" 
+          to="/summary/exercises"
           className="inline-flex h-12 w-full max-w-[200px] items-center justify-center rounded-xl bg-[var(--surface-container)] text-[15px] font-medium text-[var(--on-surface)] transition-colors tap-highlight-transparent active:scale-[0.98]"
         >
-          {t('summary.backToSchedule')}
+          {t('summary.exerciseRecords.entry')}
         </Link>
       </div>
     </section>

@@ -6,6 +6,7 @@ import { ExercisePageLoading } from '../components/exercise/ExercisePageLoading'
 import { TrainingCyclePageLoading } from '../components/training-cycle/TrainingCyclePageLoading'
 import {
   CalendarPage,
+  ExerciseRecordsPage,
   ExercisePage,
   QuickTimerPage,
   SchedulePage,
@@ -71,6 +72,16 @@ export const router = createBrowserRouter([
         path: 'summary',
         element: lazyRoute(<SummaryPage />),
         handle: { titleKey: 'routes.summary' },
+      },
+      {
+        path: 'summary/exercises',
+        element: lazyRoute(<ExerciseRecordsPage />),
+        handle: { titleKey: 'routes.exerciseRecords' },
+      },
+      {
+        path: 'summary/exercises/:profileId',
+        element: lazyRoute(<ExerciseRecordsPage />),
+        handle: { titleKey: 'routes.exerciseRecords' },
       },
       {
         path: 'summary/:sessionId',

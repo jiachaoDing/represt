@@ -40,6 +40,20 @@ export {
   listSessionDateKeys,
 } from './session-summary'
 export {
+  getEffectiveExerciseMuscleDistribution,
+  getExerciseProfile,
+  getExerciseProfileId,
+  getExerciseRecordDetail,
+  listExerciseRecordSummaries,
+  resetExerciseProfileMuscleDistribution,
+  saveExerciseProfileMuscleDistribution,
+  type ExerciseRecordDetail,
+  type ExerciseRecordMetric,
+  type ExerciseRecordMetricKind,
+  type ExerciseRecordSummary,
+  type ExerciseRecordTrendPoint,
+} from './exercise-records'
+export {
   getSummaryRangeAnalytics,
   getSummaryRangeBounds,
   type SummaryMetricKind,

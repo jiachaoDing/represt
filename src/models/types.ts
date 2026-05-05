@@ -1,3 +1,5 @@
+import type { MuscleDistributionItem } from '../domain/exercise-catalog'
+
 export type SessionStatus = 'pending' | 'active' | 'completed'
 
 export type RestTimerStatus = 'idle' | 'running' | 'ready'
@@ -110,6 +112,14 @@ export interface SetRecord {
   reps: number | null
   durationSeconds: number | null
   distanceMeters: number | null
+}
+
+export interface ExerciseProfile {
+  id: string
+  catalogExerciseId?: string | null
+  name: string
+  muscleDistribution: MuscleDistributionItem[]
+  updatedAt: string
 }
 
 export interface RestTimerState {
