@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router-dom'
-import { ChevronRight, Search, SlidersHorizontal } from 'lucide-react'
+import { ChevronRight, Plus, Search, SlidersHorizontal } from 'lucide-react'
 
 import { BottomSheet } from '../components/ui/BottomSheet'
 import { ExerciseTrendChart } from '../components/exercise-records/ExerciseTrendChart'
@@ -20,6 +20,7 @@ import {
 } from '../lib/set-record-measurement'
 import { formatSessionDateKey } from '../lib/session-date-key'
 import {
+  createCustomExerciseProfile,
   getExerciseRecordDetail,
   listExerciseRecordSummaries,
   resetExerciseProfileMuscleDistribution,
@@ -103,37 +104,127 @@ function formatTotalWork(detail: ExerciseRecordDetail, t: ReturnType<typeof useT
   return formatMetricValue('weightRepsVolume', detail.totalVolume, t)
 }
 
+function CustomExerciseSheet({
+  isOpen,
+  onClose,
+  onCreated,
+}: {
+  isOpen: boolean
+  onClose: () => void
+  onCreated: () => void
+}) {
+  const { t } = useTranslation()
+  const [name, setName] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [isSaving, setIsSaving] = useState(false)
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    const trimmedName = name.trim()
+    if (!trimmedName) {
+      setError(t('summary.exerciseRecords.customNameRequired'))
+      return
+    }
+
+    try {
+      setIsSaving(true)
+      setError(null)
+      const result = await createCustomExerciseProfile(trimmedName)
+      if (result === 'empty') {
+        setError(t('summary.exerciseRecords.customNameRequired'))
+        return
+      }
+      if (result === 'exists') {
+        setError(t('summary.exerciseRecords.customAlreadyExists'))
+        return
+      }
+
+      setName('')
+      onCreated()
+      onClose()
+    } catch (saveError) {
+      console.error(saveError)
+      setError(t('summary.exerciseRecords.customSaveFailed'))
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  return (
+    <BottomSheet
+      open={isOpen}
+      title={t('summary.exerciseRecords.addCustomTitle')}
+      onClose={onClose}
+    >
+      <form className="mt-4 space-y-5" onSubmit={handleSubmit}>
+        <label className="block">
+          <span className="mb-1 ml-1 block text-xs font-medium text-[var(--on-surface-variant)]">
+            {t('plans.exerciseName')}
+          </span>
+          <input
+            value={name}
+            disabled={isSaving}
+            onChange={(event) => setName(event.target.value)}
+            className="w-full rounded-none border-b border-[var(--on-surface)] bg-[var(--surface-container)] px-4 py-3 text-base text-[var(--on-surface)] outline-none transition-all focus:border-b-2 focus:border-[var(--primary)]"
+            placeholder={t('plans.exercisePlaceholder')}
+          />
+        </label>
+        {error ? <p className="text-sm text-[var(--error)]">{error}</p> : null}
+        <button
+          type="submit"
+          disabled={isSaving || !name.trim()}
+          className="w-full rounded-full bg-[var(--primary)] px-6 py-3.5 text-sm font-medium text-[var(--on-primary)] transition-opacity disabled:opacity-40"
+        >
+          {t('common.save')}
+        </button>
+      </form>
+    </BottomSheet>
+  )
+}
+
 function ExerciseRecordsListPage() {
   const { i18n, t } = useTranslation()
   const [items, setItems] = useState<ExerciseRecordSummary[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false)
   const [query, setQuery] = useState('')
+
+  async function reloadRecords() {
+    try {
+      setError(null)
+      setIsLoading(true)
+      const summaries = await listExerciseRecordSummaries()
+      setItems(summaries)
+    } catch (loadError) {
+      console.error(loadError)
+      setError(t('summary.exerciseRecords.loadFailed'))
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   useEffect(() => {
     let isCancelled = false
 
-    async function loadRecords() {
-      try {
-        setError(null)
-        setIsLoading(true)
-        const summaries = await listExerciseRecordSummaries()
+    listExerciseRecordSummaries()
+      .then((summaries) => {
         if (!isCancelled) {
           setItems(summaries)
         }
-      } catch (loadError) {
+      })
+      .catch((loadError) => {
         console.error(loadError)
         if (!isCancelled) {
           setError(t('summary.exerciseRecords.loadFailed'))
         }
-      } finally {
+      })
+      .finally(() => {
         if (!isCancelled) {
           setIsLoading(false)
         }
-      }
-    }
+      })
 
-    void loadRecords()
     return () => {
       isCancelled = true
     }
@@ -175,7 +266,20 @@ function ExerciseRecordsListPage() {
 
   return (
     <div className="pb-4">
-      <PageHeader title={t('summary.exerciseRecords.title')} backFallbackTo="/summary" />
+      <PageHeader
+        title={t('summary.exerciseRecords.title')}
+        backFallbackTo="/summary"
+        actions={
+          <button
+            type="button"
+            onClick={() => setIsCreateSheetOpen(true)}
+            className="flex h-11 w-11 items-center justify-center rounded-full text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/10"
+            aria-label={t('summary.exerciseRecords.addCustomTitle')}
+          >
+            <Plus size={22} strokeWidth={2.4} aria-hidden="true" />
+          </button>
+        }
+      />
 
       <div className="mx-4 mt-3 flex h-12 items-center gap-3 rounded-2xl bg-[var(--surface-container)] px-4">
         <Search size={19} strokeWidth={2.2} className="shrink-0 text-[var(--on-surface-variant)]" aria-hidden="true" />
@@ -186,6 +290,9 @@ function ExerciseRecordsListPage() {
           className="min-w-0 flex-1 bg-transparent text-[15px] text-[var(--on-surface)] outline-none placeholder:text-[var(--on-surface-variant)]"
         />
       </div>
+      <p className="mx-5 mt-2 text-[12px] font-medium text-[var(--on-surface-variant)]">
+        {t('summary.exerciseRecords.totalCount', { count: items.length })}
+      </p>
 
       {error ? (
         <div className="mx-4 mt-4 rounded-xl bg-[var(--error-container)] px-4 py-3 text-sm text-[var(--on-error-container)]">
@@ -235,6 +342,13 @@ function ExerciseRecordsListPage() {
           ) : null}
         </div>
       )}
+      {isCreateSheetOpen ? (
+        <CustomExerciseSheet
+          isOpen={isCreateSheetOpen}
+          onClose={() => setIsCreateSheetOpen(false)}
+          onCreated={() => void reloadRecords()}
+        />
+      ) : null}
     </div>
   )
 }

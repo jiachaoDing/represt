@@ -86,6 +86,8 @@ export type ExerciseRecordDetail = ExerciseRecordSummary & {
   trendSeries: ExerciseRecordTrendSeries[]
 }
 
+export type CreateCustomExerciseProfileResult = 'created' | 'exists' | 'empty'
+
 type ExerciseSource = Pick<PlanExercise | SessionPlanItem | PerformedExercise, 'catalogExerciseId' | 'id' | 'name'>
 
 type ExerciseRecordGroup = {
@@ -234,14 +236,28 @@ function addSource(groups: Map<string, ExerciseRecordGroup>, source: ExerciseSou
   })
 }
 
+function addCustomProfile(groups: Map<string, ExerciseRecordGroup>, profile: ExerciseProfile) {
+  if (profile.source !== 'custom') {
+    return
+  }
+
+  addSource(groups, {
+    catalogExerciseId: profile.catalogExerciseId ?? null,
+    id: profile.id,
+    name: profile.name,
+  })
+}
+
 async function buildExerciseRecordGroups() {
   const [
+    exerciseProfiles,
     planExercises,
     sessionPlanItems,
     performedExercises,
     setRecords,
     sessions,
   ] = await Promise.all([
+    db.exerciseProfiles.toArray(),
     db.planExercises.toArray(),
     db.sessionPlanItems.toArray(),
     db.performedExercises.toArray(),
@@ -267,6 +283,9 @@ async function buildExerciseRecordGroups() {
   }
   for (const exercise of performedExercises) {
     addSource(groups, exercise)
+  }
+  for (const profile of exerciseProfiles) {
+    addCustomProfile(groups, profile)
   }
 
   for (const setRecord of setRecords) {
@@ -305,6 +324,32 @@ export async function getExerciseProfile(profileId: string) {
   return db.exerciseProfiles.get(profileId)
 }
 
+export async function createCustomExerciseProfile(name: string): Promise<CreateCustomExerciseProfileResult> {
+  const trimmedName = name.trim()
+  if (!trimmedName) {
+    return 'empty'
+  }
+
+  const profileId = getExerciseProfileId({ name: trimmedName })
+  const groups = await buildExerciseRecordGroups()
+  if (groups.has(profileId)) {
+    return 'exists'
+  }
+
+  const timestamp = nowIso()
+  const profile: ExerciseProfile = {
+    catalogExerciseId: null,
+    id: profileId,
+    muscleDistribution: [],
+    name: trimmedName,
+    source: 'custom',
+    updatedAt: timestamp,
+  }
+
+  await db.exerciseProfiles.put(profile)
+  return 'created'
+}
+
 export async function getEffectiveExerciseMuscleDistribution(input: {
   catalogExerciseId?: string | null
   name?: string | null
@@ -322,11 +367,13 @@ export async function saveExerciseProfileMuscleDistribution(input: {
   name: string
   profileId: string
 }) {
+  const current = await getExerciseProfile(input.profileId)
   const profile: ExerciseProfile = {
     catalogExerciseId: input.catalogExerciseId,
     id: input.profileId,
     muscleDistribution: input.muscleDistribution,
     name: input.name,
+    source: current?.source,
     updatedAt: nowIso(),
   }
 
@@ -334,6 +381,15 @@ export async function saveExerciseProfileMuscleDistribution(input: {
 }
 
 export async function resetExerciseProfileMuscleDistribution(profileId: string) {
+  const profile = await getExerciseProfile(profileId)
+  if (profile?.source === 'custom') {
+    await db.exerciseProfiles.update(profileId, {
+      muscleDistribution: [],
+      updatedAt: nowIso(),
+    })
+    return
+  }
+
   await db.exerciseProfiles.delete(profileId)
 }
 
@@ -467,7 +523,7 @@ export async function getExerciseRecordDetail(profileId: string) {
   return {
     ...summary,
     defaultMuscleDistribution,
-    hasMuscleDistributionOverride: profile !== undefined,
+    hasMuscleDistributionOverride: (profile?.muscleDistribution.length ?? 0) > 0,
     history: group.records
       .map((record) => ({
         id: record.setRecord.id,

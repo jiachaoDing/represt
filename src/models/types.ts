@@ -119,6 +119,7 @@ export interface ExerciseProfile {
   catalogExerciseId?: string | null
   name: string
   muscleDistribution: MuscleDistributionItem[]
+  source?: 'custom'
   updatedAt: string
 }
 

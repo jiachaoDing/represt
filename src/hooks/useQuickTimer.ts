@@ -65,7 +65,8 @@ function readStoredState(): QuickTimerState {
   }
 
   try {
-    const rawValue = window.sessionStorage.getItem(STORAGE_KEY)
+    const rawValue =
+      window.localStorage.getItem(STORAGE_KEY) ?? window.sessionStorage.getItem(STORAGE_KEY)
     if (!rawValue) {
       return getFallbackState()
     }
@@ -110,7 +111,8 @@ function writeStoredState(nextState: QuickTimerState) {
     return
   }
 
-  window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(nextState))
+  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(nextState))
+  window.sessionStorage.removeItem(STORAGE_KEY)
 }
 
 function emitQuickTimerState(nextState: QuickTimerState) {
