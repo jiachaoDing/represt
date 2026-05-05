@@ -1,15 +1,17 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useParams } from 'react-router-dom'
-import { ChevronRight, Plus, Search, SlidersHorizontal } from 'lucide-react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { ChevronRight, Edit3, Plus, Search, Trash2 } from 'lucide-react'
 
-import { BottomSheet } from '../components/ui/BottomSheet'
+import { ConfirmDialog } from '../components/ui/ConfirmDialog'
 import { ExerciseTrendChart } from '../components/exercise-records/ExerciseTrendChart'
 import { PageHeader } from '../components/ui/PageHeader'
-import { muscleGroups, type MuscleDistributionItem } from '../domain/exercise-catalog'
+import { movementPatterns, muscleGroups, type MovementPattern, type MuscleDistributionItem } from '../domain/exercise-catalog'
 import {
   getMuscleGroupName,
   getExerciseAliases,
+  getExerciseName,
+  getMovementPatternName,
 } from '../lib/exercise-catalog-i18n'
 import { getDisplayExerciseName } from '../lib/exercise-name'
 import {
@@ -20,11 +22,12 @@ import {
 } from '../lib/set-record-measurement'
 import { formatSessionDateKey } from '../lib/session-date-key'
 import {
-  createCustomExerciseProfile,
+  getExerciseModelForm,
   getExerciseRecordDetail,
   listExerciseRecordSummaries,
-  resetExerciseProfileMuscleDistribution,
-  saveExerciseProfileMuscleDistribution,
+  saveExerciseModel,
+  softDeleteExerciseModel,
+  type ExerciseModelForm,
   type ExerciseRecordDetail,
   type ExerciseRecordMetric,
   type ExerciseRecordMetricKind,
@@ -104,105 +107,13 @@ function formatTotalWork(detail: ExerciseRecordDetail, t: ReturnType<typeof useT
   return formatMetricValue('weightRepsVolume', detail.totalVolume, t)
 }
 
-function CustomExerciseSheet({
-  isOpen,
-  onClose,
-  onCreated,
-}: {
-  isOpen: boolean
-  onClose: () => void
-  onCreated: () => void
-}) {
-  const { t } = useTranslation()
-  const [name, setName] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [isSaving, setIsSaving] = useState(false)
-
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    const trimmedName = name.trim()
-    if (!trimmedName) {
-      setError(t('summary.exerciseRecords.customNameRequired'))
-      return
-    }
-
-    try {
-      setIsSaving(true)
-      setError(null)
-      const result = await createCustomExerciseProfile(trimmedName)
-      if (result === 'empty') {
-        setError(t('summary.exerciseRecords.customNameRequired'))
-        return
-      }
-      if (result === 'exists') {
-        setError(t('summary.exerciseRecords.customAlreadyExists'))
-        return
-      }
-
-      setName('')
-      onCreated()
-      onClose()
-    } catch (saveError) {
-      console.error(saveError)
-      setError(t('summary.exerciseRecords.customSaveFailed'))
-    } finally {
-      setIsSaving(false)
-    }
-  }
-
-  return (
-    <BottomSheet
-      open={isOpen}
-      title={t('summary.exerciseRecords.addCustomTitle')}
-      onClose={onClose}
-    >
-      <form className="mt-4 space-y-5" onSubmit={handleSubmit}>
-        <label className="block">
-          <span className="mb-1 ml-1 block text-xs font-medium text-[var(--on-surface-variant)]">
-            {t('plans.exerciseName')}
-          </span>
-          <input
-            value={name}
-            disabled={isSaving}
-            onChange={(event) => setName(event.target.value)}
-            className="w-full rounded-none border-b border-[var(--on-surface)] bg-[var(--surface-container)] px-4 py-3 text-base text-[var(--on-surface)] outline-none transition-all focus:border-b-2 focus:border-[var(--primary)]"
-            placeholder={t('plans.exercisePlaceholder')}
-          />
-        </label>
-        {error ? <p className="text-sm text-[var(--error)]">{error}</p> : null}
-        <button
-          type="submit"
-          disabled={isSaving || !name.trim()}
-          className="w-full rounded-full bg-[var(--primary)] px-6 py-3.5 text-sm font-medium text-[var(--on-primary)] transition-opacity disabled:opacity-40"
-        >
-          {t('common.save')}
-        </button>
-      </form>
-    </BottomSheet>
-  )
-}
-
 function ExerciseRecordsListPage() {
   const { i18n, t } = useTranslation()
+  const navigate = useNavigate()
   const [items, setItems] = useState<ExerciseRecordSummary[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false)
   const [query, setQuery] = useState('')
-
-  async function reloadRecords() {
-    try {
-      setError(null)
-      setIsLoading(true)
-      const summaries = await listExerciseRecordSummaries()
-      setItems(summaries)
-    } catch (loadError) {
-      console.error(loadError)
-      setError(t('summary.exerciseRecords.loadFailed'))
-    } finally {
-      setIsLoading(false)
-    }
-  }
 
   useEffect(() => {
     let isCancelled = false
@@ -272,7 +183,7 @@ function ExerciseRecordsListPage() {
         actions={
           <button
             type="button"
-            onClick={() => setIsCreateSheetOpen(true)}
+            onClick={() => navigate('/summary/exercises/catalog/new')}
             className="flex h-11 w-11 items-center justify-center rounded-full text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/10"
             aria-label={t('summary.exerciseRecords.addCustomTitle')}
           >
@@ -342,13 +253,6 @@ function ExerciseRecordsListPage() {
           ) : null}
         </div>
       )}
-      {isCreateSheetOpen ? (
-        <CustomExerciseSheet
-          isOpen={isCreateSheetOpen}
-          onClose={() => setIsCreateSheetOpen(false)}
-          onCreated={() => void reloadRecords()}
-        />
-      ) : null}
     </div>
   )
 }
@@ -419,29 +323,13 @@ function TrendCard({ detail }: { detail: ExerciseRecordDetail }) {
   )
 }
 
-function MuscleDistributionCard({
-  detail,
-  onEdit,
-}: {
-  detail: ExerciseRecordDetail
-  onEdit: () => void
-}) {
+function MuscleDistributionCard({ detail }: { detail: ExerciseRecordDetail }) {
   const { t } = useTranslation()
   const distribution = detail.muscleDistribution
 
   return (
     <section className="mx-4 mt-3 rounded-[1.25rem] border border-[var(--outline-variant)]/20 bg-[var(--surface)] p-4 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)]">
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="text-[16px] font-bold text-[var(--on-surface)]">{t('summary.exerciseRecords.muscleDistribution')}</h2>
-        <button
-          type="button"
-          onClick={onEdit}
-          className="inline-flex h-9 items-center gap-1 rounded-xl px-2 text-[13px] font-semibold text-[var(--primary)]"
-        >
-          <SlidersHorizontal size={16} strokeWidth={2.2} aria-hidden="true" />
-          {t('common.edit')}
-        </button>
-      </div>
+      <h2 className="text-[16px] font-bold text-[var(--on-surface)]">{t('summary.exerciseRecords.muscleDistribution')}</h2>
 
       {distribution.length === 0 ? (
         <p className="mt-3 text-sm text-[var(--on-surface-variant)]">{t('summary.exerciseRecords.noDistribution')}</p>
@@ -533,127 +421,239 @@ function normalizeDistributionInputs(inputs: Record<string, string>) {
   })) satisfies MuscleDistributionItem[]
 }
 
-function MuscleDistributionSheet({
-  detail,
-  isOpen,
-  onClose,
-  onSaved,
+function ExerciseModelFormPage({
+  mode,
+  profileId,
 }: {
-  detail: ExerciseRecordDetail
-  isOpen: boolean
-  onClose: () => void
-  onSaved: () => void
+  mode: 'new' | 'edit'
+  profileId: string | null
 }) {
   const { t } = useTranslation()
-  const [inputs, setInputs] = useState(() => toDistributionInputs(detail.muscleDistribution))
-  const [error, setError] = useState<string | null>(null)
+  const navigate = useNavigate()
+  const [form, setForm] = useState<ExerciseModelForm | null>(null)
+  const [name, setName] = useState('')
+  const [movementPattern, setMovementPattern] = useState<MovementPattern>('fullBody')
+  const [distributionInputs, setDistributionInputs] = useState<Record<string, string>>(() => toDistributionInputs([]))
+  const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let isCancelled = false
+
+    getExerciseModelForm(profileId)
+      .then((result) => {
+        if (isCancelled) {
+          return
+        }
+
+        setForm(result)
+        if (result) {
+          const initialName = result.name.trim()
+            || (result.catalogExerciseId ? getExerciseName(t, result.catalogExerciseId) : '')
+          setName(initialName)
+          setMovementPattern(result.movementPattern)
+          setDistributionInputs(toDistributionInputs(result.muscleDistribution))
+        }
+      })
+      .catch((loadError) => {
+        console.error(loadError)
+        if (!isCancelled) {
+          setError(t('summary.exerciseRecords.modelLoadFailed'))
+        }
+      })
+      .finally(() => {
+        if (!isCancelled) {
+          setIsLoading(false)
+        }
+      })
+
+    return () => {
+      isCancelled = true
+    }
+  }, [profileId, t])
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    const muscleDistribution = normalizeDistributionInputs(inputs)
-    if (muscleDistribution.length === 0) {
-      setError(t('summary.exerciseRecords.distributionRequired'))
+    if (!form) {
       return
     }
 
     try {
       setIsSaving(true)
-      await saveExerciseProfileMuscleDistribution({
-        catalogExerciseId: detail.catalogExerciseId,
-        muscleDistribution,
-        name: detail.name,
-        profileId: detail.profileId,
+      setError(null)
+      const result = await saveExerciseModel({
+        catalogExerciseId: form.catalogExerciseId,
+        muscleDistribution: normalizeDistributionInputs(distributionInputs),
+        movementPattern,
+        name,
+        profileId: form.profileId,
       })
-      onSaved()
-      onClose()
+
+      if (result.status !== 'saved') {
+        const errorKey = result.status === 'empty'
+          ? 'summary.exerciseRecords.customNameRequired'
+          : result.status === 'exists'
+            ? 'summary.exerciseRecords.customAlreadyExists'
+            : 'summary.exerciseRecords.notFound'
+        setError(t(errorKey))
+        return
+      }
+
+      navigate(`/summary/exercises/${encodeURIComponent(result.profileId)}`, { replace: true })
+    } catch (saveError) {
+      console.error(saveError)
+      setError(t('summary.exerciseRecords.customSaveFailed'))
     } finally {
       setIsSaving(false)
     }
   }
 
-  async function handleReset() {
+  async function handleDelete() {
+    if (!form?.profileId) {
+      return
+    }
+
     try {
       setIsSaving(true)
-      await resetExerciseProfileMuscleDistribution(detail.profileId)
-      onSaved()
-      onClose()
+      await softDeleteExerciseModel(form.profileId)
+      navigate('/summary/exercises', { replace: true })
+    } catch (deleteError) {
+      console.error(deleteError)
+      setError(t('summary.exerciseRecords.deleteFailed'))
     } finally {
       setIsSaving(false)
+      setIsDeleteDialogOpen(false)
     }
   }
 
+  const title = mode === 'new'
+    ? t('summary.exerciseRecords.addModelTitle')
+    : t('summary.exerciseRecords.editModelTitle')
+
   return (
-    <BottomSheet
-      open={isOpen}
-      title={t('summary.exerciseRecords.editDistribution')}
-      description={t('summary.exerciseRecords.editDistributionDescription')}
-      onClose={onClose}
-    >
-      <form className="mt-4 space-y-4" onSubmit={handleSubmit}>
-        <div className="grid grid-cols-2 gap-3">
-          {muscleGroups.map((groupId) => (
-            <label key={groupId} className="block">
-              <span className="mb-1 ml-1 block text-xs font-medium text-[var(--on-surface-variant)]">
-                {getMuscleGroupName(t, groupId)}
-              </span>
-              <input
-                type="number"
-                min={0}
-                step="1"
-                inputMode="decimal"
-                value={inputs[groupId]}
+    <div className="pb-6">
+      <PageHeader title={title} backFallbackTo={profileId ? `/summary/exercises/${encodeURIComponent(profileId)}` : '/summary/exercises'} />
+
+      {error ? (
+        <div className="mx-4 mt-4 rounded-xl bg-[var(--error-container)] px-4 py-3 text-sm text-[var(--on-error-container)]">
+          {error}
+        </div>
+      ) : null}
+
+      {isLoading ? (
+        <div className="mx-4 mt-4 h-64 rounded-[1.25rem] bg-[var(--surface-container)] opacity-60 animate-pulse" />
+      ) : null}
+
+      {!isLoading && !form ? (
+        <section className="mx-4 mt-6 rounded-[1.25rem] border border-dashed border-[var(--outline-variant)]/40 bg-[var(--surface)] px-5 py-8 text-center">
+          <p className="text-base font-semibold text-[var(--on-surface)]">{t('summary.exerciseRecords.notFound')}</p>
+        </section>
+      ) : null}
+
+      {form ? (
+        <form className="mx-4 mt-4 space-y-5" onSubmit={handleSubmit}>
+          <label className="block rounded-[1.25rem] bg-[var(--surface)] p-4">
+            <span className="mb-2 block text-xs font-semibold text-[var(--on-surface-variant)]">
+              {t('plans.exerciseName')}
+            </span>
+            <input
+              value={name}
+              disabled={isSaving}
+              onChange={(event) => setName(event.target.value)}
+              className="w-full rounded-none border-b border-[var(--on-surface)] bg-transparent py-3 text-base text-[var(--on-surface)] outline-none transition-all focus:border-b-2 focus:border-[var(--primary)]"
+              placeholder={t('plans.exercisePlaceholder')}
+            />
+          </label>
+
+          <label className="block rounded-[1.25rem] bg-[var(--surface)] p-4">
+            <span className="mb-2 block text-xs font-semibold text-[var(--on-surface-variant)]">
+              {t('summary.exerciseRecords.movementPattern')}
+            </span>
+            <select
+              value={movementPattern}
+              disabled={isSaving}
+              onChange={(event) => setMovementPattern(event.target.value as MovementPattern)}
+              className="w-full rounded-xl bg-[var(--surface-container)] px-4 py-3 text-base font-medium text-[var(--on-surface)] outline-none"
+            >
+              {movementPatterns.map((pattern) => (
+                <option key={pattern} value={pattern}>
+                  {getMovementPatternName(t, pattern)}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <section className="rounded-[1.25rem] bg-[var(--surface)] p-4">
+            <h2 className="text-[16px] font-bold text-[var(--on-surface)]">{t('summary.exerciseRecords.muscleDistribution')}</h2>
+            <p className="mt-1 text-xs text-[var(--on-surface-variant)]">
+              {t('summary.exerciseRecords.editDistributionDescription')}
+            </p>
+            <div className="mt-4 grid grid-cols-2 gap-3">
+              {muscleGroups.map((groupId) => (
+                <label key={groupId} className="block">
+                  <span className="mb-1 ml-1 block text-xs font-medium text-[var(--on-surface-variant)]">
+                    {getMuscleGroupName(t, groupId)}
+                  </span>
+                  <input
+                    type="number"
+                    min={0}
+                    step="1"
+                    inputMode="decimal"
+                    value={distributionInputs[groupId]}
+                    disabled={isSaving}
+                    onChange={(event) => setDistributionInputs({ ...distributionInputs, [groupId]: event.target.value })}
+                    className="w-full rounded-none border-b border-[var(--on-surface)] bg-[var(--surface-container)] px-4 py-3 text-base text-[var(--on-surface)] outline-none transition-all focus:border-b-2 focus:border-[var(--primary)]"
+                    placeholder={t('summary.exerciseRecords.percentPlaceholder')}
+                  />
+                </label>
+              ))}
+            </div>
+          </section>
+
+          <div className="flex items-center justify-between gap-3">
+            {mode === 'edit' && form.profileId ? (
+              <button
+                type="button"
                 disabled={isSaving}
-                onChange={(event) => setInputs({ ...inputs, [groupId]: event.target.value })}
-                className="w-full rounded-none border-b border-[var(--on-surface)] bg-[var(--surface-container)] px-4 py-3 text-base text-[var(--on-surface)] outline-none transition-all focus:border-b-2 focus:border-[var(--primary)]"
-                placeholder={t('summary.exerciseRecords.percentPlaceholder')}
-              />
-            </label>
-          ))}
-        </div>
-        {error ? <p className="text-sm text-[var(--error)]">{error}</p> : null}
-        <div className="flex items-center justify-between gap-2 pt-2">
-          <button
-            type="button"
-            disabled={isSaving || !detail.hasMuscleDistributionOverride}
-            onClick={() => void handleReset()}
-            className="inline-flex h-11 items-center justify-center rounded-xl px-3 text-sm font-semibold text-[var(--primary)] transition-opacity disabled:opacity-35"
-          >
-            {t('summary.exerciseRecords.resetDistribution')}
-          </button>
-          <button
-            type="submit"
-            disabled={isSaving}
-            className="inline-flex h-11 items-center justify-center rounded-xl bg-[var(--primary)] px-5 text-sm font-semibold text-[var(--on-primary)] transition-opacity disabled:opacity-40"
-          >
-            {t('common.save')}
-          </button>
-        </div>
-      </form>
-    </BottomSheet>
+                onClick={() => setIsDeleteDialogOpen(true)}
+                className="inline-flex h-12 items-center gap-2 rounded-full px-4 text-sm font-semibold text-[var(--error)] transition-opacity disabled:opacity-40"
+              >
+                <Trash2 size={18} strokeWidth={2.3} aria-hidden="true" />
+                {t('common.delete')}
+              </button>
+            ) : <span />}
+            <button
+              type="submit"
+              disabled={isSaving || !name.trim()}
+              className="inline-flex h-12 items-center justify-center rounded-full bg-[var(--primary)] px-6 text-sm font-semibold text-[var(--on-primary)] transition-opacity disabled:opacity-40"
+            >
+              {t('common.save')}
+            </button>
+          </div>
+        </form>
+      ) : null}
+
+      <ConfirmDialog
+        open={isDeleteDialogOpen}
+        danger
+        title={t('summary.exerciseRecords.deleteModelTitle')}
+        description={t('summary.exerciseRecords.deleteModelDescription', { name })}
+        confirmLabel={t('common.delete')}
+        onCancel={() => setIsDeleteDialogOpen(false)}
+        onConfirm={() => void handleDelete()}
+      />
+    </div>
   )
 }
 
 function ExerciseRecordDetailPage({ profileId }: { profileId: string }) {
   const { i18n, t } = useTranslation()
+  const navigate = useNavigate()
   const [detail, setDetail] = useState<ExerciseRecordDetail | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [isDistributionOpen, setIsDistributionOpen] = useState(false)
-
-  async function loadDetail() {
-    try {
-      setError(null)
-      setIsLoading(true)
-      const result = await getExerciseRecordDetail(profileId)
-      setDetail(result)
-    } catch (loadError) {
-      console.error(loadError)
-      setError(t('summary.exerciseRecords.loadFailed'))
-    } finally {
-      setIsLoading(false)
-    }
-  }
 
   useEffect(() => {
     let isCancelled = false
@@ -685,10 +685,26 @@ function ExerciseRecordDetailPage({ profileId }: { profileId: string }) {
   }, [profileId, t])
 
   const displayName = detail ? getDisplayExerciseName(t, detail) : t('summary.exerciseRecords.detailTitle')
+  const editToken = detail?.profileId.startsWith('catalog:')
+    ? `change:${detail.profileId.slice('catalog:'.length)}`
+    : `change:${detail?.profileId ?? profileId}`
 
   return (
     <div className="pb-4">
-      <PageHeader title={displayName} backFallbackTo="/summary/exercises" />
+      <PageHeader
+        title={displayName}
+        backFallbackTo="/summary/exercises"
+        actions={detail ? (
+          <button
+            type="button"
+            onClick={() => navigate(`/summary/exercises/catalog/${encodeURIComponent(editToken)}`)}
+            className="flex h-11 w-11 items-center justify-center rounded-full text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/10"
+            aria-label={t('summary.exerciseRecords.editModel')}
+          >
+            <Edit3 size={20} strokeWidth={2.3} aria-hidden="true" />
+          </button>
+        ) : null}
+      />
 
       {error ? (
         <div className="mx-4 mt-4 rounded-xl bg-[var(--error-container)] px-4 py-3 text-sm text-[var(--on-error-container)]">
@@ -725,7 +741,7 @@ function ExerciseRecordDetailPage({ profileId }: { profileId: string }) {
             </div>
           </section>
 
-          <MuscleDistributionCard detail={detail} onEdit={() => setIsDistributionOpen(true)} />
+          <MuscleDistributionCard detail={detail} />
 
           <section className="mx-4 mt-3 rounded-[1.25rem] border border-[var(--outline-variant)]/20 bg-[var(--surface)] p-4 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)]">
             <h2 className="text-[16px] font-bold text-[var(--on-surface)]">{t('summary.exerciseRecords.history')}</h2>
@@ -751,15 +767,6 @@ function ExerciseRecordDetailPage({ profileId }: { profileId: string }) {
               </div>
             )}
           </section>
-
-          {isDistributionOpen ? (
-            <MuscleDistributionSheet
-              detail={detail}
-              isOpen={isDistributionOpen}
-              onClose={() => setIsDistributionOpen(false)}
-              onSaved={() => void loadDetail()}
-            />
-          ) : null}
         </>
       ) : null}
     </div>
@@ -767,7 +774,20 @@ function ExerciseRecordDetailPage({ profileId }: { profileId: string }) {
 }
 
 export function ExerciseRecordsPage() {
-  const { profileId } = useParams()
+  const { catalogProfileAction, profileId } = useParams()
+
+  if (catalogProfileAction === 'new') {
+    return <ExerciseModelFormPage mode="new" profileId={null} />
+  }
+
+  if (catalogProfileAction) {
+    const decodedAction = decodeURIComponent(catalogProfileAction)
+    if (decodedAction.startsWith('change:')) {
+      const changeTarget = decodedAction.slice('change:'.length)
+      const targetProfileId = changeTarget.includes(':') ? changeTarget : `catalog:${changeTarget}`
+      return <ExerciseModelFormPage mode="edit" profileId={targetProfileId} />
+    }
+  }
 
   if (profileId) {
     return <ExerciseRecordDetailPage profileId={decodeURIComponent(profileId)} />

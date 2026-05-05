@@ -3,6 +3,7 @@ import { lazy } from 'react'
 import {
   loadCalendarPage,
   loadExercisePage,
+  loadExercisePickerPage,
   loadExerciseRecordsPage,
   loadQuickTimerPage,
   loadSchedulePage,
@@ -19,6 +20,9 @@ export const CalendarPage = lazy(() =>
 )
 export const ExercisePage = lazy(() =>
   loadExercisePage().then((module) => ({ default: module.ExercisePage })),
+)
+export const ExercisePickerPage = lazy(() =>
+  loadExercisePickerPage().then((module) => ({ default: module.ExercisePickerPage })),
 )
 export const ExerciseRecordsPage = lazy(() =>
   loadExerciseRecordsPage().then((module) => ({ default: module.ExerciseRecordsPage })),

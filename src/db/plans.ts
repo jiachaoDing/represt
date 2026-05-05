@@ -2,7 +2,6 @@ import type { SessionPlanItem, PlanExercise, WorkoutPlan } from '../models/types
 import { resolveCatalogExerciseId } from '../lib/exercise-name'
 import { buildSetRecordValuesForMeasurement, getMeasurementTypeForExercise } from '../lib/set-record-measurement'
 import { db } from './app-db'
-import { getLocalizedSeedPlans } from './plan-seed'
 import { clearPlanFromTrainingCycle } from './training-cycle'
 
 export type PlanWithExercises = WorkoutPlan & {
@@ -33,7 +32,6 @@ type SessionPlanPlanSource = Pick<
   | 'order'
 >
 
-const PLAN_SEED_KEY = 'trainre.plans.seeded.v3'
 let ensurePlanSeedPromise: Promise<void> | null = null
 
 function nowIso() {
@@ -95,49 +93,7 @@ export async function ensurePlanSeedData() {
     return
   }
 
-  ensurePlanSeedPromise = (async () => {
-    if (localStorage.getItem(PLAN_SEED_KEY) === 'true') {
-      return
-    }
-
-    const planCount = await db.workoutPlans.count()
-    if (planCount > 0) {
-      localStorage.setItem(PLAN_SEED_KEY, 'true')
-      return
-    }
-
-    const timestamp = nowIso()
-    const demoPlans = getLocalizedSeedPlans()
-    const plans = demoPlans.map((plan) => ({
-      id: crypto.randomUUID(),
-      name: plan.name,
-      createdAt: timestamp,
-      updatedAt: timestamp,
-    }))
-
-    const exercises = plans.flatMap((plan, planIndex) =>
-      demoPlans[planIndex].exercises.map((exercise, order) => ({
-        id: crypto.randomUUID(),
-        planId: plan.id,
-        name: exercise.name,
-        catalogExerciseId: exercise.exerciseId,
-        targetSets: exercise.targetSets,
-        restSeconds: exercise.restSeconds,
-        weightKg: exercise.weightKg,
-        reps: exercise.reps,
-        durationSeconds: exercise.durationSeconds,
-        distanceMeters: exercise.distanceMeters,
-        order,
-      })),
-    )
-
-    await db.transaction('rw', db.workoutPlans, db.planExercises, async () => {
-      await db.workoutPlans.bulkAdd(plans)
-      await db.planExercises.bulkAdd(exercises)
-    })
-
-    localStorage.setItem(PLAN_SEED_KEY, 'true')
-  })()
+  ensurePlanSeedPromise = Promise.resolve()
 
   try {
     await ensurePlanSeedPromise
@@ -147,8 +103,6 @@ export async function ensurePlanSeedData() {
 }
 
 export async function listPlansWithExercises() {
-  await ensurePlanSeedData()
-
   const [plans, exercises] = await Promise.all([
     db.workoutPlans.toArray(),
     db.planExercises.toArray(),
@@ -256,21 +210,33 @@ export async function deletePlan(planId: string) {
 }
 
 export async function createPlanExercise(planId: string, input: Partial<PlanExerciseInput>) {
-  const normalized = normalizeExercise(input)
+  const exercises = await createPlanExercises(planId, [input])
+
+  return exercises[0]
+}
+
+export async function createPlanExercises(
+  planId: string,
+  inputs: Partial<PlanExerciseInput>[],
+) {
+  if (inputs.length === 0) {
+    return []
+  }
+
   const exercises = await db.planExercises.where('planId').equals(planId).toArray()
   const nextOrder = exercises.reduce((maxOrder, exercise) => Math.max(maxOrder, exercise.order), -1) + 1
 
-  const exercise: PlanExercise = {
+  const nextExercises = inputs.map((input, index) => ({
     id: crypto.randomUUID(),
     planId,
-    order: nextOrder,
-    ...normalized,
-  }
+    order: nextOrder + index,
+    ...normalizeExercise(input),
+  })) satisfies PlanExercise[]
 
-  await db.planExercises.add(exercise)
+  await db.planExercises.bulkAdd(nextExercises)
   await touchPlan(planId)
 
-  return exercise
+  return nextExercises
 }
 
 export async function importPlanExercises(targetPlanId: string, sourceExerciseIds: string[]) {

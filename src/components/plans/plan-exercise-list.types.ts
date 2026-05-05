@@ -12,16 +12,15 @@ export type PlanExerciseListProps = {
   isLoading: boolean
   isSubmitting: boolean
   pendingScrollExerciseId: string | null
-  plans: PlanWithExercises[]
   plansCount: number
   onCancelEditing: () => void
   onCreate: () => void
   onDeleteSelected: (exerciseIds: string[]) => Promise<boolean>
   onDraftChange: (draft: PlanExerciseDraft) => void
   onEdit: (exerciseId: string) => void
-  onImport: (exerciseIds: string[]) => Promise<boolean>
   onReorder: (orderedExerciseIds: string[]) => Promise<boolean>
   onScrollAnimationComplete: () => void
+  onSaveEdit: () => Promise<boolean>
   onSubmit: (event: FormEvent<HTMLFormElement>) => void
 }
 

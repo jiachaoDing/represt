@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   DndContext,
@@ -17,7 +17,6 @@ import { AnimatedList, AnimatedListItem } from '../motion/AnimatedList'
 import { verticalSortModifiers } from '../dnd/vertical-sortable-motion'
 import { SortablePlanExerciseItem } from './SortablePlanExerciseItem'
 import { PlanExerciseDragOverlay } from './PlanExerciseDragOverlay'
-import { PlanExerciseImportSheet } from './PlanExerciseImportSheet'
 import { PlanExerciseInlineEditor } from './PlanExerciseInlineEditor'
 import { PlanExerciseListToolbar } from './PlanExerciseListToolbar'
 import type { PlanExerciseListProps } from './plan-exercise-list.types'
@@ -33,16 +32,15 @@ export function PlanExerciseList({
   isLoading,
   isSubmitting,
   pendingScrollExerciseId,
-  plans,
   plansCount,
   onCancelEditing,
   onCreate,
   onDeleteSelected,
   onDraftChange,
   onEdit,
-  onImport,
   onReorder,
   onScrollAnimationComplete,
+  onSaveEdit,
   onSubmit,
 }: PlanExerciseListProps) {
   const { t } = useTranslation()
@@ -50,10 +48,9 @@ export function PlanExerciseList({
   const [activeExerciseId, setActiveExerciseId] = useState<string | null>(null)
   const [isSorting, setIsSorting] = useState(false)
   const [isSelectionMode, setIsSelectionMode] = useState(false)
-  const [isImportSheetOpen, setIsImportSheetOpen] = useState(false)
   const [selectedExerciseIds, setSelectedExerciseIds] = useState<string[]>([])
-  const [selectedImportExerciseIds, setSelectedImportExerciseIds] = useState<string[]>([])
   const lastDragOverIdRef = useRef<string | null>(null)
+  const editorItemRefs = useRef(new Map<string, HTMLDivElement>())
 
   const sensors = useSensors(
     useSensor(MouseSensor, {
@@ -83,15 +80,6 @@ export function PlanExerciseList({
       ? -1
       : orderedExercises.findIndex((exercise) => exercise.id === activeExercise.id)
   const exerciseIds = orderedExercises.map((exercise) => exercise.id)
-  const sourcePlans = useMemo(
-    () =>
-      currentPlan
-        ? plans.filter(
-            (plan) => plan.id !== currentPlan.id && plan.exercises.length > 0,
-          )
-        : [],
-    [currentPlan, plans],
-  )
   const isAllSelected =
     exerciseIds.length > 0 && exerciseIds.every((exerciseId) => selectedExerciseIds.includes(exerciseId))
   const { registerItemRef } = useScrollToPendingExercise({
@@ -157,13 +145,18 @@ export function PlanExerciseList({
   }
 
   function openSelectionMode() {
-    closeExerciseEditorIfNeeded()
+    void closeExerciseEditorIfNeeded()
     setSelectedExerciseIds([])
     setIsSelectionMode(true)
   }
 
-  function closeExerciseEditorIfNeeded() {
+  async function closeExerciseEditorIfNeeded() {
     if (isCreatingExercise || editExerciseId !== null) {
+      if (editExerciseId !== null) {
+        await onSaveEdit()
+        return
+      }
+
       onCancelEditing()
     }
   }
@@ -173,26 +166,8 @@ export function PlanExerciseList({
     setIsSelectionMode(false)
   }
 
-  function openImportSheet() {
-    setSelectedImportExerciseIds([])
-    setIsImportSheetOpen(true)
-  }
-
-  function closeImportSheet() {
-    setSelectedImportExerciseIds([])
-    setIsImportSheetOpen(false)
-  }
-
   function toggleSelectedExercise(exerciseId: string) {
     setSelectedExerciseIds((current) =>
-      current.includes(exerciseId)
-        ? current.filter((selectedId) => selectedId !== exerciseId)
-        : [...current, exerciseId],
-    )
-  }
-
-  function toggleImportExercise(exerciseId: string) {
-    setSelectedImportExerciseIds((current) =>
       current.includes(exerciseId)
         ? current.filter((selectedId) => selectedId !== exerciseId)
         : [...current, exerciseId],
@@ -206,12 +181,26 @@ export function PlanExerciseList({
     }
   }
 
-  async function importSelectedExercises() {
-    const didImport = await onImport(selectedImportExerciseIds)
-    if (didImport) {
-      closeImportSheet()
+  useEffect(() => {
+    if (editExerciseId === null) {
+      return
     }
-  }
+
+    const activeEditExerciseId = editExerciseId
+    function handlePointerDown(event: PointerEvent) {
+      const editorElement = editorItemRefs.current.get(activeEditExerciseId)
+      if (!editorElement || !(event.target instanceof Node)) {
+        return
+      }
+
+      if (!editorElement.contains(event.target)) {
+        void onSaveEdit()
+      }
+    }
+
+    document.addEventListener('pointerdown', handlePointerDown, true)
+    return () => document.removeEventListener('pointerdown', handlePointerDown, true)
+  }, [editExerciseId, onSaveEdit])
 
   if (isLoading) {
     return (
@@ -279,7 +268,6 @@ export function PlanExerciseList({
               isSubmitting={isSubmitting}
               onCancel={onCancelEditing}
               onDraftChange={onDraftChange}
-              onImportClick={sourcePlans.length > 0 ? openImportSheet : undefined}
               onSubmit={onSubmit}
             />
           </AnimatedListItem>
@@ -299,7 +287,18 @@ export function PlanExerciseList({
             strategy={verticalListSortingStrategy}
           >
             {orderedExercises.map((exercise, index) => (
-              <div key={exercise.id}>
+              <div
+                key={exercise.id}
+                ref={(element) => {
+                  registerItemRef(exercise.id, element)
+                  if (element && editExerciseId === exercise.id) {
+                    editorItemRefs.current.set(exercise.id, element)
+                    return
+                  }
+
+                  editorItemRefs.current.delete(exercise.id)
+                }}
+              >
                 {editExerciseId === exercise.id ? (
                   <PlanExerciseInlineEditor
                     draft={draft}
@@ -333,15 +332,6 @@ export function PlanExerciseList({
         </DndContext>
       </AnimatedList>
 
-      <PlanExerciseImportSheet
-        isOpen={isImportSheetOpen}
-        isSubmitting={isSubmitting}
-        selectedExerciseIds={selectedImportExerciseIds}
-        sourcePlans={sourcePlans}
-        onClose={closeImportSheet}
-        onSubmit={() => void importSelectedExercises()}
-        onToggleExercise={toggleImportExercise}
-      />
     </div>
   )
 }

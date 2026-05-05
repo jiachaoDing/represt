@@ -1,7 +1,6 @@
 import type { WorkoutSession } from '../models/types'
 import { getTodaySessionDateKey } from '../lib/session-date-key'
 import { db } from './app-db'
-import { ensurePlanSeedData } from './plans'
 import { attachDerivedSessionStatus, getPerformedExercises, getSessionRecord, nowIso } from './session-core'
 import { maybeAutoImportTrainingCyclePlan } from './session-plan'
 import { getScheduleExercises } from './session-schedule'
@@ -19,6 +18,7 @@ export type {
 export {
   addPlanExercisesToSessionPlan,
   addTemporarySessionPlanItem,
+  addTemporarySessionPlanItems,
   deletePendingSessionPlanItem,
   getSessionPlanSyncStatus,
   markSessionPlanSynced,
@@ -41,13 +41,19 @@ export {
 } from './session-summary'
 export {
   createCustomExerciseProfile,
+  getExerciseModelForm,
   getEffectiveExerciseMuscleDistribution,
   getExerciseProfile,
   getExerciseProfileId,
   getExerciseRecordDetail,
+  listExerciseModelOptions,
   listExerciseRecordSummaries,
   resetExerciseProfileMuscleDistribution,
+  saveExerciseModel,
   saveExerciseProfileMuscleDistribution,
+  softDeleteExerciseModel,
+  type ExerciseModelForm,
+  type ExerciseModelOption,
   type ExerciseRecordDetail,
   type ExerciseRecordMetric,
   type ExerciseRecordMetricKind,
@@ -56,6 +62,7 @@ export {
   type ExerciseRecordTrendKind,
   type ExerciseRecordTrendSeries,
   type CreateCustomExerciseProfileResult,
+  type SaveExerciseModelResult,
 } from './exercise-records'
 export {
   getSummaryRangeAnalytics,
@@ -128,8 +135,6 @@ async function createSessionRecord() {
 }
 
 export async function getCurrentSession() {
-  await ensurePlanSeedData()
-
   const sessionId = await resolveCurrentSessionId()
   if (!sessionId) {
     return null

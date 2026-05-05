@@ -252,37 +252,54 @@ export async function addPlanExercisesToSessionPlan(
 }
 
 export async function addTemporarySessionPlanItem(sessionId: string, input: Partial<SessionPlanItemInput>) {
+  const planItems = await addTemporarySessionPlanItems(sessionId, [input])
+
+  return planItems[0]
+}
+
+export async function addTemporarySessionPlanItems(
+  sessionId: string,
+  inputs: Partial<SessionPlanItemInput>[],
+) {
   const session = await getSessionRecord(sessionId)
   if (!session) {
     throw new Error('当前训练不存在。')
   }
 
-  const normalized = normalizeSessionPlanItem(input)
-  const planItems = await getSessionPlanItems(sessionId)
-  const nextOrder = planItems.reduce((maxOrder, item) => Math.max(maxOrder, item.order), -1) + 1
-
-  const planItem: SessionPlanItem = {
-    id: crypto.randomUUID(),
-    sessionId,
-    planExerciseId: null,
-    sourcePlanId: null,
-    sourcePlanSnapshot: null,
-    origin: 'manual',
-    name: normalized.name,
-    catalogExerciseId: normalized.catalogExerciseId,
-    targetSets: normalized.targetSets,
-    defaultWeightKg: normalized.defaultWeightKg,
-    defaultReps: normalized.defaultReps,
-    defaultDurationSeconds: normalized.defaultDurationSeconds,
-    defaultDistanceMeters: normalized.defaultDistanceMeters,
-    restSeconds: normalized.restSeconds,
-    order: nextOrder,
-    createdAt: nowIso(),
+  if (inputs.length === 0) {
+    return []
   }
 
-  await db.sessionPlanItems.add(planItem)
+  const planItems = await getSessionPlanItems(sessionId)
+  const nextOrder = planItems.reduce((maxOrder, item) => Math.max(maxOrder, item.order), -1) + 1
+  const timestamp = nowIso()
 
-  return planItem
+  const nextPlanItems = inputs.map((input, index) => {
+    const normalized = normalizeSessionPlanItem(input)
+
+    return {
+      id: crypto.randomUUID(),
+      sessionId,
+      planExerciseId: null,
+      sourcePlanId: null,
+      sourcePlanSnapshot: null,
+      origin: 'manual',
+      name: normalized.name,
+      catalogExerciseId: normalized.catalogExerciseId,
+      targetSets: normalized.targetSets,
+      defaultWeightKg: normalized.defaultWeightKg,
+      defaultReps: normalized.defaultReps,
+      defaultDurationSeconds: normalized.defaultDurationSeconds,
+      defaultDistanceMeters: normalized.defaultDistanceMeters,
+      restSeconds: normalized.restSeconds,
+      order: nextOrder + index,
+      createdAt: timestamp,
+    }
+  }) satisfies SessionPlanItem[]
+
+  await db.sessionPlanItems.bulkAdd(nextPlanItems)
+
+  return nextPlanItems
 }
 
 export async function replaceSessionPlanItem(

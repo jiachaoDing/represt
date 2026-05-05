@@ -14,10 +14,6 @@ function App() {
   }, [])
 
   useEffect(() => {
-    void import('../db/plans').then(({ ensurePlanSeedData }) => ensurePlanSeedData())
-  }, [])
-
-  useEffect(() => {
     void initNotificationNavigation(router)
   }, [])
 

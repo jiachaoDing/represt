@@ -45,6 +45,7 @@ export function usePlansPageUi({
   const [renamePlanName, setRenamePlanName] = useState('')
   const [planDeleteOpen, setPlanDeleteOpen] = useState(false)
   const [planSheetMode, setPlanSheetMode] = useState<PlanSheetMode>(null)
+  const [continuousEditExerciseIds, setContinuousEditExerciseIds] = useState<string[]>([])
 
   const isExerciseEditorActive = isCreatingExercise || editExerciseId !== null
 
@@ -64,6 +65,7 @@ export function usePlansPageUi({
     setEditExerciseId(null)
     setExerciseDraft(emptyPlanExerciseDraft)
     setIsCreatingExercise(false)
+    setContinuousEditExerciseIds([])
   }
 
   function openCreateExerciseEditor() {
@@ -75,7 +77,7 @@ export function usePlansPageUi({
   function openEditExerciseEditor(exerciseId: string) {
     const exercise = currentPlan?.exercises.find((item) => item.id === exerciseId)
     if (!exercise) {
-      return
+      return false
     }
 
     setIsCreatingExercise(false)
@@ -84,6 +86,17 @@ export function usePlansPageUi({
       ...exercise,
       name: getDisplayExerciseName(t, exercise),
     }))
+    return true
+  }
+
+  function startContinuousEdit(exerciseIds: string[]) {
+    if (exerciseIds.length === 0) {
+      return
+    }
+
+    if (openEditExerciseEditor(exerciseIds[0])) {
+      setContinuousEditExerciseIds(exerciseIds)
+    }
   }
 
   async function handlePlanSubmit(
@@ -110,8 +123,14 @@ export function usePlansPageUi({
 
   async function handleExerciseSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    await saveExerciseEditor({ advanceContinuous: true })
+  }
+
+  async function saveExerciseEditor({
+    advanceContinuous = false,
+  }: { advanceContinuous?: boolean } = {}) {
     if (!currentPlan) {
-      return
+      return false
     }
 
     if (isCreatingExercise) {
@@ -119,17 +138,43 @@ export function usePlansPageUi({
       if (didCreate) {
         closeExerciseEditor()
       }
-      return
+      return didCreate
     }
 
     if (!editExerciseId) {
-      return
+      return true
+    }
+
+    if (!exerciseDraft.name.trim()) {
+      return false
     }
 
     const didSave = await handleSaveExercise(currentPlan.id, editExerciseId, exerciseDraft)
     if (didSave) {
+      const currentIndex = continuousEditExerciseIds.indexOf(editExerciseId)
+      const nextExerciseId =
+        currentIndex >= 0 ? continuousEditExerciseIds[currentIndex + 1] ?? null : null
+
+      if (advanceContinuous && nextExerciseId && openEditExerciseEditor(nextExerciseId)) {
+        setContinuousEditExerciseIds(continuousEditExerciseIds.slice(currentIndex + 1))
+        return true
+      }
+
       closeExerciseEditor()
     }
+
+    return didSave
+  }
+
+  async function openEditExerciseEditorAfterSave(exerciseId: string) {
+    if (editExerciseId && editExerciseId !== exerciseId) {
+      const didSave = await saveExerciseEditor()
+      if (!didSave) {
+        return false
+      }
+    }
+
+    return openEditExerciseEditor(exerciseId)
   }
 
   async function handleDeleteExercisesAction(exerciseIds: string[]) {
@@ -180,14 +225,17 @@ export function usePlansPageUi({
     handleExerciseSubmit,
     handleImportExercisesAction,
     handlePlanSubmit,
+    saveExerciseEditor,
     isCreatingExercise,
+    continuousEditScrollExerciseId: continuousEditExerciseIds.length > 0 ? editExerciseId : null,
     isExerciseEditorActive,
     openCreateExerciseEditor,
-    openEditExerciseEditor,
+    openEditExerciseEditor: openEditExerciseEditorAfterSave,
     openPlanSheet,
     renamePlanName,
     setExerciseDraft,
     setRenamePlanName,
+    startContinuousEdit,
     setPlanDeleteOpen,
     planDeleteOpen,
     planSheetMode,

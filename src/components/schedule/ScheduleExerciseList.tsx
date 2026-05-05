@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { createPortal } from 'react-dom'
 import { BookmarkPlus } from 'lucide-react'
@@ -35,6 +35,7 @@ import {
 
 type ScheduleExerciseListProps = {
   currentSession: WorkoutSessionWithExercises | null
+  continuousEditExerciseIds: string[]
   hasPlans: boolean
   isLoading: boolean
   isSubmitting: boolean
@@ -50,6 +51,7 @@ type ScheduleExerciseListProps = {
 
 export function ScheduleExerciseList({
   currentSession,
+  continuousEditExerciseIds,
   hasPlans,
   isLoading,
   isSubmitting,
@@ -72,6 +74,11 @@ export function ScheduleExerciseList({
   const [isSelectionMode, setIsSelectionMode] = useState(false)
   const [selectedExerciseIds, setSelectedExerciseIds] = useState<string[]>([])
   const lastDragOverIdRef = useRef<string | null>(null)
+  const itemRefs = useRef(new Map<string, HTMLDivElement>())
+  const editStateRef = useRef<{ draft: PlanExerciseDraft | null; exerciseId: string | null }>({
+    draft: null,
+    exerciseId: null,
+  })
 
   const sensors = useSensors(
     useSensor(MouseSensor, {
@@ -107,8 +114,12 @@ export function ScheduleExerciseList({
     deletableExerciseIds.length > 0 &&
     deletableExerciseIds.every((exerciseId) => selectedExerciseIds.includes(exerciseId))
 
+  useEffect(() => {
+    editStateRef.current = { draft: editDraft, exerciseId: editExerciseId }
+  }, [editDraft, editExerciseId])
+
   function openSelectionMode() {
-    closeEditMode()
+    void closeEditMode()
     setSelectedExerciseIds([])
     setIsSelectionMode(true)
   }
@@ -123,18 +134,58 @@ export function ScheduleExerciseList({
     setIsEditMode(true)
   }
 
-  function closeEditMode() {
+  function clearExerciseEditor(exerciseId: string) {
+    setEditExerciseId((current) => (current === exerciseId ? null : current))
+    setEditDraft((current) =>
+      editStateRef.current.exerciseId === exerciseId ? null : current,
+    )
+  }
+
+  function cancelCurrentExerciseEdit() {
+    const exerciseId = editStateRef.current.exerciseId
+    if (!exerciseId) {
+      return
+    }
+
+    clearExerciseEditor(exerciseId)
+  }
+
+  async function saveCurrentExerciseEdit() {
+    const exerciseId = editStateRef.current.exerciseId
+    const draft = editStateRef.current.draft
+    if (!exerciseId || !draft) {
+      return true
+    }
+
+    if (!draft.name.trim()) {
+      return false
+    }
+
+    const didEdit = await onEditExercise(exerciseId, draft)
+    if (didEdit) {
+      clearExerciseEditor(exerciseId)
+    }
+
+    return didEdit
+  }
+
+  async function closeEditMode() {
+    await saveCurrentExerciseEdit()
     setIsEditMode(false)
     setEditExerciseId(null)
     setEditDraft(null)
+    setContinuousQueueExerciseIds([])
   }
+
+  const [continuousQueueExerciseIds, setContinuousQueueExerciseIds] = useState<string[]>([])
 
   function openExerciseEditor(exerciseId: string) {
     const exercise = orderedExercises.find((item) => item.id === exerciseId)
     if (!exercise) {
-      return
+      return false
     }
 
+    setIsEditMode(true)
     setEditExerciseId(exercise.id)
     setEditDraft(toPlanExerciseDraft({
       ...exercise,
@@ -144,6 +195,18 @@ export function ScheduleExerciseList({
       durationSeconds: exercise.defaultDurationSeconds ?? null,
       distanceMeters: exercise.defaultDistanceMeters ?? null,
     }))
+    return true
+  }
+
+  async function switchExerciseEditor(exerciseId: string) {
+    if (editStateRef.current.exerciseId === exerciseId) {
+      return
+    }
+
+    const didSave = await saveCurrentExerciseEdit()
+    if (didSave) {
+      openExerciseEditor(exerciseId)
+    }
   }
 
   function toggleSelectedExercise(exerciseId: string) {
@@ -163,15 +226,78 @@ export function ScheduleExerciseList({
 
   async function submitExerciseEdit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (!editExerciseId || !editDraft) {
+    if (!editExerciseId || !editDraft || !editDraft.name.trim()) {
       return
     }
 
     const didEdit = await onEditExercise(editExerciseId, editDraft)
     if (didEdit) {
-      closeEditMode()
+      const currentIndex = continuousQueueExerciseIds.indexOf(editExerciseId)
+      const nextExerciseId =
+        currentIndex >= 0 ? continuousQueueExerciseIds[currentIndex + 1] ?? null : null
+
+      if (nextExerciseId && openExerciseEditor(nextExerciseId)) {
+        setContinuousQueueExerciseIds(continuousQueueExerciseIds.slice(currentIndex + 1))
+        return
+      }
+
+      clearExerciseEditor(editExerciseId)
     }
   }
+
+  useEffect(() => {
+    if (continuousEditExerciseIds.length === 0 || orderedExercises.length === 0) {
+      return
+    }
+
+    const exerciseIds = new Set(orderedExercises.map((exercise) => exercise.id))
+    const nextExerciseIds = continuousEditExerciseIds.filter((exerciseId) => exerciseIds.has(exerciseId))
+    if (nextExerciseIds.length === 0) {
+      return
+    }
+
+    closeSelectionMode()
+    if (openExerciseEditor(nextExerciseIds[0])) {
+      setContinuousQueueExerciseIds(nextExerciseIds)
+    }
+  }, [continuousEditExerciseIds, orderedExercises])
+
+  useEffect(() => {
+    const exerciseId = continuousQueueExerciseIds[0]
+    if (!exerciseId || editExerciseId !== exerciseId) {
+      return
+    }
+
+    const element = itemRefs.current.get(exerciseId)
+    if (!element) {
+      return
+    }
+
+    window.requestAnimationFrame(() => {
+      element.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    })
+  }, [continuousQueueExerciseIds, editExerciseId])
+
+  useEffect(() => {
+    if (!editExerciseId) {
+      return
+    }
+
+    const activeEditExerciseId = editExerciseId
+    function handlePointerDown(event: PointerEvent) {
+      const editorElement = itemRefs.current.get(activeEditExerciseId)
+      if (!editorElement || !(event.target instanceof Node)) {
+        return
+      }
+
+      if (!editorElement.contains(event.target)) {
+        void saveCurrentExerciseEdit()
+      }
+    }
+
+    document.addEventListener('pointerdown', handlePointerDown, true)
+    return () => document.removeEventListener('pointerdown', handlePointerDown, true)
+  }, [editExerciseId])
 
   function handleDragStart(event: DragStartEvent) {
     setActiveExerciseId(String(event.active.id))
@@ -289,7 +415,7 @@ export function ScheduleExerciseList({
         selectableExerciseIds={deletableExerciseIds}
         selectableCount={deletableCount}
         isSubmitting={isSubmitting}
-        onCancelEdit={closeEditMode}
+        onCancelEdit={() => void closeEditMode()}
         onOpenEdit={openEditMode}
         onOpenSelection={openSelectionMode}
         onCloseSelection={closeSelectionMode}
@@ -335,13 +461,23 @@ export function ScheduleExerciseList({
         >
           <div className="flex flex-col gap-3">
             {orderedExercises.map((exercise, index) => (
-              <div key={exercise.id}>
+              <div
+                key={exercise.id}
+                ref={(element) => {
+                  if (element) {
+                    itemRefs.current.set(exercise.id, element)
+                    return
+                  }
+
+                  itemRefs.current.delete(exercise.id)
+                }}
+              >
                 {editExerciseId === exercise.id && editDraft ? (
                   <PlanExerciseInlineEditor
                     draft={editDraft}
                     isEditing
                     isSubmitting={isSubmitting}
-                    onCancel={closeEditMode}
+                    onCancel={cancelCurrentExerciseEdit}
                     onDraftChange={setEditDraft}
                     onSubmit={submitExerciseEdit}
                   />
@@ -355,7 +491,7 @@ export function ScheduleExerciseList({
                     isSorting={isSorting}
                     isSubmitting={isSubmitting}
                     now={now}
-                    onEdit={openExerciseEditor}
+                    onEdit={(exerciseId) => void switchExerciseEditor(exerciseId)}
                     onToggleSelected={toggleSelectedExercise}
                   />
                 )}

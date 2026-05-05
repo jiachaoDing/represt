@@ -7,6 +7,7 @@ import { supportedLanguages, type SupportedLanguage } from '../i18n/languages'
 
 type ExerciseNameSource = {
   catalogExerciseId?: string | null
+  displayNameOverride?: string | null
   name?: string | null
 }
 
@@ -74,6 +75,11 @@ export function resolveCatalogExerciseId(input: ExerciseNameSource) {
 }
 
 export function getDisplayExerciseName(t: TFunction, exercise: ExerciseNameSource) {
+  const displayNameOverride = exercise.displayNameOverride?.trim()
+  if (displayNameOverride) {
+    return displayNameOverride
+  }
+
   const catalogExerciseId = exercise.catalogExerciseId?.trim()
   if (catalogExerciseId) {
     return getLocalizedExerciseName(t, catalogExerciseId) ?? exercise.name?.trim() ?? catalogExerciseId

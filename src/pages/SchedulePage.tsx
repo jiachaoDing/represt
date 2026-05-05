@@ -7,15 +7,11 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 
 import { TodayTrainingPlanCard } from '../components/training-cycle/TodayTrainingPlanCard'
 import { PageHeader } from '../components/ui/PageHeader'
-import { ConfirmDialog } from '../components/ui/ConfirmDialog'
 import { SettingsButton } from '../components/settings/SettingsButton'
 import { useNow } from '../hooks/useNow'
 import { useSchedulePageData } from '../hooks/pages/useSchedulePageData'
-import { useSchedulePageUi } from '../hooks/pages/useSchedulePageUi'
 import { getPlanColor } from '../lib/plan-color'
 import { ScheduleExerciseList } from '../components/schedule/ScheduleExerciseList'
-import { ScheduleExerciseSheet } from '../components/schedule/ScheduleExerciseSheet'
-import { SchedulePlanImportSheet } from '../components/schedule/SchedulePlanImportSheet'
 import { SchedulePlanSaveSheet } from '../components/schedule/SchedulePlanSaveSheet'
 import { QuickTimerEntryButton } from '../components/exercise/QuickTimerEntryButton'
 import { ExerciseQuickTimer } from '../components/exercise/ExerciseQuickTimer'
@@ -74,7 +70,13 @@ export function SchedulePage() {
   const reduceMotion = useReducedMotion()
   const now = useNow()
   const schedule = useSchedulePageData()
-  const ui = useSchedulePageUi(schedule)
+  const addedExerciseIds: string[] =
+    typeof location.state === 'object' &&
+    location.state !== null &&
+    'addedExerciseIds' in location.state &&
+    Array.isArray(location.state.addedExerciseIds)
+      ? location.state.addedExerciseIds.filter((id: unknown): id is string => typeof id === 'string')
+      : []
   const [isPlanSaveSheetOpen, setIsPlanSaveSheetOpen] = useState(false)
   const [isQuickTimerOpen, setIsQuickTimerOpen] = useState(false)
   const [isSaveTodayAsPlanTipHidden, setIsSaveTodayAsPlanTipHidden] = useState(
@@ -92,12 +94,6 @@ export function SchedulePage() {
     () => new Map(schedule.plans.map((plan, index) => [plan.id, getPlanColor(index)])),
     [schedule.plans],
   )
-  const customImportExercises = useMemo(() => {
-    const customPlanItemIdSet = new Set(ui.customPlanItemIds)
-    return schedule.currentSession?.exercises.filter((exercise) =>
-      customPlanItemIdSet.has(exercise.id),
-    ) ?? []
-  }, [schedule.currentSession?.exercises, ui.customPlanItemIds])
 
   const todayStr = new Intl.DateTimeFormat(i18n.resolvedLanguage, {
     month: 'long',
@@ -131,14 +127,6 @@ export function SchedulePage() {
     schedule.currentSession.exercises.length === 0 &&
     completedSets === 0 &&
     (schedule.trainingCycle?.slots.length ?? 0) === 0
-  const importConfirmDescription = [
-    ui.pendingPlanImportConfirmation?.isDuplicateImport
-      ? t('schedule.duplicateImport', { name: ui.pendingPlanImportConfirmation.planName })
-      : null,
-    ui.pendingPlanImportConfirmation?.willContinueCompletedSession ? t('schedule.willUpdateSummary') : null,
-  ]
-    .filter(Boolean)
-    .join(' ')
   const addExerciseButton =
     canShowAddExerciseButton && !isQuickTimerOpen && typeof document !== 'undefined'
       ? createPortal(
@@ -147,8 +135,8 @@ export function SchedulePage() {
               <button
                 type="button"
                 disabled={schedule.isSubmitting}
-                onClick={ui.openAddEntry}
-                aria-label={schedule.hasPlans ? t('schedule.addExercise') : t('schedule.newExercise')}
+                onClick={openExercisePicker}
+                    aria-label={t('schedule.addExercise')}
                 className="pointer-events-auto flex h-12 w-12 items-center justify-center rounded-full bg-[var(--primary-container)] text-[var(--on-primary-container)] shadow-lg transition-transform hover:scale-[1.02] active:scale-95 disabled:opacity-50 tap-highlight-transparent"
               >
                 <Plus size={22} strokeWidth={2.5} />
@@ -185,6 +173,14 @@ export function SchedulePage() {
   }, [currentSaveTodayAsPlanTipEntryKey])
 
   useEffect(() => {
+    if (schedule.isLoading || addedExerciseIds.length === 0) {
+      return
+    }
+
+    navigate('/', { replace: true, state: null })
+  }, [addedExerciseIds, navigate, schedule.isLoading])
+
+  useEffect(() => {
     if (
       currentSaveTodayAsPlanTipEntryKey === null ||
       schedule.isLoading ||
@@ -216,6 +212,10 @@ export function SchedulePage() {
     window.localStorage.setItem(saveTodayAsPlanUsedStorageKey, 'true')
     setIsSaveTodayAsPlanUsed(true)
     dispatchSaveTodayAsPlanTip({ type: 'hide' })
+  }
+
+  function openExercisePicker() {
+    navigate('/exercise-picker?target=today')
   }
 
   async function handleCreatePlanFromToday(name: string) {
@@ -291,7 +291,7 @@ export function SchedulePage() {
                     totalSets={totalSets}
                     isStarterState={isStarterState}
                     onChoosePlan={() => navigate('/plans/starter')}
-                    onCreateExercise={ui.openAddEntry}
+                    onCreateExercise={openExercisePicker}
                   />
                 </div>
               ) : null}
@@ -310,7 +310,7 @@ export function SchedulePage() {
                     <button
                       type="button"
                       disabled={schedule.isSubmitting}
-                      onClick={() => void ui.handleSyncPlanAction()}
+                      onClick={() => void schedule.handleSyncPlan()}
                       className="shrink-0 rounded-full bg-[var(--primary)] px-3 py-2 text-xs font-semibold text-[var(--on-primary)] transition-opacity disabled:opacity-50"
                     >
                       {t('schedule.syncPlan')}
@@ -329,15 +329,16 @@ export function SchedulePage() {
                 <section className="mt-2">
                   <ScheduleExerciseList
                     currentSession={schedule.currentSession}
+                    continuousEditExerciseIds={addedExerciseIds}
                     hasPlans={schedule.hasPlans}
                     isLoading={schedule.isLoading}
                     isSubmitting={schedule.isSubmitting}
                     now={now}
                     showSavePlanTip={shouldShowSaveTodayAsPlanTip}
-                    onOpenAdd={ui.openAddEntry}
+                    onOpenAdd={openExercisePicker}
                     onOpenSavePlan={() => setIsPlanSaveSheetOpen(true)}
                     onDismissSavePlanTip={hideSaveTodayAsPlanTip}
-                    onDeleteSelected={ui.handleDeleteExercisesAction}
+                    onDeleteSelected={schedule.handleDeleteExercises}
                     onEditExercise={schedule.handleReplaceExercise}
                     onReorder={schedule.handleReorderExercises}
                   />
@@ -347,28 +348,6 @@ export function SchedulePage() {
           )}
         </AnimatePresence>
       </div>
-
-      <ScheduleExerciseSheet
-        draft={schedule.newExerciseDraft}
-        isOpen={ui.isCreateSheetOpen}
-        isSubmitting={schedule.isSubmitting}
-        onClose={ui.closeCreateSheet}
-        onDraftChange={schedule.setNewExerciseDraft}
-        onSubmit={ui.handleAddExercise}
-      />
-
-      <SchedulePlanImportSheet
-        isOpen={ui.isPlanSheetOpen}
-        isSubmitting={schedule.isSubmitting}
-        selectedExerciseIds={ui.selectedPlanExerciseIds}
-        customExercises={customImportExercises}
-        sourcePlans={ui.isAllPlanImportMode ? schedule.plans : undefined}
-        plan={ui.importSourcePlan}
-        onClose={ui.closePlanImportSheet}
-        onCreateExercise={ui.isAllPlanImportMode ? ui.createExerciseFromPlanImportSheet : undefined}
-        onSubmit={() => void ui.handleImportPlan()}
-        onToggleExercise={ui.togglePlanExercise}
-      />
 
       {addExerciseButton}
 
@@ -383,26 +362,6 @@ export function SchedulePage() {
         onOverwritePlan={handleOverwritePlanFromToday}
       />
 
-      <ConfirmDialog
-        open={ui.isContinueDialogOpen}
-        title={t('schedule.continueTodayTitle')}
-        description={t('schedule.willUpdateSummary')}
-        confirmLabel={t('common.continue')}
-        onCancel={() => ui.setIsContinueDialogOpen(false)}
-        onConfirm={() => void ui.addExercise()}
-      />
-
-      <ConfirmDialog
-        open={ui.pendingPlanImportConfirmation !== null}
-        title={t('schedule.importConfirmTitle')}
-        description={importConfirmDescription}
-        confirmLabel={t('common.continue')}
-        onCancel={() => {
-          ui.setPendingPlanImportId(null)
-          ui.setPendingPlanExerciseIds([])
-        }}
-        onConfirm={() => void ui.confirmPendingPlanImport()}
-      />
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import type { MuscleDistributionItem } from '../domain/exercise-catalog'
+import type { MovementPattern, MuscleDistributionItem } from '../domain/exercise-catalog'
 
 export type SessionStatus = 'pending' | 'active' | 'completed'
 
@@ -117,7 +117,9 @@ export interface SetRecord {
 export interface ExerciseProfile {
   id: string
   catalogExerciseId?: string | null
+  deletedAt?: string | null
   name: string
+  movementPattern?: MovementPattern | null
   muscleDistribution: MuscleDistributionItem[]
   source?: 'custom'
   updatedAt: string

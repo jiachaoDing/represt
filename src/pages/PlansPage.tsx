@@ -29,6 +29,13 @@ export function PlansPage() {
     typeof location.state.selectedPlanId === 'string'
       ? location.state.selectedPlanId
       : null
+  const addedExerciseIds: string[] =
+    typeof location.state === 'object' &&
+    location.state !== null &&
+    'addedExerciseIds' in location.state &&
+    Array.isArray(location.state.addedExerciseIds)
+      ? location.state.addedExerciseIds.filter((id: unknown): id is string => typeof id === 'string')
+      : []
   const plans = usePlansPageData(preferredSelectedPlanId)
   const ui = usePlansPageUi(plans)
   const planColorMap = useMemo(
@@ -44,6 +51,24 @@ export function PlansPage() {
     ui.openPlanSheet('create')
     navigate('/plans', { replace: true, state: null })
   }, [navigate, shouldOpenPlanCreateSheet, ui])
+
+  useEffect(() => {
+    if (plans.isLoading || !plans.currentPlan || addedExerciseIds.length === 0) {
+      return
+    }
+
+    const currentExerciseIds = new Set(plans.currentPlan.exercises.map((exercise) => exercise.id))
+    const createdExerciseIds = addedExerciseIds.filter((exerciseId) => currentExerciseIds.has(exerciseId))
+    if (createdExerciseIds.length === 0) {
+      return
+    }
+
+    ui.startContinuousEdit(createdExerciseIds)
+    navigate('/plans', {
+      replace: true,
+      state: { selectedPlanId: plans.currentPlan.id },
+    })
+  }, [addedExerciseIds, navigate, plans.currentPlan, plans.isLoading, ui])
 
   const menuItems = plans.currentPlan
     ? [
@@ -100,21 +125,24 @@ export function PlansPage() {
           isCreatingExercise={ui.isCreatingExercise}
           isLoading={plans.isLoading}
           isSubmitting={plans.isSubmitting}
-          pendingScrollExerciseId={plans.lastCreatedExerciseId}
-          plans={plans.plans}
+          pendingScrollExerciseId={ui.continuousEditScrollExerciseId ?? plans.lastCreatedExerciseId}
           plansCount={plans.plans.length}
           onCancelEditing={ui.closeExerciseEditor}
-          onCreate={ui.openCreateExerciseEditor}
+          onCreate={() => {
+            if (plans.currentPlan) {
+              navigate(`/exercise-picker?target=plan&planId=${plans.currentPlan.id}`)
+            }
+          }}
           onDeleteSelected={ui.handleDeleteExercisesAction}
           onDraftChange={ui.setExerciseDraft}
           onEdit={ui.openEditExerciseEditor}
-          onImport={ui.handleImportExercisesAction}
           onReorder={(orderedExerciseIds) =>
             plans.currentPlan
               ? plans.handleReorderExercises(plans.currentPlan.id, orderedExerciseIds)
               : Promise.resolve(false)
           }
           onScrollAnimationComplete={plans.clearLastCreatedExerciseId}
+          onSaveEdit={() => ui.saveExerciseEditor()}
           onSubmit={ui.handleExerciseSubmit}
         />
       </section>
