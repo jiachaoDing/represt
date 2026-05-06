@@ -218,7 +218,7 @@ export function MuscleDistributionEditor({ disabled, value, onChange }: MuscleDi
             )
           })}
           <circle cx={chartCenter} cy={chartCenter} r="44" fill="var(--surface)" />
-          {slices.map((slice, index) => {
+          {slices.slice(0, -1).map((slice, index) => {
             const point = getPoint(slice.end % 1, chartRadius + 1)
             return (
               <circle

@@ -17,6 +17,7 @@ import {
   getMuscleGroupName,
 } from '../lib/exercise-catalog-i18n'
 import { triggerHaptic } from '../lib/haptics'
+import { useBackLinkState } from '../hooks/useRouteBack'
 
 type PickerTarget = 'today' | 'plan'
 type PickerCategory = MuscleGroup | 'all' | 'other'
@@ -57,6 +58,7 @@ function formatExerciseMeta(
 export function ExercisePickerPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const backLinkState = useBackLinkState()
   const [searchParams] = useSearchParams()
   const target = getPickerTarget(searchParams.get('target'))
   const planId = searchParams.get('planId')
@@ -309,7 +311,7 @@ export function ExercisePickerPage() {
                     <span className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-[var(--primary)]" />
                   ) : null}
                   <span className="min-w-0 flex-1 leading-4">{category.label}</span>
-                  {count > 0 ? (
+                  {category.id !== 'all' && count > 0 ? (
                     <span className="flex h-4 min-w-4 shrink-0 items-center justify-center rounded-full bg-[var(--primary)] px-1 text-[10px] font-semibold leading-none text-[var(--on-primary)]">
                       {count}
                     </span>
@@ -319,7 +321,7 @@ export function ExercisePickerPage() {
             })}
             <button
               type="button"
-              onClick={() => navigate('/summary/exercises/catalog/new')}
+              onClick={() => navigate('/summary/exercises/catalog/new', { state: backLinkState })}
               className="relative mt-1 flex min-h-12 w-full items-center gap-1.5 border-t border-[var(--outline-variant)]/40 px-2.5 py-2 text-left text-xs font-medium text-[var(--primary)] transition-colors"
             >
               <span className="min-w-0 flex-1 leading-4">{t('summary.exerciseRecords.addCustomTitle')}</span>

@@ -98,6 +98,9 @@ const common = {
       description: '完成、保存、撤销和危险操作时短促反馈',
       test: '测试触感反馈',
     },
+    exerciseRecords: {
+      description: '查看动作记录和管理可选动作',
+    },
     planTransfer: {
       title: '计划导入导出',
       description: '导出计划模板，或导入计划与循环日程',

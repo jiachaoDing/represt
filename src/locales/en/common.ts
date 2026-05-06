@@ -98,6 +98,9 @@ const common = {
       description: 'Short feedback for completion, save, undo, and dangerous actions',
       test: 'Test haptics',
     },
+    exerciseRecords: {
+      description: 'View exercise records and manage selectable exercises',
+    },
     planTransfer: {
       title: 'Plan import/export',
       description: 'Export plan templates, or import plans and cycles',

@@ -9,6 +9,7 @@ import {
   ClipboardPaste,
   Copy,
   Download,
+  Dumbbell,
   FileJson,
   Info,
   Languages,
@@ -806,6 +807,7 @@ function DebugDateSettingsCard() {
 
 export function SettingsPage() {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const appVersion = useAppVersion()
   const showDebugSettings = import.meta.env.DEV
 
@@ -827,6 +829,14 @@ export function SettingsPage() {
         </SettingsSection>
 
         <SettingsSection title={t('settings.sections.data')}>
+          <SettingsRow
+            icon={Dumbbell}
+            label={t('summary.exerciseRecords.entry')}
+            supporting={t('settings.exerciseRecords.description')}
+            onClick={() => navigate('/summary/exercises')}
+            right={<ChevronRight size={16} strokeWidth={2.2} aria-hidden="true" />}
+          />
+          <RowDivider />
           <PlanTransferSettingsRow />
         </SettingsSection>
 
