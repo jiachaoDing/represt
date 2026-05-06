@@ -195,13 +195,10 @@ export function ScheduleExerciseCard({
       className={`relative flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-[var(--surface-container-high)] disabled:opacity-40 ${handleClassName}`}
       aria-label={t('common.edit')}
     >
-      <Pencil
-        size={19}
-        strokeWidth={2.1}
-        aria-hidden="true"
-        className="absolute opacity-20"
-      />
-      <span className="relative z-10">{handle}</span>
+      {handle}
+      <span className="absolute -right-0.5 -bottom-0.5 text-[var(--on-surface-variant)]">
+        <Pencil size={10} strokeWidth={2.5} aria-hidden="true" />
+      </span>
     </button>
   ) : (
     <div
