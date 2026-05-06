@@ -141,7 +141,10 @@ export function PlansPage() {
           onCreate={() => {
             if (plans.currentPlan) {
               navigate(`/exercise-picker?target=plan&planId=${plans.currentPlan.id}`)
+              return
             }
+
+            ui.openPlanSheet('create')
           }}
           onDeleteSelected={ui.handleDeleteExercisesAction}
           onDraftChange={ui.setExerciseDraft}

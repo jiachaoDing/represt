@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   DndContext,
@@ -216,8 +216,26 @@ export function PlanExerciseList({
   }
 
   if (plansCount === 0) {
+    function handleEmptyPlansKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+      if (event.key !== 'Enter' && event.key !== ' ') {
+        return
+      }
+
+      event.preventDefault()
+      if (!isSubmitting) {
+        onCreate()
+      }
+    }
+
     return (
-      <div className="mx-4 mt-6 rounded-xl border border-dashed border-[var(--outline)] px-5 py-8 text-center">
+      <div
+        role="button"
+        tabIndex={isSubmitting ? -1 : 0}
+        onClick={isSubmitting ? undefined : onCreate}
+        onKeyDown={handleEmptyPlansKeyDown}
+        className="mx-4 mt-6 rounded-xl border border-dashed border-[var(--outline)] px-5 py-8 text-center"
+        aria-label={t('plans.newPlan')}
+      >
         <p className="text-sm font-medium text-[var(--on-surface-variant)]">{t('plans.noPlans')}</p>
       </div>
     )

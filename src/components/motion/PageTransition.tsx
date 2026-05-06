@@ -1,6 +1,9 @@
+import { lazy, Suspense } from 'react'
 import { useLocation, useOutlet } from 'react-router-dom'
 
-import { PrimaryTabPanels } from '../layout/PrimaryTabPanels'
+const PrimaryTabPanels = lazy(() =>
+  import('../layout/PrimaryTabPanels').then((module) => ({ default: module.PrimaryTabPanels })),
+)
 
 function getPrimaryTabIndex(pathname: string) {
   if (pathname === '/') {
@@ -30,7 +33,13 @@ function isPrimaryPath(pathname: string) {
 export function PageTransition() {
   const location = useLocation()
   const outlet = useOutlet()
-  const content = isPrimaryPath(location.pathname) ? <PrimaryTabPanels /> : outlet
+  const content = isPrimaryPath(location.pathname) ? (
+    <Suspense fallback={null}>
+      <PrimaryTabPanels />
+    </Suspense>
+  ) : (
+    outlet
+  )
 
   return (
     <div className="scrollbar-hide h-full overflow-x-hidden overflow-y-auto bg-[var(--surface)]">

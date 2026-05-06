@@ -1,6 +1,7 @@
 import type { PluginListenerHandle } from '@capacitor/core'
 
-import { completePlanItemSet, getScheduleExerciseDetail } from '../db/sessions'
+import { completePlanItemSet } from '../db/session-records'
+import { getScheduleExerciseDetail } from '../db/session-schedule'
 import { getDisplayExerciseName } from '../lib/exercise-name'
 import { repeatQuickTimer, toggleQuickTimer } from '../hooks/useQuickTimer'
 import i18n from '../i18n'

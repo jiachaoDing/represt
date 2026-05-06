@@ -10,7 +10,7 @@ import {
   listExerciseRecordSummaries,
   type ExerciseRecordSummary,
 } from '../../db/sessions'
-import { MetricValue } from './components'
+import { MetricValue } from './MetricValue'
 
 export function ExerciseRecordsListPage() {
   const { i18n, t } = useTranslation()

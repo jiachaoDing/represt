@@ -3,7 +3,6 @@ import { RouterProvider } from 'react-router-dom'
 
 import { AppStartup } from '../components/layout/AppStartup'
 import { preloadPrimaryRouteModules, router } from './router'
-import { initNotificationNavigation } from '../native/notification-navigation'
 
 function App() {
   const [showStartup, setShowStartup] = useState(true)
@@ -14,7 +13,9 @@ function App() {
   }, [])
 
   useEffect(() => {
-    void initNotificationNavigation(router)
+    void import('../native/notification-navigation').then(({ initNotificationNavigation }) =>
+      initNotificationNavigation(router),
+    )
   }, [])
 
   useEffect(() => {

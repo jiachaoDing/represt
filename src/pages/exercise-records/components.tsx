@@ -1,11 +1,17 @@
-import { useState } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { ExerciseTrendChart } from '../../components/exercise-records/ExerciseTrendChart'
 import { getMuscleGroupName } from '../../lib/exercise-catalog-i18n'
 import { formatNumber } from '../../lib/set-record-measurement'
 import type { ExerciseRecordDetail, ExerciseRecordMetric } from '../../db/sessions'
+import { MetricValue } from './MetricValue'
 import { formatMetricValue } from './utils'
+
+const ExerciseTrendChart = lazy(() =>
+  import('../../components/exercise-records/ExerciseTrendChart').then((module) => ({
+    default: module.ExerciseTrendChart,
+  })),
+)
 
 const trendKinds = ['personalBest', 'bestSet', 'volume', 'frequency'] as const
 type DefaultTrendKind = (typeof trendKinds)[number]
@@ -31,16 +37,6 @@ const trendTextKeys: Record<DefaultTrendKind, { label: string; title: string; de
     title: 'summary.exerciseRecords.trends.frequencyTitle',
     description: 'summary.exerciseRecords.trends.frequencyDescription',
   },
-}
-
-export function MetricValue({ metric }: { metric: ExerciseRecordMetric | null }) {
-  const { t } = useTranslation()
-
-  return (
-    <span>
-      {metric ? formatMetricValue(metric.kind, metric.value, t) : t('summary.exerciseRecords.noPb')}
-    </span>
-  )
 }
 
 export function TrendCard({ detail }: { detail: ExerciseRecordDetail }) {
@@ -98,7 +94,9 @@ export function TrendCard({ detail }: { detail: ExerciseRecordDetail }) {
       <p className="mt-3 text-[12px] text-[var(--on-surface-variant)]">{t(textKeys.description)}</p>
       {(series?.points.length ?? 0) > 0 ? (
         <div className="mt-3">
-          <ExerciseTrendChart ariaLabel={title} points={series?.points ?? []} valueFormatter={valueFormatter} />
+          <Suspense fallback={<div className="h-48 w-full" aria-hidden="true" />}>
+            <ExerciseTrendChart ariaLabel={title} points={series?.points ?? []} valueFormatter={valueFormatter} />
+          </Suspense>
         </div>
       ) : (
         <p className="mt-4 rounded-2xl bg-[var(--surface-container)] px-4 py-6 text-center text-sm text-[var(--on-surface-variant)]">
