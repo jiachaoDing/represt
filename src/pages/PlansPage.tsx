@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLocation, useNavigate } from 'react-router-dom'
 
@@ -41,6 +41,7 @@ export function PlansPage() {
   )
   const plans = usePlansPageData(preferredSelectedPlanId)
   const ui = usePlansPageUi(plans)
+  const handledAddedExerciseLocationKeyRef = useRef<string | null>(null)
   const planColorMap = useMemo(
     () => new Map(plans.plans.map((plan, index) => [plan.id, getPlanColor(index)])),
     [plans.plans],
@@ -56,7 +57,12 @@ export function PlansPage() {
   }, [navigate, shouldOpenPlanCreateSheet, ui])
 
   useEffect(() => {
-    if (plans.isLoading || !plans.currentPlan || addedExerciseIds.length === 0) {
+    if (
+      plans.isLoading ||
+      !plans.currentPlan ||
+      addedExerciseIds.length === 0 ||
+      handledAddedExerciseLocationKeyRef.current === location.key
+    ) {
       return
     }
 
@@ -66,12 +72,13 @@ export function PlansPage() {
       return
     }
 
-    ui.startContinuousEdit(createdExerciseIds)
+    handledAddedExerciseLocationKeyRef.current = location.key
     navigate('/plans', {
       replace: true,
       state: { selectedPlanId: plans.currentPlan.id },
     })
-  }, [addedExerciseIds, navigate, plans.currentPlan, plans.isLoading, ui])
+    ui.startContinuousEdit(createdExerciseIds)
+  }, [addedExerciseIds, location.key, navigate, plans.currentPlan, plans.isLoading, ui])
 
   const menuItems = plans.currentPlan
     ? [

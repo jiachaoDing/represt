@@ -13,7 +13,6 @@ import { verticalSortTransition } from '../dnd/vertical-sortable-motion'
 type SortableScheduleExerciseItemProps = {
   exercise: WorkoutSessionWithExercises['exercises'][number]
   isSelected: boolean
-  isEditMode: boolean
   index: number
   isSelectionMode: boolean
   isSorting: boolean
@@ -26,7 +25,6 @@ type SortableScheduleExerciseItemProps = {
 export function SortableScheduleExerciseItem({
   exercise,
   isSelected,
-  isEditMode,
   index,
   isSelectionMode,
   isSorting,
@@ -49,7 +47,7 @@ export function SortableScheduleExerciseItem({
     isDragging,
   } = useSortable({
     id: exercise.id,
-    disabled: isSubmitting || isSelectionMode || isEditMode,
+    disabled: isSubmitting || isSelectionMode,
     transition: verticalSortTransition,
   })
 
@@ -63,8 +61,6 @@ export function SortableScheduleExerciseItem({
     ? canSelect
       ? 'cursor-pointer'
       : 'cursor-not-allowed'
-    : isEditMode
-    ? 'cursor-default'
     : isSubmitting
     ? 'cursor-default'
     : 'cursor-grab active:cursor-grabbing'
@@ -88,7 +84,7 @@ export function SortableScheduleExerciseItem({
     >
       <ScheduleExerciseCard
         exercise={exercise}
-        href={isSelectionMode || isEditMode ? undefined : `/exercise/${exercise.id}`}
+        href={isSelectionMode ? undefined : `/exercise/${exercise.id}`}
         index={index}
         isDragging={isDragging}
         isSelectable={canSelect}
@@ -96,7 +92,7 @@ export function SortableScheduleExerciseItem({
         isSubmitting={isSubmitting || isSorting}
         linkState={backLinkState}
         now={now}
-        onEdit={isEditMode ? () => onEdit(exercise.id) : undefined}
+        onEdit={isSelectionMode ? undefined : () => onEdit(exercise.id)}
         selectionMode={isSelectionMode}
       />
     </div>

@@ -81,6 +81,7 @@ export function SchedulePage() {
     [location.state],
   )
   const [isPlanSaveSheetOpen, setIsPlanSaveSheetOpen] = useState(false)
+  const [initialEditExerciseId, setInitialEditExerciseId] = useState<string | null>(null)
   const [isQuickTimerOpen, setIsQuickTimerOpen] = useState(false)
   const [isSaveTodayAsPlanTipHidden, setIsSaveTodayAsPlanTipHidden] = useState(
     getStoredSaveTodayAsPlanTipHidden,
@@ -180,6 +181,7 @@ export function SchedulePage() {
       return
     }
 
+    setInitialEditExerciseId(addedExerciseIds[0] ?? null)
     navigate('/', { replace: true, state: null })
   }, [addedExerciseIds, navigate, schedule.isLoading])
 
@@ -332,8 +334,8 @@ export function SchedulePage() {
                 <section className="mt-2">
                   <ScheduleExerciseList
                     currentSession={schedule.currentSession}
-                    continuousEditExerciseIds={addedExerciseIds}
                     hasPlans={schedule.hasPlans}
+                    initialEditExerciseId={initialEditExerciseId}
                     isLoading={schedule.isLoading}
                     isSubmitting={schedule.isSubmitting}
                     now={now}
@@ -343,6 +345,7 @@ export function SchedulePage() {
                     onDismissSavePlanTip={hideSaveTodayAsPlanTip}
                     onDeleteSelected={schedule.handleDeleteExercises}
                     onEditExercise={schedule.handleReplaceExercise}
+                    onInitialEditHandled={() => setInitialEditExerciseId(null)}
                     onReorder={schedule.handleReorderExercises}
                   />
                 </section>

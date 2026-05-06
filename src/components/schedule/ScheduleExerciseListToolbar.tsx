@@ -1,16 +1,13 @@
 import { useTranslation } from 'react-i18next'
-import { BookmarkPlus, ListChecks, ListX, Pencil } from 'lucide-react'
+import { BookmarkPlus, ListChecks, ListX } from 'lucide-react'
 
 type ScheduleExerciseListToolbarProps = {
-  isEditMode: boolean
   isSelectionMode: boolean
   selectedCount: number
   isAllSelected: boolean
   selectableExerciseIds: string[]
   selectableCount: number
   isSubmitting: boolean
-  onCancelEdit: () => void
-  onOpenEdit: () => void
   onOpenSelection: () => void
   onCloseSelection: () => void
   onToggleAllSelected: (exerciseIds: string[]) => void
@@ -19,15 +16,12 @@ type ScheduleExerciseListToolbarProps = {
 }
 
 export function ScheduleExerciseListToolbar({
-  isEditMode,
   isSelectionMode,
   selectedCount,
   isAllSelected,
   selectableExerciseIds,
   selectableCount,
   isSubmitting,
-  onCancelEdit,
-  onOpenEdit,
   onOpenSelection,
   onCloseSelection,
   onToggleAllSelected,
@@ -40,9 +34,7 @@ export function ScheduleExerciseListToolbar({
     <div className="-mb-1 flex items-center justify-between px-2">
       <div className="flex min-w-0 items-center gap-2">
         <span className="whitespace-nowrap text-[12px] text-[var(--on-surface-variant)]">
-          {isEditMode
-            ? t('schedule.editExercises')
-            : isSelectionMode
+          {isSelectionMode
             ? t('schedule.selectedDeletableCount', { count: selectedCount })
             : t('plans.longPressSort')}
         </span>
@@ -63,19 +55,7 @@ export function ScheduleExerciseListToolbar({
         ) : null}
       </div>
       <div className="flex items-center gap-1">
-        {isEditMode ? (
-          <button
-            type="button"
-            onClick={onCancelEdit}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[var(--on-surface-variant)] transition-colors hover:bg-[var(--on-surface-variant)]/10"
-            aria-label={t('common.cancel')}
-          >
-            <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M18 6 6 18" />
-              <path d="m6 6 12 12" />
-            </svg>
-          </button>
-        ) : isSelectionMode ? (
+        {isSelectionMode ? (
           <>
             <button
               type="button"
@@ -123,17 +103,7 @@ export function ScheduleExerciseListToolbar({
             </svg>
           </button>
         ) : null}
-        {!isSelectionMode && !isEditMode ? (
-          <button
-            type="button"
-            onClick={onOpenEdit}
-            className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/10"
-            aria-label={t('schedule.editExercises')}
-          >
-            <Pencil size={18} strokeWidth={2.25} />
-          </button>
-        ) : null}
-        {!isSelectionMode && !isEditMode ? (
+        {!isSelectionMode ? (
           <button
             type="button"
             onClick={onSavePlan}

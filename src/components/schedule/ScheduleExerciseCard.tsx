@@ -169,7 +169,7 @@ export function ScheduleExerciseCard({
     ? 'text-[var(--outline)]'
     : cardState.statusClassName
   const content = (
-    <div className="min-w-0 flex items-center justify-between">
+    <div className="min-w-0 flex items-center justify-between gap-3">
       <div className="flex min-w-0 flex-1 flex-col">
         <p
           className={`overflow-hidden text-[16px] font-bold leading-tight [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2] ${cardState.nameClassName}`}
@@ -178,33 +178,45 @@ export function ScheduleExerciseCard({
         </p>
         <p className={`mt-0.5 text-[12px] ${cardState.metaClassName}`}>{cardState.metaText}</p>
       </div>
-      <div className="ml-2 flex shrink-0 items-center gap-2">
+      <div className="shrink-0">
         <span className={`text-[13px] ${statusClassName}`}>{statusText}</span>
-        {onEdit ? (
-          <button
-            type="button"
-            onClick={onEdit}
-            disabled={isSubmitting}
-            className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/10 disabled:opacity-40"
-            aria-label={t('common.edit')}
-          >
-            <Pencil size={17} strokeWidth={2.25} />
-          </button>
-        ) : null}
       </div>
+    </div>
+  )
+  const handleContent = onEdit ? (
+    <button
+      type="button"
+      onClick={(event) => {
+        event.stopPropagation()
+        onEdit()
+      }}
+      onPointerDown={(event) => event.stopPropagation()}
+      disabled={isSubmitting}
+      className={`relative flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-[var(--surface-container-high)] disabled:opacity-40 ${handleClassName}`}
+      aria-label={t('common.edit')}
+    >
+      <Pencil
+        size={19}
+        strokeWidth={2.1}
+        aria-hidden="true"
+        className="absolute opacity-20"
+      />
+      <span className="relative z-10">{handle}</span>
+    </button>
+  ) : (
+    <div
+      className={`flex h-8 w-8 items-center justify-center rounded-full transition-colors ${
+        handleClassName
+      } ${isSubmitting ? 'opacity-40' : ''}`}
+      aria-hidden="true"
+    >
+      {handle}
     </div>
   )
 
   return (
     <div className="relative">
-      <div
-        className={`absolute left-4 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full transition-colors ${
-          handleClassName
-        } ${isSubmitting ? 'opacity-40' : ''}`}
-        aria-hidden="true"
-      >
-        {handle}
-      </div>
+      <div className="absolute left-4 top-4 z-10">{handleContent}</div>
 
       <div
         className={`rounded-[1.25rem] pl-16 pr-4 py-4 transition-shadow duration-200 ${

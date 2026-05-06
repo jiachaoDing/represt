@@ -35,8 +35,8 @@ import {
 
 type ScheduleExerciseListProps = {
   currentSession: WorkoutSessionWithExercises | null
-  continuousEditExerciseIds: string[]
   hasPlans: boolean
+  initialEditExerciseId: string | null
   isLoading: boolean
   isSubmitting: boolean
   now: number
@@ -46,13 +46,14 @@ type ScheduleExerciseListProps = {
   onDismissSavePlanTip: () => void
   onDeleteSelected: (exerciseIds: string[]) => Promise<boolean>
   onEditExercise: (exerciseId: string, draft: PlanExerciseDraft) => Promise<boolean>
+  onInitialEditHandled: () => void
   onReorder: (orderedExerciseIds: string[]) => Promise<boolean>
 }
 
 export function ScheduleExerciseList({
   currentSession,
-  continuousEditExerciseIds,
   hasPlans,
+  initialEditExerciseId,
   isLoading,
   isSubmitting,
   now,
@@ -62,18 +63,17 @@ export function ScheduleExerciseList({
   onDismissSavePlanTip,
   onDeleteSelected,
   onEditExercise,
+  onInitialEditHandled,
   onReorder,
 }: ScheduleExerciseListProps) {
   const { t } = useTranslation()
   const [exerciseOrder, setExerciseOrder] = useState<string[] | null>(null)
   const [activeExerciseId, setActiveExerciseId] = useState<string | null>(null)
   const [isSorting, setIsSorting] = useState(false)
-  const [isEditMode, setIsEditMode] = useState(false)
   const [editExerciseId, setEditExerciseId] = useState<string | null>(null)
   const [editDraft, setEditDraft] = useState<PlanExerciseDraft | null>(null)
   const [isSelectionMode, setIsSelectionMode] = useState(false)
   const [selectedExerciseIds, setSelectedExerciseIds] = useState<string[]>([])
-  const [continuousQueueExerciseIds, setContinuousQueueExerciseIds] = useState<string[]>([])
   const lastDragOverIdRef = useRef<string | null>(null)
   const itemRefs = useRef(new Map<string, HTMLDivElement>())
   const editStateRef = useRef<{ draft: PlanExerciseDraft | null; exerciseId: string | null }>({
@@ -124,11 +124,6 @@ export function ScheduleExerciseList({
     setIsSelectionMode(false)
   }, [])
 
-  function openEditMode() {
-    closeSelectionMode()
-    setIsEditMode(true)
-  }
-
   const clearExerciseEditor = useCallback((exerciseId: string) => {
     setEditExerciseId((current) => (current === exerciseId ? null : current))
     setEditDraft((current) =>
@@ -166,10 +161,8 @@ export function ScheduleExerciseList({
 
   const closeEditMode = useCallback(async () => {
     await saveCurrentExerciseEdit()
-    setIsEditMode(false)
     setEditExerciseId(null)
     setEditDraft(null)
-    setContinuousQueueExerciseIds([])
   }, [saveCurrentExerciseEdit])
 
   function openSelectionMode() {
@@ -184,7 +177,6 @@ export function ScheduleExerciseList({
       return false
     }
 
-    setIsEditMode(true)
     setEditExerciseId(exercise.id)
     setEditDraft(toPlanExerciseDraft({
       ...exercise,
@@ -231,55 +223,32 @@ export function ScheduleExerciseList({
 
     const didEdit = await onEditExercise(editExerciseId, editDraft)
     if (didEdit) {
-      const currentIndex = continuousQueueExerciseIds.indexOf(editExerciseId)
-      const nextExerciseId =
-        currentIndex >= 0 ? continuousQueueExerciseIds[currentIndex + 1] ?? null : null
-
-      if (nextExerciseId && openExerciseEditor(nextExerciseId)) {
-        setContinuousQueueExerciseIds(continuousQueueExerciseIds.slice(currentIndex + 1))
-        return
-      }
-
       clearExerciseEditor(editExerciseId)
     }
   }
 
   useEffect(() => {
-    if (continuousEditExerciseIds.length === 0 || orderedExercises.length === 0) {
-      return
-    }
-
-    const exerciseIds = new Set(orderedExercises.map((exercise) => exercise.id))
-    const nextExerciseIds = continuousEditExerciseIds.filter((exerciseId) => exerciseIds.has(exerciseId))
-    if (nextExerciseIds.length === 0) {
+    if (!initialEditExerciseId || orderedExercises.length === 0) {
       return
     }
 
     const frameId = window.requestAnimationFrame(() => {
       closeSelectionMode()
-      if (openExerciseEditor(nextExerciseIds[0])) {
-        setContinuousQueueExerciseIds(nextExerciseIds)
+      if (openExerciseEditor(initialEditExerciseId)) {
+        onInitialEditHandled()
+        const element = itemRefs.current.get(initialEditExerciseId)
+        element?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
       }
     })
 
     return () => window.cancelAnimationFrame(frameId)
-  }, [closeSelectionMode, continuousEditExerciseIds, openExerciseEditor, orderedExercises])
-
-  useEffect(() => {
-    const exerciseId = continuousQueueExerciseIds[0]
-    if (!exerciseId || editExerciseId !== exerciseId) {
-      return
-    }
-
-    const element = itemRefs.current.get(exerciseId)
-    if (!element) {
-      return
-    }
-
-    window.requestAnimationFrame(() => {
-      element.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-    })
-  }, [continuousQueueExerciseIds, editExerciseId])
+  }, [
+    closeSelectionMode,
+    initialEditExerciseId,
+    onInitialEditHandled,
+    openExerciseEditor,
+    orderedExercises.length,
+  ])
 
   useEffect(() => {
     if (!editExerciseId) {
@@ -411,15 +380,12 @@ export function ScheduleExerciseList({
   return (
     <div className="flex flex-col gap-3 px-4">
       <ScheduleExerciseListToolbar
-        isEditMode={isEditMode}
         isSelectionMode={isSelectionMode}
         selectedCount={selectedExerciseIds.length}
         isAllSelected={isAllSelected}
         selectableExerciseIds={deletableExerciseIds}
         selectableCount={deletableCount}
         isSubmitting={isSubmitting}
-        onCancelEdit={() => void closeEditMode()}
-        onOpenEdit={openEditMode}
         onOpenSelection={openSelectionMode}
         onCloseSelection={closeSelectionMode}
         onToggleAllSelected={setSelectedExerciseIds}
@@ -488,7 +454,6 @@ export function ScheduleExerciseList({
                   <SortableScheduleExerciseItem
                     exercise={exercise}
                     isSelected={selectedExerciseIds.includes(exercise.id)}
-                    isEditMode={isEditMode}
                     index={index}
                     isSelectionMode={isSelectionMode}
                     isSorting={isSorting}
