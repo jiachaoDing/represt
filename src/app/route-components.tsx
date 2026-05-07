@@ -6,6 +6,7 @@ import {
   loadExercisePickerPage,
   loadExerciseRecordsPage,
   loadQuickTimerPage,
+  loadReminderSettingsPage,
   loadSchedulePage,
   loadSettingsPage,
   loadSummaryPage,
@@ -28,6 +29,9 @@ export const ExerciseRecordsPage = lazy(() =>
 )
 export const QuickTimerPage = lazy(() =>
   loadQuickTimerPage().then((module) => ({ default: module.QuickTimerPage })),
+)
+export const ReminderSettingsPage = lazy(() =>
+  loadReminderSettingsPage().then((module) => ({ default: module.ReminderSettingsPage })),
 )
 export const SchedulePage = lazy(() =>
   loadSchedulePage().then((module) => ({ default: module.SchedulePage })),

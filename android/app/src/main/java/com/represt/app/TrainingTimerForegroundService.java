@@ -1,6 +1,7 @@
 package com.represt.app;
 
 import android.Manifest;
+import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -8,6 +9,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.AssetFileDescriptor;
 import android.media.AudioAttributes;
@@ -31,32 +33,43 @@ import java.util.Locale;
 import java.util.Map;
 
 public class TrainingTimerForegroundService extends Service {
+    private static TrainingTimerForegroundService activeInstance;
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final Map<Integer, TimerRecord> timers = new HashMap<>();
     private MediaPlayer finishSoundPlayer;
     private Runnable stopRunnable;
     private int primaryId;
     private static final int RUNNING_NOTIFICATION_ID = 1;
+    private static final int ALARM_REQUEST_CODE_OFFSET = 300000;
     private static final long FINISH_ALERT_RELEASE_DELAY_MS = 1300L;
+    private static final long BACKGROUND_FINISH_ALERT_RELEASE_DELAY_MS = 5000L;
     private static final long[] FINISH_VIBRATION_PATTERN_MS = {500L, 240L};
+    private static final long[] BACKGROUND_FINISH_VIBRATION_PATTERN_MS = {0L, 500L, 240L};
+    private static final String TIMER_PREFS_NAME = "training_timer_alarm_state";
+    private static final String TIMER_STATUS_SCHEDULED = "scheduled";
+    private static final String TIMER_STATUS_COMPLETED = "completed";
+    private static final String TIMER_STATUS_CANCELLED = "cancelled";
 
     private static final class TimerRecord {
         final int id;
         final Intent intent;
         final long endsAt;
+        final long startedAt;
         final boolean playFinalBeeps;
+        final boolean repeatFinishAlertInBackground;
         final float beepVolume;
         final boolean isPaused;
         final long remainingMs;
         final int totalSeconds;
-        Runnable finishRunnable;
         Runnable refreshRunnable;
 
-        TimerRecord(int id, Intent intent, long endsAt, boolean playFinalBeeps, float beepVolume, boolean isPaused, long remainingMs, int totalSeconds) {
+        TimerRecord(int id, Intent intent, long endsAt, long startedAt, boolean playFinalBeeps, boolean repeatFinishAlertInBackground, float beepVolume, boolean isPaused, long remainingMs, int totalSeconds) {
             this.id = id;
             this.intent = intent;
             this.endsAt = endsAt;
+            this.startedAt = startedAt;
             this.playFinalBeeps = playFinalBeeps;
+            this.repeatFinishAlertInBackground = repeatFinishAlertInBackground;
             this.beepVolume = beepVolume;
             this.isPaused = isPaused;
             this.remainingMs = remainingMs;
@@ -67,6 +80,7 @@ public class TrainingTimerForegroundService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        activeInstance = this;
         ensureTimerChannel(this);
     }
 
@@ -88,6 +102,11 @@ public class TrainingTimerForegroundService extends Service {
             return START_NOT_STICKY;
         }
 
+        if (TrainingTimerNotificationConstants.ACTION_FINISH_FROM_ALARM.equals(action)) {
+            finishTimerFromAlarm(intent, startId);
+            return START_NOT_STICKY;
+        }
+
         if (TrainingTimerNotificationConstants.ACTION_START.equals(action)) {
             startTimer(intent, startId);
             return START_NOT_STICKY;
@@ -100,8 +119,17 @@ public class TrainingTimerForegroundService extends Service {
     @Override
     public void onDestroy() {
         clearAllTimers();
-        releaseFinishSoundPlayer();
+        stopFinishAlert();
+        if (activeInstance == this) {
+            activeInstance = null;
+        }
         super.onDestroy();
+    }
+
+    static void stopFinishAlertFromAppForeground() {
+        if (activeInstance != null) {
+            activeInstance.stopFinishAlert();
+        }
     }
 
     @Nullable
@@ -123,7 +151,7 @@ public class TrainingTimerForegroundService extends Service {
         NotificationChannel channel = new NotificationChannel(
             TrainingTimerNotificationConstants.CHANNEL_ID,
             context.getString(R.string.training_timer_channel_name),
-            NotificationManager.IMPORTANCE_LOW
+            NotificationManager.IMPORTANCE_DEFAULT
         );
         channel.setDescription(context.getString(R.string.training_timer_channel_description));
         channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
@@ -141,6 +169,10 @@ public class TrainingTimerForegroundService extends Service {
         manager.createNotificationChannel(finishedChannel);
     }
 
+    public static void notifyAlarmDiagnostic(Context context, Intent intent, String step) {
+        // Alarm diagnostics are intentionally silent in the app notification surface.
+    }
+
     private void startTimer(Intent intent, int startId) {
         int id = intent.getIntExtra(TrainingTimerNotificationConstants.EXTRA_ID, 0);
         long endsAt = intent.getLongExtra(TrainingTimerNotificationConstants.EXTRA_ENDS_AT, 0L);
@@ -153,12 +185,15 @@ public class TrainingTimerForegroundService extends Service {
 
         clearTimer(id);
         cancelLegacyRunningNotification(id);
+        stopFinishAlert();
         releaseStopCallback();
         TimerRecord record = new TimerRecord(
             id,
             new Intent(intent),
             endsAt,
+            System.currentTimeMillis(),
             intent.getBooleanExtra(TrainingTimerNotificationConstants.EXTRA_PLAY_FINAL_BEEPS, false),
+            intent.getBooleanExtra(TrainingTimerNotificationConstants.EXTRA_REPEAT_FINISH_ALERT_IN_BACKGROUND, true),
             clampBeepVolume((float) intent.getDoubleExtra(TrainingTimerNotificationConstants.EXTRA_BEEP_VOLUME, 0.2)),
             isPaused,
             remainingMs,
@@ -173,9 +208,11 @@ public class TrainingTimerForegroundService extends Service {
         }
 
         if (!record.isPaused) {
+            persistTimer(record, TIMER_STATUS_SCHEDULED);
+            scheduleFinishAlarm(record);
             scheduleNotificationRefresh(record);
-            record.finishRunnable = () -> finishTimer(id);
-            handler.postDelayed(record.finishRunnable, Math.max(0L, endsAt - System.currentTimeMillis()));
+        } else {
+            markTimerCancelled(id);
         }
     }
 
@@ -201,10 +238,9 @@ public class TrainingTimerForegroundService extends Service {
             .setDeleteIntent(buildRefreshIntent(intent))
             .setOngoing(true)
             .setOnlyAlertOnce(true)
-            .setSilent(true)
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
             .setGroup(TrainingTimerNotificationConstants.GROUP)
             .setShowWhen(false);
@@ -279,13 +315,120 @@ public class TrainingTimerForegroundService extends Service {
         return PendingIntent.getService(this, id + 200000, refreshIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
     }
 
-    private void playFinishAlert(TimerRecord record) {
+    private PendingIntent buildFinishAlarmIntent(TimerRecord record, int flags) {
+        Intent alarmIntent = new Intent(this, TrainingTimerAlarmReceiver.class)
+            .putExtras(record.intent)
+            .putExtra(TrainingTimerNotificationConstants.EXTRA_ID, record.id)
+            .putExtra(TrainingTimerNotificationConstants.EXTRA_ENDS_AT, record.endsAt);
+
+        return PendingIntent.getBroadcast(this, record.id + ALARM_REQUEST_CODE_OFFSET, alarmIntent, flags | PendingIntent.FLAG_IMMUTABLE);
+    }
+
+    private PendingIntent buildFinishAlarmIntent(int id, int flags) {
+        Intent alarmIntent = new Intent(this, TrainingTimerAlarmReceiver.class);
+        return PendingIntent.getBroadcast(this, id + ALARM_REQUEST_CODE_OFFSET, alarmIntent, flags | PendingIntent.FLAG_IMMUTABLE);
+    }
+
+    private void scheduleFinishAlarm(TimerRecord record) {
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        if (alarmManager == null) {
+            return;
+        }
+
+        PendingIntent alarmIntent = buildFinishAlarmIntent(record, PendingIntent.FLAG_UPDATE_CURRENT);
+        if (!canScheduleExactAlarms(alarmManager)) {
+            alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, record.endsAt, alarmIntent);
+            return;
+        }
+
+        PendingIntent showIntent = buildLaunchIntent(record.intent);
+        try {
+            alarmManager.setAlarmClock(
+                new AlarmManager.AlarmClockInfo(record.endsAt, showIntent),
+                alarmIntent
+            );
+        } catch (RuntimeException alarmError) {
+            try {
+                alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, record.endsAt, alarmIntent);
+            } catch (SecurityException exactAlarmError) {
+                alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, record.endsAt, alarmIntent);
+            }
+        }
+    }
+
+    private boolean canScheduleExactAlarms(AlarmManager alarmManager) {
+        return Build.VERSION.SDK_INT < Build.VERSION_CODES.S || alarmManager.canScheduleExactAlarms();
+    }
+
+    private void cancelFinishAlarm(int id) {
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        if (alarmManager == null) {
+            return;
+        }
+
+        PendingIntent alarmIntent = buildFinishAlarmIntent(id, PendingIntent.FLAG_NO_CREATE);
+        if (alarmIntent != null) {
+            alarmManager.cancel(alarmIntent);
+            alarmIntent.cancel();
+        }
+    }
+
+    private SharedPreferences getTimerPrefs() {
+        return getSharedPreferences(TIMER_PREFS_NAME, Context.MODE_PRIVATE);
+    }
+
+    private String timerStatusKey(int id) {
+        return "timer." + id + ".status";
+    }
+
+    private String timerEndsAtKey(int id) {
+        return "timer." + id + ".endsAt";
+    }
+
+    private void persistTimer(TimerRecord record, String status) {
+        getTimerPrefs().edit()
+            .putString(timerStatusKey(record.id), status)
+            .putLong(timerEndsAtKey(record.id), record.endsAt)
+            .apply();
+    }
+
+    private void markTimerCancelled(int id) {
+        if (id == 0) {
+            return;
+        }
+
+        getTimerPrefs().edit()
+            .putString(timerStatusKey(id), TIMER_STATUS_CANCELLED)
+            .apply();
+        cancelFinishAlarm(id);
+    }
+
+    private boolean claimTimerCompletion(int id, long endsAt) {
+        if (id == 0 || endsAt <= 0L) {
+            return false;
+        }
+
+        SharedPreferences prefs = getTimerPrefs();
+        long currentEndsAt = prefs.getLong(timerEndsAtKey(id), 0L);
+        String status = prefs.getString(timerStatusKey(id), null);
+        if (currentEndsAt != endsAt || !TIMER_STATUS_SCHEDULED.equals(status)) {
+            return false;
+        }
+
+        prefs.edit()
+            .putString(timerStatusKey(id), TIMER_STATUS_COMPLETED)
+            .apply();
+        cancelFinishAlarm(id);
+        return true;
+    }
+
+    private void playFinishAlert(TimerRecord record, boolean repeatUntilStopped) {
         if (!record.playFinalBeeps) {
             return;
         }
 
-        playFinishTone(record.intent, record.beepVolume);
-        vibrateFinishAlert();
+        playFinishTone(record.intent, record.beepVolume, repeatUntilStopped);
+        vibrateFinishAlert(repeatUntilStopped);
     }
 
     private void scheduleNotificationRefresh(TimerRecord record) {
@@ -306,7 +449,7 @@ public class TrainingTimerForegroundService extends Service {
         handler.postDelayed(record.refreshRunnable, 1000L);
     }
 
-    private void playFinishTone(Intent intent, float volume) {
+    private void playFinishTone(Intent intent, float volume, boolean repeatUntilStopped) {
         if (volume <= 0f || !shouldPlayServiceTone()) {
             return;
         }
@@ -329,6 +472,7 @@ public class TrainingTimerForegroundService extends Service {
             );
             float normalizedVolume = clampBeepVolume(volume);
             finishSoundPlayer.setVolume(normalizedVolume, normalizedVolume);
+            finishSoundPlayer.setLooping(repeatUntilStopped);
             finishSoundPlayer.setOnCompletionListener(player -> releaseFinishSoundPlayer());
             finishSoundPlayer.setOnErrorListener((player, what, extra) -> {
                 releaseFinishSoundPlayer();
@@ -341,7 +485,7 @@ public class TrainingTimerForegroundService extends Service {
         }
     }
 
-    private void vibrateFinishAlert() {
+    private void vibrateFinishAlert(boolean repeatUntilStopped) {
         Vibrator vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         if (vibrator == null || !vibrator.hasVibrator()) {
             return;
@@ -349,9 +493,15 @@ public class TrainingTimerForegroundService extends Service {
 
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                vibrator.vibrate(VibrationEffect.createWaveform(FINISH_VIBRATION_PATTERN_MS, -1));
+                vibrator.vibrate(VibrationEffect.createWaveform(
+                    repeatUntilStopped ? BACKGROUND_FINISH_VIBRATION_PATTERN_MS : FINISH_VIBRATION_PATTERN_MS,
+                    repeatUntilStopped ? 0 : -1
+                ));
             } else {
-                vibrator.vibrate(FINISH_VIBRATION_PATTERN_MS, -1);
+                vibrator.vibrate(
+                    repeatUntilStopped ? BACKGROUND_FINISH_VIBRATION_PATTERN_MS : FINISH_VIBRATION_PATTERN_MS,
+                    repeatUntilStopped ? 0 : -1
+                );
             }
         } catch (RuntimeException vibrationError) {
             // The ending sound still carries the alert if vibration is unavailable.
@@ -414,24 +564,70 @@ public class TrainingTimerForegroundService extends Service {
         return getString(R.string.training_timer_remaining_format, body, remainingTime);
     }
 
+    private void finishTimerFromAlarm(Intent intent, int startId) {
+        int id = intent.getIntExtra(TrainingTimerNotificationConstants.EXTRA_ID, 0);
+        long endsAt = intent.getLongExtra(TrainingTimerNotificationConstants.EXTRA_ENDS_AT, 0L);
+        if (!claimTimerCompletion(id, endsAt)) {
+            stopSelf(startId);
+            return;
+        }
+
+        TimerRecord record = timers.remove(id);
+        if (record == null) {
+            record = new TimerRecord(
+                id,
+                new Intent(intent),
+                endsAt,
+                System.currentTimeMillis(),
+                intent.getBooleanExtra(TrainingTimerNotificationConstants.EXTRA_PLAY_FINAL_BEEPS, false),
+                intent.getBooleanExtra(TrainingTimerNotificationConstants.EXTRA_REPEAT_FINISH_ALERT_IN_BACKGROUND, true),
+                clampBeepVolume((float) intent.getDoubleExtra(TrainingTimerNotificationConstants.EXTRA_BEEP_VOLUME, 0.2)),
+                false,
+                0L,
+                Math.max(0, intent.getIntExtra(TrainingTimerNotificationConstants.EXTRA_TOTAL_SECONDS, 0))
+            );
+        }
+
+        completeTimer(record);
+    }
+
     private void finishTimer(int id) {
         TimerRecord record = timers.remove(id);
         if (record == null) {
             return;
         }
 
+        if (!claimTimerCompletion(record.id, record.endsAt)) {
+            return;
+        }
+
+        completeTimer(record);
+    }
+
+    private void completeTimer(TimerRecord record) {
         Notification finishedNotification = buildFinishedNotification(record.intent);
         clearTimerCallbacks(record);
         releaseFinishSoundPlayer();
-        playFinishAlert(record);
-        cancelLegacyRunningNotification(id);
-        updatePrimaryTimerNotification();
-        notifyTimerFinished(id, finishedNotification);
+        try {
+            startForeground(RUNNING_NOTIFICATION_ID, finishedNotification);
+        } catch (SecurityException notificationError) {
+            // Notification permission can change while the timer is running.
+        }
+        boolean repeatFinishAlert = record.repeatFinishAlertInBackground && !MainActivity.isAppVisible();
+        playFinishAlert(record, repeatFinishAlert);
+        cancelLegacyRunningNotification(record.id);
+        if (!timers.isEmpty()) {
+            updatePrimaryTimerNotification();
+        }
+        notifyTimerFinished(record.id, finishedNotification);
         releaseStopCallback();
-        long stopDelayMs = record.playFinalBeeps ? FINISH_ALERT_RELEASE_DELAY_MS : 0L;
+        long stopDelayMs = record.playFinalBeeps
+            ? repeatFinishAlert ? BACKGROUND_FINISH_ALERT_RELEASE_DELAY_MS : FINISH_ALERT_RELEASE_DELAY_MS
+            : 0L;
         stopRunnable = () -> {
-            releaseFinishSoundPlayer();
+            stopFinishAlert();
             if (timers.isEmpty()) {
+                removeForegroundNotification();
                 stopSelf();
             }
         };
@@ -451,6 +647,9 @@ public class TrainingTimerForegroundService extends Service {
 
     private void cancelTimer(int id) {
         if (id == 0) {
+            for (Integer timerId : timers.keySet()) {
+                markTimerCancelled(timerId);
+            }
             clearAllTimers();
             NotificationManagerCompat.from(this).cancelAll();
             removeForegroundNotification();
@@ -458,11 +657,12 @@ public class TrainingTimerForegroundService extends Service {
             return;
         }
 
+        markTimerCancelled(id);
         clearTimer(id);
         cancelLegacyRunningNotification(id);
         updatePrimaryTimerNotification();
         if (timers.isEmpty()) {
-            releaseFinishSoundPlayer();
+            stopFinishAlert();
             stopSelf();
         }
     }
@@ -523,6 +723,11 @@ public class TrainingTimerForegroundService extends Service {
             return left.isPaused ? 1 : -1;
         }
 
+        int recencyComparison = Long.compare(right.startedAt, left.startedAt);
+        if (recencyComparison != 0) {
+            return recencyComparison;
+        }
+
         long leftTime = left.isPaused ? left.remainingMs : left.endsAt;
         long rightTime = right.isPaused ? right.remainingMs : right.endsAt;
         int timeComparison = Long.compare(leftTime, rightTime);
@@ -531,6 +736,7 @@ public class TrainingTimerForegroundService extends Service {
 
     private void clearTimer(int id) {
         TimerRecord record = timers.remove(id);
+        cancelFinishAlarm(id);
         if (record == null) {
             return;
         }
@@ -538,10 +744,6 @@ public class TrainingTimerForegroundService extends Service {
     }
 
     private void clearTimerCallbacks(TimerRecord record) {
-        if (record.finishRunnable != null) {
-            handler.removeCallbacks(record.finishRunnable);
-            record.finishRunnable = null;
-        }
         if (record.refreshRunnable != null) {
             handler.removeCallbacks(record.refreshRunnable);
             record.refreshRunnable = null;
@@ -564,10 +766,22 @@ public class TrainingTimerForegroundService extends Service {
         }
     }
 
+    private void stopFinishAlert() {
+        releaseFinishSoundPlayer();
+        stopFinishVibration();
+    }
+
     private void releaseFinishSoundPlayer() {
         if (finishSoundPlayer != null) {
             finishSoundPlayer.release();
             finishSoundPlayer = null;
+        }
+    }
+
+    private void stopFinishVibration() {
+        Vibrator vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+        if (vibrator != null) {
+            vibrator.cancel();
         }
     }
 

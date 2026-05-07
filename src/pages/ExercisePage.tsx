@@ -21,6 +21,7 @@ import { useExercisePageData } from '../hooks/pages/useExercisePageData'
 import { listSpringTransition, quickEaseTransition } from '../components/motion/motion-tokens'
 import { getRestTimerSnapshot, getRestTimerState } from '../lib/rest-timer'
 import { getDisplayExerciseName } from '../lib/exercise-name'
+import { hasSeenTimerReminderSettings, REMINDER_SETTINGS_PATH } from '../lib/reminder-settings'
 
 type ExerciseSetProgressProps = {
   completedSets: number
@@ -108,6 +109,14 @@ export function ExercisePage() {
   const isQuickTimerOpen = quickTimerView.exerciseId === id && quickTimerView.isOpen
 
   async function handleCompleteCurrentSet() {
+    if (detail && detail.exercise.restSeconds > 0 && !hasSeenTimerReminderSettings()) {
+      navigate(REMINDER_SETTINGS_PATH, {
+        state: { backTo: `/exercise/${id}` },
+        viewTransition: true,
+      })
+      return
+    }
+
     await handleCompleteSet()
   }
 

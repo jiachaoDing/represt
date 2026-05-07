@@ -10,6 +10,7 @@ import {
   ExercisePickerPage,
   ExercisePage,
   QuickTimerPage,
+  ReminderSettingsPage,
   SchedulePage,
   SettingsPage,
   SummaryPage,
@@ -67,6 +68,11 @@ export const router = createBrowserRouter([
         path: 'settings',
         element: lazyRoute(<SettingsPage />),
         handle: { titleKey: 'routes.settings' },
+      },
+      {
+        path: 'settings/reminders',
+        element: lazyRoute(<ReminderSettingsPage />),
+        handle: { titleKey: 'routes.reminderSettings' },
       },
       {
         path: 'summary',

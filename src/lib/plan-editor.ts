@@ -12,7 +12,7 @@ export type PlanExerciseDraft = {
 export const emptyPlanExerciseDraft: PlanExerciseDraft = {
   name: '',
   catalogExerciseId: null,
-  targetSets: '3',
+  targetSets: '4',
   restSeconds: '90',
   weightKg: '',
   reps: '',

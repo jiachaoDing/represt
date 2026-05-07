@@ -1,5 +1,7 @@
 package com.represt.app;
 
+import android.app.AlarmManager;
+import android.app.AppOpsManager;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
@@ -7,6 +9,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.PowerManager;
+import android.os.Process;
 import android.provider.Settings;
 
 import androidx.core.content.ContextCompat;
@@ -26,6 +29,7 @@ import com.getcapacitor.annotation.PermissionCallback;
 )
 public class TrainingTimerNotificationPlugin extends Plugin {
     static final String DISPLAY_PERMISSION = "display";
+    private static final String OPSTR_SCHEDULE_EXACT_ALARM = "android:schedule_exact_alarm";
 
     private String pendingLaunchPath;
     private String pendingTimerType;
@@ -63,6 +67,8 @@ public class TrainingTimerNotificationPlugin extends Plugin {
         result.put("available", true);
         result.put("channelId", TrainingTimerNotificationConstants.CHANNEL_ID);
         result.put("isIgnoringBatteryOptimizations", isIgnoringBatteryOptimizations(context));
+        result.put("canScheduleExactAlarms", canScheduleExactAlarms(context));
+        result.put("isExactAlarmPermissionGranted", isExactAlarmPermissionGranted(context));
         addChannelStatus(context, result);
         call.resolve(result);
     }
@@ -107,6 +113,7 @@ public class TrainingTimerNotificationPlugin extends Plugin {
             .putExtra(TrainingTimerNotificationConstants.EXTRA_ENDS_AT, endsAt)
             .putExtra(TrainingTimerNotificationConstants.EXTRA_PATH, call.getString("path"))
             .putExtra(TrainingTimerNotificationConstants.EXTRA_PLAY_FINAL_BEEPS, call.getBoolean("playFinalBeeps", false))
+            .putExtra(TrainingTimerNotificationConstants.EXTRA_REPEAT_FINISH_ALERT_IN_BACKGROUND, call.getBoolean("repeatFinishAlertInBackground", true))
             .putExtra(TrainingTimerNotificationConstants.EXTRA_BEEP_VOLUME, clampBeepVolume(call.getDouble("beepVolume", 0.2)))
             .putExtra(TrainingTimerNotificationConstants.EXTRA_IS_PAUSED, call.getBoolean("isPaused", false))
             .putExtra(TrainingTimerNotificationConstants.EXTRA_REMAINING_MS, call.getLong("remainingMs", 0L))
@@ -157,6 +164,75 @@ public class TrainingTimerNotificationPlugin extends Plugin {
     @PluginMethod
     public void openBatteryOptimizationSettings(PluginCall call) {
         openBatteryOptimizationSettingsFallback(call);
+    }
+
+    @PluginMethod
+    public void openExactAlarmSettings(PluginCall call) {
+        Context context = getContext();
+        if (isExactAlarmPermissionGranted(context)) {
+            call.resolve();
+            return;
+        }
+
+        Intent intent = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+            ? new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                .setData(Uri.parse("package:" + context.getPackageName()))
+            : new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                .setData(Uri.parse("package:" + context.getPackageName()));
+        try {
+            getActivity().startActivity(intent);
+            call.resolve();
+        } catch (Exception settingsError) {
+            try {
+                Intent fallbackIntent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                    .setData(Uri.parse("package:" + context.getPackageName()));
+                getActivity().startActivity(fallbackIntent);
+                call.resolve();
+            } catch (Exception fallbackError) {
+                call.reject("Exact alarm settings unavailable.");
+            }
+        }
+    }
+
+    @PluginMethod
+    public void openTimerChannelSettings(PluginCall call) {
+        Context context = getContext();
+        TrainingTimerForegroundService.ensureTimerChannel(context);
+
+        Intent intent = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+            ? new Intent(Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS)
+                .putExtra(Settings.EXTRA_APP_PACKAGE, context.getPackageName())
+                .putExtra(Settings.EXTRA_CHANNEL_ID, TrainingTimerNotificationConstants.CHANNEL_ID)
+            : new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                .setData(Uri.parse("package:" + context.getPackageName()));
+        try {
+            getActivity().startActivity(intent);
+            call.resolve();
+        } catch (Exception settingsError) {
+            openAppNotificationSettingsFallback(call);
+        }
+    }
+
+    private void openAppNotificationSettingsFallback(PluginCall call) {
+        Context context = getContext();
+        Intent intent = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+            ? new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                .putExtra(Settings.EXTRA_APP_PACKAGE, context.getPackageName())
+            : new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                .setData(Uri.parse("package:" + context.getPackageName()));
+        try {
+            getActivity().startActivity(intent);
+            call.resolve();
+        } catch (Exception settingsError) {
+            Intent fallbackIntent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                .setData(Uri.parse("package:" + context.getPackageName()));
+            try {
+                getActivity().startActivity(fallbackIntent);
+                call.resolve();
+            } catch (Exception fallbackError) {
+                call.reject("Notification channel settings unavailable.");
+            }
+        }
     }
 
     private void openBatteryOptimizationSettingsFallback(PluginCall call) {
@@ -235,6 +311,32 @@ public class TrainingTimerNotificationPlugin extends Plugin {
         return powerManager != null && powerManager.isIgnoringBatteryOptimizations(context.getPackageName());
     }
 
+    private boolean canScheduleExactAlarms(Context context) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+            return true;
+        }
+
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        return alarmManager != null && alarmManager.canScheduleExactAlarms();
+    }
+
+    private boolean isExactAlarmPermissionGranted(Context context) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+            return true;
+        }
+
+        AppOpsManager appOpsManager = (AppOpsManager) context.getSystemService(Context.APP_OPS_SERVICE);
+        if (appOpsManager == null) {
+            return false;
+        }
+
+        return appOpsManager.unsafeCheckOpNoThrow(
+            OPSTR_SCHEDULE_EXACT_ALARM,
+            Process.myUid(),
+            context.getPackageName()
+        ) == AppOpsManager.MODE_ALLOWED;
+    }
+
     private void resolveDisplayPermission(PluginCall call) {
         JSObject result = new JSObject();
         result.put("display", getDisplayPermissionState());
@@ -268,6 +370,7 @@ public class TrainingTimerNotificationPlugin extends Plugin {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             result.put("channelReady", true);
             result.put("channelImportance", null);
+            result.put("channelLockscreenVisibility", null);
             return;
         }
 
@@ -275,5 +378,6 @@ public class TrainingTimerNotificationPlugin extends Plugin {
         NotificationChannel channel = manager != null ? manager.getNotificationChannel(TrainingTimerNotificationConstants.CHANNEL_ID) : null;
         result.put("channelReady", channel != null);
         result.put("channelImportance", channel != null ? channel.getImportance() : null);
+        result.put("channelLockscreenVisibility", channel != null ? channel.getLockscreenVisibility() : null);
     }
 }

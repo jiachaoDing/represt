@@ -1,12 +1,13 @@
 package com.represt.app;
 
 final class TrainingTimerNotificationConstants {
-    static final String CHANNEL_ID = "trainre-training-timer-foreground";
+    static final String CHANNEL_ID = "trainre-training-timer-foreground-lockscreen";
     static final String FINISHED_CHANNEL_ID = "trainre-training-timer-finished";
     static final String GROUP = "trainre-training-timers";
     static final String ACTION_START = "com.represt.app.TRAINING_TIMER_START";
     static final String ACTION_CANCEL = "com.represt.app.TRAINING_TIMER_CANCEL";
     static final String ACTION_REFRESH = "com.represt.app.TRAINING_TIMER_REFRESH";
+    static final String ACTION_FINISH_FROM_ALARM = "com.represt.app.TRAINING_TIMER_FINISH_FROM_ALARM";
     static final String LAUNCH_ACTION_COMPLETE_SET = "completeSet";
     static final String EVENT_NOTIFICATION_TAPPED = "trainingTimerNotificationTapped";
     static final String EXTRA_ID = "id";
@@ -18,6 +19,7 @@ final class TrainingTimerNotificationConstants {
     static final String EXTRA_ENDS_AT = "endsAt";
     static final String EXTRA_PATH = "path";
     static final String EXTRA_PLAY_FINAL_BEEPS = "playFinalBeeps";
+    static final String EXTRA_REPEAT_FINISH_ALERT_IN_BACKGROUND = "repeatFinishAlertInBackground";
     static final String EXTRA_BEEP_VOLUME = "beepVolume";
     static final String EXTRA_LAUNCH_ACTION = "launchAction";
     static final String EXTRA_EXERCISE_ID = "exerciseId";

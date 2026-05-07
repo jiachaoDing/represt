@@ -15,7 +15,10 @@ export type TrainingTimerNotificationStatus = {
   channelId: string
   channelReady: boolean
   channelImportance: number | null
+  channelLockscreenVisibility: number | null
   isIgnoringBatteryOptimizations: boolean
+  canScheduleExactAlarms: boolean
+  isExactAlarmPermissionGranted: boolean
 }
 
 export type TrainingTimerDisplayPermissionResult = {
@@ -32,6 +35,7 @@ export type TrainingTimerNotificationInput = {
   endsAt: number
   path?: string
   playFinalBeeps?: boolean
+  repeatFinishAlertInBackground?: boolean
   beepVolume?: number
   isPaused?: boolean
   remainingMs?: number
@@ -48,6 +52,8 @@ export type TrainingTimerNotificationPlugin = {
   cancelTimerNotification: (input: { id: number }) => Promise<void>
   isIgnoringBatteryOptimizations: () => Promise<{ isIgnoringBatteryOptimizations: boolean }>
   openBatteryOptimizationSettings: () => Promise<void>
+  openExactAlarmSettings: () => Promise<void>
+  openTimerChannelSettings: () => Promise<void>
   requestIgnoreBatteryOptimization: () => Promise<void>
   consumeLaunchPath: () => Promise<TrainingTimerNotificationLaunch>
   addListener: (

@@ -22,11 +22,12 @@ export type {
   RestTimerScheduleResult,
 } from './training-notification.types'
 
-const TEST_REST_TIMER_NOTIFICATION_ID = 910001
 const LEGACY_REST_TIMER_FOREGROUND_NOTIFICATION_ID = 920001
 const QUICK_TIMER_FOREGROUND_NOTIFICATION_ID = 920002
 const TIMER_BEEP_VOLUME_STORAGE_KEY = 'trainre:timer-beep-volume'
+const REPEAT_FINISH_ALERT_STORAGE_KEY = 'trainre:repeat-finish-alert-in-background'
 const DEFAULT_TIMER_BEEP_VOLUME = 0.2
+const DEFAULT_REPEAT_FINISH_ALERT_IN_BACKGROUND = true
 
 function clampTimerBeepVolume(value: number) {
   return Math.min(1, Math.max(0, value))
@@ -125,9 +126,34 @@ export async function getLocalReminderStatus(): Promise<LocalReminderStatus> {
     isTimerForegroundServiceAvailable: Boolean(timerForegroundStatus?.available),
     isTimerForegroundChannelReady: Boolean(timerForegroundStatus?.channelReady),
     timerForegroundChannelImportance: timerForegroundStatus?.channelImportance ?? null,
+    timerForegroundChannelLockscreenVisibility:
+      timerForegroundStatus?.channelLockscreenVisibility ?? null,
     isIgnoringBatteryOptimizations:
       timerForegroundStatus?.isIgnoringBatteryOptimizations ?? null,
+    canScheduleExactAlarms: timerForegroundStatus?.canScheduleExactAlarms ?? null,
+    isExactAlarmPermissionGranted: timerForegroundStatus?.isExactAlarmPermissionGranted ?? null,
   }
+}
+
+export function getRepeatFinishAlertInBackground() {
+  if (typeof window === 'undefined') {
+    return DEFAULT_REPEAT_FINISH_ALERT_IN_BACKGROUND
+  }
+
+  const rawValue = window.localStorage.getItem(REPEAT_FINISH_ALERT_STORAGE_KEY)
+  if (rawValue === null) {
+    return DEFAULT_REPEAT_FINISH_ALERT_IN_BACKGROUND
+  }
+
+  return rawValue === 'true'
+}
+
+export function setRepeatFinishAlertInBackground(enabled: boolean) {
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  window.localStorage.setItem(REPEAT_FINISH_ALERT_STORAGE_KEY, String(enabled))
 }
 
 export async function requestLocalReminderPermission() {
@@ -183,6 +209,60 @@ export async function openBatteryOptimizationSettings() {
   }
 }
 
+export async function openExactAlarmSettings() {
+  if (!isTimerForegroundNotificationAvailable()) {
+    return {
+      didOpen: false,
+      message: i18n.t('notification.exactAlarmSettingsUnavailable'),
+    }
+  }
+
+  try {
+    const status = await TrainingTimerNotification.status()
+    if (status.canScheduleExactAlarms) {
+      return {
+        didOpen: false,
+        message: i18n.t('notification.exactAlarmAlreadyAllowed'),
+      }
+    }
+
+    await TrainingTimerNotification.openExactAlarmSettings()
+    return {
+      didOpen: true,
+      message: i18n.t('notification.exactAlarmSettingsOpened'),
+    }
+  } catch (settingsError) {
+    console.warn(settingsError)
+    return {
+      didOpen: false,
+      message: i18n.t('notification.exactAlarmSettingsFailed'),
+    }
+  }
+}
+
+export async function openTimerChannelSettings() {
+  if (!isTimerForegroundNotificationAvailable()) {
+    return {
+      didOpen: false,
+      message: i18n.t('notification.timerChannelSettingsUnavailable'),
+    }
+  }
+
+  try {
+    await TrainingTimerNotification.openTimerChannelSettings()
+    return {
+      didOpen: true,
+      message: i18n.t('notification.timerChannelSettingsOpened'),
+    }
+  } catch (settingsError) {
+    console.warn(settingsError)
+    return {
+      didOpen: false,
+      message: i18n.t('notification.timerChannelSettingsFailed'),
+    }
+  }
+}
+
 export async function openAppNotificationSettings() {
   return {
     didOpen: false,
@@ -230,6 +310,7 @@ export async function startRestTimerForegroundNotification(input: RestTimerNotif
       endsAt,
       path: `/exercise/${input.exerciseId}`,
       playFinalBeeps: true,
+      repeatFinishAlertInBackground: getRepeatFinishAlertInBackground(),
       beepVolume: getTrainingTimerBeepVolume(),
     })
     return result.started
@@ -273,6 +354,7 @@ export async function startQuickTimerForegroundNotification(input: QuickTimerNot
       endsAt: input.endsAt,
       path: input.path ?? '/quick-timer',
       playFinalBeeps: true,
+      repeatFinishAlertInBackground: getRepeatFinishAlertInBackground(),
       beepVolume: getTrainingTimerBeepVolume(),
       isPaused: input.isPaused,
       remainingMs: input.remainingMs,
@@ -331,37 +413,3 @@ export async function scheduleRestTimerNotification(
   return { scheduled: didStartForegroundTimer }
 }
 
-export async function scheduleRestTimerTestNotification(): Promise<RestTimerScheduleResult> {
-  if (!isTimerForegroundNotificationAvailable()) {
-    return { scheduled: false, reason: 'plugin-unavailable' }
-  }
-
-  const hasPermission = await ensureNotificationPermission()
-  if (!hasPermission) {
-    return {
-      scheduled: false,
-      reason: 'permission-denied',
-    }
-  }
-
-  try {
-    await TrainingTimerNotification.cancelTimerNotification({
-      id: TEST_REST_TIMER_NOTIFICATION_ID,
-    })
-    const result = await TrainingTimerNotification.startTimerNotification({
-      id: TEST_REST_TIMER_NOTIFICATION_ID,
-      timerType: 'rest',
-      title: i18n.t('notification.testTitle'),
-      body: i18n.t('notification.testRunningBody'),
-      finishedTitle: i18n.t('notification.testTitle'),
-      finishedBody: i18n.t('notification.testFinishedBody'),
-      endsAt: Date.now() + 10_000,
-      playFinalBeeps: true,
-      beepVolume: getTrainingTimerBeepVolume(),
-    })
-    return { scheduled: result.started }
-  } catch (timerStartError) {
-    console.warn(timerStartError)
-    return { scheduled: false, reason: 'plugin-unavailable' }
-  }
-}

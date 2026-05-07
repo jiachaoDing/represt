@@ -22,7 +22,10 @@ export type LocalReminderStatus = {
   isTimerForegroundServiceAvailable: boolean
   isTimerForegroundChannelReady: boolean
   timerForegroundChannelImportance: number | null
+  timerForegroundChannelLockscreenVisibility: number | null
   isIgnoringBatteryOptimizations: boolean | null
+  canScheduleExactAlarms: boolean | null
+  isExactAlarmPermissionGranted: boolean | null
 }
 
 export type RestTimerScheduleResult = {

@@ -19,7 +19,7 @@ import {
 } from 'lucide-react'
 
 import { PlanJsonImportSheet } from '../components/plans/PlanJsonImportSheet'
-import { LocalReminderSettings } from '../components/settings/LocalReminderSettings'
+import { ReminderSettingsEntry } from '../components/settings/LocalReminderSettings'
 import { AnimatedSheet } from '../components/motion/AnimatedSheet'
 import { PageHeader } from '../components/ui/PageHeader'
 import { clearStoredCurrentSessionId } from '../db/sessions'
@@ -28,6 +28,7 @@ import { useBackLinkState } from '../hooks/useRouteBack'
 import { useLanguagePreference } from '../i18n/useLanguagePreference'
 import type { LanguagePreference } from '../i18n/languages'
 import { triggerHaptic } from '../lib/haptics'
+import { REMINDER_SETTINGS_PATH } from '../lib/reminder-settings'
 import {
   buildPlanTemplateExport,
   buildTrainingCycleExport,
@@ -719,7 +720,9 @@ export function SettingsPage() {
         </SettingsSection>
 
         <SettingsSection title={t('settings.sections.reminders')}>
-          <LocalReminderSettings />
+          <ReminderSettingsEntry
+            onClick={() => navigate(REMINDER_SETTINGS_PATH, { state: backLinkState })}
+          />
         </SettingsSection>
 
         <SettingsSection title={t('settings.sections.data')}>
