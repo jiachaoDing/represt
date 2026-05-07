@@ -17,7 +17,6 @@ import { ConfirmDialog } from '../components/ui/ConfirmDialog'
 import { OverflowMenu } from '../components/ui/OverflowMenu'
 import { PageHeader } from '../components/ui/PageHeader'
 import { useNow } from '../hooks/useNow'
-import { useBackLinkState } from '../hooks/useRouteBack'
 import { useExercisePageData } from '../hooks/pages/useExercisePageData'
 import { listSpringTransition, quickEaseTransition } from '../components/motion/motion-tokens'
 import { getRestTimerSnapshot, getRestTimerState } from '../lib/rest-timer'
@@ -106,7 +105,6 @@ export function ExercisePage() {
   const [isRecordFormOpen, setIsRecordFormOpen] = useState(false)
   const [isUndoExerciseDialogOpen, setIsUndoExerciseDialogOpen] = useState(false)
   const [quickTimerView, setQuickTimerView] = useState({ exerciseId: id, isOpen: false })
-  const backLinkState = useBackLinkState()
   const isQuickTimerOpen = quickTimerView.exerciseId === id && quickTimerView.isOpen
 
   async function handleCompleteCurrentSet() {
@@ -155,14 +153,6 @@ export function ExercisePage() {
           disabled: !canUndoExercise,
           onSelect: () => setIsUndoExerciseDialogOpen(true),
         },
-        {
-          label: t('exercise.viewSummary'),
-          onSelect: () =>
-            navigate(`/summary/${detail.session.id}`, {
-              state: backLinkState,
-              viewTransition: true,
-            }),
-        },
       ]
     : []
   const restSnapshot = detail
@@ -190,10 +180,10 @@ export function ExercisePage() {
           }))
         }}
       />
-      {menuItems.length > 0 ? <OverflowMenu items={menuItems} /> : null}
+      {menuItems.length > 0 ? <OverflowMenu items={menuItems} icon="reset" /> : null}
     </div>
   ) : menuItems.length > 0 ? (
-    <OverflowMenu items={menuItems} />
+    <OverflowMenu items={menuItems} icon="reset" />
   ) : undefined
   const flipDirection = isQuickTimerOpen ? 1 : -1
   const pageFlipVariants = {

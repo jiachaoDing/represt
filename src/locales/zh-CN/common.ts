@@ -496,7 +496,6 @@ const common = {
     undoExercise: '撤销该动作',
     undoExerciseTitle: '撤销该动作？',
     undoExerciseDescription: '会删除“{{name}}”今天已完成的所有组记录，并将该动作重置为未开始。',
-    viewSummary: '查看总结',
     notFoundTitle: '这个动作不存在',
     notFoundDescription: '返回安排页重新选择动作。',
     loadFailed: '动作数据加载失败，请返回训练安排页后重试。',

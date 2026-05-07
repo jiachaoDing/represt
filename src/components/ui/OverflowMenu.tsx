@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { RotateCcw } from 'lucide-react'
 
 type OverflowMenuItem = {
   danger?: boolean
@@ -9,10 +10,11 @@ type OverflowMenuItem = {
 }
 
 type OverflowMenuProps = {
+  icon?: 'more' | 'reset'
   items: OverflowMenuItem[]
 }
 
-export function OverflowMenu({ items }: OverflowMenuProps) {
+export function OverflowMenu({ icon = 'more', items }: OverflowMenuProps) {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement | null>(null)
@@ -41,11 +43,15 @@ export function OverflowMenu({ items }: OverflowMenuProps) {
         onClick={() => setOpen((current) => !current)}
         className="flex h-11 w-11 items-center justify-center rounded-full text-[var(--on-surface-variant)] transition-colors hover:bg-[var(--on-surface-variant)]/10 tap-highlight-transparent"
       >
-        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="12" r="1"/>
-          <circle cx="12" cy="5" r="1"/>
-          <circle cx="12" cy="19" r="1"/>
-        </svg>
+        {icon === 'reset' ? (
+          <RotateCcw size={24} strokeWidth={2.2} aria-hidden="true" />
+        ) : (
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="1"/>
+            <circle cx="12" cy="5" r="1"/>
+            <circle cx="12" cy="19" r="1"/>
+          </svg>
+        )}
       </button>
 
       {open ? (

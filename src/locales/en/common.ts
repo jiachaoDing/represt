@@ -496,7 +496,6 @@ const common = {
     undoExercise: 'Undo exercise',
     undoExerciseTitle: 'Undo this exercise?',
     undoExerciseDescription: 'This will delete all completed sets for "{{name}}" today and reset this exercise to not started.',
-    viewSummary: 'View summary',
     notFoundTitle: 'This exercise does not exist',
     notFoundDescription: 'Go back to the schedule and choose another exercise.',
     loadFailed: 'Could not load this exercise. Go back to the schedule and try again.',
