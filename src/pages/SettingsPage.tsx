@@ -25,6 +25,7 @@ import { AnimatedSheet } from '../components/motion/AnimatedSheet'
 import { PageHeader } from '../components/ui/PageHeader'
 import { clearStoredCurrentSessionId } from '../db/sessions'
 import { useHapticsPreference } from '../hooks/useHapticsPreference'
+import { useBackLinkState } from '../hooks/useRouteBack'
 import { useLanguagePreference } from '../i18n/useLanguagePreference'
 import type { LanguagePreference } from '../i18n/languages'
 import { triggerHaptic } from '../lib/haptics'
@@ -808,6 +809,7 @@ function DebugDateSettingsCard() {
 export function SettingsPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const backLinkState = useBackLinkState()
   const appVersion = useAppVersion()
   const showDebugSettings = import.meta.env.DEV
 
@@ -833,7 +835,7 @@ export function SettingsPage() {
             icon={Dumbbell}
             label={t('summary.exerciseRecords.entry')}
             supporting={t('settings.exerciseRecords.description')}
-            onClick={() => navigate('/summary/exercises')}
+            onClick={() => navigate('/summary/exercises', { state: backLinkState })}
             right={<ChevronRight size={16} strokeWidth={2.2} aria-hidden="true" />}
           />
           <RowDivider />
