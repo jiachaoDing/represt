@@ -9,7 +9,6 @@ import {
   loadSchedulePage,
   loadSettingsPage,
   loadSummaryPage,
-  loadStarterPlanPage,
   loadPlansPage,
   loadPlanAiImportPage,
   loadTrainingCyclePage,
@@ -38,9 +37,6 @@ export const SettingsPage = lazy(() =>
 )
 export const SummaryPage = lazy(() =>
   loadSummaryPage().then((module) => ({ default: module.SummaryPage })),
-)
-export const StarterPlanPage = lazy(() =>
-  loadStarterPlanPage().then((module) => ({ default: module.StarterPlanPage })),
 )
 export const TrainingCyclePage = lazy(() =>
   loadTrainingCyclePage().then((module) => ({ default: module.TrainingCyclePage })),

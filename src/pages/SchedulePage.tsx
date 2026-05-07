@@ -6,6 +6,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 
 import { TodayTrainingPlanCard } from '../components/training-cycle/TodayTrainingPlanCard'
+import { PlanJsonImportSheet } from '../components/plans/PlanJsonImportSheet'
 import { PageHeader } from '../components/ui/PageHeader'
 import { SettingsButton } from '../components/settings/SettingsButton'
 import { useNow } from '../hooks/useNow'
@@ -81,6 +82,7 @@ export function SchedulePage() {
     [location.state],
   )
   const [isPlanSaveSheetOpen, setIsPlanSaveSheetOpen] = useState(false)
+  const [isPlanImportSheetOpen, setIsPlanImportSheetOpen] = useState(false)
   const [initialEditExerciseId, setInitialEditExerciseId] = useState<string | null>(null)
   const [isQuickTimerOpen, setIsQuickTimerOpen] = useState(false)
   const [isSaveTodayAsPlanTipHidden, setIsSaveTodayAsPlanTipHidden] = useState(
@@ -295,8 +297,8 @@ export function SchedulePage() {
                     completedSets={completedSets}
                     totalSets={totalSets}
                     isStarterState={isStarterState}
-                    onChoosePlan={() => navigate('/plans/starter')}
                     onCreateExercise={openExercisePicker}
+                    onImportPlan={() => setIsPlanImportSheetOpen(true)}
                   />
                 </div>
               ) : null}
@@ -366,6 +368,18 @@ export function SchedulePage() {
         onClose={() => setIsPlanSaveSheetOpen(false)}
         onCreatePlan={handleCreatePlanFromToday}
         onOverwritePlan={handleOverwritePlanFromToday}
+      />
+
+      <PlanJsonImportSheet
+        open={isPlanImportSheetOpen}
+        title={t('schedule.importPlanEntry')}
+        onClose={() => setIsPlanImportSheetOpen(false)}
+        onImported={(plans, data) => {
+          setIsPlanImportSheetOpen(false)
+          navigate(data.cycle.length > 0 ? '/plans/cycle' : '/plans', {
+            state: data.cycle.length > 0 ? undefined : { selectedPlanId: plans[0]?.id },
+          })
+        }}
       />
 
     </div>

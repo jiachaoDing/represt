@@ -16,8 +16,8 @@ type TodayTrainingPlanCardProps = {
   completedSets: number
   totalSets: number
   isStarterState?: boolean
-  onChoosePlan?: () => void
   onCreateExercise?: () => void
+  onImportPlan?: () => void
 }
 
 function ProgressRing({ completed, total }: { completed: number; total: number }) {
@@ -70,8 +70,8 @@ export function TodayTrainingPlanCard({
   completedSets,
   totalSets,
   isStarterState = false,
-  onChoosePlan,
   onCreateExercise,
+  onImportPlan,
 }: TodayTrainingPlanCardProps) {
   const { t } = useTranslation()
   void didAutoImportToday
@@ -107,11 +107,11 @@ export function TodayTrainingPlanCard({
         <div className="mt-3 flex items-center justify-center">
           <button
             type="button"
-            onClick={onChoosePlan}
+            onClick={onImportPlan}
             className="min-h-10 text-sm font-semibold text-[var(--primary)] disabled:opacity-40"
-            disabled={!onChoosePlan}
+            disabled={!onImportPlan}
           >
-            {t('schedule.choosePlan')}
+            {t('schedule.importPlanEntry')}
           </button>
         </div>
       </section>

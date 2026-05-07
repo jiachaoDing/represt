@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { App as CapacitorApp } from '@capacitor/app'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
@@ -6,7 +6,6 @@ import type { LucideIcon } from 'lucide-react'
 import {
   Check,
   ChevronRight,
-  ClipboardPaste,
   Copy,
   Download,
   Dumbbell,
@@ -16,10 +15,10 @@ import {
   Mail,
   Palette,
   ShieldCheck,
-  Upload,
   Vibrate,
 } from 'lucide-react'
 
+import { PlanJsonImportSheet } from '../components/plans/PlanJsonImportSheet'
 import { LocalReminderSettings } from '../components/settings/LocalReminderSettings'
 import { AnimatedSheet } from '../components/motion/AnimatedSheet'
 import { PageHeader } from '../components/ui/PageHeader'
@@ -32,12 +31,9 @@ import { triggerHaptic } from '../lib/haptics'
 import {
   buildPlanTemplateExport,
   buildTrainingCycleExport,
-  importPlanTransferData,
   listPlanTemplateExportOptions,
-  parsePlanTransferJson,
   type PlanTemplateExportOption,
   type PlanTransferData,
-  type PlanTransferParseError,
 } from '../lib/plan-transfer'
 import {
   getDebugDateOffsetDays,
@@ -178,22 +174,6 @@ function HapticsSettingsRow() {
       right={<SwitchControl checked={isEnabled} label={t('settings.haptics.title')} />}
     />
   )
-}
-
-function getPlanTransferErrorMessage(t: ReturnType<typeof useTranslation>['t'], error: PlanTransferParseError) {
-  if (error === 'missingJson') {
-    return t('settings.planTransfer.errors.missingJson')
-  }
-
-  if (error === 'invalidJson') {
-    return t('settings.planTransfer.errors.invalidJson')
-  }
-
-  if (error === 'emptyExercises') {
-    return t('settings.planTransfer.errors.emptyExercises')
-  }
-
-  return t('settings.planTransfer.errors.invalidShape')
 }
 
 function useAppVersion() {
@@ -349,16 +329,14 @@ function ThemeSettingsRow() {
 
 function PlanTransferSettingsRow() {
   const { t } = useTranslation()
-  const inputRef = useRef<HTMLInputElement>(null)
   const [isOpen, setIsOpen] = useState(false)
+  const [isImportOpen, setIsImportOpen] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isBusy, setIsBusy] = useState(false)
   const [planOptions, setPlanOptions] = useState<PlanTemplateExportOption[] | null>(null)
   const [selectedPlanIds, setSelectedPlanIds] = useState<string[]>([])
   const [exportDraft, setExportDraft] = useState<PlanTransferExportDraft | null>(null)
-  const [isPasteImportOpen, setIsPasteImportOpen] = useState(false)
-  const [importText, setImportText] = useState('')
 
   function resetFeedback() {
     setMessage(null)
@@ -369,7 +347,6 @@ function PlanTransferSettingsRow() {
     setPlanOptions(null)
     setSelectedPlanIds([])
     setExportDraft(null)
-    setIsPasteImportOpen(false)
     resetFeedback()
   }
 
@@ -458,47 +435,6 @@ function PlanTransferSettingsRow() {
     }
   }
 
-  async function importJsonText(text: string) {
-    try {
-      setIsBusy(true)
-      resetFeedback()
-      const result = parsePlanTransferJson(text, t('common.unnamedPlan'))
-      if (!result.ok) {
-        setError(getPlanTransferErrorMessage(t, result.error))
-        void triggerHaptic('error')
-        return
-      }
-
-      const plans = await importPlanTransferData(result.data)
-      if (plans.length === 0) {
-        setError(t('settings.planTransfer.errors.emptyExercises'))
-        void triggerHaptic('error')
-        return
-      }
-
-      setMessage(t('settings.planTransfer.imported', { count: plans.length }))
-      setImportText('')
-      setIsPasteImportOpen(false)
-      void triggerHaptic('success')
-    } catch (importError) {
-      console.error(importError)
-      setError(t('settings.planTransfer.errors.importFailed'))
-      void triggerHaptic('error')
-    } finally {
-      setIsBusy(false)
-    }
-  }
-
-  async function importFile(file: File) {
-    try {
-      await importJsonText(await file.text())
-    } finally {
-      if (inputRef.current) {
-        inputRef.current.value = ''
-      }
-    }
-  }
-
   async function copyExportJson() {
     if (!exportDraft) {
       return
@@ -538,18 +474,6 @@ function PlanTransferSettingsRow() {
           setIsOpen(true)
         }}
         right={<ChevronRight size={16} strokeWidth={2.2} aria-hidden="true" />}
-      />
-      <input
-        ref={inputRef}
-        type="file"
-        accept="application/json,.json"
-        className="hidden"
-        onChange={(event) => {
-          const file = event.target.files?.[0]
-          if (file) {
-            void importFile(file)
-          }
-        }}
       />
       <AnimatedSheet open={isOpen} onClose={() => setIsOpen(false)} title={t('settings.planTransfer.title')}>
         {exportDraft ? (
@@ -657,34 +581,7 @@ function PlanTransferSettingsRow() {
             </button>
           </div>
         ) : null}
-        {!exportDraft && !planOptions && isPasteImportOpen ? (
-          <div className="space-y-3">
-            <textarea
-              value={importText}
-              onChange={(event) => setImportText(event.target.value)}
-              placeholder={t('settings.planTransfer.pasteJsonPlaceholder')}
-              className="min-h-40 w-full resize-none rounded-xl bg-[var(--surface)] px-3 py-3 text-sm leading-6 text-[var(--on-surface)] outline-none ring-1 ring-[var(--outline-variant)] transition-all focus:ring-[var(--primary)]"
-            />
-            <div className="flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={resetExportFlow}
-                className="rounded-full px-4 py-2.5 text-sm font-medium text-[var(--primary)]"
-              >
-                {t('common.back')}
-              </button>
-              <button
-                type="button"
-                onClick={() => void importJsonText(importText)}
-                disabled={isBusy || !importText.trim()}
-                className="rounded-full bg-[var(--primary)] px-4 py-2.5 text-sm font-semibold text-[var(--on-primary)] disabled:opacity-50"
-              >
-                {t('settings.planTransfer.importPastedJson')}
-              </button>
-            </div>
-          </div>
-        ) : null}
-        {!exportDraft && !planOptions && !isPasteImportOpen ? (
+        {!exportDraft && !planOptions ? (
           <div className="space-y-2">
             <button
               type="button"
@@ -707,23 +604,13 @@ function PlanTransferSettingsRow() {
             <button
               type="button"
               onClick={() => {
-                setImportText('')
                 resetFeedback()
-                setIsPasteImportOpen(true)
+                setIsImportOpen(true)
               }}
               disabled={isBusy}
               className="flex min-h-12 w-full items-center gap-3 rounded-xl bg-[var(--surface)] px-4 text-left text-sm font-medium text-[var(--on-surface)] transition-colors hover:bg-[var(--surface-container)] disabled:opacity-50"
             >
-              <ClipboardPaste size={18} strokeWidth={2.2} className="text-[var(--primary)]" aria-hidden="true" />
-              <span>{t('settings.planTransfer.pasteJson')}</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => inputRef.current?.click()}
-              disabled={isBusy}
-              className="flex min-h-12 w-full items-center gap-3 rounded-xl bg-[var(--surface)] px-4 text-left text-sm font-medium text-[var(--on-surface)] transition-colors hover:bg-[var(--surface-container)] disabled:opacity-50"
-            >
-              <Upload size={18} strokeWidth={2.2} className="text-[var(--primary)]" aria-hidden="true" />
+              <FileJson size={18} strokeWidth={2.2} className="text-[var(--primary)]" aria-hidden="true" />
               <span>{t('settings.planTransfer.importJson')}</span>
             </button>
           </div>
@@ -739,6 +626,11 @@ function PlanTransferSettingsRow() {
           </p>
         ) : null}
       </AnimatedSheet>
+      <PlanJsonImportSheet
+        open={isImportOpen}
+        title={t('settings.planTransfer.importJson')}
+        onClose={() => setIsImportOpen(false)}
+      />
     </>
   )
 }

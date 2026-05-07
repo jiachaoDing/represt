@@ -141,25 +141,6 @@ export async function addTrainingCycleSlot() {
   })
 }
 
-export async function setTrainRestTrainingCycle(planId: string) {
-  return saveTrainingCycle({
-    id: TRAINING_CYCLE_ID,
-    slots: [
-      {
-        id: crypto.randomUUID(),
-        planId,
-      },
-      {
-        id: crypto.randomUUID(),
-        planId: null,
-      },
-    ],
-    anchorDateKey: getTodaySessionDateKey(),
-    anchorIndex: 0,
-    updatedAt: nowIso(),
-  })
-}
-
 export async function setTrainingCycleSlots(planIds: Array<string | null>) {
   return saveTrainingCycle({
     id: TRAINING_CYCLE_ID,
