@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import {
@@ -27,6 +27,7 @@ import {
   parseOptionalWeightKg,
 } from '../../lib/input-parsers'
 import { triggerHaptic } from '../../lib/haptics'
+import { subscribeToPlansChanged } from '../../lib/plan-change-events'
 import type { PlanExerciseDraft } from '../../lib/plan-editor'
 import type { TrainingCycle } from '../../models/types'
 
@@ -41,7 +42,7 @@ export function usePlansPageData(preferredSelectedPlanId?: string | null) {
   const [lastCreatedExerciseId, setLastCreatedExerciseId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  async function loadPlans(preferredPlanId?: string | null) {
+  const loadPlans = useCallback(async (preferredPlanId?: string | null) => {
     const [items, cycle] = await Promise.all([listPlansWithExercises(), getTrainingCycle()])
     setPlans(items)
     setTrainingCycle(cycle)
@@ -54,7 +55,7 @@ export function usePlansPageData(preferredSelectedPlanId?: string | null) {
 
       return items.some((plan) => plan.id === current) ? current : (items[0]?.id ?? null)
     })
-  }
+  }, [])
 
   async function runMutation(action: () => Promise<void>) {
     try {
@@ -86,7 +87,21 @@ export function usePlansPageData(preferredSelectedPlanId?: string | null) {
     }
 
     void initialize()
-  }, [preferredSelectedPlanId, t])
+  }, [loadPlans, preferredSelectedPlanId, t])
+
+  useEffect(() => {
+    return subscribeToPlansChanged((preferredPlanId) => {
+      void (async () => {
+        try {
+          setError(null)
+          await loadPlans(preferredPlanId)
+        } catch (loadError) {
+          console.error(loadError)
+          setError(t('plans.loadFailed'))
+        }
+      })()
+    })
+  }, [loadPlans, t])
 
   async function handleCreatePlan() {
     const didCreate = await runMutation(async () => {

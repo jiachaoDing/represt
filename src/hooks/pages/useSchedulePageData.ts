@@ -25,6 +25,7 @@ import {
   draftToSessionPlanInput,
 } from './schedule-page-data.utils'
 import { triggerHaptic } from '../../lib/haptics'
+import { notifyPlansChanged } from '../../lib/plan-change-events'
 import type { PlanExerciseDraft } from '../../lib/plan-editor'
 import type { TrainingCycle } from '../../models/types'
 
@@ -200,6 +201,9 @@ export function useSchedulePageData() {
       const plan = await createPlanFromSessionPlanItems(name, currentSession.exercises)
       savedPlanId = plan?.id ?? null
       await loadData(savedPlanId)
+      if (savedPlanId) {
+        notifyPlansChanged(savedPlanId)
+      }
     })
 
     return didSucceed && savedPlanId !== null
@@ -226,6 +230,7 @@ export function useSchedulePageData() {
 
       didSave = true
       await loadData(planId)
+      notifyPlansChanged(planId)
     })
 
     return didSucceed && didSave
