@@ -1,4 +1,4 @@
-import { registerPlugin, type PluginListenerHandle } from '@capacitor/core'
+import { registerPlugin, type PermissionState, type PluginListenerHandle } from '@capacitor/core'
 
 export type TrainingTimerType = 'rest' | 'quick'
 export type TrainingTimerLaunchAction = 'completeSet' | 'quickTimerToggle' | 'quickTimerRepeat'
@@ -16,6 +16,10 @@ export type TrainingTimerNotificationStatus = {
   channelReady: boolean
   channelImportance: number | null
   isIgnoringBatteryOptimizations: boolean
+}
+
+export type TrainingTimerDisplayPermissionResult = {
+  display: PermissionState
 }
 
 export type TrainingTimerNotificationInput = {
@@ -36,6 +40,8 @@ export type TrainingTimerNotificationInput = {
 
 export type TrainingTimerNotificationPlugin = {
   status: () => Promise<TrainingTimerNotificationStatus>
+  checkDisplayPermission: () => Promise<TrainingTimerDisplayPermissionResult>
+  requestDisplayPermission: () => Promise<TrainingTimerDisplayPermissionResult>
   startTimerNotification: (
     input: TrainingTimerNotificationInput,
   ) => Promise<{ started: boolean; reason?: string }>

@@ -16,7 +16,7 @@ export type QuickTimerNotificationInput = {
 
 export type LocalReminderStatus = {
   isNative: boolean
-  isLocalNotificationsAvailable: boolean
+  isNotificationPermissionAvailable: boolean
   displayPermission: PermissionState | 'unknown'
   isDisplayPermissionGranted: boolean
   isTimerForegroundServiceAvailable: boolean

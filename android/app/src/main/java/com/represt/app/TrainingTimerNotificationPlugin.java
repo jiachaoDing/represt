@@ -12,13 +12,21 @@ import android.provider.Settings;
 import androidx.core.content.ContextCompat;
 
 import com.getcapacitor.JSObject;
+import com.getcapacitor.PermissionState;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
+import com.getcapacitor.annotation.Permission;
+import com.getcapacitor.annotation.PermissionCallback;
 
-@CapacitorPlugin(name = "TrainingTimerNotification")
+@CapacitorPlugin(
+    name = "TrainingTimerNotification",
+    permissions = @Permission(strings = { android.Manifest.permission.POST_NOTIFICATIONS }, alias = TrainingTimerNotificationPlugin.DISPLAY_PERMISSION)
+)
 public class TrainingTimerNotificationPlugin extends Plugin {
+    static final String DISPLAY_PERMISSION = "display";
+
     private String pendingLaunchPath;
     private String pendingTimerType;
     private String pendingLaunchAction;
@@ -57,6 +65,26 @@ public class TrainingTimerNotificationPlugin extends Plugin {
         result.put("isIgnoringBatteryOptimizations", isIgnoringBatteryOptimizations(context));
         addChannelStatus(context, result);
         call.resolve(result);
+    }
+
+    @PluginMethod
+    public void checkDisplayPermission(PluginCall call) {
+        resolveDisplayPermission(call);
+    }
+
+    @PluginMethod
+    public void requestDisplayPermission(PluginCall call) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU || getPermissionState(DISPLAY_PERMISSION) == PermissionState.GRANTED) {
+            resolveDisplayPermission(call);
+            return;
+        }
+
+        requestPermissionForAlias(DISPLAY_PERMISSION, call, "displayPermissionCallback");
+    }
+
+    @PermissionCallback
+    private void displayPermissionCallback(PluginCall call) {
+        resolveDisplayPermission(call);
     }
 
     @PluginMethod
@@ -205,6 +233,27 @@ public class TrainingTimerNotificationPlugin extends Plugin {
 
         PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
         return powerManager != null && powerManager.isIgnoringBatteryOptimizations(context.getPackageName());
+    }
+
+    private void resolveDisplayPermission(PluginCall call) {
+        JSObject result = new JSObject();
+        result.put("display", getDisplayPermissionState());
+        call.resolve(result);
+    }
+
+    private String getDisplayPermissionState() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            return "granted";
+        }
+
+        PermissionState state = getPermissionState(DISPLAY_PERMISSION);
+        if (state == PermissionState.GRANTED) {
+            return "granted";
+        }
+        if (state == PermissionState.DENIED) {
+            return "denied";
+        }
+        return "prompt";
     }
 
     private double clampBeepVolume(double volume) {

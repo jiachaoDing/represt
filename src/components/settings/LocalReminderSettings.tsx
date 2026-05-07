@@ -18,7 +18,7 @@ type BusyAction = 'battery' | 'permission' | 'settings' | 'test' | null
 type T = ReturnType<typeof useTranslation>['t']
 
 function getReminderStatusLabel(status: LocalReminderStatus | null, t: T) {
-  if (!status?.isLocalNotificationsAvailable || status.displayPermission === 'unknown') {
+  if (!status?.isNotificationPermissionAvailable || status.displayPermission === 'unknown') {
     return t('settings.reminder.systemLimited')
   }
 
@@ -125,7 +125,7 @@ export function LocalReminderSettings() {
     setTrainingTimerBeepVolume(nextVolume)
   }
 
-  const isAvailable = Boolean(status?.isLocalNotificationsAvailable)
+  const isAvailable = Boolean(status?.isNotificationPermissionAvailable)
   const isGranted = Boolean(status?.isDisplayPermissionGranted)
   const shouldShowBatteryStatus = Boolean(status?.isNative && status.isTimerForegroundServiceAvailable)
 

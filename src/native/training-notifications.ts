@@ -1,4 +1,3 @@
-import { LocalNotifications } from '@capacitor/local-notifications'
 import type { PermissionState } from '@capacitor/core'
 
 import i18n from '../i18n'
@@ -83,26 +82,26 @@ async function getTimerForegroundStatus(): Promise<TrainingTimerNotificationStat
 }
 
 async function ensureNotificationPermission() {
-  if (!isNativePluginAvailable('LocalNotifications')) {
+  if (!isTimerForegroundNotificationAvailable()) {
     return false
   }
 
-  const currentPermission = await LocalNotifications.checkPermissions()
+  const currentPermission = await TrainingTimerNotification.checkDisplayPermission()
   if (currentPermission.display === 'granted') {
     return true
   }
 
-  const requestedPermission = await LocalNotifications.requestPermissions()
+  const requestedPermission = await TrainingTimerNotification.requestDisplayPermission()
   return requestedPermission.display === 'granted'
 }
 
 async function checkDisplayPermission(): Promise<PermissionState | 'unknown'> {
-  if (!isNativePluginAvailable('LocalNotifications')) {
+  if (!isTimerForegroundNotificationAvailable()) {
     return 'unknown'
   }
 
   try {
-    const permission = await LocalNotifications.checkPermissions()
+    const permission = await TrainingTimerNotification.checkDisplayPermission()
     return permission.display
   } catch (permissionError) {
     console.warn(permissionError)
@@ -111,7 +110,7 @@ async function checkDisplayPermission(): Promise<PermissionState | 'unknown'> {
 }
 
 export async function getLocalReminderStatus(): Promise<LocalReminderStatus> {
-  const isLocalNotificationsAvailable = isNativePluginAvailable('LocalNotifications')
+  const isNotificationPermissionAvailable = isTimerForegroundNotificationAvailable()
 
   const [displayPermission, timerForegroundStatus] = await Promise.all([
     checkDisplayPermission(),
@@ -120,7 +119,7 @@ export async function getLocalReminderStatus(): Promise<LocalReminderStatus> {
 
   return {
     isNative: isNativeApp(),
-    isLocalNotificationsAvailable,
+    isNotificationPermissionAvailable,
     displayPermission,
     isDisplayPermissionGranted: displayPermission === 'granted',
     isTimerForegroundServiceAvailable: Boolean(timerForegroundStatus?.available),
@@ -132,12 +131,12 @@ export async function getLocalReminderStatus(): Promise<LocalReminderStatus> {
 }
 
 export async function requestLocalReminderPermission() {
-  if (!isNativePluginAvailable('LocalNotifications')) {
+  if (!isTimerForegroundNotificationAvailable()) {
     return 'unknown' satisfies PermissionState | 'unknown'
   }
 
   try {
-    const permission = await LocalNotifications.requestPermissions()
+    const permission = await TrainingTimerNotification.requestDisplayPermission()
     return permission.display
   } catch (permissionError) {
     console.warn(permissionError)

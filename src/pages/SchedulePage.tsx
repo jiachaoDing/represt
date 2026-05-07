@@ -83,7 +83,9 @@ export function SchedulePage() {
   )
   const [isPlanSaveSheetOpen, setIsPlanSaveSheetOpen] = useState(false)
   const [isPlanImportSheetOpen, setIsPlanImportSheetOpen] = useState(false)
-  const [initialEditExerciseId, setInitialEditExerciseId] = useState<string | null>(null)
+  const [initialEditExerciseId, setInitialEditExerciseId] = useState<string | null>(
+    () => addedExerciseIds[0] ?? null,
+  )
   const [isQuickTimerOpen, setIsQuickTimerOpen] = useState(false)
   const [isSaveTodayAsPlanTipHidden, setIsSaveTodayAsPlanTipHidden] = useState(
     getStoredSaveTodayAsPlanTipHidden,
@@ -183,7 +185,6 @@ export function SchedulePage() {
       return
     }
 
-    setInitialEditExerciseId(addedExerciseIds[0] ?? null)
     navigate('/', { replace: true, state: null })
   }, [addedExerciseIds, navigate, schedule.isLoading])
 
