@@ -1,12 +1,13 @@
-# 分享计划卡片 Cloudflare D1 + Worker 实现方案
+# 分享计划 Cloudflare D1 + Worker 实现方案
 
 ## 一句话方案
 
-二维码只承载短链接；短链接由 Cloudflare Worker 解析，计划快照存入 D1，RepRest 前端负责展示计划预览、生成分享卡片、确认导入和保存。
+分享码和短链接指向同一份计划快照；Cloudflare Worker 负责解析分享码、读写 D1，RepRest 前端负责生成分享文本、展示计划预览、确认导入和保存。
 
 ## 技术目标
 
-- 二维码短、稳定、易扫。
+- 分享码短、稳定、易输入。
+- 分享链接可直接打开 Web 预览页。
 - 分享计划不依赖账号体系。
 - 接收者可以先查看完整计划，再决定保存。
 - 计划导入复用现有计划转移数据结构。
@@ -21,9 +22,10 @@ flowchart TD
   B --> C["POST /api/shared-plans"]
   C --> D["Worker 校验 payload"]
   D --> E["D1 保存分享快照"]
-  E --> F["返回 https://share.RepRest.app/p/{shareId}"]
-  F --> G["前端生成二维码和图片卡片"]
-  H["接收者扫码"] --> I["GET /p/{shareId}"]
+  E --> F["返回分享码和 https://share.RepRest.app/p/{shareCode}"]
+  F --> G["前端生成分享文本"]
+  G --> H["接收者打开链接或输入分享码"]
+  H --> I["GET /p/{shareCode}"]
   I --> J["计划预览页"]
   J --> K["点击保存"]
   K --> L["导入确认"]
@@ -60,7 +62,7 @@ Cloudflare D1 是 Cloudflare 面向 Workers 的 serverless SQL 数据库，Worke
 
 - Rate Limiting：用于限制创建分享和读取接口。
 - Turnstile：当出现垃圾分享时再加入。
-- R2：第一版不需要，除非未来服务端保存生成后的图片。
+- R2：第一版不需要，除非未来服务端保存海报图片。
 - KV：第一版不作为主存储，可用于缓存公开预览数据。
 
 ## 域名设计
@@ -68,18 +70,18 @@ Cloudflare D1 是 Cloudflare 面向 Workers 的 serverless SQL 数据库，Worke
 建议使用独立分享域名：
 
 ```text
-https://share.RepRest.app/p/{shareId}
+https://share.RepRest.app/p/{shareCode}
 ```
 
 也可以挂在主域名：
 
 ```text
-https://RepRest.app/share/p/{shareId}
+https://RepRest.app/share/p/{shareCode}
 ```
 
 推荐独立分享域名，原因：
 
-- 二维码更短。
+- 分享链接更短。
 - 和 App 主站职责清晰。
 - 后续可以单独做缓存、限流和风控。
 
@@ -89,7 +91,7 @@ https://RepRest.app/share/p/{shareId}
 
 ```sql
 CREATE TABLE shared_plans (
-  id TEXT PRIMARY KEY,
+  code TEXT PRIMARY KEY,
   schema_version INTEGER NOT NULL,
   payload_json TEXT NOT NULL,
   payload_size INTEGER NOT NULL,
@@ -107,7 +109,7 @@ CREATE TABLE shared_plans (
 
 字段说明：
 
-- `id`：短链接 ID，使用不可预测随机值。
+- `code`：分享码，同时作为短链接路径标识，使用不可预测随机值。
 - `schema_version`：分享协议版本。
 - `payload_json`：完整 `PlanTransferData`。
 - `payload_size`：原始 payload 字节数，用于限制体积。
@@ -184,8 +186,8 @@ Content-Type: application/json
 
 ```json
 {
-  "id": "Ab3x9K2m",
-  "url": "https://share.RepRest.app/p/Ab3x9K2m",
+  "code": "R8K4-2P",
+  "url": "https://share.RepRest.app/p/R8K4-2P",
   "expiresAt": "2026-08-05T00:00:00.000Z"
 }
 ```
@@ -203,14 +205,14 @@ Content-Type: application/json
 ### 获取分享详情
 
 ```http
-GET /api/shared-plans/{id}
+GET /api/shared-plans/{code}
 ```
 
 响应：
 
 ```json
 {
-  "id": "Ab3x9K2m",
+  "code": "R8K4-2P",
   "schemaVersion": 1,
   "kind": "plan-template",
   "title": "Push Day",
@@ -235,7 +237,7 @@ GET /api/shared-plans/{id}
 ### 分享预览页
 
 ```http
-GET /p/{id}
+GET /p/{code}
 ```
 
 返回前端页面，由前端再请求详情接口。
@@ -249,21 +251,23 @@ GET /p/{id}
 1. 解析 JSON。
 2. 校验协议版本。
 3. 校验字段和大小。
-4. 生成随机 ID。
+4. 生成随机分享码。
 5. 生成摘要。
 6. 写入 D1。
-7. 返回短链接。
+7. 返回分享码和短链接。
 
-ID 生成要求：
+分享码生成要求：
 
 - 使用 Web Crypto。
 - 不使用递增 ID。
 - 不使用可预测随机数。
-- 长度控制在二维码友好的范围内。
+- 长度控制在用户可手动输入的范围内。
+- 使用不易混淆的字符集，避免 `0/O`、`1/I/l` 等字符。
+- 展示时可加分隔符，例如 `R8K4-2P`；存储和匹配时统一归一化。
 
 ### 读取分享时
 
-1. 校验 ID 格式。
+1. 校验分享码格式。
 2. 查询 D1。
 3. 检查状态和过期时间。
 4. 返回 payload。
@@ -317,13 +321,14 @@ Cloudflare Worker 配置和 D1 binding 以官方文档为准。参考：
 位置：
 
 - `src/pages/PlansPage.tsx`
-- 计划卡片或计划详情相关组件。
+- 计划详情或计划列表相关组件。
 
 新增行为：
 
 - 用户点击分享。
 - 选择当前计划。
-- 打开分享预览面板。
+- 创建分享。
+- 打开分享文本面板。
 
 第一版只分享单个计划。
 
@@ -360,28 +365,28 @@ src/lib/plan-share-api.ts
 - 处理 API 错误。
 - 根据环境变量读取分享服务 base URL。
 
-### 4. 分享卡片生成
+### 4. 分享文本生成
 
 新增组件或工具：
 
 ```text
 src/components/plans/PlanShareSheet.tsx
-src/components/plans/PlanShareCardPreview.tsx
-src/lib/plan-share-card.ts
+src/lib/plan-share-text.ts
 ```
 
 职责：
 
-- 展示卡片预览。
-- 生成二维码。
-- 生成 PNG。
+- 展示将要发送的分享文本。
+- 生成包含计划摘要、分享码和链接的文本。
 - 复制链接。
+- 复制分享码。
 - 调起系统分享。
 
-依赖建议：
+第一版不新增依赖：
 
-- 二维码库：`qrcode` 或同类轻量库。
-- 图片生成：优先使用 Canvas 或 SVG 转 PNG。
+- 不引入二维码库。
+- 不生成 PNG。
+- 不请求摄像头或相册权限。
 
 ### 5. 计划分享预览页
 
@@ -394,13 +399,13 @@ src/pages/SharedPlanPage.tsx
 新增路由：
 
 ```text
-/share/:id
+/share/:code
 ```
 
 或在分享域名下使用：
 
 ```text
-/p/:id
+/p/:code
 ```
 
 页面职责：
@@ -411,7 +416,21 @@ src/pages/SharedPlanPage.tsx
 - 点击保存进入导入确认。
 - 保存后跳转计划页。
 
-### 6. 导入确认复用
+### 6. App 内输入分享码
+
+新增入口：
+
+- 计划列表的新增或更多菜单。
+- 导入相关入口。
+
+页面职责：
+
+- 接收用户输入的分享码。
+- 归一化大小写和分隔符。
+- 拉取分享详情。
+- 进入计划预览和导入确认。
+
+### 7. 导入确认复用
 
 位置：
 
@@ -424,7 +443,7 @@ src/pages/SharedPlanPage.tsx
 - JSON 导入和分享导入都使用同一套确认 UI。
 - 分享导入不要求用户手动粘贴 JSON。
 
-### 7. i18n 文案
+### 8. i18n 文案
 
 位置：
 
@@ -434,8 +453,11 @@ src/pages/SharedPlanPage.tsx
 新增文案：
 
 - 分享计划。
-- 生成分享卡片。
+- 生成分享。
+- 分享码。
+- 输入分享码。
 - 复制链接。
+- 复制分享码。
 - 保存这个计划。
 - 查看完整计划。
 - 添加到主屏幕。
@@ -444,7 +466,7 @@ src/pages/SharedPlanPage.tsx
 
 所有用户可见文案走 i18n。
 
-### 8. PWA 行为
+### 9. PWA 行为
 
 需要支持：
 
@@ -455,21 +477,19 @@ src/pages/SharedPlanPage.tsx
 
 不建议第一版强依赖安装检测。
 
-### 9. Android 行为
+### 10. Android 行为
 
 需要支持：
 
-- Android App 内生成分享图片。
 - 系统分享入口。
-- 从链接打开到对应计划预览。
+- 链接优先打开 Web 计划预览。
+- App 内输入分享码导入。
 
 可能涉及：
 
-- App Links 配置。
-- Capacitor App URL open listener。
-- Android manifest intent filter。
+- 后续如果要增强 App Links，再配置 Capacitor App URL open listener 和 Android manifest intent filter。
 
-第一版可以先用 Web 链路跑通，再增强 App Links。
+第一版先用 Web 链路和 App 内分享码跑通，不要求链接直接唤起 App。
 
 ## 前端环境变量
 
@@ -531,72 +551,76 @@ VITE_PLAN_SHARE_WEB_BASE_URL=http://localhost:8787
 目标：
 
 - `POST /api/shared-plans` 可创建分享。
-- `GET /api/shared-plans/{id}` 可读取分享。
+- `GET /api/shared-plans/{code}` 可读取分享。
 - D1 可持久保存。
 
 验证：
 
 - 本地 wrangler dev 可创建和读取。
-- 线上部署后可通过短链接获取同一份计划。
+- 线上部署后可通过分享码和短链接获取同一份计划。
 
 ### 第 3 步：分享预览页
 
 目标：
 
-- 扫码或打开链接能看到完整计划。
+- 打开链接能看到完整计划。
 - 过期、缺失、版本不支持都有页面状态。
 
 验证：
 
 - Web、PWA、Android WebView 都可查看。
 
-### 第 4 步：计划卡片和二维码
+### 第 4 步：分享文本和分享码入口
 
 目标：
 
-- 生成可读卡片。
-- 二维码指向短链接。
-- 支持复制链接和系统分享。
+- 生成可读分享文本。
+- 分享文本包含计划摘要、分享码和链接。
+- 支持复制链接、复制分享码和系统分享。
+- App 内可输入分享码进入预览。
 
 验证：
 
-- 社交软件压缩后仍能扫码。
+- 聊天软件中分享文本可读，链接可打开，分享码可手动输入。
 
-### 第 5 步：Android 增强
+### 后续：Android 增强
 
 目标：
 
 - App 内分享体验更顺。
-- 链接可打开到 App 内对应页面。
+- 后续可让链接打开到 App 内对应页面。
 
 验证：
 
-- Android 真机可从分享链接进入计划预览。
+- Android 真机可从分享链接进入 Web 计划预览。
 
 ## 第一版验收标准
 
 - 用户能从单个计划生成分享链接。
-- 用户能生成带二维码的计划卡片。
-- 其他用户扫码后能查看完整计划。
+- 用户能生成包含计划摘要、分享码和链接的分享文本。
+- 其他用户打开链接后能查看完整计划。
+- App 内用户输入分享码后能查看完整计划。
 - 其他用户保存前能看到确认页。
 - 保存后本地出现新计划。
-- 分享链接过期或不存在时有明确提示。
+- 分享链接或分享码过期、不存在时有明确提示。
 - `npm run build` 通过。
 - Worker 本地和线上基本接口验证通过。
 
 ## 关键取舍
 
-### 二维码内容
+### 为什么第一版不做二维码和海报
 
-二维码只放短链接。
+第一版只做分享文本、分享码和链接。
 
 理由：
 
-- 扫码稳定。
-- 链接短。
+- 用户可以直接点链接进入 Web 预览。
+- 已安装 App 的用户可以手动输入分享码。
+- 不需要请求摄像头权限。
+- 不需要引入二维码和图片生成依赖。
+- 分享文本更适合聊天软件和社群转发。
 - 支持未来版本兼容。
 - 支持过期和风控。
-- 分享卡片经压缩后仍更容易识别。
 
 ### 是否需要账号
 
@@ -614,8 +638,7 @@ VITE_PLAN_SHARE_WEB_BASE_URL=http://localhost:8787
 
 理由：
 
-- 二维码放完整数据体验差。
-- 分享链接需要解析到计划快照。
+- 分享码和分享链接需要解析到计划快照。
 - 后续增长和风控都需要服务端入口。
 
 这个服务可以由 Cloudflare Worker + D1 承担，不需要传统服务器。
@@ -628,7 +651,7 @@ VITE_PLAN_SHARE_WEB_BASE_URL=http://localhost:8787
 - 分享统计。
 - 公开模板页。
 - 教练分享身份。
-- 自定义品牌卡片。
+- 自定义品牌分享物料。
 - 云同步。
 - 多设备保存。
 
