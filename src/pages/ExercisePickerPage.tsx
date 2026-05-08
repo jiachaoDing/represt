@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { Check, Plus, Search, ShoppingBasket, X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
@@ -26,6 +26,37 @@ type SelectedExercise = {
   key: string
   name: string
   catalogExerciseId: string | null
+}
+
+function isSelectedExercise(value: unknown): value is SelectedExercise {
+  if (!value || typeof value !== 'object') {
+    return false
+  }
+
+  const item = value as Record<string, unknown>
+  return typeof item.key === 'string'
+    && typeof item.name === 'string'
+    && (typeof item.catalogExerciseId === 'string' || item.catalogExerciseId === null)
+}
+
+function readSelectedExercisesFromState(state: unknown) {
+  if (!state || typeof state !== 'object' || !('exercisePickerSelectedExercises' in state)) {
+    return []
+  }
+
+  const selectedExercises = (state as Record<string, unknown>).exercisePickerSelectedExercises
+  return Array.isArray(selectedExercises)
+    ? selectedExercises.filter(isSelectedExercise)
+    : []
+}
+
+function readCreatedExerciseProfileId(state: unknown) {
+  if (!state || typeof state !== 'object' || !('createdExerciseProfileId' in state)) {
+    return null
+  }
+
+  const profileId = (state as Record<string, unknown>).createdExerciseProfileId
+  return typeof profileId === 'string' ? profileId : null
 }
 
 function getPickerTarget(value: string | null): PickerTarget {
@@ -57,6 +88,7 @@ function formatExerciseMeta(
 
 export function ExercisePickerPage() {
   const { t } = useTranslation()
+  const location = useLocation()
   const navigate = useNavigate()
   const backLinkState = useBackLinkState()
   const [searchParams] = useSearchParams()
@@ -64,7 +96,9 @@ export function ExercisePickerPage() {
   const planId = searchParams.get('planId')
   const [categoryId, setCategoryId] = useState<PickerCategory>('all')
   const [keyword, setKeyword] = useState('')
-  const [selectedExercises, setSelectedExercises] = useState<SelectedExercise[]>([])
+  const [selectedExercises, setSelectedExercises] = useState<SelectedExercise[]>(() =>
+    readSelectedExercisesFromState(location.state),
+  )
   const [isCartOpen, setIsCartOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isContinueDialogOpen, setIsContinueDialogOpen] = useState(false)
@@ -91,6 +125,37 @@ export function ExercisePickerPage() {
       isCancelled = true
     }
   }, [t])
+
+  useEffect(() => {
+    const createdProfileId = readCreatedExerciseProfileId(location.state)
+    if (!createdProfileId || exerciseModels.length === 0) {
+      return
+    }
+
+    const createdModel = exerciseModels.find((model) => model.profileId === createdProfileId)
+    if (!createdModel) {
+      return
+    }
+
+    setSelectedExercises((current) => {
+      if (current.some((exercise) => exercise.key === createdModel.profileId)) {
+        return current
+      }
+
+      return [
+        ...current,
+        {
+          key: createdModel.profileId,
+          name: getModelDisplayName(t, createdModel),
+          catalogExerciseId: createdModel.catalogExerciseId,
+        },
+      ]
+    })
+    setKeyword('')
+    setCategoryId(createdModel.categoryId)
+    setIsCartOpen(true)
+    navigate(`${location.pathname}${location.search}${location.hash}`, { replace: true })
+  }, [exerciseModels, location.hash, location.pathname, location.search, location.state, navigate, t])
 
   const normalizedKeyword = normalizeKeyword(keyword)
   const selectedModelIds = useMemo(
@@ -125,7 +190,7 @@ export function ExercisePickerPage() {
           ? searchValues.some((value) => normalizeKeyword(value).includes(normalizedKeyword))
             || (model.catalogExerciseId ? matchedCatalogIds?.has(model.catalogExerciseId) : false)
           : true
-        const matchesCategory = categoryId === 'all' || model.categoryId === categoryId
+        const matchesCategory = Boolean(normalizedKeyword) || categoryId === 'all' || model.categoryId === categoryId
 
         return matchesKeyword && matchesCategory
       }),
@@ -321,7 +386,14 @@ export function ExercisePickerPage() {
             })}
             <button
               type="button"
-              onClick={() => navigate('/summary/exercises/catalog/new', { state: backLinkState })}
+              onClick={() =>
+                navigate('/summary/exercises/catalog/new', {
+                  state: {
+                    ...backLinkState,
+                    exercisePickerSelectedExercises: selectedExercises,
+                  },
+                })
+              }
               className="relative mt-1 flex min-h-12 w-full items-center gap-1.5 border-t border-[var(--outline-variant)]/40 px-2.5 py-2 text-left text-xs font-medium text-[var(--primary)] transition-colors"
             >
               <span className="min-w-0 flex-1 leading-4">{t('summary.exerciseRecords.addCustomTitle')}</span>

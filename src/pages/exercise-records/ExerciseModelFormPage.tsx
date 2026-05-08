@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { Trash2 } from 'lucide-react'
 
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
@@ -18,6 +18,34 @@ import {
 } from '../../db/sessions'
 import { MuscleDistributionEditor } from './MuscleDistributionEditor'
 
+type ExercisePickerReturnState = {
+  backTo: string
+  exercisePickerSelectedExercises: unknown[]
+}
+
+function isExercisePickerPath(value: string) {
+  return value === '/exercise-picker'
+    || value.startsWith('/exercise-picker?')
+    || value.startsWith('/exercise-picker#')
+}
+
+function readExercisePickerReturnState(state: unknown): ExercisePickerReturnState | null {
+  if (!state || typeof state !== 'object') {
+    return null
+  }
+
+  const routeState = state as Record<string, unknown>
+  if (typeof routeState.backTo !== 'string' || !isExercisePickerPath(routeState.backTo)) {
+    return null
+  }
+
+  const selectedExercises = routeState.exercisePickerSelectedExercises
+  return {
+    backTo: routeState.backTo,
+    exercisePickerSelectedExercises: Array.isArray(selectedExercises) ? selectedExercises : [],
+  }
+}
+
 export function ExerciseModelFormPage({
   mode,
   profileId,
@@ -26,6 +54,7 @@ export function ExerciseModelFormPage({
   profileId: string | null
 }) {
   const { t } = useTranslation()
+  const location = useLocation()
   const navigate = useNavigate()
   const [form, setForm] = useState<ExerciseModelForm | null>(null)
   const [name, setName] = useState('')
@@ -95,6 +124,18 @@ export function ExerciseModelFormPage({
             ? 'summary.exerciseRecords.customAlreadyExists'
             : 'summary.exerciseRecords.notFound'
         setError(t(errorKey))
+        return
+      }
+
+      const exercisePickerReturnState = readExercisePickerReturnState(location.state)
+      if (exercisePickerReturnState) {
+        navigate(exercisePickerReturnState.backTo, {
+          replace: true,
+          state: {
+            exercisePickerSelectedExercises: exercisePickerReturnState.exercisePickerSelectedExercises,
+            createdExerciseProfileId: result.profileId,
+          },
+        })
         return
       }
 
