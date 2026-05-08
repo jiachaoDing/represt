@@ -20,7 +20,7 @@ export function ReminderSettingsPage() {
         backFallbackTo="/settings"
       />
 
-      <section className="mx-4 mt-4 overflow-hidden rounded-2xl border border-[var(--outline-variant)]/35 bg-[var(--surface)]">
+      <section className="mx-4 mt-4 overflow-hidden rounded-2xl bg-[var(--surface)]">
         <ReminderSettingsContent />
       </section>
     </div>
