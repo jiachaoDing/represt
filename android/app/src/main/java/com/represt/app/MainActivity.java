@@ -1,6 +1,7 @@
 package com.represt.app;
 
 import android.os.Bundle;
+import android.webkit.WebSettings;
 
 import com.getcapacitor.BridgeActivity;
 
@@ -11,6 +12,18 @@ public class MainActivity extends BridgeActivity {
     public void onCreate(Bundle savedInstanceState) {
         registerPlugin(TrainingTimerNotificationPlugin.class);
         super.onCreate(savedInstanceState);
+        configureWebViewZoom();
+    }
+
+    private void configureWebViewZoom() {
+        if (getBridge() == null || getBridge().getWebView() == null) {
+            return;
+        }
+
+        WebSettings settings = getBridge().getWebView().getSettings();
+        settings.setSupportZoom(false);
+        settings.setBuiltInZoomControls(false);
+        settings.setDisplayZoomControls(false);
     }
 
     @Override
