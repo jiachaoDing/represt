@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Pause, Pencil, Play, RotateCcw } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 
 import { useQuickTimer } from '../../hooks/useQuickTimer'
 import { useNow } from '../../hooks/useNow'
+import { hasSeenTimerReminderSettings, REMINDER_SETTINGS_PATH } from '../../lib/reminder-settings'
 
 function formatRemainingTime(remainingMs: number) {
   const totalSeconds = Math.ceil(Math.max(0, remainingMs) / 1000)
@@ -19,6 +21,7 @@ type ExerciseQuickTimerProps = {
 
 export function ExerciseQuickTimer({ notificationPath }: ExerciseQuickTimerProps) {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const { finish, pause, reset, selectSeconds, start, state: timerState, updateOptionSeconds } =
     useQuickTimer(notificationPath)
   const now = useNow(timerState.status === 'running' ? 16 : 1000)
@@ -78,8 +81,16 @@ export function ExerciseQuickTimer({ notificationPath }: ExerciseQuickTimerProps
     }
 
     commitEditedOptionSelection()
+    if (!hasSeenTimerReminderSettings()) {
+      navigate(REMINDER_SETTINGS_PATH, {
+        state: { backTo: notificationPath ?? '/quick-timer' },
+        viewTransition: true,
+      })
+      return
+    }
+
     start()
-  }, [commitEditedOptionSelection, isRunning, pause, start])
+  }, [commitEditedOptionSelection, isRunning, navigate, notificationPath, pause, start])
 
   const handleResetClick = useCallback(() => {
     commitEditedOptionSelection()
