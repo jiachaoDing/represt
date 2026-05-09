@@ -153,10 +153,10 @@ type SharedPlanPayload = {
 }
 ```
 
-第一版建议只开放：
+当前开放：
 
-- 单个计划：`kind = 'plan-template'`
-- 后续再开放训练循环：`kind = 'training-cycle'`
+- 一个或多个计划：`kind = 'plan-template'`
+- 训练循环：`kind = 'training-cycle'`
 
 ## API 设计
 
@@ -197,7 +197,7 @@ Content-Type: application/json
 - `schemaVersion` 必须受支持。
 - `kind` 必须是允许值。
 - `plans` 至少 1 个。
-- 第一版单次只允许 1 个计划。
+- 计划分享允许 1 个或多个计划；循环日程分享包含日程和其引用计划。
 - 动作数量设置上限。
 - payload 字节数设置上限。
 - 字段白名单校验。
@@ -330,7 +330,7 @@ Cloudflare Worker 配置和 D1 binding 以官方文档为准。参考：
 - 创建分享。
 - 打开分享文本面板。
 
-第一版只分享单个计划。
+计划分享支持选择一个或多个计划。
 
 ### 2. 复用导出数据
 
@@ -596,7 +596,7 @@ VITE_PLAN_SHARE_WEB_BASE_URL=http://localhost:8787
 
 ## 第一版验收标准
 
-- 用户能从单个计划生成分享链接。
+- 用户能从一个或多个计划生成分享链接。
 - 用户能生成包含计划摘要、分享码和链接的分享文本。
 - 其他用户打开链接后能查看完整计划。
 - App 内用户输入分享码后能查看完整计划。

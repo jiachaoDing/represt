@@ -14,7 +14,7 @@ import {
   buildPlanShareText,
   getPlanTransferExerciseCount,
   getPlanTransferMainExercises,
-  getPlanTransferTitle,
+  getPlanTransferShareTitle,
 } from '../../lib/plan-share-text'
 import { triggerHaptic } from '../../lib/haptics'
 import i18n from '../../i18n'
@@ -25,6 +25,7 @@ type PlanShareSheetProps = {
   onClose: () => void
   kind?: SharedPlanKind
   planId?: string | null
+  planIds?: string[]
 }
 
 function getPlanShareErrorMessage(
@@ -38,7 +39,7 @@ function getPlanShareErrorMessage(
   return t('planShare.errors.unknown')
 }
 
-export function PlanShareSheet({ open, onClose, kind = 'plan-template', planId = null }: PlanShareSheetProps) {
+export function PlanShareSheet({ open, onClose, kind = 'plan-template', planId = null, planIds }: PlanShareSheetProps) {
   const { t } = useTranslation()
   const [data, setData] = useState<PlanTransferData | null>(null)
   const [result, setResult] = useState<CreateSharedPlanResult | null>(null)
@@ -54,17 +55,16 @@ export function PlanShareSheet({ open, onClose, kind = 'plan-template', planId =
   const isTrainingCycle = kind === 'training-cycle'
   const canCreateShare = Boolean(
     data &&
-      (isTrainingCycle ? data.cycle.length > 0 && data.plans.length > 0 : data.plans.length === 1),
+      (isTrainingCycle ? data.cycle.length > 0 && data.plans.length > 0 : data.plans.length > 0),
   )
 
   useEffect(() => {
-    if (!open || (kind === 'plan-template' && !planId)) {
+    const selectedPlanIds = planIds ?? (planId ? [planId] : [])
+    if (!open || (kind === 'plan-template' && selectedPlanIds.length === 0)) {
       return
     }
 
     let cancelled = false
-    const selectedPlanId = planId
-    const selectedPlanIds = selectedPlanId ? [selectedPlanId] : []
 
     async function prepareDraft() {
       try {
@@ -78,7 +78,7 @@ export function PlanShareSheet({ open, onClose, kind = 'plan-template', planId =
             : await buildPlanTemplateExport(selectedPlanIds)
         if (!cancelled) {
           setData(draft)
-          if (!draft || (kind === 'plan-template' && draft.plans.length !== 1)) {
+          if (!draft || (kind === 'plan-template' && draft.plans.length === 0)) {
             setError(t('planShare.errors.emptyPlan'))
           } else if (kind === 'training-cycle' && (draft.cycle.length === 0 || draft.plans.length === 0)) {
             setError(t('planShare.errors.emptyCycle'))
@@ -101,7 +101,7 @@ export function PlanShareSheet({ open, onClose, kind = 'plan-template', planId =
     return () => {
       cancelled = true
     }
-  }, [kind, open, planId, t])
+  }, [kind, open, planId, planIds, t])
 
   function resetAndClose() {
     onClose()
@@ -129,7 +129,7 @@ export function PlanShareSheet({ open, onClose, kind = 'plan-template', planId =
           url: created.url,
           title: isTrainingCycle
             ? t('planShare.cycleName')
-            : getPlanTransferTitle(data, t('common.unnamedPlan')),
+            : getPlanTransferShareTitle(t, data, kind),
           createdAt: new Date().toISOString(),
           expiresAt: created.expiresAt,
         })
@@ -166,7 +166,7 @@ export function PlanShareSheet({ open, onClose, kind = 'plan-template', planId =
         {data ? (
           <section className="rounded-xl bg-[var(--surface)] px-4 py-3">
             <p className="text-sm font-semibold text-[var(--on-surface)]">
-              {isTrainingCycle ? t('planShare.cycleName') : data.plans[0]?.planName ?? t('common.unnamedPlan')}
+              {getPlanTransferShareTitle(t, data, kind)}
             </p>
             <p className="mt-1 text-xs leading-5 text-[var(--on-surface-variant)]">
               {isTrainingCycle
@@ -175,6 +175,12 @@ export function PlanShareSheet({ open, onClose, kind = 'plan-template', planId =
                     plans: data.plans.length,
                     exercises: getPlanTransferExerciseCount(data),
                   })
+                : data.plans.length > 1
+                  ? t('planShare.multiPlanSummary', {
+                      plans: data.plans.length,
+                      exercises: getPlanTransferExerciseCount(data),
+                      names: data.plans.map((plan) => plan.planName || t('common.unnamedPlan')).join(t('planShare.exerciseSeparator')),
+                    })
                 : t('planShare.summary', {
                     count: getPlanTransferExerciseCount(data),
                     exercises: mainExercises.join(t('planShare.exerciseSeparator')),

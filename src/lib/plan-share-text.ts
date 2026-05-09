@@ -19,6 +19,18 @@ export function getPlanTransferTitle(data: PlanTransferData, fallback: string) {
   return data.plans[0]?.planName.trim() || fallback
 }
 
+export function getPlanTransferShareTitle(t: TFunction, data: PlanTransferData, kind: SharedPlanKind = 'plan-template') {
+  if (kind === 'training-cycle') {
+    return t('planShare.cycleName')
+  }
+
+  if (data.plans.length === 1) {
+    return getPlanTransferTitle(data, t('common.unnamedPlan'))
+  }
+
+  return t('planShare.multiPlanTitle', { count: data.plans.length })
+}
+
 export function buildPlanShareText(
   t: TFunction,
   data: PlanTransferData,
@@ -31,6 +43,8 @@ export function buildPlanShareText(
   const lines = [
     kind === 'training-cycle'
       ? t('planShare.shareText.cycleTitle', { days: data.cycle.length, count: data.plans.length })
+      : data.plans.length > 1
+        ? t('planShare.shareText.multiPlanTitle', { count: data.plans.length })
       : t('planShare.shareText.title', { name: title }),
     '',
     t('planShare.shareText.summary', {

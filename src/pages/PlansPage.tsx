@@ -10,10 +10,12 @@ import { ConfirmDialog } from '../components/ui/ConfirmDialog'
 import { PlanExerciseList } from '../components/plans/PlanExerciseList'
 import { PlanNameSheet } from '../components/plans/PlanNameSheet'
 import { PlanShareSheet } from '../components/plans/PlanShareSheet'
+import { SharedPlanImportSheet } from '../components/plans/SharedPlanImportSheet'
 import { PlanSwitcher } from '../components/plans/PlanSwitcher'
 import { usePlansPageData } from '../hooks/pages/usePlansPageData'
 import { usePlansPageUi } from '../hooks/pages/usePlansPageUi'
 import { getPlanColor } from '../lib/plan-color'
+import { notifyPlansChanged } from '../lib/plan-change-events'
 
 export function PlansPage() {
   const { t } = useTranslation()
@@ -44,6 +46,7 @@ export function PlansPage() {
   const plans = usePlansPageData(preferredSelectedPlanId)
   const ui = usePlansPageUi(plans)
   const [sharePlanId, setSharePlanId] = useState<string | null>(null)
+  const [isShareCodeSheetOpen, setIsShareCodeSheetOpen] = useState(false)
   const handledAddedExerciseLocationKeyRef = useRef<string | null>(null)
   const planColorMap = useMemo(
     () => new Map(plans.plans.map((plan, index) => [plan.id, getPlanColor(index)])),
@@ -185,8 +188,25 @@ export function PlansPage() {
         renameName={ui.renamePlanName}
         onClose={() => ui.setPlanSheetMode(null)}
         onCreateNameChange={plans.setNewPlanName}
+        onImportShareCode={() => {
+          ui.setPlanSheetMode(null)
+          setIsShareCodeSheetOpen(true)
+        }}
         onRenameNameChange={ui.setRenamePlanName}
         onSubmit={(event) => void ui.handlePlanSubmit(event, ui.renamePlanName)}
+      />
+
+      <SharedPlanImportSheet
+        open={isShareCodeSheetOpen}
+        onClose={() => setIsShareCodeSheetOpen(false)}
+        onImported={(importedPlans, data) => {
+          const selectedPlanId = importedPlans[0]?.id ?? null
+          notifyPlansChanged(selectedPlanId)
+          setIsShareCodeSheetOpen(false)
+          navigate(data.cycle.length > 0 ? '/plans/cycle' : '/plans', {
+            state: data.cycle.length > 0 ? undefined : { selectedPlanId },
+          })
+        }}
       />
 
       <PlanShareSheet

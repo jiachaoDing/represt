@@ -1,5 +1,4 @@
-import { useRef, useState } from 'react'
-import { ClipboardPaste, Upload } from 'lucide-react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { AnimatedSheet } from '../motion/AnimatedSheet'
@@ -40,11 +39,9 @@ function getPlanTransferErrorMessage(
 
 export function PlanJsonImportSheet({ onClose, onImported, open, title }: PlanJsonImportSheetProps) {
   const { t } = useTranslation()
-  const inputRef = useRef<HTMLInputElement>(null)
   const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isBusy, setIsBusy] = useState(false)
-  const [isPasteImportOpen, setIsPasteImportOpen] = useState(false)
   const [importText, setImportText] = useState('')
 
   function resetFeedback() {
@@ -53,7 +50,6 @@ export function PlanJsonImportSheet({ onClose, onImported, open, title }: PlanJs
   }
 
   function resetFlow() {
-    setIsPasteImportOpen(false)
     setImportText('')
     resetFeedback()
   }
@@ -81,7 +77,6 @@ export function PlanJsonImportSheet({ onClose, onImported, open, title }: PlanJs
 
       setMessage(t('settings.planTransfer.imported', { count: plans.length }))
       setImportText('')
-      setIsPasteImportOpen(false)
       void triggerHaptic('success')
       importedPlans = plans
       importedData = result.data
@@ -98,90 +93,40 @@ export function PlanJsonImportSheet({ onClose, onImported, open, title }: PlanJs
     }
   }
 
-  async function importFile(file: File) {
-    try {
-      await importJsonText(await file.text())
-    } finally {
-      if (inputRef.current) {
-        inputRef.current.value = ''
-      }
-    }
-  }
-
   return (
-    <>
-      <input
-        ref={inputRef}
-        type="file"
-        accept="application/json,.json"
-        className="hidden"
-        onChange={(event) => {
-          const file = event.target.files?.[0]
-          if (file) {
-            void importFile(file)
-          }
-        }}
-      />
-      <AnimatedSheet
-        open={open}
-        onClose={() => {
-          onClose()
-          resetFlow()
-        }}
-        title={title}
-      >
-        {isPasteImportOpen ? (
-          <div className="space-y-3">
-            <textarea
-              value={importText}
-              onChange={(event) => setImportText(event.target.value)}
-              placeholder={t('settings.planTransfer.pasteJsonPlaceholder')}
-              className="min-h-40 w-full resize-none rounded-xl bg-[var(--surface)] px-3 py-3 text-sm leading-6 text-[var(--on-surface)] outline-none ring-1 ring-[var(--outline-variant)] transition-all focus:ring-[var(--primary)]"
-            />
-            <div className="flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={resetFlow}
-                className="rounded-full px-4 py-2.5 text-sm font-medium text-[var(--primary)]"
-              >
-                {t('common.back')}
-              </button>
-              <button
-                type="button"
-                onClick={() => void importJsonText(importText)}
-                disabled={isBusy || !importText.trim()}
-                className="rounded-full bg-[var(--primary)] px-4 py-2.5 text-sm font-semibold text-[var(--on-primary)] disabled:opacity-50"
-              >
-                {t('settings.planTransfer.importPastedJson')}
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            <button
-              type="button"
-              onClick={() => {
-                setImportText('')
-                resetFeedback()
-                setIsPasteImportOpen(true)
-              }}
-              disabled={isBusy}
-              className="flex min-h-12 w-full items-center gap-3 rounded-xl bg-[var(--surface)] px-4 text-left text-sm font-medium text-[var(--on-surface)] transition-colors hover:bg-[var(--surface-container)] disabled:opacity-50"
-            >
-              <ClipboardPaste size={18} strokeWidth={2.2} className="text-[var(--primary)]" aria-hidden="true" />
-              <span>{t('settings.planTransfer.pasteJson')}</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => inputRef.current?.click()}
-              disabled={isBusy}
-              className="flex min-h-12 w-full items-center gap-3 rounded-xl bg-[var(--surface)] px-4 text-left text-sm font-medium text-[var(--on-surface)] transition-colors hover:bg-[var(--surface-container)] disabled:opacity-50"
-            >
-              <Upload size={18} strokeWidth={2.2} className="text-[var(--primary)]" aria-hidden="true" />
-              <span>{t('settings.planTransfer.importJson')}</span>
-            </button>
-          </div>
-        )}
+    <AnimatedSheet
+      open={open}
+      onClose={() => {
+        onClose()
+        resetFlow()
+      }}
+      title={title}
+    >
+      <div className="space-y-3">
+        <textarea
+          value={importText}
+          onChange={(event) => setImportText(event.target.value)}
+          placeholder={t('settings.planTransfer.pasteJsonPlaceholder')}
+          className="min-h-40 w-full resize-none rounded-xl bg-[var(--surface)] px-3 py-3 text-sm leading-6 text-[var(--on-surface)] outline-none ring-1 ring-[var(--outline-variant)] transition-all focus:ring-[var(--primary)]"
+        />
+        <div className="flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={resetFlow}
+            className="rounded-full px-4 py-2.5 text-sm font-medium text-[var(--primary)]"
+          >
+            {t('common.clear')}
+          </button>
+          <button
+            type="button"
+            onClick={() => void importJsonText(importText)}
+            disabled={isBusy || !importText.trim()}
+            className="rounded-full bg-[var(--primary)] px-4 py-2.5 text-sm font-semibold text-[var(--on-primary)] disabled:opacity-50"
+          >
+            {t('settings.planTransfer.importPastedJson')}
+          </button>
+        </div>
+      </div>
         {message ? (
           <p className="mt-3 rounded-xl bg-[var(--primary-container)] px-4 py-3 text-sm leading-5 text-[var(--on-primary-container)]">
             {message}
@@ -192,7 +137,6 @@ export function PlanJsonImportSheet({ onClose, onImported, open, title }: PlanJs
             {error}
           </p>
         ) : null}
-      </AnimatedSheet>
-    </>
+    </AnimatedSheet>
   )
 }
