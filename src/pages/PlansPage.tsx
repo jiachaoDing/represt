@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Share2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useLocation, useNavigate } from 'react-router-dom'
 
@@ -8,6 +9,7 @@ import { OverflowMenu } from '../components/ui/OverflowMenu'
 import { ConfirmDialog } from '../components/ui/ConfirmDialog'
 import { PlanExerciseList } from '../components/plans/PlanExerciseList'
 import { PlanNameSheet } from '../components/plans/PlanNameSheet'
+import { PlanShareSheet } from '../components/plans/PlanShareSheet'
 import { PlanSwitcher } from '../components/plans/PlanSwitcher'
 import { usePlansPageData } from '../hooks/pages/usePlansPageData'
 import { usePlansPageUi } from '../hooks/pages/usePlansPageUi'
@@ -41,6 +43,7 @@ export function PlansPage() {
   )
   const plans = usePlansPageData(preferredSelectedPlanId)
   const ui = usePlansPageUi(plans)
+  const [sharePlanId, setSharePlanId] = useState<string | null>(null)
   const handledAddedExerciseLocationKeyRef = useRef<string | null>(null)
   const planColorMap = useMemo(
     () => new Map(plans.plans.map((plan, index) => [plan.id, getPlanColor(index)])),
@@ -98,7 +101,21 @@ export function PlansPage() {
       <PageHeader
         title={t('plans.title')}
         titleAlign="center"
-        actions={menuItems.length > 0 ? <OverflowMenu items={menuItems} /> : undefined}
+        actions={
+          plans.currentPlan ? (
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => setSharePlanId(plans.currentPlan?.id ?? null)}
+                aria-label={t('planShare.menuItem')}
+                className="flex h-11 w-11 items-center justify-center rounded-full text-[var(--on-surface-variant)] transition-colors hover:bg-[var(--on-surface-variant)]/10 tap-highlight-transparent"
+              >
+                <Share2 size={22} strokeWidth={2.2} aria-hidden="true" />
+              </button>
+              <OverflowMenu items={menuItems} />
+            </div>
+          ) : undefined
+        }
       />
 
       <PlanSwitcher
@@ -170,6 +187,12 @@ export function PlansPage() {
         onCreateNameChange={plans.setNewPlanName}
         onRenameNameChange={ui.setRenamePlanName}
         onSubmit={(event) => void ui.handlePlanSubmit(event, ui.renamePlanName)}
+      />
+
+      <PlanShareSheet
+        open={sharePlanId !== null}
+        planId={sharePlanId}
+        onClose={() => setSharePlanId(null)}
       />
 
       <ConfirmDialog

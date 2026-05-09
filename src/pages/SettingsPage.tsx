@@ -14,11 +14,13 @@ import {
   Languages,
   Mail,
   Palette,
+  Share2,
   ShieldCheck,
   Vibrate,
 } from 'lucide-react'
 
 import { PlanJsonImportSheet } from '../components/plans/PlanJsonImportSheet'
+import { PlanShareManageSheet } from '../components/plans/PlanShareManageSheet'
 import { ReminderSettingsEntry } from '../components/settings/LocalReminderSettings'
 import { AnimatedSheet } from '../components/motion/AnimatedSheet'
 import { PageHeader } from '../components/ui/PageHeader'
@@ -636,6 +638,24 @@ function PlanTransferSettingsRow() {
   )
 }
 
+function PlanShareSettingsRow() {
+  const { t } = useTranslation()
+  const [isOpen, setIsOpen] = useState(false)
+
+  return (
+    <>
+      <SettingsRow
+        icon={Share2}
+        label={t('planShare.manageTitle')}
+        supporting={t('planShare.manageDescription')}
+        onClick={() => setIsOpen(true)}
+        right={<ChevronRight size={16} strokeWidth={2.2} aria-hidden="true" />}
+      />
+      <PlanShareManageSheet open={isOpen} onClose={() => setIsOpen(false)} />
+    </>
+  )
+}
+
 function DebugDateSettingsCard() {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -735,6 +755,8 @@ export function SettingsPage() {
           />
           <RowDivider />
           <PlanTransferSettingsRow />
+          <RowDivider />
+          <PlanShareSettingsRow />
         </SettingsSection>
 
         <SettingsSection title={t('settings.sections.support')}>
