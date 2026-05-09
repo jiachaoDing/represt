@@ -125,7 +125,7 @@ export function PlansPage() {
         isSubmitting={plans.isSubmitting}
         selectedPlanId={plans.selectedPlanId}
         plans={plans.plans}
-        onAiImport={() => navigate('/plans/ai-import')}
+        onImportShareCode={() => setIsShareCodeSheetOpen(true)}
         onCreate={() => ui.openPlanSheet('create')}
         onSelect={(planId) => {
           ui.closeExerciseEditor()
@@ -187,11 +187,11 @@ export function PlansPage() {
         mode={ui.planSheetMode}
         renameName={ui.renamePlanName}
         onClose={() => ui.setPlanSheetMode(null)}
-        onCreateNameChange={plans.setNewPlanName}
-        onImportShareCode={() => {
+        onAiImport={() => {
           ui.setPlanSheetMode(null)
-          setIsShareCodeSheetOpen(true)
+          navigate('/plans/ai-import')
         }}
+        onCreateNameChange={plans.setNewPlanName}
         onRenameNameChange={ui.setRenamePlanName}
         onSubmit={(event) => void ui.handlePlanSubmit(event, ui.renamePlanName)}
       />

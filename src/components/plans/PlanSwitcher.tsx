@@ -1,4 +1,4 @@
-import { ClipboardPaste } from 'lucide-react'
+import { KeyRound } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import type { PlanWithExercises } from '../../db/plans'
@@ -9,7 +9,7 @@ type PlanSwitcherProps = {
   selectedPlanId: string | null
   plans: PlanWithExercises[]
   onCreate: () => void
-  onAiImport: () => void
+  onImportShareCode: () => void
   onSelect: (planId: string) => void
 }
 
@@ -17,8 +17,8 @@ export function PlanSwitcher({
   isSubmitting,
   selectedPlanId,
   plans,
-  onAiImport,
   onCreate,
+  onImportShareCode,
   onSelect,
 }: PlanSwitcherProps) {
   const { t } = useTranslation()
@@ -53,13 +53,13 @@ export function PlanSwitcher({
         </button>
         <button
           type="button"
-          onClick={onAiImport}
+          onClick={onImportShareCode}
           disabled={isSubmitting}
-          aria-label={t('plans.aiImport.entry')}
+          aria-label={t('plans.importByShareCode')}
           className="flex h-8 items-center justify-center rounded-lg border border-[var(--outline-variant)] px-3 text-[var(--primary)] transition-colors whitespace-nowrap tap-highlight-transparent hover:bg-[var(--primary)]/10"
         >
-          <ClipboardPaste size={16} strokeWidth={2.3} className="mr-1" />
-          {t('plans.aiImport.entry')}
+          <KeyRound size={16} strokeWidth={2.3} className="mr-1" aria-hidden="true" />
+          {t('plans.importByShareCode')}
         </button>
         {plans.map((plan, index) => {
           const isSelected = plan.id === selectedPlanId

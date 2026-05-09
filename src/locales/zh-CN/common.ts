@@ -469,11 +469,12 @@ const common = {
     planPlaceholder: '例如：推胸日',
     createPlan: '创建计划',
     createOrImport: '或者',
-    importByShareCode: '输入分享码导入',
+    importByShareCode: '导入',
     importByShareCodeDescription: '查看并保存别人分享的计划或循环日程',
     noPlans: '还没有计划',
     aiImport: {
       entry: 'AI',
+      entryDescription: '粘贴 AI 回复创建计划和循环日程',
       title: 'AI 导入计划',
       promptTitle: 'AI 提示词',
       copyPrompt: '复制提示词',

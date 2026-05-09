@@ -1,5 +1,5 @@
 import type { FormEvent } from 'react'
-import { ChevronRight, KeyRound } from 'lucide-react'
+import { ChevronRight, ClipboardPaste } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { BottomSheet } from '../ui/BottomSheet'
@@ -13,8 +13,8 @@ type PlanNameSheetProps = {
   mode: PlanSheetMode
   renameName: string
   onClose: () => void
+  onAiImport?: () => void
   onCreateNameChange: (value: string) => void
-  onImportShareCode?: () => void
   onRenameNameChange: (value: string) => void
   onSubmit: (event: FormEvent<HTMLFormElement>) => void
 }
@@ -26,8 +26,8 @@ export function PlanNameSheet({
   mode,
   renameName,
   onClose,
+  onAiImport,
   onCreateNameChange,
-  onImportShareCode,
   onRenameNameChange,
   onSubmit,
 }: PlanNameSheetProps) {
@@ -70,7 +70,7 @@ export function PlanNameSheet({
           </div>
         </form>
 
-        {mode === 'create' && onImportShareCode ? (
+        {mode === 'create' && onAiImport ? (
           <div className="space-y-3">
             <div className="flex items-center gap-3">
               <span className="h-px flex-1 bg-[var(--outline-variant)]" />
@@ -81,15 +81,15 @@ export function PlanNameSheet({
             </div>
             <button
               type="button"
-              onClick={onImportShareCode}
+              onClick={onAiImport}
               disabled={isSubmitting}
               className="flex min-h-14 w-full items-center gap-3 rounded-xl bg-[var(--surface)] px-4 text-left text-sm font-medium text-[var(--on-surface)] transition-colors hover:bg-[var(--surface-container)] disabled:opacity-50"
             >
-              <KeyRound size={18} strokeWidth={2.2} className="text-[var(--primary)]" aria-hidden="true" />
+              <ClipboardPaste size={18} strokeWidth={2.2} className="text-[var(--primary)]" aria-hidden="true" />
               <span className="min-w-0 flex-1">
-                <span className="block truncate">{t('plans.importByShareCode')}</span>
+                <span className="block truncate">{t('plans.aiImport.title')}</span>
                 <span className="mt-0.5 block truncate text-xs text-[var(--on-surface-variant)]">
-                  {t('plans.importByShareCodeDescription')}
+                  {t('plans.aiImport.entryDescription')}
                 </span>
               </span>
               <ChevronRight size={16} strokeWidth={2.2} aria-hidden="true" />

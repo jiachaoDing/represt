@@ -469,11 +469,12 @@ const common = {
     planPlaceholder: 'Example: Push day',
     createPlan: 'Create plan',
     createOrImport: 'Or',
-    importByShareCode: 'Import by share code',
+    importByShareCode: 'Import',
     importByShareCodeDescription: 'View and save a shared plan or training cycle',
     noPlans: 'No plans yet',
     aiImport: {
       entry: 'AI',
+      entryDescription: 'Paste an AI response to create plans and cycles',
       title: 'AI plan import',
       promptTitle: 'AI prompt',
       copyPrompt: 'Copy prompt',
