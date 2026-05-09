@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { ChevronRight, Plus, Search } from 'lucide-react'
 
 import { PageHeader } from '../../components/ui/PageHeader'
+import { useBackLinkState } from '../../hooks/useRouteBack'
 import { getExerciseAliases } from '../../lib/exercise-catalog-i18n'
 import { getDisplayExerciseName } from '../../lib/exercise-name'
 import {
@@ -15,6 +16,7 @@ import { MetricValue } from './MetricValue'
 export function ExerciseRecordsListPage() {
   const { i18n, t } = useTranslation()
   const navigate = useNavigate()
+  const backLinkState = useBackLinkState()
   const [items, setItems] = useState<ExerciseRecordSummary[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -88,7 +90,7 @@ export function ExerciseRecordsListPage() {
         actions={
           <button
             type="button"
-            onClick={() => navigate('/summary/exercises/catalog/new')}
+            onClick={() => navigate('/summary/exercises/catalog/new', { state: backLinkState })}
             className="flex h-11 w-11 items-center justify-center rounded-full text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/10"
             aria-label={t('summary.exerciseRecords.addCustomTitle')}
           >
@@ -126,6 +128,7 @@ export function ExerciseRecordsListPage() {
               <Link
                 key={item.profileId}
                 to={`/summary/exercises/${encodeURIComponent(item.profileId)}`}
+                state={backLinkState}
                 viewTransition
                 className="rounded-[1.25rem] border border-[var(--outline-variant)]/20 bg-[var(--surface)] p-4 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)]"
               >

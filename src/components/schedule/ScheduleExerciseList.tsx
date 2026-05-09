@@ -177,6 +177,10 @@ export function ScheduleExerciseList({
       return false
     }
 
+    if (exercise.completedSets > 0) {
+      return false
+    }
+
     setEditExerciseId(exercise.id)
     setEditDraft(toPlanExerciseDraft({
       ...exercise,

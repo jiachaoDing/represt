@@ -22,8 +22,8 @@ export function PageHeader({
 }: PageHeaderProps) {
   const { t } = useTranslation()
   const [scrolled, setScrolled] = useState(false)
-  const backTo = useResolvedBackTo(backFallbackTo)
-  const useFloatingTitle = !backTo && titleAlign !== 'start'
+  const backLink = useResolvedBackTo(backFallbackTo)
+  const useFloatingTitle = !backLink && titleAlign !== 'start'
   const titleAlignmentClass =
     titleAlign === 'center' ? 'items-center text-center' : 'items-end text-right'
   const titleClassName = subtitle
@@ -45,9 +45,10 @@ export function PageHeader({
       }`}
     >
       <div className="flex h-16 items-center gap-4">
-        {backTo ? (
+        {backLink ? (
           <Link
-            to={backTo}
+            to={backLink.backTo}
+            state={backLink.backState}
             viewTransition
             className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-[var(--on-surface)] transition-colors hover:bg-[var(--on-surface-variant)]/10"
             aria-label={t('common.back')}

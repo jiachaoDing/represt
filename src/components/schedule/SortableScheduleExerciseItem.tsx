@@ -57,6 +57,7 @@ export function SortableScheduleExerciseItem({
     touchAction: 'manipulation',
   }
   const canSelect = true
+  const canEdit = exercise.completedSets === 0
   const interactionClassName = isSelectionMode
     ? canSelect
       ? 'cursor-pointer'
@@ -92,7 +93,7 @@ export function SortableScheduleExerciseItem({
         isSubmitting={isSubmitting || isSorting}
         linkState={backLinkState}
         now={now}
-        onEdit={isSelectionMode ? undefined : () => onEdit(exercise.id)}
+        onEdit={isSelectionMode || !canEdit ? undefined : () => onEdit(exercise.id)}
         selectionMode={isSelectionMode}
       />
     </div>

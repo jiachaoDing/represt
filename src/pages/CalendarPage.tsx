@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, useLocation, useSearchParams } from 'react-router-dom'
 
 import { CalendarMonthGrid } from '../components/calendar/CalendarMonthGrid'
 import { PageHeader } from '../components/ui/PageHeader'
@@ -24,6 +24,7 @@ function buildSummaryPath(dateKey: string) {
 
 export function CalendarPage() {
   const { i18n, t } = useTranslation()
+  const location = useLocation()
   const [searchParams, setSearchParams] = useSearchParams()
   const todayDateKey = getTodaySessionDateKey()
   const selectedDateKey = useMemo(() => {
@@ -161,7 +162,7 @@ export function CalendarPage() {
   )
 
   function handleSelectDate(dateKey: string) {
-    setSearchParams({ date: dateKey })
+    setSearchParams({ date: dateKey }, { state: location.state })
 
     if (dateKey.slice(0, 7) !== visibleMonthDateKey.slice(0, 7)) {
       setVisibleMonthDateKey(dateKey)

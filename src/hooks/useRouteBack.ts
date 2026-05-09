@@ -2,6 +2,7 @@ import { useLocation } from 'react-router-dom'
 
 type BackNavigationState = {
   backTo: string
+  backState?: unknown
 }
 
 function buildLocationPath({
@@ -16,13 +17,18 @@ function isInternalPath(value: string) {
   return value.startsWith('/') && !value.startsWith('//')
 }
 
-function readBackTo(state: unknown) {
+function readBackNavigation(state: unknown): BackNavigationState | null {
   if (!state || typeof state !== 'object' || !('backTo' in state)) {
     return null
   }
 
   const backTo = state.backTo
-  return typeof backTo === 'string' && isInternalPath(backTo) ? backTo : null
+  if (typeof backTo !== 'string' || !isInternalPath(backTo)) {
+    return null
+  }
+
+  const backState = 'backState' in state ? state.backState : undefined
+  return backState === undefined ? { backTo } : { backTo, backState }
 }
 
 export function useBackLinkState(): BackNavigationState {
@@ -30,12 +36,17 @@ export function useBackLinkState(): BackNavigationState {
 
   return {
     backTo: buildLocationPath(location),
+    backState: location.state ?? undefined,
   }
 }
 
 export function useResolvedBackTo(fallbackTo?: string) {
   const location = useLocation()
-  const stateBackTo = readBackTo(location.state)
+  const stateBackNavigation = readBackNavigation(location.state)
 
-  return stateBackTo ?? fallbackTo
+  if (stateBackNavigation) {
+    return stateBackNavigation
+  }
+
+  return fallbackTo ? { backTo: fallbackTo } : null
 }
