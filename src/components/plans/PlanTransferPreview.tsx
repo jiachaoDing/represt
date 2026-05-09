@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import type { PlanTransferData, PlanTransferExercise } from '../../lib/plan-transfer'
@@ -6,6 +6,21 @@ import { formatNumber } from '../../lib/set-record-measurement'
 
 type PlanTransferPreviewProps = {
   data: PlanTransferData
+}
+
+function getInitialSelection(data: PlanTransferData) {
+  const cycleSlotIndex = data.cycle.findIndex((slot) => slot !== null)
+  if (cycleSlotIndex >= 0) {
+    return {
+      cycleSlotIndex,
+      planIndex: data.cycle[cycleSlotIndex],
+    }
+  }
+
+  return {
+    cycleSlotIndex: null,
+    planIndex: data.plans.length > 0 ? 0 : null,
+  }
 }
 
 function getExerciseValueParts(
@@ -22,28 +37,15 @@ function getExerciseValueParts(
 
 export function PlanTransferPreview({ data }: PlanTransferPreviewProps) {
   const { t } = useTranslation()
-  const initialSelection = useMemo(() => {
-    const cycleSlotIndex = data.cycle.findIndex((slot) => slot !== null)
-    if (cycleSlotIndex >= 0) {
-      return {
-        cycleSlotIndex,
-        planIndex: data.cycle[cycleSlotIndex],
-      }
-    }
-
-    return {
-      cycleSlotIndex: null,
-      planIndex: data.plans.length > 0 ? 0 : null,
-    }
-  }, [data])
+  const initialSelection = getInitialSelection(data)
   const [selectedCycleSlotIndex, setSelectedCycleSlotIndex] = useState<number | null>(initialSelection.cycleSlotIndex)
   const [selectedPlanIndex, setSelectedPlanIndex] = useState<number | null>(initialSelection.planIndex)
   const selectedPlan = selectedPlanIndex === null ? null : data.plans[selectedPlanIndex] ?? null
-
-  useEffect(() => {
-    setSelectedCycleSlotIndex(initialSelection.cycleSlotIndex)
-    setSelectedPlanIndex(initialSelection.planIndex)
-  }, [initialSelection])
+  const shouldShowExercisePreview = selectedPlan !== null || data.cycle.length > 0
+  const previewTitle = selectedPlan
+    ? selectedPlan.planName || t('common.unnamedPlan')
+    : t('planShare.preview.restDay')
+  const previewExerciseCount = selectedPlan?.exercises.length ?? 0
 
   return (
     <div className="space-y-3">
@@ -117,41 +119,47 @@ export function PlanTransferPreview({ data }: PlanTransferPreviewProps) {
         </section>
       ) : null}
 
-      {selectedPlan ? (
+      {shouldShowExercisePreview ? (
         <section className="rounded-xl bg-[var(--surface)] px-4 py-3">
           <div className="mb-2 flex items-center justify-between gap-3">
             <h3 className="min-w-0 flex-1 truncate text-sm font-bold text-[var(--on-surface)]">
-              {selectedPlan.planName || t('common.unnamedPlan')}
+              {previewTitle}
             </h3>
             <span className="shrink-0 text-xs font-medium text-[var(--primary)]">
-              {t('summary.exerciseCount', { count: selectedPlan.exercises.length })}
+              {t('summary.exerciseCount', { count: previewExerciseCount })}
             </span>
           </div>
-          <div className="space-y-2 border-t border-[var(--outline-variant)]/35 pt-2">
-            {selectedPlan.exercises.map((exercise, exerciseIndex) => {
-              const valueParts = getExerciseValueParts(t, exercise)
+          <div className="h-56 space-y-2 overflow-y-auto overscroll-contain border-t border-[var(--outline-variant)]/35 pr-1 pt-2">
+            {selectedPlan ? (
+              selectedPlan.exercises.map((exercise, exerciseIndex) => {
+                const valueParts = getExerciseValueParts(t, exercise)
 
-              return (
-                <div key={`${exercise.name}-${exerciseIndex}`}>
-                  <div className="flex items-start justify-between gap-3">
-                    <p className="min-w-0 flex-1 truncate text-sm font-semibold text-[var(--on-surface)]">
-                      {exercise.name || t('common.unnamedExercise')}
-                    </p>
-                    <span className="shrink-0 text-xs font-medium text-[var(--primary)]">
-                      {t('plans.exerciseMeta', {
-                        sets: exercise.targetSets,
-                        seconds: exercise.restSeconds,
-                      })}
-                    </span>
+                return (
+                  <div key={`${exercise.name}-${exerciseIndex}`}>
+                    <div className="flex items-start justify-between gap-3">
+                      <p className="min-w-0 flex-1 truncate text-sm font-semibold text-[var(--on-surface)]">
+                        {exercise.name || t('common.unnamedExercise')}
+                      </p>
+                      <span className="shrink-0 text-xs font-medium text-[var(--primary)]">
+                        {t('plans.exerciseMeta', {
+                          sets: exercise.targetSets,
+                          seconds: exercise.restSeconds,
+                        })}
+                      </span>
+                    </div>
+                    {valueParts.length > 0 ? (
+                      <p className="mt-1 text-xs leading-5 text-[var(--on-surface-variant)]">
+                        {valueParts.join(' · ')}
+                      </p>
+                    ) : null}
                   </div>
-                  {valueParts.length > 0 ? (
-                    <p className="mt-1 text-xs leading-5 text-[var(--on-surface-variant)]">
-                      {valueParts.join(' · ')}
-                    </p>
-                  ) : null}
-                </div>
-              )
-            })}
+                )
+              })
+            ) : (
+              <div className="flex h-full items-center justify-center text-sm font-medium text-[var(--on-surface-variant)]">
+                {t('planShare.preview.restDay')}
+              </div>
+            )}
           </div>
         </section>
       ) : null}
