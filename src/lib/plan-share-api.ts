@@ -1,5 +1,7 @@
 import type { PlanTransferData } from './plan-transfer-types'
 
+export type SharedPlanKind = 'plan-template' | 'training-cycle'
+
 export type SharedPlanSummary = {
   planCount: number
   exerciseCount: number
@@ -11,7 +13,7 @@ export type SharedPlanDetail = {
   code: string
   schemaVersion: 1
   app: 'RepRest'
-  kind: 'plan-template'
+  kind: SharedPlanKind
   title: string
   summary: SharedPlanSummary
   payload: PlanTransferData
@@ -105,7 +107,7 @@ async function readSuccessResponse(response: Response) {
   await response.text()
 }
 
-export async function createSharedPlan(data: PlanTransferData, locale?: string) {
+export async function createSharedPlan(data: PlanTransferData, kind: SharedPlanKind, locale?: string) {
   try {
     const response = await fetch(`${getPlanShareApiBaseUrl()}/api/shared-plans`, {
       method: 'POST',
@@ -113,7 +115,7 @@ export async function createSharedPlan(data: PlanTransferData, locale?: string) 
       body: JSON.stringify({
         schemaVersion: 1,
         app: 'RepRest',
-        kind: 'plan-template',
+        kind,
         locale,
         data,
       }),

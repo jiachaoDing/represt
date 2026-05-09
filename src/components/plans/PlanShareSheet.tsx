@@ -3,11 +3,12 @@ import { Check, Copy, Link, Share2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { addSharedPlanRecord } from '../../db/shared-plan-records'
-import { buildPlanTemplateExport, type PlanTransferData } from '../../lib/plan-transfer'
+import { buildPlanTemplateExport, buildTrainingCycleExport, type PlanTransferData } from '../../lib/plan-transfer'
 import {
   createSharedPlan,
   PlanShareApiError,
   type CreateSharedPlanResult,
+  type SharedPlanKind,
 } from '../../lib/plan-share-api'
 import {
   buildPlanShareText,
@@ -22,7 +23,8 @@ import { AnimatedSheet } from '../motion/AnimatedSheet'
 type PlanShareSheetProps = {
   open: boolean
   onClose: () => void
-  planId: string | null
+  kind?: SharedPlanKind
+  planId?: string | null
 }
 
 function getPlanShareErrorMessage(
@@ -36,7 +38,7 @@ function getPlanShareErrorMessage(
   return t('planShare.errors.unknown')
 }
 
-export function PlanShareSheet({ open, onClose, planId }: PlanShareSheetProps) {
+export function PlanShareSheet({ open, onClose, kind = 'plan-template', planId = null }: PlanShareSheetProps) {
   const { t } = useTranslation()
   const [data, setData] = useState<PlanTransferData | null>(null)
   const [result, setResult] = useState<CreateSharedPlanResult | null>(null)
@@ -45,18 +47,24 @@ export function PlanShareSheet({ open, onClose, planId }: PlanShareSheetProps) {
   const [isBusy, setIsBusy] = useState(false)
 
   const shareText = useMemo(
-    () => (data && result ? buildPlanShareText(t, data, result.code, result.url) : ''),
-    [data, result, t],
+    () => (data && result ? buildPlanShareText(t, data, result.code, result.url, kind) : ''),
+    [data, kind, result, t],
   )
   const mainExercises = data ? getPlanTransferMainExercises(data) : []
+  const isTrainingCycle = kind === 'training-cycle'
+  const canCreateShare = Boolean(
+    data &&
+      (isTrainingCycle ? data.cycle.length > 0 && data.plans.length > 0 : data.plans.length === 1),
+  )
 
   useEffect(() => {
-    if (!open || !planId) {
+    if (!open || (kind === 'plan-template' && !planId)) {
       return
     }
 
     let cancelled = false
     const selectedPlanId = planId
+    const selectedPlanIds = selectedPlanId ? [selectedPlanId] : []
 
     async function prepareDraft() {
       try {
@@ -64,11 +72,16 @@ export function PlanShareSheet({ open, onClose, planId }: PlanShareSheetProps) {
         setError(null)
         setMessage(null)
         setResult(null)
-        const draft = await buildPlanTemplateExport([selectedPlanId])
+        const draft =
+          kind === 'training-cycle'
+            ? await buildTrainingCycleExport()
+            : await buildPlanTemplateExport(selectedPlanIds)
         if (!cancelled) {
           setData(draft)
-          if (!draft) {
+          if (!draft || (kind === 'plan-template' && draft.plans.length !== 1)) {
             setError(t('planShare.errors.emptyPlan'))
+          } else if (kind === 'training-cycle' && (draft.cycle.length === 0 || draft.plans.length === 0)) {
+            setError(t('planShare.errors.emptyCycle'))
           }
         }
       } catch (draftError) {
@@ -88,7 +101,7 @@ export function PlanShareSheet({ open, onClose, planId }: PlanShareSheetProps) {
     return () => {
       cancelled = true
     }
-  }, [open, planId, t])
+  }, [kind, open, planId, t])
 
   function resetAndClose() {
     onClose()
@@ -108,13 +121,15 @@ export function PlanShareSheet({ open, onClose, planId }: PlanShareSheetProps) {
       setIsBusy(true)
       setError(null)
       setMessage(null)
-      const created = await createSharedPlan(data, i18n.resolvedLanguage ?? i18n.language)
+      const created = await createSharedPlan(data, kind, i18n.resolvedLanguage ?? i18n.language)
       setResult(created)
       try {
         await addSharedPlanRecord({
           code: created.code,
           url: created.url,
-          title: getPlanTransferTitle(data, t('common.unnamedPlan')),
+          title: isTrainingCycle
+            ? t('planShare.cycleName')
+            : getPlanTransferTitle(data, t('common.unnamedPlan')),
           createdAt: new Date().toISOString(),
           expiresAt: created.expiresAt,
         })
@@ -146,24 +161,30 @@ export function PlanShareSheet({ open, onClose, planId }: PlanShareSheetProps) {
   }
 
   return (
-    <AnimatedSheet open={open} onClose={resetAndClose} title={t('planShare.title')}>
+    <AnimatedSheet open={open} onClose={resetAndClose} title={isTrainingCycle ? t('planShare.cycleTitle') : t('planShare.title')}>
       <div className="space-y-3">
         {data ? (
           <section className="rounded-xl bg-[var(--surface)] px-4 py-3">
             <p className="text-sm font-semibold text-[var(--on-surface)]">
-              {data.plans[0]?.planName ?? t('common.unnamedPlan')}
+              {isTrainingCycle ? t('planShare.cycleName') : data.plans[0]?.planName ?? t('common.unnamedPlan')}
             </p>
             <p className="mt-1 text-xs leading-5 text-[var(--on-surface-variant)]">
-              {t('planShare.summary', {
-                count: getPlanTransferExerciseCount(data),
-                exercises: mainExercises.join(t('planShare.exerciseSeparator')),
-              })}
+              {isTrainingCycle
+                ? t('planShare.cycleSummary', {
+                    days: data.cycle.length,
+                    plans: data.plans.length,
+                    exercises: getPlanTransferExerciseCount(data),
+                  })
+                : t('planShare.summary', {
+                    count: getPlanTransferExerciseCount(data),
+                    exercises: mainExercises.join(t('planShare.exerciseSeparator')),
+                  })}
             </p>
           </section>
         ) : null}
 
         <p className="rounded-xl bg-[var(--surface)] px-4 py-3 text-xs leading-5 text-[var(--on-surface-variant)]">
-          {t('planShare.privacyNote')}
+          {isTrainingCycle ? t('planShare.cyclePrivacyNote') : t('planShare.privacyNote')}
         </p>
 
         {result ? (
@@ -214,7 +235,7 @@ export function PlanShareSheet({ open, onClose, planId }: PlanShareSheetProps) {
           <button
             type="button"
             onClick={() => void createShare()}
-            disabled={isBusy || !data}
+            disabled={isBusy || !canCreateShare}
             className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[var(--primary)] px-4 text-sm font-bold text-[var(--on-primary)] disabled:opacity-50"
           >
             <Share2 size={18} strokeWidth={2.2} aria-hidden="true" />

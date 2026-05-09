@@ -24,6 +24,31 @@ export function PlanTransferPreview({ data }: PlanTransferPreviewProps) {
 
   return (
     <div className="space-y-3">
+      {data.cycle.length > 0 ? (
+        <section className="rounded-xl bg-[var(--surface)] px-4 py-3">
+          <h3 className="mb-2 text-xs font-semibold text-[var(--on-surface-variant)]">
+            {t('planShare.preview.cycleTitle')}
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            {data.cycle.map((slot, index) => {
+              const plan = slot === null ? null : data.plans[slot] ?? null
+
+              return (
+                <span
+                  key={index}
+                  className="rounded-full bg-[var(--surface-container)] px-3 py-1.5 text-xs font-medium text-[var(--on-surface)]"
+                >
+                  {t('planShare.preview.cycleDay', {
+                    day: index + 1,
+                    name: plan ? plan.planName : t('planShare.preview.restDay'),
+                  })}
+                </span>
+              )
+            })}
+          </div>
+        </section>
+      ) : null}
+
       {data.plans.map((plan, planIndex) => (
         <section key={`${plan.planName}-${planIndex}`} className="rounded-xl bg-[var(--surface)] px-4 py-3">
           <div className="mb-2 flex items-center justify-between gap-3">
@@ -62,31 +87,6 @@ export function PlanTransferPreview({ data }: PlanTransferPreviewProps) {
           </div>
         </section>
       ))}
-
-      {data.cycle.length > 0 ? (
-        <section className="rounded-xl bg-[var(--surface)] px-4 py-3">
-          <h3 className="mb-2 text-xs font-semibold text-[var(--on-surface-variant)]">
-            {t('planShare.preview.cycleTitle')}
-          </h3>
-          <div className="flex flex-wrap gap-2">
-            {data.cycle.map((slot, index) => {
-              const plan = slot === null ? null : data.plans[slot] ?? null
-
-              return (
-                <span
-                  key={index}
-                  className="rounded-full bg-[var(--surface-container)] px-3 py-1.5 text-xs font-medium text-[var(--on-surface)]"
-                >
-                  {t('planShare.preview.cycleDay', {
-                    day: index + 1,
-                    name: plan ? plan.planName : t('planShare.preview.restDay'),
-                  })}
-                </span>
-              )
-            })}
-          </div>
-        </section>
-      ) : null}
     </div>
   )
 }

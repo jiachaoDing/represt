@@ -33,6 +33,7 @@ export function SharedPlanImportSheet({ open, onClose, onImported }: SharedPlanI
   const [error, setError] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
   const [isBusy, setIsBusy] = useState(false)
+  const isTrainingCycle = detail?.kind === 'training-cycle'
 
   function resetFlow() {
     setCode('')
@@ -130,10 +131,16 @@ export function SharedPlanImportSheet({ open, onClose, onImported }: SharedPlanI
               <span className="text-xs font-bold text-[var(--primary)]">{detail.code}</span>
               <h3 className="mt-1 text-base font-bold text-[var(--on-surface)]">{detail.title}</h3>
               <p className="mt-1 text-xs leading-5 text-[var(--on-surface-variant)]">
-                {t('planShare.sharedPlanSummary', {
-                  count: detail.summary.exerciseCount,
-                  exercises: detail.summary.mainExercises.join(t('planShare.exerciseSeparator')),
-                })}
+                {isTrainingCycle
+                  ? t('planShare.cycleSummary', {
+                      days: detail.payload.cycle.length,
+                      plans: detail.summary.planCount,
+                      exercises: detail.summary.exerciseCount,
+                    })
+                  : t('planShare.sharedPlanSummary', {
+                      count: detail.summary.exerciseCount,
+                      exercises: detail.summary.mainExercises.join(t('planShare.exerciseSeparator')),
+                    })}
               </p>
             </section>
             <PlanTransferPreview data={detail.payload} />
@@ -157,7 +164,13 @@ export function SharedPlanImportSheet({ open, onClose, onImported }: SharedPlanI
                 className="inline-flex items-center gap-2 rounded-full bg-[var(--primary)] px-4 py-2.5 text-sm font-semibold text-[var(--on-primary)] disabled:opacity-50"
               >
                 <ClipboardPaste size={16} strokeWidth={2.2} aria-hidden="true" />
-                <span>{isBusy ? t('planShare.saving') : t('planShare.saveSharedPlan')}</span>
+                <span>
+                  {isBusy
+                    ? t('planShare.saving')
+                    : isTrainingCycle
+                      ? t('planShare.saveSharedCycle')
+                      : t('planShare.saveSharedPlan')}
+                </span>
               </button>
             </div>
           </>

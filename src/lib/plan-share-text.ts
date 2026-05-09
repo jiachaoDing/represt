@@ -1,6 +1,7 @@
 import type { TFunction } from 'i18next'
 
 import type { PlanTransferData } from './plan-transfer-types'
+import type { SharedPlanKind } from './plan-share-api'
 
 export function getPlanTransferExerciseCount(data: PlanTransferData) {
   return data.plans.reduce((total, plan) => total + plan.exercises.length, 0)
@@ -23,11 +24,14 @@ export function buildPlanShareText(
   data: PlanTransferData,
   code: string,
   url: string,
+  kind: SharedPlanKind = 'plan-template',
 ) {
   const title = getPlanTransferTitle(data, t('common.unnamedPlan'))
   const mainExercises = getPlanTransferMainExercises(data)
   const lines = [
-    t('planShare.shareText.title', { name: title }),
+    kind === 'training-cycle'
+      ? t('planShare.shareText.cycleTitle', { days: data.cycle.length, count: data.plans.length })
+      : t('planShare.shareText.title', { name: title }),
     '',
     t('planShare.shareText.summary', {
       count: getPlanTransferExerciseCount(data),
