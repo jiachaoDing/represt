@@ -57,6 +57,10 @@ jobs:
           keyPassword=$ANDROID_KEY_PASSWORD
           EOF
 
+      - name: Make Gradle wrapper executable
+        working-directory: android
+        run: chmod +x gradlew
+
       - name: Build release artifacts
         working-directory: android
         run: ./gradlew assembleRelease bundleRelease
