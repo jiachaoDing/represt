@@ -28,14 +28,14 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      - name: Sync Android
-        run: npm run android:sync
-
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 17
+          java-version: 21
+
+      - name: Sync Android
+        run: npm run android:sync
 
       - name: Prepare release signing
         env:
