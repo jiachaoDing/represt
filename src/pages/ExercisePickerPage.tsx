@@ -129,6 +129,7 @@ export function ExercisePickerPage() {
   }, [t])
 
   useEffect(() => {
+    let isCancelled = false
     const createdProfileId = readCreatedExerciseProfileId(location.state)
     if (!createdProfileId || exerciseModels.length === 0) {
       return
@@ -139,25 +140,35 @@ export function ExercisePickerPage() {
       return
     }
 
-    setSelectedExercises((current) => {
-      if (current.some((exercise) => exercise.key === createdModel.profileId)) {
-        return current
+    queueMicrotask(() => {
+      if (isCancelled) {
+        return
       }
 
-      return [
-        ...current,
-        {
-          key: createdModel.profileId,
-          name: getModelDisplayName(t, createdModel),
-          catalogExerciseId: createdModel.catalogExerciseId,
-          measurementType: createdModel.measurementType,
-        },
-      ]
+      setSelectedExercises((current) => {
+        if (current.some((exercise) => exercise.key === createdModel.profileId)) {
+          return current
+        }
+
+        return [
+          ...current,
+          {
+            key: createdModel.profileId,
+            name: getModelDisplayName(t, createdModel),
+            catalogExerciseId: createdModel.catalogExerciseId,
+            measurementType: createdModel.measurementType,
+          },
+        ]
+      })
+      setKeyword('')
+      setCategoryId(createdModel.categoryId)
+      setIsCartOpen(true)
+      navigate(`${location.pathname}${location.search}${location.hash}`, { replace: true })
     })
-    setKeyword('')
-    setCategoryId(createdModel.categoryId)
-    setIsCartOpen(true)
-    navigate(`${location.pathname}${location.search}${location.hash}`, { replace: true })
+
+    return () => {
+      isCancelled = true
+    }
   }, [exerciseModels, location.hash, location.pathname, location.search, location.state, navigate, t])
 
   const normalizedKeyword = normalizeKeyword(keyword)

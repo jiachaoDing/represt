@@ -9,6 +9,10 @@ lerna-debug.log*
 
 node_modules
 
+# Local environment
+.env
+!.env.example
+
 # Build outputs
 dist
 dist-ssr
@@ -20,6 +24,11 @@ coverage
 *.apk
 *.aab
 *.ap_
+*.jks
+*.keystore
+*.p12
+*.pem
+*.key
 *.local
 
 # Editor directories and files

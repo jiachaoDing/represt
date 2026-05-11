@@ -2,11 +2,34 @@
 
 一个带自动组间计时的极简力量训练记录器。当前实现已经覆盖“今日训练、计划维护、动作执行、最近一组补录、训练总结”这一轮最小闭环，数据保存在本地 IndexedDB。
 
+## 开源许可
+
+Copyright (C) 2026 J.C.Ding
+
+本项目源代码以 GNU General Public License v3.0 or later 开源，详见 [LICENSE](LICENSE)。你可以使用、修改、分发和商业使用本项目，但分发修改版本时也必须按 GPL-3.0-or-later 提供相应源码，并保留版权与许可证声明。
+
+项目名称、Logo、图标、截图和商店素材不随源代码许可证授予商标使用权，除非另有明确说明。
+
+## 隐私与数据
+
+组间记默认把训练计划、训练记录和设置保存在用户设备本地 IndexedDB 中。除用户主动使用分享相关能力外，应用不需要上传训练数据。
+
 ## 安装依赖
 
 ```bash
 npm install
 ```
+
+## 环境变量
+
+复制 `.env.example` 为 `.env` 后按需调整：
+
+```bash
+VITE_PLAN_SHARE_API_BASE_URL=https://share.represt.app
+VITE_PLAN_SHARE_WEB_BASE_URL=https://share.represt.app
+```
+
+这两个变量是 Vite 客户端构建变量，会被打进前端产物，不要在其中放密钥。
 
 ## 启动开发环境
 
@@ -29,6 +52,31 @@ npm run preview
 ```
 
 预览前请先执行 `npm run build`。打开预览地址后，可在浏览器开发者工具中查看 manifest 和 Service Worker 注册情况。
+
+## Android
+
+项目已接入 Capacitor。同步 Android 工程：
+
+```bash
+npm run android:sync
+```
+
+打开 Android 工程：
+
+```bash
+npm run android:open
+```
+
+签名文件、keystore、Android 本地配置和构建产物不应提交到仓库。
+
+## F-Droid 准备说明
+
+本仓库使用 `GPL-3.0-or-later` SPDX 标识，适合作为 F-Droid metadata 的 `License` 值。提交 F-Droid 前请确认：
+
+- 可从干净仓库执行 `npm ci` 和 `npm run build`
+- Android 构建不依赖未公开的签名文件或本地绝对路径
+- 商店截图、图标和说明文本的授权边界清晰
+- 分享服务地址属于公开配置，不包含密钥
 
 ## 当前技术栈
 
@@ -69,7 +117,6 @@ scripts/
 - 自动创建“今日训练”，并按 `sessionDateKey` 识别当天会话
 - 计划列表与计划动作 CRUD（支持可选默认重量、次数）
 - 一套全局循环日程，可按自然日安排计划或休息日
-- 空库时自动写入两套演示计划
 - 从计划把动作追加到今日训练，并可只选择其中部分动作
 - 命中当日循环计划时，进入训练页会自动加入今日训练且同一天只执行一次
 - 手动向今日训练新增动作
