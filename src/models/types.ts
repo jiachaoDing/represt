@@ -1,4 +1,8 @@
-import type { MovementPattern, MuscleDistributionItem } from '../domain/exercise-catalog'
+import type {
+  MeasurementType,
+  MovementPattern,
+  MuscleDistributionItem,
+} from '../domain/exercise-catalog'
 
 export type SessionStatus = 'pending' | 'active' | 'completed'
 
@@ -29,6 +33,7 @@ export interface PlanExercise {
   planId: string
   name: string
   catalogExerciseId?: string | null
+  measurementType?: MeasurementType | null
   targetSets: number
   restSeconds: number
   weightKg?: number | null
@@ -51,6 +56,7 @@ export interface WorkoutSession {
 export interface SessionPlanExerciseSnapshot {
   name: string
   catalogExerciseId?: string | null
+  measurementType?: MeasurementType | null
   targetSets: number
   defaultWeightKg?: number | null
   defaultReps?: number | null
@@ -69,6 +75,7 @@ export interface SessionPlanItem {
   origin?: 'plan' | 'manual'
   name: string
   catalogExerciseId?: string | null
+  measurementType?: MeasurementType | null
   targetSets: number
   defaultWeightKg?: number | null
   defaultReps?: number | null
@@ -89,6 +96,7 @@ export interface PerformedExercise {
   origin?: 'plan' | 'manual'
   name: string
   catalogExerciseId?: string | null
+  measurementType?: MeasurementType | null
   targetSets: number
   defaultWeightKg?: number | null
   defaultReps?: number | null
@@ -118,6 +126,7 @@ export interface ExerciseProfile {
   id: string
   catalogExerciseId?: string | null
   deletedAt?: string | null
+  measurementType?: MeasurementType | null
   name: string
   movementPattern?: MovementPattern | null
   muscleDistribution: MuscleDistributionItem[]

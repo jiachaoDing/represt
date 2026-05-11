@@ -18,6 +18,7 @@ function createPerformedExercise(planItem: SessionPlanItem, timestamp: string) {
     origin: planItem.origin ?? 'manual',
     name: planItem.name,
     catalogExerciseId: planItem.catalogExerciseId ?? null,
+    measurementType: planItem.measurementType ?? null,
     targetSets: planItem.targetSets,
     defaultWeightKg: planItem.defaultWeightKg ?? null,
     defaultReps: planItem.defaultReps ?? null,

@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next'
 import { PageHeader } from '../components/ui/PageHeader'
 import { BottomSheet } from '../components/ui/BottomSheet'
 import { ConfirmDialog } from '../components/ui/ConfirmDialog'
-import { muscleGroups, type MuscleGroup } from '../domain/exercise-catalog'
+import { muscleGroups, type MeasurementType, type MuscleGroup } from '../domain/exercise-catalog'
 import { createPlanExercises, listPlansWithExercises } from '../db/plans'
 import { addTemporarySessionPlanItems, getOrCreateTodaySession, listExerciseModelOptions, type ExerciseModelOption } from '../db/sessions'
 import { findExerciseNameSuggestions } from '../lib/exercise-dictionary'
@@ -26,6 +26,7 @@ type SelectedExercise = {
   key: string
   name: string
   catalogExerciseId: string | null
+  measurementType?: MeasurementType | null
 }
 
 function isSelectedExercise(value: unknown): value is SelectedExercise {
@@ -37,6 +38,7 @@ function isSelectedExercise(value: unknown): value is SelectedExercise {
   return typeof item.key === 'string'
     && typeof item.name === 'string'
     && (typeof item.catalogExerciseId === 'string' || item.catalogExerciseId === null)
+    && (!('measurementType' in item) || typeof item.measurementType === 'string' || item.measurementType === null)
 }
 
 function readSelectedExercisesFromState(state: unknown) {
@@ -148,6 +150,7 @@ export function ExercisePickerPage() {
           key: createdModel.profileId,
           name: getModelDisplayName(t, createdModel),
           catalogExerciseId: createdModel.catalogExerciseId,
+          measurementType: createdModel.measurementType,
         },
       ]
     })
@@ -248,30 +251,27 @@ export function ExercisePickerPage() {
         key: model.profileId,
         name: getModelDisplayName(t, model),
         catalogExerciseId: model.catalogExerciseId,
+        measurementType: model.measurementType,
       },
     ])
-  }
-
-  function addCustomExercise() {
-    if (!customName) {
-      return
-    }
-
-    setSelectedExercises((current) => [
-      ...current,
-      {
-        key: `custom-${crypto.randomUUID()}`,
-        name: customName,
-        catalogExerciseId: null,
-      },
-    ])
-    setKeyword('')
-    setCategoryId('all')
-    setIsCartOpen(true)
   }
 
   function removeSelectedExercise(key: string) {
     setSelectedExercises((current) => current.filter((exercise) => exercise.key !== key))
+  }
+
+  function openExerciseModelEditor() {
+    if (!customName) {
+      return
+    }
+
+    navigate('/summary/exercises/catalog/new', {
+      state: {
+        ...backLinkState,
+        exerciseModelName: customName,
+        exercisePickerSelectedExercises: selectedExercises,
+      },
+    })
   }
 
   async function submitSelected(forceContinue = false) {
@@ -285,6 +285,7 @@ export function ExercisePickerPage() {
       const inputs = selectedExercises.map((exercise) => ({
         name: exercise.name,
         catalogExerciseId: exercise.catalogExerciseId,
+        measurementType: exercise.measurementType,
       }))
 
       if (target === 'plan') {
@@ -403,11 +404,11 @@ export function ExercisePickerPage() {
           <div className="min-w-0 flex-1 bg-[var(--surface)]">
             <div className="h-full overflow-y-auto px-3 pb-[6.5rem] pt-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {canCreateCustom ? (
-                <button
-                  type="button"
-                  onClick={addCustomExercise}
-                  className="mb-2 flex min-h-[3.75rem] w-full items-center gap-3 rounded-xl border border-dashed border-[var(--outline)] px-3 text-left text-[var(--primary)]"
-                >
+            <button
+              type="button"
+              onClick={openExerciseModelEditor}
+              className="mb-2 flex min-h-[3.75rem] w-full items-center gap-3 rounded-xl border border-dashed border-[var(--outline)] px-3 text-left text-[var(--primary)]"
+            >
                   <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--primary-container)] text-[var(--on-primary-container)]">
                     <Plus size={18} strokeWidth={2.6} aria-hidden="true" />
                   </span>

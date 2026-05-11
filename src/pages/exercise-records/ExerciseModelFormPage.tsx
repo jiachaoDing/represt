@@ -5,7 +5,13 @@ import { Trash2 } from 'lucide-react'
 
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
 import { PageHeader } from '../../components/ui/PageHeader'
-import { movementPatterns, type MovementPattern, type MuscleDistributionItem } from '../../domain/exercise-catalog'
+import {
+  measurementTypes,
+  movementPatterns,
+  type MeasurementType,
+  type MovementPattern,
+  type MuscleDistributionItem,
+} from '../../domain/exercise-catalog'
 import {
   getExerciseName,
   getMovementPatternName,
@@ -46,6 +52,15 @@ function readExercisePickerReturnState(state: unknown): ExercisePickerReturnStat
   }
 }
 
+function readExerciseModelName(state: unknown) {
+  if (!state || typeof state !== 'object' || !('exerciseModelName' in state)) {
+    return ''
+  }
+
+  const name = (state as Record<string, unknown>).exerciseModelName
+  return typeof name === 'string' ? name : ''
+}
+
 export function ExerciseModelFormPage({
   mode,
   profileId,
@@ -59,6 +74,7 @@ export function ExerciseModelFormPage({
   const [form, setForm] = useState<ExerciseModelForm | null>(null)
   const [name, setName] = useState('')
   const [movementPattern, setMovementPattern] = useState<MovementPattern>('fullBody')
+  const [measurementType, setMeasurementType] = useState<MeasurementType>('weightReps')
   const [muscleDistribution, setMuscleDistribution] = useState<MuscleDistributionItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
@@ -77,9 +93,11 @@ export function ExerciseModelFormPage({
         setForm(result)
         if (result) {
           const initialName = result.name.trim()
+            || readExerciseModelName(location.state)
             || (result.catalogExerciseId ? getExerciseName(t, result.catalogExerciseId) : '')
           setName(initialName)
           setMovementPattern(result.movementPattern)
+          setMeasurementType(result.measurementType)
           setMuscleDistribution(result.muscleDistribution)
         }
       })
@@ -98,7 +116,7 @@ export function ExerciseModelFormPage({
     return () => {
       isCancelled = true
     }
-  }, [profileId, t])
+  }, [location.state, profileId, t])
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -113,6 +131,7 @@ export function ExerciseModelFormPage({
         catalogExerciseId: form.catalogExerciseId,
         muscleDistribution,
         movementPattern,
+        measurementType,
         name,
         profileId: form.profileId,
       })
@@ -218,6 +237,24 @@ export function ExerciseModelFormPage({
               {movementPatterns.map((pattern) => (
                 <option key={pattern} value={pattern}>
                   {getMovementPatternName(t, pattern)}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="block rounded-[1.25rem] bg-[var(--surface)] p-4">
+            <span className="mb-2 block text-xs font-semibold text-[var(--on-surface-variant)]">
+              {t('summary.exerciseRecords.measurementType')}
+            </span>
+            <select
+              value={measurementType}
+              disabled={isSaving}
+              onChange={(event) => setMeasurementType(event.target.value as MeasurementType)}
+              className="w-full rounded-xl bg-[var(--surface-container)] px-4 py-3 text-base font-medium text-[var(--on-surface)] outline-none"
+            >
+              {measurementTypes.map((type) => (
+                <option key={type} value={type}>
+                  {t(`summary.exerciseRecords.measurementTypeOptions.${type}`)}
                 </option>
               ))}
             </select>

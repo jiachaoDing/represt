@@ -5,6 +5,7 @@ import {
   type MuscleGroup,
 } from '../domain/exercise-catalog'
 import { resolveCatalogExerciseId } from '../lib/exercise-name'
+import { getMeasurementTypeForExercise } from '../lib/set-record-measurement'
 import { addDaysToSessionDateKey, parseSessionDateKey } from '../lib/session-date-key'
 import type { ExerciseProfile, PerformedExercise, SetRecord, WorkoutSession } from '../models/types'
 import { db } from './app-db'
@@ -122,9 +123,10 @@ function getExerciseIdentity(exercise: Pick<PerformedExercise, 'catalogExerciseI
   return normalizedName ? `name:${normalizedName}` : `exercise:${exercise.id}`
 }
 
-function getExerciseMeasurementType(exercise: Pick<PerformedExercise, 'catalogExerciseId' | 'name'>): MeasurementType {
-  const catalogExerciseId = resolveCatalogExerciseId(exercise)
-  return catalogExerciseId ? catalogExercisesById.get(catalogExerciseId)?.measurementType ?? 'weightReps' : 'weightReps'
+function getExerciseMeasurementType(
+  exercise: Pick<PerformedExercise, 'catalogExerciseId' | 'measurementType' | 'name'>,
+): MeasurementType {
+  return getMeasurementTypeForExercise(exercise)
 }
 
 function getExerciseMuscleDistribution(

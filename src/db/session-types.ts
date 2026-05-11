@@ -5,6 +5,7 @@ import type {
   SetRecord,
   WorkoutSession,
 } from '../models/types'
+import type { MeasurementType } from '../domain/exercise-catalog'
 import type { DerivedExerciseStatus } from '../lib/session-display'
 
 export type WorkoutSessionWithStatus = WorkoutSession & {
@@ -53,6 +54,7 @@ export type PlanSyncResult = {
 export type SessionPlanItemInput = {
   name: string
   catalogExerciseId?: string | null
+  measurementType?: MeasurementType | null
   targetSets?: number
   restSeconds?: number
   defaultReps?: number | null

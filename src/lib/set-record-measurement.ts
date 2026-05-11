@@ -19,8 +19,13 @@ export function getMeasurementTypeForCatalogExercise(catalogExerciseId?: string 
 
 export function getMeasurementTypeForExercise(input: {
   catalogExerciseId?: string | null
+  measurementType?: MeasurementType | null
   name?: string | null
 }): MeasurementType {
+  if (input.measurementType) {
+    return input.measurementType
+  }
+
   const catalogExerciseId = resolveCatalogExerciseId(input)
   return getMeasurementTypeForCatalogExercise(catalogExerciseId)
 }

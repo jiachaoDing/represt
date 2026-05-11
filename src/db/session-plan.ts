@@ -6,6 +6,7 @@ import type {
 } from '../models/types'
 import { getTodaySessionDateKey } from '../lib/session-date-key'
 import { resolveCatalogExerciseId } from '../lib/exercise-name'
+import { getMeasurementTypeForExercise } from '../lib/set-record-measurement'
 import { db } from './app-db'
 import { getTodayTrainingCycleDay, getTrainingCycle } from './training-cycle'
 import { getPerformedExerciseForPlanItem, getSessionPlanItems, getSessionRecord, nowIso } from './session-core'
@@ -13,10 +14,16 @@ import type { SessionPlanItemInput, PlanSyncResult, PlanSyncStatus } from './ses
 
 function normalizeSessionPlanItem(input: Partial<SessionPlanItemInput>) {
   const name = input.name?.trim() || '未命名动作'
+  const measurementType = getMeasurementTypeForExercise({
+    catalogExerciseId: input.catalogExerciseId ?? null,
+    measurementType: input.measurementType ?? null,
+    name,
+  })
 
   return {
     name,
     catalogExerciseId: resolveCatalogExerciseId({ name, catalogExerciseId: input.catalogExerciseId }),
+    measurementType,
     targetSets: Math.max(1, Math.floor(input.targetSets ?? 3)),
     restSeconds: Math.max(0, Math.floor(input.restSeconds ?? 90)),
     defaultWeightKg: input.defaultWeightKg ?? null,
@@ -32,6 +39,7 @@ function createPlanExerciseSnapshot(
   return {
     name: exercise.name,
     catalogExerciseId: exercise.catalogExerciseId ?? null,
+    measurementType: exercise.measurementType ?? null,
     targetSets: exercise.targetSets,
     defaultWeightKg: exercise.weightKg ?? null,
     defaultReps: exercise.reps ?? null,
@@ -66,6 +74,7 @@ async function buildPlanItemsFromPlan(
     origin: 'plan',
     name: exercise.name,
     catalogExerciseId: exercise.catalogExerciseId ?? null,
+    measurementType: exercise.measurementType ?? null,
     targetSets: exercise.targetSets,
     defaultWeightKg: exercise.weightKg ?? null,
     defaultReps: exercise.reps ?? null,
@@ -286,6 +295,7 @@ export async function addTemporarySessionPlanItems(
       origin: 'manual',
       name: normalized.name,
       catalogExerciseId: normalized.catalogExerciseId,
+      measurementType: normalized.measurementType,
       targetSets: normalized.targetSets,
       defaultWeightKg: normalized.defaultWeightKg,
       defaultReps: normalized.defaultReps,
@@ -332,6 +342,7 @@ export async function replaceSessionPlanItem(
     origin: 'manual',
     name: normalized.name,
     catalogExerciseId: normalized.catalogExerciseId,
+    measurementType: normalized.measurementType,
     targetSets: normalized.targetSets,
     defaultWeightKg: normalized.defaultWeightKg,
     defaultReps: normalized.defaultReps,

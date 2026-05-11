@@ -1,6 +1,9 @@
+import type { MeasurementType } from '../domain/exercise-catalog'
+
 export type PlanExerciseDraft = {
   name: string
   catalogExerciseId: string | null
+  measurementType: MeasurementType | null
   targetSets: string
   restSeconds: string
   weightKg: string
@@ -12,6 +15,7 @@ export type PlanExerciseDraft = {
 export const emptyPlanExerciseDraft: PlanExerciseDraft = {
   name: '',
   catalogExerciseId: null,
+  measurementType: null,
   targetSets: '4',
   restSeconds: '90',
   weightKg: '',
@@ -23,6 +27,7 @@ export const emptyPlanExerciseDraft: PlanExerciseDraft = {
 export function toPlanExerciseDraft(input?: {
   name: string
   catalogExerciseId?: string | null
+  measurementType?: MeasurementType | null
   targetSets: number
   restSeconds: number
   weightKg?: number | null
@@ -37,6 +42,7 @@ export function toPlanExerciseDraft(input?: {
   return {
     name: input.name,
     catalogExerciseId: input.catalogExerciseId ?? null,
+    measurementType: input.measurementType ?? null,
     targetSets: String(input.targetSets),
     restSeconds: String(input.restSeconds),
     weightKg: input.weightKg === null || input.weightKg === undefined ? '' : String(input.weightKg),

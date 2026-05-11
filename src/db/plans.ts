@@ -1,4 +1,9 @@
-import type { SessionPlanItem, PlanExercise, WorkoutPlan } from '../models/types'
+import type {
+  SessionPlanItem,
+  PlanExercise,
+  WorkoutPlan,
+} from '../models/types'
+import type { MeasurementType } from '../domain/exercise-catalog'
 import { resolveCatalogExerciseId } from '../lib/exercise-name'
 import { buildSetRecordValuesForMeasurement, getMeasurementTypeForExercise } from '../lib/set-record-measurement'
 import { db } from './app-db'
@@ -11,6 +16,7 @@ export type PlanWithExercises = WorkoutPlan & {
 export type PlanExerciseInput = {
   name: string
   catalogExerciseId?: string | null
+  measurementType?: MeasurementType | null
   targetSets: number
   restSeconds: number
   weightKg?: number | null
@@ -23,6 +29,7 @@ type SessionPlanPlanSource = Pick<
   SessionPlanItem,
   | 'name'
   | 'catalogExerciseId'
+  | 'measurementType'
   | 'targetSets'
   | 'restSeconds'
   | 'defaultWeightKg'
@@ -45,7 +52,11 @@ function normalizePlanName(name: string) {
 function normalizeExercise(input: Partial<PlanExerciseInput>) {
   const name = input.name?.trim() || '未命名动作'
   const catalogExerciseId = resolveCatalogExerciseId({ name, catalogExerciseId: input.catalogExerciseId })
-  const measurementType = getMeasurementTypeForExercise({ name, catalogExerciseId })
+  const measurementType = getMeasurementTypeForExercise({
+    catalogExerciseId,
+    measurementType: input.measurementType ?? null,
+    name,
+  })
   const values = buildSetRecordValuesForMeasurement(measurementType, {
     distanceMeters: input.distanceMeters ?? null,
     durationSeconds: input.durationSeconds ?? null,
@@ -56,6 +67,7 @@ function normalizeExercise(input: Partial<PlanExerciseInput>) {
   return {
     name,
     catalogExerciseId,
+    measurementType,
     targetSets: Math.max(1, Math.floor(input.targetSets ?? 3)),
     restSeconds: Math.max(0, Math.floor(input.restSeconds ?? 90)),
     ...values,
@@ -77,6 +89,7 @@ function buildPlanExercisesFromSessionPlanItems(
       planId,
       name: item.name,
       catalogExerciseId: item.catalogExerciseId ?? null,
+      measurementType: item.measurementType ?? null,
       targetSets: item.targetSets,
       restSeconds: item.restSeconds,
       weightKg: item.defaultWeightKg ?? null,
@@ -264,6 +277,7 @@ export async function importPlanExercises(targetPlanId: string, sourceExerciseId
     planId: targetPlanId,
     name: exercise.name,
     catalogExerciseId: exercise.catalogExerciseId ?? null,
+    measurementType: exercise.measurementType ?? null,
     targetSets: exercise.targetSets,
     restSeconds: exercise.restSeconds,
     weightKg: exercise.weightKg ?? null,

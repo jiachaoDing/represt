@@ -6,10 +6,6 @@ import {
   type MuscleGroup,
 } from '../domain/exercise-catalog'
 import { findCatalogExerciseIdByExactName, resolveCatalogExerciseId } from '../lib/exercise-name'
-import {
-  getMeasurementTypeForCatalogExercise,
-  getMeasurementTypeForExercise,
-} from '../lib/set-record-measurement'
 import type {
   ExerciseProfile,
   PerformedExercise,
@@ -99,6 +95,7 @@ export type ExerciseModelForm = {
   catalogExerciseId: string | null
   muscleDistribution: MuscleDistributionItem[]
   movementPattern: MovementPattern
+  measurementType: MeasurementType
   name: string
   profileId: string | null
   source?: 'custom'
@@ -108,18 +105,23 @@ export type ExerciseModelOption = {
   catalogExerciseId: string | null
   muscleDistribution: MuscleDistributionItem[]
   movementPattern: MovementPattern
+  measurementType: MeasurementType
   name: string
   profileId: string
   categoryId: MuscleGroup | 'other'
 }
 
-type ExerciseSource = Pick<PlanExercise | SessionPlanItem | PerformedExercise, 'catalogExerciseId' | 'id' | 'name'>
+type ExerciseSource = Pick<
+  PlanExercise | SessionPlanItem | PerformedExercise,
+  'catalogExerciseId' | 'id' | 'measurementType' | 'name'
+>
 
 type ExerciseRecordGroup = {
   catalogExerciseId: string | null
   displayNameOverride?: string | null
   deletedAt?: string | null
   name: string
+  measurementType: MeasurementType
   profileId: string
   records: Array<{
     exercise: PerformedExercise
@@ -131,6 +133,7 @@ type ExerciseRecordGroup = {
 const catalogExercisesById = new Map(exercises.map((exercise) => [exercise.id, exercise]))
 const catalogProfileIds = new Set(exercises.map((exercise) => `catalog:${exercise.id}`))
 const fallbackMovementPattern: MovementPattern = 'fullBody'
+const fallbackMeasurementType: MeasurementType = 'weightReps'
 
 export function normalizeExerciseRecordName(name: string) {
   return name.normalize('NFKC').trim().toLowerCase().replace(/\s+/g, ' ')
@@ -144,6 +147,14 @@ export function getExerciseProfileId(input: { catalogExerciseId?: string | null;
 
   const normalizedName = normalizeExerciseRecordName(input.name ?? '')
   return normalizedName ? `name:${normalizedName}` : `exercise:${input.id ?? crypto.randomUUID()}`
+}
+
+function getDefaultMeasurementType(catalogExerciseId: string | null): MeasurementType {
+  if (!catalogExerciseId) {
+    return fallbackMeasurementType
+  }
+
+  return catalogExercisesById.get(catalogExerciseId)?.measurementType ?? fallbackMeasurementType
 }
 
 function getMetricValues(setRecord: SetRecord, measurementType: MeasurementType) {
@@ -213,9 +224,7 @@ function pickBestMetric(metrics: ExerciseRecordMetric[], kind: ExerciseRecordMet
 }
 
 function buildSummary(group: ExerciseRecordGroup): ExerciseRecordSummary {
-  const measurementType = group.catalogExerciseId
-    ? getMeasurementTypeForCatalogExercise(group.catalogExerciseId)
-    : getMeasurementTypeForExercise(group)
+  const measurementType = group.measurementType
   const metrics = group.records.flatMap((record) => getMetricValues(record.setRecord, measurementType))
   const primaryKind = pickPrimaryMetricKind(measurementType)
   const primaryMetric = pickBestMetric(metrics, primaryKind)
@@ -246,6 +255,7 @@ function addSource(groups: Map<string, ExerciseRecordGroup>, source: ExerciseSou
   const catalogExerciseId = resolveCatalogExerciseId(source)
   const normalizedName = normalizeExerciseRecordName(source.name)
   const profileId = getExerciseProfileId(source)
+  const measurementType = source.measurementType ?? getDefaultMeasurementType(catalogExerciseId)
   if (!catalogExerciseId && !normalizedName) {
     return
   }
@@ -255,12 +265,14 @@ function addSource(groups: Map<string, ExerciseRecordGroup>, source: ExerciseSou
     if (!current.name && source.name.trim()) {
       current.name = source.name.trim()
     }
+    current.measurementType = current.measurementType ?? measurementType
     return
   }
 
   groups.set(profileId, {
     catalogExerciseId,
     name: source.name.trim() || catalogExerciseId || source.id,
+    measurementType,
     profileId,
     records: [],
   })
@@ -275,6 +287,7 @@ function addCustomProfile(groups: Map<string, ExerciseRecordGroup>, profile: Exe
     catalogExerciseId: profile.catalogExerciseId ?? null,
     id: profile.id,
     name: profile.name,
+    measurementType: profile.measurementType ?? getDefaultMeasurementType(profile.catalogExerciseId ?? null),
   })
 }
 
@@ -286,6 +299,7 @@ function applyProfileOverrides(groups: Map<string, ExerciseRecordGroup>, profile
     }
 
     group.deletedAt = profile.deletedAt ?? null
+    group.measurementType = profile.measurementType ?? group.measurementType
     if (profile.name.trim()) {
       group.name = profile.name.trim()
       group.displayNameOverride = profile.name.trim()
@@ -317,6 +331,7 @@ async function buildExerciseRecordGroups() {
     addSource(groups, {
       catalogExerciseId: exercise.id,
       id: exercise.id,
+      measurementType: exercise.measurementType,
       name: exercise.id,
     })
   }
@@ -410,6 +425,7 @@ export async function listExerciseModelOptions(): Promise<ExerciseModelOption[]>
       categoryId: getTopMuscleCategory(muscleDistribution),
       muscleDistribution,
       movementPattern: profile?.movementPattern ?? exercise.movementPattern,
+      measurementType: profile?.measurementType ?? exercise.measurementType,
       name: profile?.name.trim() ?? '',
       profileId,
     })
@@ -426,6 +442,7 @@ export async function listExerciseModelOptions(): Promise<ExerciseModelOption[]>
       categoryId: getTopMuscleCategory(muscleDistribution),
       muscleDistribution,
       movementPattern: profile.movementPattern ?? fallbackMovementPattern,
+      measurementType: profile.measurementType ?? fallbackMeasurementType,
       name: profile.name,
       profileId: profile.id,
     })
@@ -440,6 +457,7 @@ export async function getExerciseModelForm(profileId: string | null): Promise<Ex
       catalogExerciseId: null,
       muscleDistribution: [],
       movementPattern: fallbackMovementPattern,
+      measurementType: fallbackMeasurementType,
       name: '',
       profileId: null,
       source: 'custom',
@@ -457,6 +475,7 @@ export async function getExerciseModelForm(profileId: string | null): Promise<Ex
       catalogExerciseId,
       muscleDistribution: profile?.muscleDistribution ?? getDefaultMuscleDistribution(catalogExerciseId),
       movementPattern: profile?.movementPattern ?? getDefaultMovementPattern(catalogExerciseId),
+      measurementType: profile?.measurementType ?? getDefaultMeasurementType(catalogExerciseId),
       name: profile?.name ?? '',
       profileId,
       source: profile?.source,
@@ -471,6 +490,7 @@ export async function getExerciseModelForm(profileId: string | null): Promise<Ex
     catalogExerciseId: profile.catalogExerciseId ?? null,
     muscleDistribution: profile.muscleDistribution ?? [],
     movementPattern: profile.movementPattern ?? getDefaultMovementPattern(profile.catalogExerciseId ?? null),
+    measurementType: profile.measurementType ?? getDefaultMeasurementType(profile.catalogExerciseId ?? null),
     name: profile.name,
     profileId: profile.id,
     source: profile.source,
@@ -505,6 +525,7 @@ export async function saveExerciseModel(input: {
   catalogExerciseId: string | null
   muscleDistribution: MuscleDistributionItem[]
   movementPattern: MovementPattern
+  measurementType: MeasurementType
   name: string
   profileId: string | null
 }): Promise<SaveExerciseModelResult> {
@@ -534,6 +555,7 @@ export async function saveExerciseModel(input: {
     id: profileId,
     muscleDistribution: input.muscleDistribution,
     movementPattern: input.movementPattern,
+    measurementType: input.measurementType,
     name: trimmedName,
     source: isCatalogProfile ? undefined : 'custom',
     updatedAt: timestamp,
@@ -572,6 +594,7 @@ export async function softDeleteExerciseModel(profileId: string) {
     id: profileId,
     muscleDistribution: getDefaultMuscleDistribution(catalogExerciseId),
     movementPattern: getDefaultMovementPattern(catalogExerciseId),
+    measurementType: getDefaultMeasurementType(catalogExerciseId),
     name: catalogExerciseId,
     updatedAt: timestamp,
   }
@@ -596,6 +619,7 @@ export async function createCustomExerciseProfile(name: string): Promise<CreateC
     id: profileId,
     muscleDistribution: [],
     movementPattern: fallbackMovementPattern,
+    measurementType: fallbackMeasurementType,
     name: trimmedName,
     source: 'custom',
     updatedAt: timestamp,
@@ -629,6 +653,7 @@ export async function saveExerciseProfileMuscleDistribution(input: {
     id: input.profileId,
     muscleDistribution: input.muscleDistribution,
     movementPattern: current?.movementPattern ?? getDefaultMovementPattern(input.catalogExerciseId),
+    measurementType: current?.measurementType ?? getDefaultMeasurementType(input.catalogExerciseId),
     name: input.name,
     source: current?.source,
     updatedAt: nowIso(),
