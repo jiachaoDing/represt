@@ -11,6 +11,7 @@ public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         registerPlugin(TrainingTimerNotificationPlugin.class);
+        registerPlugin(AppDistributionPlugin.class);
         super.onCreate(savedInstanceState);
         configureWebViewZoom();
     }

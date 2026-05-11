@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { AlertCircle, Check, ClipboardPaste, Copy, FileJson, ListChecks } from 'lucide-react'
+import { AlertCircle, Check, ChevronDown, ChevronUp, ClipboardPaste, Copy, FileJson, ListChecks } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
@@ -52,6 +52,8 @@ export function PlanAiImportPage() {
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isPromptCollapsed, setIsPromptCollapsed] = useState(false)
+  const [isResponseFocused, setIsResponseFocused] = useState(false)
   const canCreate = confirmImport !== null && confirmImport.plans.length > 0 && !isSubmitting
 
   const promptRows = useMemo(() => Math.min(8, Math.max(4, prompt.split('\n').length)), [prompt])
@@ -83,6 +85,14 @@ export function PlanAiImportPage() {
     setAiResponse(value)
     setConfirmImport(null)
     setError(null)
+    if (value.trim().length > 0) {
+      setIsPromptCollapsed(true)
+      return
+    }
+
+    if (!isResponseFocused) {
+      setIsPromptCollapsed(false)
+    }
   }
 
   function parseResponse() {
@@ -143,7 +153,7 @@ export function PlanAiImportPage() {
     <div className="flex h-full min-h-0 flex-col">
       <PageHeader title={t('plans.aiImport.title')} backFallbackTo="/plans" />
 
-      <div className="flex min-h-0 flex-1 flex-col gap-3 pb-3">
+      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pb-[calc(1rem_+_env(safe-area-inset-bottom))]">
         <section className="shrink-0 rounded-2xl border border-[var(--outline-variant)]/40 bg-[var(--surface)] p-3">
           <div className="mb-2 flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-2">
@@ -152,22 +162,41 @@ export function PlanAiImportPage() {
                 {t('plans.aiImport.promptTitle')}
               </h2>
             </div>
-            <button
-              type="button"
-              onClick={() => void copyPrompt()}
-              aria-label={t('plans.aiImport.copyPrompt')}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--primary-container)] text-[var(--on-primary-container)] transition-opacity"
-            >
-              {copied ? <Check size={17} strokeWidth={2.4} aria-hidden="true" /> : <Copy size={17} strokeWidth={2.2} aria-hidden="true" />}
-            </button>
+            <div className="flex shrink-0 items-center gap-1">
+              <button
+                type="button"
+                onClick={() => void copyPrompt()}
+                aria-label={t('plans.aiImport.copyPrompt')}
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--primary-container)] text-[var(--on-primary-container)] transition-opacity"
+              >
+                {copied ? <Check size={17} strokeWidth={2.4} aria-hidden="true" /> : <Copy size={17} strokeWidth={2.2} aria-hidden="true" />}
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsPromptCollapsed((current) => !current)}
+                aria-label={
+                  isPromptCollapsed ? t('plans.aiImport.expandPrompt') : t('plans.aiImport.collapsePrompt')
+                }
+                aria-expanded={!isPromptCollapsed}
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--surface-container)] text-[var(--on-surface)] transition-opacity"
+              >
+                {isPromptCollapsed ? (
+                  <ChevronDown size={17} strokeWidth={2.3} aria-hidden="true" />
+                ) : (
+                  <ChevronUp size={17} strokeWidth={2.3} aria-hidden="true" />
+                )}
+              </button>
+            </div>
           </div>
-          <textarea
-            id="ai-import-prompt"
-            readOnly
-            rows={promptRows}
-            value={prompt}
-            className="w-full resize-none rounded-xl bg-[var(--surface-container)] px-3 py-2 text-xs leading-5 text-[var(--on-surface)] outline-none"
-          />
+          {!isPromptCollapsed ? (
+            <textarea
+              id="ai-import-prompt"
+              readOnly
+              rows={promptRows}
+              value={prompt}
+              className="w-full resize-none rounded-xl bg-[var(--surface-container)] px-3 py-2 text-xs leading-5 text-[var(--on-surface)] outline-none"
+            />
+          ) : null}
         </section>
 
         <section className="flex min-h-0 flex-1 flex-col rounded-2xl border border-[var(--outline-variant)]/40 bg-[var(--surface)] p-3">
@@ -189,6 +218,16 @@ export function PlanAiImportPage() {
           </div>
           <textarea
             value={aiResponse}
+            onFocus={() => {
+              setIsResponseFocused(true)
+              setIsPromptCollapsed(true)
+            }}
+            onBlur={() => {
+              setIsResponseFocused(false)
+              if (!aiResponse.trim()) {
+                setIsPromptCollapsed(false)
+              }
+            }}
             onChange={(event) => handleResponseChange(event.target.value)}
             className="min-h-[8rem] flex-1 resize-none rounded-xl bg-[var(--surface-container)] px-3 py-3 text-sm leading-6 text-[var(--on-surface)] outline-none ring-1 ring-transparent transition-all focus:ring-[var(--primary)]"
             placeholder={t('plans.aiImport.responsePlaceholder')}
