@@ -1,0 +1,13 @@
+﻿{
+  "platform": "android",
+  "versionName": "1.0.6",
+  "versionCode": 15,
+  "releaseDate": "2026-05-12",
+  "downloadUrl": "https://share.represt.app/downloads/android/latest",
+  "apkUrl": "https://share.represt.app/downloads/android/represt-1.0.6.apk",
+  "fileName": "represt-1.0.6.apk",
+  "fileSizeBytes": 3885775,
+  "sha256": "DB3E79D576D98B8AA432B1CA161494218DA74DFCFB9505D99D4633FE716231AF",
+  "changelog": ["更新发布密钥"],
+  "mandatory": false
+}
