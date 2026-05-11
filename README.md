@@ -78,6 +78,8 @@ npm run android:open
 - 商店截图、图标和说明文本的授权边界清晰
 - 分享服务地址属于公开配置，不包含密钥
 
+GitHub Release 的自动化发布说明见 [docs/release.md](docs/release.md)。
+
 ## 当前技术栈
 
 - Vite
