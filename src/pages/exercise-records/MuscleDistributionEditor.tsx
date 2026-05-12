@@ -8,9 +8,9 @@ import {
   normalizeMuscleDistribution,
 } from './utils'
 
-const chartSize = 220
+const chartSize = 280
 const chartCenter = chartSize / 2
-const chartRadius = 96
+const chartRadius = 122
 const minSliceRatio = 0.05
 const sliceColors = [
   'var(--plan-1)',
@@ -145,8 +145,8 @@ export function MuscleDistributionEditor({ disabled, value, onChange }: MuscleDi
   }
 
   return (
-    <div className="mt-4">
-      <div className="grid grid-cols-2 gap-2">
+    <div className="mt-6">
+      <div className="grid grid-cols-2 gap-3">
         {muscleGroups.map((groupId) => {
           const selectedIndex = selectedGroups.indexOf(groupId)
           const isSelected = selectedIndex >= 0
@@ -159,24 +159,24 @@ export function MuscleDistributionEditor({ disabled, value, onChange }: MuscleDi
               disabled={disabled}
               onClick={() => handleToggle(groupId)}
               className={[
-                'flex min-h-12 items-center justify-between gap-2 rounded-2xl border px-3 py-2 text-left text-sm font-semibold transition-colors disabled:opacity-40',
+                'flex min-h-16 items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-left text-lg font-semibold transition-colors disabled:opacity-40',
                 isSelected
                   ? 'border-[var(--primary)] bg-[var(--primary-container)] text-[var(--on-primary-container)]'
-                  : 'border-[var(--outline-variant)]/40 bg-[var(--surface-container)] text-[var(--on-surface-variant)]',
+                  : 'border-[var(--outline-variant)] bg-[var(--surface-container)] text-[var(--on-surface)]',
               ].join(' ')}
               aria-pressed={isSelected}
             >
               <span className="flex min-w-0 items-center gap-2">
                 {isSelected ? (
                   <span
-                    className="h-2.5 w-2.5 shrink-0 rounded-full"
+                    className="h-3 w-3 shrink-0 rounded-full"
                     style={{ backgroundColor: sliceColors[selectedIndex % sliceColors.length] }}
                   />
                 ) : null}
                 <span className="min-w-0 truncate">{getMuscleGroupName(t, groupId)}</span>
               </span>
               {isSelected ? (
-                <span className="shrink-0 text-xs">
+                <span className="shrink-0 text-lg font-medium text-[var(--primary)]">
                   {t('summary.exerciseRecords.distributionValue', { value: Math.round(ratio * 100) })}
                 </span>
               ) : null}
@@ -185,25 +185,36 @@ export function MuscleDistributionEditor({ disabled, value, onChange }: MuscleDi
         })}
       </div>
 
-      <div className="mt-5 flex flex-col items-center gap-4">
+      <div className="mt-8 flex flex-col items-center gap-4">
         <svg
           viewBox={`0 0 ${chartSize} ${chartSize}`}
-          className="h-[220px] w-[220px] touch-none overflow-visible"
+          className="h-[280px] w-[280px] touch-none overflow-visible"
           role="img"
           aria-label={t('summary.exerciseRecords.distributionChartLabel')}
         >
           <circle cx={chartCenter} cy={chartCenter} r={chartRadius} fill="var(--surface-container)" />
-          {slices.map((slice) => (
-            <path
-              key={slice.item.muscleGroupId}
-              d={getSlicePath(slice.start, slice.end)}
-              fill={slice.color}
+          {slices.length === 1 ? (
+            <circle
+              cx={chartCenter}
+              cy={chartCenter}
+              r={chartRadius}
+              fill={slices[0].color}
               stroke="var(--surface)"
               strokeWidth="2"
             />
-          ))}
+          ) : (
+            slices.map((slice) => (
+              <path
+                key={slice.item.muscleGroupId}
+                d={getSlicePath(slice.start, slice.end)}
+                fill={slice.color}
+                stroke="var(--surface)"
+                strokeWidth="2"
+              />
+            ))
+          )}
           {slices.map((slice) => {
-            const point = getPoint((slice.start + slice.end) / 2, 70)
+            const point = getPoint((slice.start + slice.end) / 2, 88)
             return (
               <text
                 key={`${slice.item.muscleGroupId}-label`}
@@ -211,13 +222,13 @@ export function MuscleDistributionEditor({ disabled, value, onChange }: MuscleDi
                 y={point.y}
                 textAnchor="middle"
                 dominantBaseline="central"
-                className="pointer-events-none select-none fill-[var(--surface)] text-[13px] font-bold"
+                className="pointer-events-none select-none fill-[var(--surface)] text-base font-bold"
               >
                 {getMuscleGroupShortName(t, slice.item.muscleGroupId)}
               </text>
             )
           })}
-          <circle cx={chartCenter} cy={chartCenter} r="44" fill="var(--surface)" />
+          <circle cx={chartCenter} cy={chartCenter} r="58" fill="var(--surface)" />
           {slices.slice(0, -1).map((slice, index) => {
             const point = getPoint(slice.end % 1, chartRadius + 1)
             return (

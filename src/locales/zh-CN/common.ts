@@ -54,6 +54,7 @@ const common = {
     exerciseMeta: '{{muscles}} · {{pattern}}',
     selectedCount: '已选 {{count}} 个',
     cartSummary: '已选 {{count}} 个动作',
+    cartDescription: '{{count}} 个动作',
     cartTitle: '已选动作',
     cartEmpty: '还没有选择动作',
     confirm: '添加所选动作',

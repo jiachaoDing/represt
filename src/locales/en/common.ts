@@ -54,6 +54,7 @@ const common = {
     exerciseMeta: '{{muscles}} · {{pattern}}',
     selectedCount: '{{count}} selected',
     cartSummary: '{{count}} exercises selected',
+    cartDescription: '{{count}} exercises',
     cartTitle: 'Selected exercises',
     cartEmpty: 'No exercises selected',
     confirm: 'Add selected exercises',

@@ -11,6 +11,7 @@ export type AnimatedSheetProps = PropsWithChildren<{
   onClose: () => void
   open: boolean
   title: string
+  variant?: 'default' | 'prominent'
 }>
 
 export function AnimatedSheet({
@@ -20,9 +21,11 @@ export function AnimatedSheet({
   onClose,
   open,
   title,
+  variant = 'default',
 }: AnimatedSheetProps) {
   const { t } = useTranslation()
   const reduceMotion = useReducedMotion()
+  const isProminent = variant === 'prominent'
 
   useEffect(() => {
     if (!open) {
@@ -73,14 +76,18 @@ export function AnimatedSheet({
                       transition: quickEaseTransition,
                     }
               }
-              className="max-h-[90vh] w-full overflow-auto rounded-t-[28px] bg-[var(--surface-container)] px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-4 shadow-2xl"
+              className={`max-h-[90vh] w-full overflow-auto rounded-t-[28px] bg-[var(--surface-container)] px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-4 shadow-2xl ${
+                isProminent ? 'rounded-t-[2rem] pb-[max(2rem,env(safe-area-inset-bottom))]' : ''
+              }`}
             >
-              <div className="mx-auto mb-6 h-1 w-8 rounded-full bg-[var(--outline)]" />
+              <div className={`mx-auto h-1 rounded-full bg-[var(--outline)] ${isProminent ? 'mb-8 w-14' : 'mb-6 w-8'}`} />
               <div className="flex items-start justify-between gap-3 px-2">
                 <div className="min-w-0">
-                  <h2 className="text-xl font-normal text-[var(--on-surface)]">{title}</h2>
+                  <h2 className={`${isProminent ? 'text-3xl font-semibold' : 'text-xl font-normal'} text-[var(--on-surface)]`}>
+                    {title}
+                  </h2>
                   {description ? (
-                    <p className="mt-1 text-sm text-[var(--on-surface-variant)]">
+                    <p className={`${isProminent ? 'mt-2 text-base font-semibold' : 'mt-1 text-sm'} text-[var(--on-surface-variant)]`}>
                       {description}
                     </p>
                   ) : null}
@@ -89,7 +96,9 @@ export function AnimatedSheet({
                   type="button"
                   onClick={onClose}
                   aria-label={t('common.close')}
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-full text-[var(--on-surface-variant)] transition-colors hover:bg-[var(--on-surface)]/10"
+                  className={`inline-flex items-center justify-center rounded-full text-[var(--on-surface-variant)] transition-colors hover:bg-[var(--on-surface)]/10 ${
+                    isProminent ? 'h-12 w-12 bg-[var(--surface-container-high)]' : 'h-10 w-10'
+                  }`}
                 >
                   <svg
                     viewBox="0 0 24 24"

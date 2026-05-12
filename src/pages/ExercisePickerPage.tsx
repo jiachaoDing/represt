@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { Check, Plus, Search, ShoppingBasket, X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -106,6 +106,7 @@ export function ExercisePickerPage() {
   const [isContinueDialogOpen, setIsContinueDialogOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [exerciseModels, setExerciseModels] = useState<ExerciseModelOption[]>([])
+  const exerciseListRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     let isCancelled = false
@@ -170,6 +171,10 @@ export function ExercisePickerPage() {
       isCancelled = true
     }
   }, [exerciseModels, location.hash, location.pathname, location.search, location.state, navigate, t])
+
+  useEffect(() => {
+    exerciseListRef.current?.scrollTo({ top: 0 })
+  }, [categoryId])
 
   const normalizedKeyword = normalizeKeyword(keyword)
   const selectedModelIds = useMemo(
@@ -377,7 +382,7 @@ export function ExercisePickerPage() {
 
       <div className="min-h-0 flex-1 overflow-hidden rounded-t-2xl border-t border-[var(--outline-variant)] bg-[var(--surface-container)]">
         <div className="flex h-full min-h-0">
-          <nav className="h-full w-[5.75rem] shrink-0 overflow-y-auto bg-[var(--surface-container)] pb-[50vh] pt-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <nav className="h-full w-[6.5rem] shrink-0 overflow-y-auto bg-[var(--surface-container)] pb-[50vh] pt-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {categoryItems.map((category) => {
               const active = categoryId === category.id
               const count = selectedCountByCategory[category.id]
@@ -387,7 +392,7 @@ export function ExercisePickerPage() {
                   key={category.id}
                   type="button"
                   onClick={() => setCategoryId(category.id)}
-                  className={`relative flex min-h-12 w-full items-center gap-1.5 px-2.5 py-2 text-left text-xs font-medium transition-colors ${
+                  className={`relative flex min-h-12 w-full items-center px-2.5 py-2 pr-7 text-left text-[11px] font-medium transition-colors ${
                     active
                       ? 'bg-[var(--surface)] text-[var(--primary)]'
                       : 'text-[var(--on-surface-variant)]'
@@ -398,7 +403,7 @@ export function ExercisePickerPage() {
                   ) : null}
                   <span className="min-w-0 flex-1 leading-4">{category.label}</span>
                   {category.id !== 'all' && count > 0 ? (
-                    <span className="flex h-4 min-w-4 shrink-0 items-center justify-center rounded-full bg-[var(--primary)] px-1 text-[10px] font-semibold leading-none text-[var(--on-primary)]">
+                    <span className="absolute right-1.5 top-1/2 flex h-3.5 min-w-3.5 -translate-y-1/2 items-center justify-center rounded-full bg-[var(--primary)] px-1 text-[9px] font-semibold leading-none text-[var(--on-primary)]">
                       {count}
                     </span>
                   ) : null}
@@ -415,7 +420,10 @@ export function ExercisePickerPage() {
           </nav>
 
           <div className="min-w-0 flex-1 bg-[var(--surface)]">
-            <div className="h-full overflow-y-auto px-3 pb-[6.5rem] pt-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div
+              ref={exerciseListRef}
+              className="h-full overflow-y-auto px-3 pb-[6.5rem] pt-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            >
               {canCreateCustom ? (
                 <button
                   type="button"
@@ -533,6 +541,7 @@ export function ExercisePickerPage() {
       <BottomSheet
         open={isCartOpen}
         title={t('exercisePicker.cartTitle')}
+        description={t('exercisePicker.cartDescription', { count: selectedExercises.length })}
         onClose={() => setIsCartOpen(false)}
       >
         <div>
@@ -541,22 +550,22 @@ export function ExercisePickerPage() {
               {t('exercisePicker.cartEmpty')}
             </p>
           ) : (
-            <div className="max-h-[48vh] space-y-2 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="max-h-[56vh] space-y-3 overflow-y-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {selectedExercises.map((exercise) => (
                 <div
                   key={exercise.key}
-                  className="flex min-h-12 items-center gap-3 rounded-xl bg-[var(--surface)] px-3"
+                  className="flex min-h-14 items-center gap-3 rounded-xl border border-[var(--outline-variant)] bg-[var(--surface-container-high)] px-4"
                 >
-                  <span className="min-w-0 flex-1 truncate text-base text-[var(--on-surface)]">
+                  <span className="min-w-0 flex-1 truncate text-base font-semibold text-[var(--on-surface)]">
                     {exercise.name}
                   </span>
                   <button
                     type="button"
                     onClick={() => removeSelectedExercise(exercise.key)}
-                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[var(--on-surface-variant)] hover:bg-[var(--surface-container-high)]"
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--surface-container)] text-[var(--on-surface-variant)] transition-colors hover:bg-[var(--on-surface)]/10"
                     aria-label={t('exercisePicker.removeSelected', { name: exercise.name })}
                   >
-                    <X size={18} strokeWidth={2.3} aria-hidden="true" />
+                    <X size={20} strokeWidth={2.4} aria-hidden="true" />
                   </button>
                 </div>
               ))}

@@ -8,6 +8,7 @@ type BottomSheetProps = PropsWithChildren<{
   onClose: () => void
   open: boolean
   title: string
+  variant?: 'default' | 'prominent'
 }>
 
 export function BottomSheet({
@@ -17,6 +18,7 @@ export function BottomSheet({
   onClose,
   open,
   title,
+  variant,
 }: BottomSheetProps) {
   return (
     <AnimatedSheet
@@ -25,6 +27,7 @@ export function BottomSheet({
       onClose={onClose}
       open={open}
       title={title}
+      variant={variant}
     >
       {children}
     </AnimatedSheet>

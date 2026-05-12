@@ -1,7 +1,7 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Trash2 } from 'lucide-react'
+import { ChevronDown, Trash2 } from 'lucide-react'
 
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
 import { PageHeader } from '../../components/ui/PageHeader'
@@ -27,6 +27,106 @@ import { MuscleDistributionEditor } from './MuscleDistributionEditor'
 type ExercisePickerReturnState = {
   backTo: string
   exercisePickerSelectedExercises: unknown[]
+}
+
+type OpenSelect = 'measurementType' | 'movementPattern' | null
+
+type FormSelectProps<T extends string> = {
+  disabled: boolean
+  isOpen: boolean
+  label: string
+  onChange: (value: T) => void
+  onClose: () => void
+  onToggle: () => void
+  options: readonly T[]
+  value: T
+  getOptionLabel: (value: T) => string
+}
+
+function FormSelect<T extends string>({
+  disabled,
+  isOpen,
+  label,
+  onChange,
+  onClose,
+  onToggle,
+  options,
+  value,
+  getOptionLabel,
+}: FormSelectProps<T>) {
+  const rootRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    if (!isOpen) {
+      return
+    }
+
+    function handlePointerDown(event: PointerEvent) {
+      const target = event.target
+      if (target instanceof Node && !rootRef.current?.contains(target)) {
+        onClose()
+      }
+    }
+
+    document.addEventListener('pointerdown', handlePointerDown)
+    return () => document.removeEventListener('pointerdown', handlePointerDown)
+  }, [isOpen, onClose])
+
+  return (
+    <div ref={rootRef} className="block min-w-0">
+      <span className="mb-3 block text-base font-bold text-[var(--on-surface)]">
+        {label}
+      </span>
+      <span className="relative block">
+        <button
+          type="button"
+          disabled={disabled}
+          onClick={onToggle}
+          aria-haspopup="listbox"
+          aria-expanded={isOpen}
+          className={`flex h-16 w-full items-center justify-between gap-3 rounded-2xl border bg-[var(--surface-container)] px-4 text-left text-lg font-semibold text-[var(--on-surface)] outline-none transition-colors disabled:opacity-60 ${
+            isOpen ? 'border-[var(--primary)]' : 'border-[var(--outline-variant)]'
+          }`}
+        >
+          <span className="min-w-0 truncate">{getOptionLabel(value)}</span>
+          <ChevronDown
+            size={22}
+            strokeWidth={2.4}
+            className={`shrink-0 text-[var(--on-surface-variant)] transition-transform ${isOpen ? 'rotate-180' : ''}`}
+            aria-hidden="true"
+          />
+        </button>
+        {isOpen ? (
+          <span
+            role="listbox"
+            className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-30 overflow-hidden rounded-2xl border border-[var(--outline-variant)] bg-[var(--surface-container)] py-1 shadow-xl"
+          >
+            {options.map((option) => {
+              const selected = option === value
+              return (
+                <button
+                  key={option}
+                  type="button"
+                  role="option"
+                  aria-selected={selected}
+                  onClick={() => onChange(option)}
+                  className={`block w-full appearance-none border-0 px-4 py-3 text-left text-base font-semibold transition-colors ${
+                    selected
+                      ? 'bg-[var(--primary)] text-[var(--on-primary)]'
+                      : 'bg-transparent text-[var(--on-surface)] hover:bg-[var(--surface-container-high)]'
+                  }`}
+                >
+                  <span className="block truncate bg-transparent text-inherit">
+                    {getOptionLabel(option)}
+                  </span>
+                </button>
+              )
+            })}
+          </span>
+        ) : null}
+      </span>
+    </div>
+  )
 }
 
 function isExercisePickerPath(value: string) {
@@ -80,6 +180,7 @@ export function ExerciseModelFormPage({
   const [isSaving, setIsSaving] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [openSelect, setOpenSelect] = useState<OpenSelect>(null)
 
   useEffect(() => {
     let isCancelled = false
@@ -191,7 +292,11 @@ export function ExerciseModelFormPage({
 
   return (
     <div className="pb-6">
-      <PageHeader title={title} backFallbackTo={profileId ? `/summary/exercises/${encodeURIComponent(profileId)}` : '/summary/exercises'} />
+      <PageHeader
+        title={title}
+        backFallbackTo={profileId ? `/summary/exercises/${encodeURIComponent(profileId)}` : '/summary/exercises'}
+        titleClassName="text-[32px]"
+      />
 
       {error ? (
         <div className="mx-4 mt-4 rounded-xl bg-[var(--error-container)] px-4 py-3 text-sm text-[var(--on-error-container)]">
@@ -210,59 +315,55 @@ export function ExerciseModelFormPage({
       ) : null}
 
       {form ? (
-        <form className="mx-4 mt-4 space-y-5" onSubmit={handleSubmit}>
-          <label className="block rounded-[1.25rem] bg-[var(--surface)] p-4">
-            <span className="mb-2 block text-xs font-semibold text-[var(--on-surface-variant)]">
+        <form className="mx-4 mt-8 space-y-8" onSubmit={handleSubmit}>
+          <label className="block">
+            <span className="mb-3 block text-base font-bold text-[var(--on-surface)]">
               {t('plans.exerciseName')}
             </span>
             <input
               value={name}
               disabled={isSaving}
               onChange={(event) => setName(event.target.value)}
-              className="w-full rounded-none border-b border-[var(--on-surface)] bg-transparent py-3 text-base text-[var(--on-surface)] outline-none transition-all focus:border-b-2 focus:border-[var(--primary)]"
+              className="h-16 w-full rounded-2xl border border-[var(--outline-variant)] bg-[var(--surface-container)] px-5 text-lg font-semibold text-[var(--on-surface)] outline-none transition-colors placeholder:text-[var(--on-surface-variant)] focus:border-[var(--primary)] disabled:opacity-60"
               placeholder={t('plans.exercisePlaceholder')}
             />
           </label>
 
-          <label className="block rounded-[1.25rem] bg-[var(--surface)] p-4">
-            <span className="mb-2 block text-xs font-semibold text-[var(--on-surface-variant)]">
-              {t('summary.exerciseRecords.movementPattern')}
-            </span>
-            <select
+          <div className="grid grid-cols-2 gap-4">
+            <FormSelect
+              disabled={isSaving}
+              getOptionLabel={(pattern) => getMovementPatternName(t, pattern)}
+              isOpen={openSelect === 'movementPattern'}
+              label={t('summary.exerciseRecords.movementPattern')}
+              onChange={(nextPattern) => {
+                setMovementPattern(nextPattern)
+                setOpenSelect(null)
+              }}
+              onClose={() => setOpenSelect(null)}
+              onToggle={() => setOpenSelect((current) => current === 'movementPattern' ? null : 'movementPattern')}
+              options={movementPatterns}
               value={movementPattern}
-              disabled={isSaving}
-              onChange={(event) => setMovementPattern(event.target.value as MovementPattern)}
-              className="w-full rounded-xl bg-[var(--surface-container)] px-4 py-3 text-base font-medium text-[var(--on-surface)] outline-none"
-            >
-              {movementPatterns.map((pattern) => (
-                <option key={pattern} value={pattern}>
-                  {getMovementPatternName(t, pattern)}
-                </option>
-              ))}
-            </select>
-          </label>
+            />
 
-          <label className="block rounded-[1.25rem] bg-[var(--surface)] p-4">
-            <span className="mb-2 block text-xs font-semibold text-[var(--on-surface-variant)]">
-              {t('summary.exerciseRecords.measurementType')}
-            </span>
-            <select
+            <FormSelect
+              disabled={isSaving}
+              getOptionLabel={(type) => t(`summary.exerciseRecords.measurementTypeOptions.${type}`)}
+              isOpen={openSelect === 'measurementType'}
+              label={t('summary.exerciseRecords.measurementType')}
+              onChange={(nextType) => {
+                setMeasurementType(nextType)
+                setOpenSelect(null)
+              }}
+              onClose={() => setOpenSelect(null)}
+              onToggle={() => setOpenSelect((current) => current === 'measurementType' ? null : 'measurementType')}
+              options={measurementTypes}
               value={measurementType}
-              disabled={isSaving}
-              onChange={(event) => setMeasurementType(event.target.value as MeasurementType)}
-              className="w-full rounded-xl bg-[var(--surface-container)] px-4 py-3 text-base font-medium text-[var(--on-surface)] outline-none"
-            >
-              {measurementTypes.map((type) => (
-                <option key={type} value={type}>
-                  {t(`summary.exerciseRecords.measurementTypeOptions.${type}`)}
-                </option>
-              ))}
-            </select>
-          </label>
+            />
+          </div>
 
-          <section className="rounded-[1.25rem] bg-[var(--surface)] p-4">
-            <h2 className="text-[16px] font-bold text-[var(--on-surface)]">{t('summary.exerciseRecords.muscleDistribution')}</h2>
-            <p className="mt-1 text-xs text-[var(--on-surface-variant)]">
+          <section className="border-t border-[var(--outline-variant)] pt-8">
+            <h2 className="text-2xl font-bold text-[var(--on-surface)]">{t('summary.exerciseRecords.muscleDistribution')}</h2>
+            <p className="mt-2 text-base leading-6 text-[var(--on-surface-variant)]">
               {t('summary.exerciseRecords.editDistributionDescription')}
             </p>
             <MuscleDistributionEditor
