@@ -20,7 +20,7 @@ tools/exercise-catalog-editor/index.html
   - measurement types 支持新增、编辑、删除和关键词搜索。
   - movement patterns 支持新增、编辑、删除和关键词搜索。
   - muscle groups 支持新增、编辑、删除和关键词搜索，并维护 en / zh-CN group name。
-  - primaryMuscleGroupIds、secondaryMuscleGroupIds 使用多选控件。
+  - muscleDistribution 使用 JSON textarea。
   - movementPattern 使用下拉控件。
   - sourceUrls 使用一行一个值的 textarea。
   - exercise 关键词搜索包含动作名、动作 aliases、movement pattern、粗略肌群和 group aliases。

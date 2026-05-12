@@ -130,7 +130,8 @@ for (const exercise of exercises) {
     errors.push(`Exercise "${exercise.id}" references missing measurement type "${exercise.measurementType}"`)
   }
 
-  for (const muscleGroupId of [...exercise.primaryMuscleGroupIds, ...exercise.secondaryMuscleGroupIds]) {
+  const exerciseMuscleGroupIds = new Set(exercise.muscleDistribution.map((item) => item.muscleGroupId))
+  for (const muscleGroupId of exerciseMuscleGroupIds) {
     if (!muscleGroupIdSet.has(muscleGroupId)) {
       errors.push(`Exercise "${exercise.id}" references missing muscle group "${muscleGroupId}"`)
     }

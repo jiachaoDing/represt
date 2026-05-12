@@ -108,12 +108,11 @@ function getAssociatedCatalogSearchValues(t: TFunction, exerciseId: string) {
     return []
   }
 
-  const muscleSearchValues = [...exercise.primaryMuscleGroupIds, ...exercise.secondaryMuscleGroupIds].flatMap(
-    (groupId) => [
-      getMuscleGroupName(t, groupId),
-      ...getMuscleGroupAliases(t, groupId),
-    ],
-  )
+  const muscleGroupIds = [...new Set(exercise.muscleDistribution.map((item) => item.muscleGroupId))]
+  const muscleSearchValues = muscleGroupIds.flatMap((groupId) => [
+    getMuscleGroupName(t, groupId),
+    ...getMuscleGroupAliases(t, groupId),
+  ])
 
   const movementPatternSearchValues = [
     getMovementPatternName(t, exercise.movementPattern),

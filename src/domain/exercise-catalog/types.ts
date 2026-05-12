@@ -16,8 +16,6 @@ export type MuscleDistributionItem = {
 export type Exercise = {
   id: string
   slug: string
-  primaryMuscleGroupIds: MuscleGroup[]
-  secondaryMuscleGroupIds: MuscleGroup[]
   muscleDistribution: MuscleDistributionItem[]
   movementPattern: MovementPattern
   measurementType: MeasurementType

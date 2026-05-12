@@ -4,8 +4,6 @@ export const exercises: Exercise[] = [
   {
     id: 'barbellBenchPress',
     slug: 'barbell-bench-press',
-    primaryMuscleGroupIds: ['chest'],
-    secondaryMuscleGroupIds: ['shoulders', 'arms'],
     muscleDistribution: [
       { muscleGroupId: 'chest', ratio: 0.6 },
       { muscleGroupId: 'shoulders', ratio: 0.2 },
@@ -18,8 +16,6 @@ export const exercises: Exercise[] = [
   {
     id: 'dumbbellBenchPress',
     slug: 'dumbbell-bench-press',
-    primaryMuscleGroupIds: ['chest'],
-    secondaryMuscleGroupIds: ['shoulders', 'arms'],
     muscleDistribution: [
       { muscleGroupId: 'chest', ratio: 0.6 },
       { muscleGroupId: 'shoulders', ratio: 0.2 },
@@ -32,8 +28,6 @@ export const exercises: Exercise[] = [
   {
     id: 'inclineBarbellBenchPress',
     slug: 'incline-barbell-bench-press',
-    primaryMuscleGroupIds: ['chest'],
-    secondaryMuscleGroupIds: ['shoulders', 'arms'],
     muscleDistribution: [
       { muscleGroupId: 'chest', ratio: 0.55 },
       { muscleGroupId: 'shoulders', ratio: 0.25 },
@@ -46,8 +40,6 @@ export const exercises: Exercise[] = [
   {
     id: 'inclineDumbbellBenchPress',
     slug: 'incline-dumbbell-bench-press',
-    primaryMuscleGroupIds: ['chest'],
-    secondaryMuscleGroupIds: ['shoulders', 'arms'],
     muscleDistribution: [
       { muscleGroupId: 'chest', ratio: 0.55 },
       { muscleGroupId: 'shoulders', ratio: 0.25 },
@@ -60,8 +52,6 @@ export const exercises: Exercise[] = [
   {
     id: 'declineBarbellBenchPress',
     slug: 'decline-barbell-bench-press',
-    primaryMuscleGroupIds: ['chest'],
-    secondaryMuscleGroupIds: ['shoulders', 'arms'],
     muscleDistribution: [
       { muscleGroupId: 'chest', ratio: 0.65 },
       { muscleGroupId: 'arms', ratio: 0.2 },
@@ -74,8 +64,6 @@ export const exercises: Exercise[] = [
   {
     id: 'declineDumbbellBenchPress',
     slug: 'decline-dumbbell-bench-press',
-    primaryMuscleGroupIds: ['chest'],
-    secondaryMuscleGroupIds: ['shoulders', 'arms'],
     muscleDistribution: [
       { muscleGroupId: 'chest', ratio: 0.65 },
       { muscleGroupId: 'arms', ratio: 0.2 },
@@ -88,8 +76,6 @@ export const exercises: Exercise[] = [
   {
     id: 'pecDeck',
     slug: 'pec-deck',
-    primaryMuscleGroupIds: ['chest'],
-    secondaryMuscleGroupIds: ['arms'],
     muscleDistribution: [
       { muscleGroupId: 'chest', ratio: 0.85 },
       { muscleGroupId: 'arms', ratio: 0.15 },
@@ -101,8 +87,6 @@ export const exercises: Exercise[] = [
   {
     id: 'cableFly',
     slug: 'cable-fly',
-    primaryMuscleGroupIds: ['chest'],
-    secondaryMuscleGroupIds: ['arms'],
     muscleDistribution: [
       { muscleGroupId: 'chest', ratio: 0.85 },
       { muscleGroupId: 'arms', ratio: 0.15 },
@@ -114,8 +98,6 @@ export const exercises: Exercise[] = [
   {
     id: 'dip',
     slug: 'dip',
-    primaryMuscleGroupIds: ['chest'],
-    secondaryMuscleGroupIds: ['arms', 'shoulders'],
     muscleDistribution: [
       { muscleGroupId: 'chest', ratio: 0.5 },
       { muscleGroupId: 'arms', ratio: 0.35 },
@@ -128,8 +110,6 @@ export const exercises: Exercise[] = [
   {
     id: 'pushUp',
     slug: 'push-up',
-    primaryMuscleGroupIds: ['chest'],
-    secondaryMuscleGroupIds: ['shoulders', 'arms', 'core'],
     muscleDistribution: [
       { muscleGroupId: 'chest', ratio: 0.5 },
       { muscleGroupId: 'shoulders', ratio: 0.2 },
@@ -143,8 +123,6 @@ export const exercises: Exercise[] = [
   {
     id: 'weightedPushUp',
     slug: 'weighted-push-up',
-    primaryMuscleGroupIds: ['chest'],
-    secondaryMuscleGroupIds: ['shoulders', 'arms', 'core'],
     muscleDistribution: [
       { muscleGroupId: 'chest', ratio: 0.5 },
       { muscleGroupId: 'shoulders', ratio: 0.2 },
@@ -158,8 +136,6 @@ export const exercises: Exercise[] = [
   {
     id: 'pullUp',
     slug: 'pull-up',
-    primaryMuscleGroupIds: ['back'],
-    secondaryMuscleGroupIds: ['arms', 'shoulders'],
     muscleDistribution: [
       { muscleGroupId: 'back', ratio: 0.65 },
       { muscleGroupId: 'arms', ratio: 0.25 },
@@ -172,8 +148,6 @@ export const exercises: Exercise[] = [
   {
     id: 'wideGripPullUp',
     slug: 'wide-grip-pull-up',
-    primaryMuscleGroupIds: ['back'],
-    secondaryMuscleGroupIds: ['arms', 'shoulders'],
     muscleDistribution: [
       { muscleGroupId: 'back', ratio: 0.7 },
       { muscleGroupId: 'arms', ratio: 0.2 },
@@ -186,8 +160,6 @@ export const exercises: Exercise[] = [
   {
     id: 'chinUp',
     slug: 'chin-up',
-    primaryMuscleGroupIds: ['back', 'arms'],
-    secondaryMuscleGroupIds: ['shoulders'],
     muscleDistribution: [
       { muscleGroupId: 'back', ratio: 0.55 },
       { muscleGroupId: 'arms', ratio: 0.35 },
@@ -200,8 +172,6 @@ export const exercises: Exercise[] = [
   {
     id: 'latPulldown',
     slug: 'lat-pulldown',
-    primaryMuscleGroupIds: ['back'],
-    secondaryMuscleGroupIds: ['arms', 'shoulders'],
     muscleDistribution: [
       { muscleGroupId: 'back', ratio: 0.65 },
       { muscleGroupId: 'arms', ratio: 0.25 },
@@ -214,8 +184,6 @@ export const exercises: Exercise[] = [
   {
     id: 'closeGripLatPulldown',
     slug: 'close-grip-lat-pulldown',
-    primaryMuscleGroupIds: ['back'],
-    secondaryMuscleGroupIds: ['arms', 'shoulders'],
     muscleDistribution: [
       { muscleGroupId: 'back', ratio: 0.6 },
       { muscleGroupId: 'arms', ratio: 0.3 },
@@ -228,8 +196,6 @@ export const exercises: Exercise[] = [
   {
     id: 'barbellRow',
     slug: 'barbell-row',
-    primaryMuscleGroupIds: ['back'],
-    secondaryMuscleGroupIds: ['shoulders', 'arms', 'legs'],
     muscleDistribution: [
       { muscleGroupId: 'back', ratio: 0.6 },
       { muscleGroupId: 'arms', ratio: 0.15 },
@@ -243,8 +209,6 @@ export const exercises: Exercise[] = [
   {
     id: 'seatedRow',
     slug: 'seated-row',
-    primaryMuscleGroupIds: ['back'],
-    secondaryMuscleGroupIds: ['shoulders', 'arms'],
     muscleDistribution: [
       { muscleGroupId: 'back', ratio: 0.65 },
       { muscleGroupId: 'arms', ratio: 0.2 },
@@ -257,8 +221,6 @@ export const exercises: Exercise[] = [
   {
     id: 'singleArmDumbbellRow',
     slug: 'single-arm-dumbbell-row',
-    primaryMuscleGroupIds: ['back'],
-    secondaryMuscleGroupIds: ['shoulders', 'arms', 'core'],
     muscleDistribution: [
       { muscleGroupId: 'back', ratio: 0.6 },
       { muscleGroupId: 'arms', ratio: 0.2 },
@@ -272,8 +234,6 @@ export const exercises: Exercise[] = [
   {
     id: 'tBarRow',
     slug: 't-bar-row',
-    primaryMuscleGroupIds: ['back'],
-    secondaryMuscleGroupIds: ['shoulders', 'arms'],
     muscleDistribution: [
       { muscleGroupId: 'back', ratio: 0.65 },
       { muscleGroupId: 'arms', ratio: 0.2 },
@@ -286,8 +246,6 @@ export const exercises: Exercise[] = [
   {
     id: 'straightArmPulldown',
     slug: 'straight-arm-pulldown',
-    primaryMuscleGroupIds: ['back'],
-    secondaryMuscleGroupIds: ['chest', 'arms'],
     muscleDistribution: [
       { muscleGroupId: 'back', ratio: 0.75 },
       { muscleGroupId: 'arms', ratio: 0.15 },
@@ -300,8 +258,6 @@ export const exercises: Exercise[] = [
   {
     id: 'deadlift',
     slug: 'deadlift',
-    primaryMuscleGroupIds: ['legs', 'back'],
-    secondaryMuscleGroupIds: ['core'],
     muscleDistribution: [
       { muscleGroupId: 'legs', ratio: 0.5 },
       { muscleGroupId: 'back', ratio: 0.35 },
@@ -314,8 +270,6 @@ export const exercises: Exercise[] = [
   {
     id: 'romanianDeadlift',
     slug: 'romanian-deadlift',
-    primaryMuscleGroupIds: ['legs', 'back'],
-    secondaryMuscleGroupIds: ['core'],
     muscleDistribution: [
       { muscleGroupId: 'legs', ratio: 0.55 },
       { muscleGroupId: 'back', ratio: 0.3 },
@@ -328,8 +282,6 @@ export const exercises: Exercise[] = [
   {
     id: 'sumoDeadlift',
     slug: 'sumo-deadlift',
-    primaryMuscleGroupIds: ['legs', 'back'],
-    secondaryMuscleGroupIds: ['core'],
     muscleDistribution: [
       { muscleGroupId: 'legs', ratio: 0.6 },
       { muscleGroupId: 'back', ratio: 0.25 },
@@ -342,8 +294,6 @@ export const exercises: Exercise[] = [
   {
     id: 'barbellSquat',
     slug: 'barbell-squat',
-    primaryMuscleGroupIds: ['legs'],
-    secondaryMuscleGroupIds: ['back', 'core'],
     muscleDistribution: [
       { muscleGroupId: 'legs', ratio: 0.75 },
       { muscleGroupId: 'core', ratio: 0.15 },
@@ -356,8 +306,6 @@ export const exercises: Exercise[] = [
   {
     id: 'squat',
     slug: 'squat',
-    primaryMuscleGroupIds: ['legs'],
-    secondaryMuscleGroupIds: ['back', 'core'],
     muscleDistribution: [
       { muscleGroupId: 'legs', ratio: 0.75 },
       { muscleGroupId: 'core', ratio: 0.15 },
@@ -370,8 +318,6 @@ export const exercises: Exercise[] = [
   {
     id: 'frontSquat',
     slug: 'front-squat',
-    primaryMuscleGroupIds: ['legs'],
-    secondaryMuscleGroupIds: ['back', 'core'],
     muscleDistribution: [
       { muscleGroupId: 'legs', ratio: 0.75 },
       { muscleGroupId: 'core', ratio: 0.15 },
@@ -384,8 +330,6 @@ export const exercises: Exercise[] = [
   {
     id: 'legPress',
     slug: 'leg-press',
-    primaryMuscleGroupIds: ['legs'],
-    secondaryMuscleGroupIds: [],
     muscleDistribution: [{ muscleGroupId: 'legs', ratio: 1 }],
     movementPattern: 'legs',
     measurementType: 'weightReps',
@@ -394,8 +338,6 @@ export const exercises: Exercise[] = [
   {
     id: 'legPressMachine',
     slug: 'leg-press-machine',
-    primaryMuscleGroupIds: ['legs'],
-    secondaryMuscleGroupIds: [],
     muscleDistribution: [{ muscleGroupId: 'legs', ratio: 1 }],
     movementPattern: 'legs',
     measurementType: 'weightReps',
@@ -404,8 +346,6 @@ export const exercises: Exercise[] = [
   {
     id: 'hackSquat',
     slug: 'hack-squat',
-    primaryMuscleGroupIds: ['legs'],
-    secondaryMuscleGroupIds: [],
     muscleDistribution: [{ muscleGroupId: 'legs', ratio: 1 }],
     movementPattern: 'legs',
     measurementType: 'weightReps',
@@ -414,8 +354,6 @@ export const exercises: Exercise[] = [
   {
     id: 'gluteBridge',
     slug: 'glute-bridge',
-    primaryMuscleGroupIds: ['legs'],
-    secondaryMuscleGroupIds: ['core'],
     muscleDistribution: [
       { muscleGroupId: 'legs', ratio: 0.8 },
       { muscleGroupId: 'core', ratio: 0.2 },
@@ -427,8 +365,6 @@ export const exercises: Exercise[] = [
   {
     id: 'barbellHipThrust',
     slug: 'barbell-hip-thrust',
-    primaryMuscleGroupIds: ['legs'],
-    secondaryMuscleGroupIds: ['back', 'core'],
     muscleDistribution: [
       { muscleGroupId: 'legs', ratio: 0.75 },
       { muscleGroupId: 'core', ratio: 0.15 },
@@ -441,8 +377,6 @@ export const exercises: Exercise[] = [
   {
     id: 'lunge',
     slug: 'lunge',
-    primaryMuscleGroupIds: ['legs'],
-    secondaryMuscleGroupIds: ['core'],
     muscleDistribution: [
       { muscleGroupId: 'legs', ratio: 0.8 },
       { muscleGroupId: 'core', ratio: 0.2 },
@@ -454,8 +388,6 @@ export const exercises: Exercise[] = [
   {
     id: 'bulgarianSplitSquat',
     slug: 'bulgarian-split-squat',
-    primaryMuscleGroupIds: ['legs'],
-    secondaryMuscleGroupIds: ['core'],
     muscleDistribution: [
       { muscleGroupId: 'legs', ratio: 0.8 },
       { muscleGroupId: 'core', ratio: 0.2 },
@@ -467,8 +399,6 @@ export const exercises: Exercise[] = [
   {
     id: 'walkingLunge',
     slug: 'walking-lunge',
-    primaryMuscleGroupIds: ['legs'],
-    secondaryMuscleGroupIds: ['core'],
     muscleDistribution: [
       { muscleGroupId: 'legs', ratio: 0.8 },
       { muscleGroupId: 'core', ratio: 0.2 },
@@ -480,8 +410,6 @@ export const exercises: Exercise[] = [
   {
     id: 'legExtension',
     slug: 'leg-extension',
-    primaryMuscleGroupIds: ['legs'],
-    secondaryMuscleGroupIds: [],
     muscleDistribution: [{ muscleGroupId: 'legs', ratio: 1 }],
     movementPattern: 'legs',
     measurementType: 'weightReps',
@@ -490,8 +418,6 @@ export const exercises: Exercise[] = [
   {
     id: 'legCurl',
     slug: 'leg-curl',
-    primaryMuscleGroupIds: ['legs'],
-    secondaryMuscleGroupIds: [],
     muscleDistribution: [{ muscleGroupId: 'legs', ratio: 1 }],
     movementPattern: 'legs',
     measurementType: 'weightReps',
@@ -500,8 +426,6 @@ export const exercises: Exercise[] = [
   {
     id: 'standingCalfRaise',
     slug: 'standing-calf-raise',
-    primaryMuscleGroupIds: ['legs'],
-    secondaryMuscleGroupIds: [],
     muscleDistribution: [{ muscleGroupId: 'legs', ratio: 1 }],
     movementPattern: 'legs',
     measurementType: 'weightReps',
@@ -510,8 +434,6 @@ export const exercises: Exercise[] = [
   {
     id: 'seatedCalfRaise',
     slug: 'seated-calf-raise',
-    primaryMuscleGroupIds: ['legs'],
-    secondaryMuscleGroupIds: [],
     muscleDistribution: [{ muscleGroupId: 'legs', ratio: 1 }],
     movementPattern: 'legs',
     measurementType: 'weightReps',
@@ -520,8 +442,6 @@ export const exercises: Exercise[] = [
   {
     id: 'hipAbduction',
     slug: 'hip-abduction',
-    primaryMuscleGroupIds: ['legs'],
-    secondaryMuscleGroupIds: [],
     muscleDistribution: [{ muscleGroupId: 'legs', ratio: 1 }],
     movementPattern: 'legs',
     measurementType: 'weightReps',
@@ -530,8 +450,6 @@ export const exercises: Exercise[] = [
   {
     id: 'hipAdduction',
     slug: 'hip-adduction',
-    primaryMuscleGroupIds: ['legs'],
-    secondaryMuscleGroupIds: [],
     muscleDistribution: [{ muscleGroupId: 'legs', ratio: 1 }],
     movementPattern: 'legs',
     measurementType: 'weightReps',
@@ -540,8 +458,6 @@ export const exercises: Exercise[] = [
   {
     id: 'barbellOverheadPress',
     slug: 'barbell-overhead-press',
-    primaryMuscleGroupIds: ['shoulders'],
-    secondaryMuscleGroupIds: ['arms', 'back', 'chest'],
     muscleDistribution: [
       { muscleGroupId: 'shoulders', ratio: 0.6 },
       { muscleGroupId: 'arms', ratio: 0.25 },
@@ -555,8 +471,6 @@ export const exercises: Exercise[] = [
   {
     id: 'dumbbellShoulderPress',
     slug: 'dumbbell-shoulder-press',
-    primaryMuscleGroupIds: ['shoulders'],
-    secondaryMuscleGroupIds: ['arms', 'back', 'chest'],
     muscleDistribution: [
       { muscleGroupId: 'shoulders', ratio: 0.6 },
       { muscleGroupId: 'arms', ratio: 0.25 },
@@ -570,8 +484,6 @@ export const exercises: Exercise[] = [
   {
     id: 'arnoldPress',
     slug: 'arnold-press',
-    primaryMuscleGroupIds: ['shoulders'],
-    secondaryMuscleGroupIds: ['arms', 'back', 'chest'],
     muscleDistribution: [
       { muscleGroupId: 'shoulders', ratio: 0.6 },
       { muscleGroupId: 'arms', ratio: 0.25 },
@@ -585,8 +497,6 @@ export const exercises: Exercise[] = [
   {
     id: 'dumbbellLateralRaise',
     slug: 'dumbbell-lateral-raise',
-    primaryMuscleGroupIds: ['shoulders'],
-    secondaryMuscleGroupIds: ['back', 'chest'],
     muscleDistribution: [
       { muscleGroupId: 'shoulders', ratio: 0.85 },
       { muscleGroupId: 'back', ratio: 0.1 },
@@ -599,8 +509,6 @@ export const exercises: Exercise[] = [
   {
     id: 'dumbbellFrontRaise',
     slug: 'dumbbell-front-raise',
-    primaryMuscleGroupIds: ['shoulders'],
-    secondaryMuscleGroupIds: ['chest', 'back'],
     muscleDistribution: [
       { muscleGroupId: 'shoulders', ratio: 0.85 },
       { muscleGroupId: 'chest', ratio: 0.1 },
@@ -613,8 +521,6 @@ export const exercises: Exercise[] = [
   {
     id: 'facePull',
     slug: 'face-pull',
-    primaryMuscleGroupIds: ['shoulders'],
-    secondaryMuscleGroupIds: ['back', 'arms'],
     muscleDistribution: [
       { muscleGroupId: 'shoulders', ratio: 0.6 },
       { muscleGroupId: 'back', ratio: 0.25 },
@@ -630,8 +536,6 @@ export const exercises: Exercise[] = [
   {
     id: 'reverseFly',
     slug: 'reverse-fly',
-    primaryMuscleGroupIds: ['shoulders'],
-    secondaryMuscleGroupIds: ['back'],
     muscleDistribution: [
       { muscleGroupId: 'shoulders', ratio: 0.7 },
       { muscleGroupId: 'back', ratio: 0.3 },
@@ -643,8 +547,6 @@ export const exercises: Exercise[] = [
   {
     id: 'shrug',
     slug: 'shrug',
-    primaryMuscleGroupIds: ['back'],
-    secondaryMuscleGroupIds: [],
     muscleDistribution: [{ muscleGroupId: 'back', ratio: 1 }],
     movementPattern: 'pull',
     measurementType: 'weightReps',
@@ -653,8 +555,6 @@ export const exercises: Exercise[] = [
   {
     id: 'barbellCurl',
     slug: 'barbell-curl',
-    primaryMuscleGroupIds: ['arms'],
-    secondaryMuscleGroupIds: [],
     muscleDistribution: [{ muscleGroupId: 'arms', ratio: 1 }],
     movementPattern: 'pull',
     measurementType: 'weightReps',
@@ -663,8 +563,6 @@ export const exercises: Exercise[] = [
   {
     id: 'dumbbellCurl',
     slug: 'dumbbell-curl',
-    primaryMuscleGroupIds: ['arms'],
-    secondaryMuscleGroupIds: [],
     muscleDistribution: [{ muscleGroupId: 'arms', ratio: 1 }],
     movementPattern: 'pull',
     measurementType: 'weightReps',
@@ -673,8 +571,6 @@ export const exercises: Exercise[] = [
   {
     id: 'hammerCurl',
     slug: 'hammer-curl',
-    primaryMuscleGroupIds: ['arms'],
-    secondaryMuscleGroupIds: [],
     muscleDistribution: [{ muscleGroupId: 'arms', ratio: 1 }],
     movementPattern: 'pull',
     measurementType: 'weightReps',
@@ -683,8 +579,6 @@ export const exercises: Exercise[] = [
   {
     id: 'preacherCurl',
     slug: 'preacher-curl',
-    primaryMuscleGroupIds: ['arms'],
-    secondaryMuscleGroupIds: [],
     muscleDistribution: [{ muscleGroupId: 'arms', ratio: 1 }],
     movementPattern: 'pull',
     measurementType: 'weightReps',
@@ -693,8 +587,6 @@ export const exercises: Exercise[] = [
   {
     id: 'concentrationCurl',
     slug: 'concentration-curl',
-    primaryMuscleGroupIds: ['arms'],
-    secondaryMuscleGroupIds: [],
     muscleDistribution: [{ muscleGroupId: 'arms', ratio: 1 }],
     movementPattern: 'pull',
     measurementType: 'weightReps',
@@ -703,8 +595,6 @@ export const exercises: Exercise[] = [
   {
     id: 'tricepsPushdown',
     slug: 'triceps-pushdown',
-    primaryMuscleGroupIds: ['arms'],
-    secondaryMuscleGroupIds: ['back', 'core'],
     muscleDistribution: [
       { muscleGroupId: 'arms', ratio: 0.9 },
       { muscleGroupId: 'back', ratio: 0.05 },
@@ -717,8 +607,6 @@ export const exercises: Exercise[] = [
   {
     id: 'closeGripBenchPress',
     slug: 'close-grip-bench-press',
-    primaryMuscleGroupIds: ['arms'],
-    secondaryMuscleGroupIds: ['chest', 'shoulders'],
     muscleDistribution: [
       { muscleGroupId: 'arms', ratio: 0.6 },
       { muscleGroupId: 'chest', ratio: 0.25 },
@@ -731,8 +619,6 @@ export const exercises: Exercise[] = [
   {
     id: 'overheadTricepsExtension',
     slug: 'overhead-triceps-extension',
-    primaryMuscleGroupIds: ['arms'],
-    secondaryMuscleGroupIds: [],
     muscleDistribution: [{ muscleGroupId: 'arms', ratio: 1 }],
     movementPattern: 'push',
     measurementType: 'weightReps',
@@ -741,8 +627,6 @@ export const exercises: Exercise[] = [
   {
     id: 'skullCrusher',
     slug: 'skull-crusher',
-    primaryMuscleGroupIds: ['arms'],
-    secondaryMuscleGroupIds: [],
     muscleDistribution: [{ muscleGroupId: 'arms', ratio: 1 }],
     movementPattern: 'push',
     measurementType: 'weightReps',
@@ -751,8 +635,6 @@ export const exercises: Exercise[] = [
   {
     id: 'tricepsRopeExtension',
     slug: 'triceps-rope-extension',
-    primaryMuscleGroupIds: ['arms'],
-    secondaryMuscleGroupIds: [],
     muscleDistribution: [{ muscleGroupId: 'arms', ratio: 1 }],
     movementPattern: 'push',
     measurementType: 'weightReps',
@@ -761,8 +643,6 @@ export const exercises: Exercise[] = [
   {
     id: 'crunch',
     slug: 'crunch',
-    primaryMuscleGroupIds: ['core'],
-    secondaryMuscleGroupIds: [],
     muscleDistribution: [{ muscleGroupId: 'core', ratio: 1 }],
     movementPattern: 'core',
     measurementType: 'reps',
@@ -771,8 +651,6 @@ export const exercises: Exercise[] = [
   {
     id: 'plank',
     slug: 'plank',
-    primaryMuscleGroupIds: ['core'],
-    secondaryMuscleGroupIds: ['shoulders', 'back'],
     muscleDistribution: [
       { muscleGroupId: 'core', ratio: 0.75 },
       { muscleGroupId: 'shoulders', ratio: 0.15 },
@@ -785,8 +663,6 @@ export const exercises: Exercise[] = [
   {
     id: 'hangingLegRaise',
     slug: 'hanging-leg-raise',
-    primaryMuscleGroupIds: ['core', 'legs'],
-    secondaryMuscleGroupIds: [],
     muscleDistribution: [
       { muscleGroupId: 'core', ratio: 0.7 },
       { muscleGroupId: 'legs', ratio: 0.3 },
@@ -801,8 +677,6 @@ export const exercises: Exercise[] = [
   {
     id: 'russianTwist',
     slug: 'russian-twist',
-    primaryMuscleGroupIds: ['core'],
-    secondaryMuscleGroupIds: ['legs'],
     muscleDistribution: [
       { muscleGroupId: 'core', ratio: 0.8 },
       { muscleGroupId: 'legs', ratio: 0.2 },
@@ -814,8 +688,6 @@ export const exercises: Exercise[] = [
   {
     id: 'sitUp',
     slug: 'sit-up',
-    primaryMuscleGroupIds: ['core'],
-    secondaryMuscleGroupIds: ['legs'],
     muscleDistribution: [
       { muscleGroupId: 'core', ratio: 0.8 },
       { muscleGroupId: 'legs', ratio: 0.2 },
@@ -827,8 +699,6 @@ export const exercises: Exercise[] = [
   {
     id: 'cableCrunch',
     slug: 'cable-crunch',
-    primaryMuscleGroupIds: ['core'],
-    secondaryMuscleGroupIds: [],
     muscleDistribution: [{ muscleGroupId: 'core', ratio: 1 }],
     movementPattern: 'core',
     measurementType: 'weightReps',
@@ -837,8 +707,6 @@ export const exercises: Exercise[] = [
   {
     id: 'deadBug',
     slug: 'dead-bug',
-    primaryMuscleGroupIds: ['core'],
-    secondaryMuscleGroupIds: ['legs'],
     muscleDistribution: [
       { muscleGroupId: 'core', ratio: 0.8 },
       { muscleGroupId: 'legs', ratio: 0.2 },
@@ -850,8 +718,6 @@ export const exercises: Exercise[] = [
   {
     id: 'birdDog',
     slug: 'bird-dog',
-    primaryMuscleGroupIds: ['core'],
-    secondaryMuscleGroupIds: ['back', 'legs', 'shoulders'],
     muscleDistribution: [
       { muscleGroupId: 'core', ratio: 0.55 },
       { muscleGroupId: 'back', ratio: 0.2 },

@@ -91,12 +91,25 @@ function linesToArray(value) {
     .filter(Boolean)
 }
 
-function selectedValues(id) {
-  return Array.from(document.querySelectorAll(`#${id} input[type="checkbox"]:checked`)).map((input) => input.value)
-}
-
 function arrayTextarea(value) {
   return escapeHtml((value || []).join('\n'))
+}
+
+function muscleDistributionTextarea(value) {
+  return escapeHtml(JSON.stringify(value || [], null, 2))
+}
+
+function parseMuscleDistribution(value) {
+  const parsed = JSON.parse(value || '[]')
+  if (!Array.isArray(parsed)) throw new Error('muscleDistribution must be an array.')
+  return parsed.map((item) => ({
+    muscleGroupId: String(item.muscleGroupId || '').trim(),
+    ratio: Number(item.ratio),
+  }))
+}
+
+function exerciseMuscleGroupIds(exercise) {
+  return Array.from(new Set((exercise.muscleDistribution || []).map((item) => item.muscleGroupId).filter(Boolean)))
 }
 
 function matchesSearch(values, search) {
@@ -193,8 +206,7 @@ function renderExerciseForm(exercise) {
     slug: '',
     measurementType: 'weightReps',
     movementPattern: state.movementPatterns[0],
-    primaryMuscleGroupIds: [],
-    secondaryMuscleGroupIds: [],
+    muscleDistribution: [],
     sourceUrls: [],
   }
 
@@ -227,8 +239,10 @@ function renderExerciseForm(exercise) {
         </label>
       </div>
       <div class="form-grid">
-        ${renderCheckboxMultiSelect('exercise-primary-muscle-group-ids', 'primaryMuscleGroupIds', state.muscleGroups, value.primaryMuscleGroupIds)}
-        ${renderCheckboxMultiSelect('exercise-secondary-muscle-group-ids', 'secondaryMuscleGroupIds', state.muscleGroups, value.secondaryMuscleGroupIds)}
+        <label>
+          muscleDistribution JSON
+          <textarea id="exercise-muscle-distribution" required>${muscleDistributionTextarea(value.muscleDistribution)}</textarea>
+        </label>
       </div>
       <div class="form-grid">
         <label>
@@ -239,30 +253,6 @@ function renderExerciseForm(exercise) {
       <button type="submit">${exercise ? 'Save exercise' : 'Add exercise'}</button>
       <button type="button" class="secondary" onclick="startNewExercise()">Reset</button>
     </form>
-  `
-}
-
-function renderCheckboxMultiSelect(id, label, items, selected) {
-  const selectedSet = new Set(selected || [])
-  return `
-    <fieldset>
-      <legend>${escapeHtml(label)}</legend>
-      <div id="${id}" class="checkbox-list">
-      ${items
-        .map(
-          (item) => {
-            const itemId = typeof item === 'string' ? item : item.id
-            return `
-            <label>
-              <input type="checkbox" value="${escapeHtml(itemId)}" ${selectedSet.has(itemId) ? 'checked' : ''} />
-              <span>${escapeHtml(itemId)}</span>
-            </label>
-          `
-          },
-        )
-        .join('')}
-      </div>
-    </fieldset>
   `
 }
 
@@ -280,8 +270,7 @@ function renderExerciseCard(exercise) {
         ${renderCardField('slug', [exercise.slug])}
         ${renderCardField('movementPattern', [exercise.movementPattern])}
         ${renderCardField('measurementType', [exercise.measurementType])}
-        ${renderCardField('primaryMuscleGroupIds', exercise.primaryMuscleGroupIds)}
-        ${renderCardField('secondaryMuscleGroupIds', exercise.secondaryMuscleGroupIds)}
+        ${renderCardField('muscleGroups', exerciseMuscleGroupIds(exercise))}
         ${renderCardField('sourceUrls', exercise.sourceUrls)}
       </div>
     </section>
@@ -303,7 +292,7 @@ function renderCardField(label, values) {
 }
 
 function exerciseSearchValues(exercise) {
-  const muscleGroupSearchValues = [...(exercise.primaryMuscleGroupIds || []), ...(exercise.secondaryMuscleGroupIds || [])].flatMap((id) => [
+  const muscleGroupSearchValues = exerciseMuscleGroupIds(exercise).flatMap((id) => [
     id,
     state.i18n.en?.muscles?.groups?.[id] || '',
     state.i18n['zh-CN']?.muscles?.groups?.[id] || '',
@@ -547,7 +536,7 @@ function renderMuscleGroupForm(groupId) {
 
 function renderMuscleGroupRow(groupId) {
   const usedBy = state.catalog.exercises.filter((exercise) =>
-    [...(exercise.primaryMuscleGroupIds || []), ...(exercise.secondaryMuscleGroupIds || [])].includes(groupId),
+    exerciseMuscleGroupIds(exercise).includes(groupId),
   ).length
   return `
     <tr>
@@ -565,11 +554,18 @@ function renderMuscleGroupRow(groupId) {
 
 function saveExercise(event) {
   event.preventDefault()
+  let muscleDistribution
+  try {
+    muscleDistribution = parseMuscleDistribution(document.getElementById('exercise-muscle-distribution').value)
+  } catch (error) {
+    window.alert(error.message || String(error))
+    return
+  }
+
   const exercise = {
     id: document.getElementById('exercise-id').value.trim(),
     slug: document.getElementById('exercise-slug').value.trim(),
-    primaryMuscleGroupIds: selectedValues('exercise-primary-muscle-group-ids'),
-    secondaryMuscleGroupIds: selectedValues('exercise-secondary-muscle-group-ids'),
+    muscleDistribution,
     movementPattern: document.getElementById('exercise-movement-pattern').value,
     measurementType: document.getElementById('exercise-measurement-type').value,
     sourceUrls: linesToArray(document.getElementById('exercise-source-urls').value),
@@ -760,8 +756,10 @@ function saveMuscleGroupCatalog(event) {
     state.muscleGroups = state.muscleGroups.map((id) => (id === previousId ? nextId : id))
     state.catalog.exercises = state.catalog.exercises.map((exercise) => ({
       ...exercise,
-      primaryMuscleGroupIds: (exercise.primaryMuscleGroupIds || []).map((id) => (id === previousId ? nextId : id)),
-      secondaryMuscleGroupIds: (exercise.secondaryMuscleGroupIds || []).map((id) => (id === previousId ? nextId : id)),
+      muscleDistribution: (exercise.muscleDistribution || []).map((item) => ({
+        ...item,
+        muscleGroupId: item.muscleGroupId === previousId ? nextId : item.muscleGroupId,
+      })),
     }))
     moveObjectKey(state.i18n.en.muscles.groups, previousId, nextId)
     moveObjectKey(state.i18n['zh-CN'].muscles.groups, previousId, nextId)
@@ -790,7 +788,7 @@ function editMuscleGroupCatalog(id) {
 
 function deleteMuscleGroupCatalog(id) {
   const usedBy = state.catalog.exercises.filter((exercise) =>
-    [...(exercise.primaryMuscleGroupIds || []), ...(exercise.secondaryMuscleGroupIds || [])].includes(id),
+    exerciseMuscleGroupIds(exercise).includes(id),
   ).length
   if (!window.confirm(`Delete muscle group "${id}"? ${usedBy} exercises currently use this group.`)) return
   state.muscleGroups = state.muscleGroups.filter((groupId) => groupId !== id)
@@ -1232,8 +1230,12 @@ function validateAll() {
   const muscleGroupIds = new Set(state.muscleGroups)
   const movementPatternIds = new Set(state.movementPatterns)
   state.catalog.exercises.forEach((exercise) => {
-    ;[...(exercise.primaryMuscleGroupIds || []), ...(exercise.secondaryMuscleGroupIds || [])].forEach((id) => {
+    ;(exercise.muscleDistribution || []).forEach((item) => {
+      const id = item.muscleGroupId
       if (!muscleGroupIds.has(id)) add('error', exercise.id, `Unknown muscleGroupId: ${id}`)
+      if (!Number.isFinite(item.ratio) || item.ratio <= 0) {
+        add('error', exercise.id, `Invalid muscleDistribution ratio for ${id}: ${item.ratio}`)
+      }
     })
     if (!movementPatternIds.has(exercise.movementPattern)) add('error', exercise.id, `Invalid movementPattern: ${exercise.movementPattern}`)
     if (!measurementTypeIds.has(exercise.measurementType)) {
@@ -1437,11 +1439,15 @@ export type MovementPattern = (typeof movementPatterns)[number]
 
 export type MuscleGroup = (typeof muscleGroups)[number]
 
+export type MuscleDistributionItem = {
+  muscleGroupId: MuscleGroup
+  ratio: number
+}
+
 export type Exercise = {
   id: string
   slug: string
-  primaryMuscleGroupIds: MuscleGroup[]
-  secondaryMuscleGroupIds: MuscleGroup[]
+  muscleDistribution: MuscleDistributionItem[]
   movementPattern: MovementPattern
   measurementType: MeasurementType
   sourceUrls: string[]
