@@ -271,15 +271,11 @@ export function ExercisePickerPage() {
     setSelectedExercises((current) => current.filter((exercise) => exercise.key !== key))
   }
 
-  function openExerciseModelEditor() {
-    if (!customName) {
-      return
-    }
-
+  function openExerciseModelEditor(name?: string) {
     navigate('/summary/exercises/catalog/new', {
       state: {
         ...backLinkState,
-        exerciseModelName: customName,
+        ...(name ? { exerciseModelName: name } : {}),
         exercisePickerSelectedExercises: selectedExercises,
       },
     })
@@ -346,7 +342,20 @@ export function ExercisePickerPage() {
 
   return (
     <div className="flex h-full min-h-0 select-none flex-col overflow-hidden">
-      <PageHeader title={t('exercisePicker.title')} backFallbackTo={target === 'plan' ? '/plans' : '/'} />
+      <PageHeader
+        title={t('exercisePicker.title')}
+        backFallbackTo={target === 'plan' ? '/plans' : '/'}
+        actions={
+          <button
+            type="button"
+            onClick={() => openExerciseModelEditor()}
+            aria-label={t('summary.exerciseRecords.addCustomTitle')}
+            className="flex h-11 w-11 items-center justify-center rounded-full text-[var(--primary)] transition-colors hover:bg-[var(--on-surface-variant)]/10"
+          >
+            <Plus size={24} strokeWidth={2.5} aria-hidden="true" />
+          </button>
+        }
+      />
 
       <div className="shrink-0 pb-3">
         <label className="flex h-10 items-center gap-2.5 rounded-full bg-[var(--surface-container)] px-3.5 text-[var(--on-surface-variant)]">
@@ -398,14 +407,7 @@ export function ExercisePickerPage() {
             })}
             <button
               type="button"
-              onClick={() =>
-                navigate('/summary/exercises/catalog/new', {
-                  state: {
-                    ...backLinkState,
-                    exercisePickerSelectedExercises: selectedExercises,
-                  },
-                })
-              }
+              onClick={() => openExerciseModelEditor()}
               className="relative mt-1 flex min-h-12 w-full items-center gap-1.5 border-t border-[var(--outline-variant)]/40 px-2.5 py-2 text-left text-xs font-medium text-[var(--primary)] transition-colors"
             >
               <span className="min-w-0 flex-1 leading-4">{t('summary.exerciseRecords.addCustomTitle')}</span>
@@ -415,11 +417,11 @@ export function ExercisePickerPage() {
           <div className="min-w-0 flex-1 bg-[var(--surface)]">
             <div className="h-full overflow-y-auto px-3 pb-[6.5rem] pt-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {canCreateCustom ? (
-            <button
-              type="button"
-              onClick={openExerciseModelEditor}
-              className="mb-2 flex min-h-[3.75rem] w-full items-center gap-3 rounded-xl border border-dashed border-[var(--outline)] px-3 text-left text-[var(--primary)]"
-            >
+                <button
+                  type="button"
+                  onClick={() => openExerciseModelEditor(customName)}
+                  className="mb-2 flex min-h-[3.75rem] w-full items-center gap-3 rounded-xl border border-dashed border-[var(--outline)] px-3 text-left text-[var(--primary)]"
+                >
                   <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--primary-container)] text-[var(--on-primary-container)]">
                     <Plus size={18} strokeWidth={2.6} aria-hidden="true" />
                   </span>
@@ -469,9 +471,18 @@ export function ExercisePickerPage() {
               </div>
 
               {!canCreateCustom && filteredExerciseModels.length === 0 ? (
-                <p className="py-8 text-center text-sm text-[var(--on-surface-variant)]">
-                  {t('exercisePicker.noResults')}
-                </p>
+                <div className="rounded-xl border border-dashed border-[var(--outline)] px-5 py-8 text-center">
+                  <p className="text-sm font-medium text-[var(--on-surface-variant)]">
+                    {t('exercisePicker.noResults')}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => openExerciseModelEditor()}
+                    className="mt-4 inline-flex items-center text-sm font-medium text-[var(--primary)]"
+                  >
+                    <span>{t('summary.exerciseRecords.addCustomTitle')}</span>
+                  </button>
+                </div>
               ) : null}
             </div>
           </div>
