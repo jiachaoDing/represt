@@ -368,7 +368,7 @@ export function ExercisePickerPage() {
 
       <div className="min-h-0 flex-1 overflow-hidden rounded-t-2xl border-t border-[var(--outline-variant)] bg-[var(--surface-container)]">
         <div className="flex h-full min-h-0">
-          <nav className="h-full w-[5.75rem] shrink-0 overflow-y-auto bg-[var(--surface-container)] py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <nav className="h-full w-[5.75rem] shrink-0 overflow-y-auto bg-[var(--surface-container)] pb-[50vh] pt-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {categoryItems.map((category) => {
               const active = categoryId === category.id
               const count = selectedCountByCategory[category.id]
