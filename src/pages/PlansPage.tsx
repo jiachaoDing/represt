@@ -145,6 +145,7 @@ export function PlansPage() {
         daysUntil={plans.currentPlanCyclePreview?.daysUntil ?? null}
         getPlanColor={(planId) => planColorMap.get(planId) ?? null}
         planId={plans.currentPlan?.id ?? null}
+        planName={plans.currentPlan?.name ?? null}
       />
 
       <section className="mt-4">

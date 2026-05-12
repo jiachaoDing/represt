@@ -13,6 +13,7 @@ type PlanCyclePreviewCardProps = {
   daysUntil: number | null
   getPlanColor: (planId: string) => PlanColor | null
   planId: string | null
+  planName: string | null
 }
 
 function getNextTrainingLabel(
@@ -36,6 +37,7 @@ export function PlanCyclePreviewCard({
   daysUntil,
   getPlanColor,
   planId,
+  planName,
 }: PlanCyclePreviewCardProps) {
   const { t } = useTranslation()
   const isConfigured = (cycle?.slots.length ?? 0) > 0
@@ -90,7 +92,13 @@ export function PlanCyclePreviewCard({
         )}
 
         <div className="text-right text-[12px] text-[var(--on-surface-variant)]">
-          <p>{isConfigured ? t('trainingCycle.cyclePreview') : t('trainingCycle.title')}</p>
+          <p>
+            {isConfigured && planId && planName
+              ? planName
+              : isConfigured
+                ? t('trainingCycle.cyclePreview')
+                : t('trainingCycle.title')}
+          </p>
           <p className="mt-1">
             {isConfigured && cycle
               ? t('trainingCycle.currentCycleDays', { days: cycle.slots.length })

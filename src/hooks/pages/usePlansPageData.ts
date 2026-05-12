@@ -44,16 +44,21 @@ export function usePlansPageData(preferredSelectedPlanId?: string | null) {
 
   const loadPlans = useCallback(async (preferredPlanId?: string | null) => {
     const [items, cycle] = await Promise.all([listPlansWithExercises(), getTrainingCycle()])
-    setPlans(items)
+    const sortedItems = [...items].sort((left, right) =>
+      right.createdAt.localeCompare(left.createdAt),
+    )
+    setPlans(sortedItems)
     setTrainingCycle(cycle)
     setSelectedPlanId((current) => {
       if (preferredPlanId !== undefined) {
-        return items.some((plan) => plan.id === preferredPlanId)
+        return sortedItems.some((plan) => plan.id === preferredPlanId)
           ? preferredPlanId
-          : (items[0]?.id ?? null)
+          : (sortedItems[0]?.id ?? null)
       }
 
-      return items.some((plan) => plan.id === current) ? current : (items[0]?.id ?? null)
+      return sortedItems.some((plan) => plan.id === current)
+        ? current
+        : (sortedItems[0]?.id ?? null)
     })
   }, [])
 
