@@ -345,7 +345,7 @@ export function ExercisePickerPage() {
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden">
+    <div className="flex h-full min-h-0 select-none flex-col overflow-hidden">
       <PageHeader title={t('exercisePicker.title')} backFallbackTo={target === 'plan' ? '/plans' : '/'} />
 
       <div className="shrink-0 pb-3">
@@ -355,7 +355,7 @@ export function ExercisePickerPage() {
             value={keyword}
             onChange={(event) => setKeyword(event.target.value)}
             placeholder={t('exercisePicker.searchPlaceholder')}
-            className="min-w-0 flex-1 bg-transparent text-sm text-[var(--on-surface)] outline-none placeholder:text-[var(--on-surface-variant)]"
+            className="min-w-0 flex-1 select-text bg-transparent text-sm text-[var(--on-surface)] outline-none placeholder:text-[var(--on-surface-variant)]"
           />
         </label>
       </div>
