@@ -17,6 +17,76 @@ export type ExerciseNameValue = {
 }
 
 const exerciseIds = new Set(exercises.map((exercise) => exercise.id))
+// Keep name-only auto-matching stable so new catalog entries do not claim old custom records.
+const exactNameMatchedExerciseIds = new Set([
+  'barbellBenchPress',
+  'dumbbellBenchPress',
+  'inclineBarbellBenchPress',
+  'inclineDumbbellBenchPress',
+  'declineBarbellBenchPress',
+  'declineDumbbellBenchPress',
+  'pecDeck',
+  'cableFly',
+  'dip',
+  'pushUp',
+  'weightedPushUp',
+  'pullUp',
+  'wideGripPullUp',
+  'chinUp',
+  'latPulldown',
+  'closeGripLatPulldown',
+  'barbellRow',
+  'seatedRow',
+  'singleArmDumbbellRow',
+  'tBarRow',
+  'straightArmPulldown',
+  'deadlift',
+  'romanianDeadlift',
+  'sumoDeadlift',
+  'legPress',
+  'squat',
+  'barbellSquat',
+  'frontSquat',
+  'legPressMachine',
+  'hackSquat',
+  'gluteBridge',
+  'barbellHipThrust',
+  'lunge',
+  'bulgarianSplitSquat',
+  'walkingLunge',
+  'legCurl',
+  'legExtension',
+  'standingCalfRaise',
+  'seatedCalfRaise',
+  'hipAbduction',
+  'hipAdduction',
+  'barbellOverheadPress',
+  'dumbbellShoulderPress',
+  'arnoldPress',
+  'dumbbellLateralRaise',
+  'dumbbellFrontRaise',
+  'facePull',
+  'reverseFly',
+  'shrug',
+  'barbellCurl',
+  'dumbbellCurl',
+  'hammerCurl',
+  'preacherCurl',
+  'concentrationCurl',
+  'tricepsPushdown',
+  'closeGripBenchPress',
+  'overheadTricepsExtension',
+  'skullCrusher',
+  'tricepsRopeExtension',
+  'crunch',
+  'plank',
+  'hangingLegRaise',
+  'russianTwist',
+  'sitUp',
+  'cableCrunch',
+  'deadBug',
+  'birdDog',
+])
 const primaryNamesByLanguage: Record<SupportedLanguage, Record<string, string>> = {
   'zh-CN': zhCNExercises.names,
   en: enExercises.names,
@@ -30,7 +100,7 @@ const catalogIdsByNormalizedPrimaryName = new Map<string, Set<string>>()
 
 for (const language of supportedLanguages) {
   for (const [exerciseId, name] of Object.entries(primaryNamesByLanguage[language])) {
-    if (!exerciseIds.has(exerciseId)) {
+    if (!exerciseIds.has(exerciseId) || !exactNameMatchedExerciseIds.has(exerciseId)) {
       continue
     }
 

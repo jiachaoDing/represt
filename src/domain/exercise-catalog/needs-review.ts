@@ -21,4 +21,29 @@ export const needsReview: ExerciseCatalogReviewItem[] = [
     reason:
       'Confirm whether hanging leg raise should stay primarily grouped as core when users perform it with more lower-body involvement.',
   },
+  {
+    id: 'invertedRow',
+    reason:
+      'Source equipment is empty and users may perform several bar heights or assistance levels; confirm reps remains the best default.',
+  },
+  {
+    id: 'gluteKickback',
+    reason:
+      'Source entry is bodyweight glute kickback, while gym users may expect cable or machine kickback; confirm measurement type and naming.',
+  },
+  {
+    id: 'seatedLegCurl',
+    reason:
+      'Confirm whether seated leg curl should stay separate from the existing generic leg curl profile for progression tracking.',
+  },
+  {
+    id: 'cableInternalRotation',
+    reason:
+      'Rotator cuff isolation is mapped to shoulders with push movement pattern; confirm whether this should be tracked as a regular catalog action.',
+  },
+  {
+    id: 'sidePlank',
+    reason:
+      'Source name is side bridge, while catalog name uses the more common side plank; confirm duration is the desired default.',
+  },
 ]
