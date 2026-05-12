@@ -11,6 +11,7 @@ type PageHeaderProps = {
   subtitle?: string
   title: string
   titleAlign?: 'start' | 'center' | 'end'
+  titleClassName?: string
 }
 
 export function PageHeader({
@@ -19,6 +20,7 @@ export function PageHeader({
   subtitle,
   title,
   titleAlign = 'start',
+  titleClassName,
 }: PageHeaderProps) {
   const { t } = useTranslation()
   const [scrolled, setScrolled] = useState(false)
@@ -26,7 +28,7 @@ export function PageHeader({
   const useFloatingTitle = !backLink && titleAlign !== 'start'
   const titleAlignmentClass =
     titleAlign === 'center' ? 'items-center text-center' : 'items-end text-right'
-  const titleClassName = subtitle
+  const titleBaseClassName = subtitle
     ? 'truncate text-[22px] leading-8'
     : 'overflow-hidden text-[22px] leading-[1.15] [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]'
 
@@ -67,7 +69,7 @@ export function PageHeader({
               : 'flex',
           ].join(' ')}
         >
-          <h1 className={`${titleClassName} font-bold tracking-normal text-[var(--on-surface)]`}>
+          <h1 className={`${titleBaseClassName} font-bold tracking-normal text-[var(--on-surface)] ${titleClassName ?? ''}`}>
             {title}
           </h1>
           {subtitle ? (

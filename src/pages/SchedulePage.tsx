@@ -249,6 +249,7 @@ export function SchedulePage() {
       <PageHeader 
         title={todayStr} 
         titleAlign="start"
+        titleClassName="ml-[2ch]"
         actions={
           <div className="flex items-center gap-1">
             <QuickTimerEntryButton
