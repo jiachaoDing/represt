@@ -1142,7 +1142,7 @@ function renderSync() {
       <h2>Sync</h2>
       <p class="${supported ? 'muted' : 'warning'}">
         ${supported
-          ? 'Select the TrainRe project root to read and write source files from this page.'
+          ? 'Select the RepRest project root to read and write source files from this page.'
           : 'This browser does not support the File System Access API. Use a recent Chromium browser for direct file sync.'}
       </p>
       <div class="sync-actions">

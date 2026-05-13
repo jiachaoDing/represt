@@ -22,7 +22,7 @@ flowchart TD
   B --> C["POST /api/shared-plans"]
   C --> D["Worker 校验 payload"]
   D --> E["D1 保存分享快照"]
-  E --> F["返回分享码和 https://share.RepRest.app/p/{shareCode}"]
+  E --> F["返回分享码和 https://share.represt.app/p/{shareCode}"]
   F --> G["前端生成分享文本"]
   G --> H["接收者打开链接或输入分享码"]
   H --> I["GET /p/{shareCode}"]
@@ -70,13 +70,13 @@ Cloudflare D1 是 Cloudflare 面向 Workers 的 serverless SQL 数据库，Worke
 建议使用独立分享域名：
 
 ```text
-https://share.RepRest.app/p/{shareCode}
+https://share.represt.app/p/{shareCode}
 ```
 
 也可以挂在主域名：
 
 ```text
-https://RepRest.app/share/p/{shareCode}
+https://represt.app/share/p/{shareCode}
 ```
 
 推荐独立分享域名，原因：
@@ -187,7 +187,7 @@ Content-Type: application/json
 ```json
 {
   "code": "R8K4-2P",
-  "url": "https://share.RepRest.app/p/R8K4-2P",
+  "url": "https://share.represt.app/p/R8K4-2P",
   "expiresAt": "2026-08-05T00:00:00.000Z"
 }
 ```
@@ -496,8 +496,8 @@ src/pages/SharedPlanPage.tsx
 建议新增：
 
 ```text
-VITE_PLAN_SHARE_API_BASE_URL=https://share.RepRest.app
-VITE_PLAN_SHARE_WEB_BASE_URL=https://share.RepRest.app
+VITE_PLAN_SHARE_API_BASE_URL=https://share.represt.app
+VITE_PLAN_SHARE_WEB_BASE_URL=https://share.represt.app
 ```
 
 本地开发：

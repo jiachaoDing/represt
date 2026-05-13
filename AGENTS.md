@@ -1,4 +1,4 @@
-# TrainRe Agent Guide
+# RepRest Agent Guide
 
 本文件用于给后续进入仓库的 AI/Agent 提供稳定、可复用的协作约束。默认假设你正在修改当前仓库，而不是输出一份脱离项目的演示代码。
 

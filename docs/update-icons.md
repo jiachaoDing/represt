@@ -11,7 +11,7 @@
 | PWA maskable 图标 | `assets/logo-maskable.png` 或 `assets/logo.png` | `public/icon-maskable.png`、`vite.config.ts` manifest | 需要安全边距时新增或替换 `assets/logo-maskable.png`，再运行生成命令 |
 | Android launcher 图标 | `assets/logo.png` | `android/app/src/main/res/mipmap-*`、`mipmap-anydpi-v26` | 替换源图后运行生成命令 |
 | Android 启动图 | `assets/logo.png` | `android/app/src/main/res/drawable*/splash.png` | 替换源图或调整脚本参数后运行生成命令 |
-| Android 通知小图标 | `android/app/src/main/res/drawable/ic_stat_trainre_notification.xml` | `RestTimerAlarmReceiver.java` | 直接编辑单色 vector |
+| Android 通知小图标 | `android/app/src/main/res/drawable/ic_stat_represt_notification.xml` | `TrainingTimerForegroundService.java` | 直接编辑单色 vector |
 
 ## 更新 favicon
 
@@ -107,13 +107,13 @@ npm run android:sync
 通知小图标文件是：
 
 ```text
-android/app/src/main/res/drawable/ic_stat_trainre_notification.xml
+android/app/src/main/res/drawable/ic_stat_represt_notification.xml
 ```
 
 调用点是：
 
 ```text
-android/app/src/main/java/com/represt/app/RestTimerAlarmReceiver.java
+android/app/src/main/java/com/represt/app/TrainingTimerForegroundService.java
 ```
 
 通知小图标应保持透明背景和单色填充。修改后运行：

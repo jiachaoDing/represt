@@ -230,7 +230,7 @@ public class TrainingTimerForegroundService extends Service {
         String text = getNotificationText(intent, title, body, remainingTime, isExerciseRestTimer, isQuickTimer);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, TrainingTimerNotificationConstants.CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_stat_trainre_notification)
+            .setSmallIcon(R.drawable.ic_stat_represt_notification)
             .setContentTitle(notificationTitle)
             .setContentText(text)
             .setStyle(new NotificationCompat.BigTextStyle().bigText(text))
@@ -261,7 +261,7 @@ public class TrainingTimerForegroundService extends Service {
         String body = getStringExtra(intent, TrainingTimerNotificationConstants.EXTRA_FINISHED_BODY, getString(R.string.training_timer_finished_body));
 
         return new NotificationCompat.Builder(this, TrainingTimerNotificationConstants.FINISHED_CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_stat_trainre_notification)
+            .setSmallIcon(R.drawable.ic_stat_represt_notification)
             .setContentTitle(title)
             .setContentText(body)
             .setStyle(new NotificationCompat.BigTextStyle().bigText(body))

@@ -45,7 +45,7 @@ function getMigrationProfileId(input: { catalogExerciseId?: string | null; id?: 
   return normalizedName ? `name:${normalizedName}` : `exercise:${input.id ?? crypto.randomUUID()}`
 }
 
-class TrainReDatabase extends Dexie {
+class RepRestDatabase extends Dexie {
   trainingCycles!: EntityTable<TrainingCycle, 'id'>
   workoutPlans!: EntityTable<WorkoutPlan, 'id'>
   planExercises!: EntityTable<PlanExercise, 'id'>
@@ -150,4 +150,4 @@ class TrainReDatabase extends Dexie {
   }
 }
 
-export const db = new TrainReDatabase()
+export const db = new RepRestDatabase()
