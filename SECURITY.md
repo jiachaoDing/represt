@@ -1,6 +1,6 @@
 # Security Policy
 
-TrainRe currently stores user training data locally and does not require an account.
+RepRest currently stores user training data locally and does not require an account.
 
 ## Reporting a vulnerability
 
