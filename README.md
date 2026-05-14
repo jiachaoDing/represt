@@ -1,26 +1,82 @@
-# 组间记
+# 组间记 / RepRest
 
-一个带自动组间计时的极简力量训练记录器。当前实现已经覆盖“今日训练、计划维护、动作执行、最近一组补录、训练总结”这一轮最小闭环，数据保存在本地 IndexedDB。
+<p align="center">
+  <img src="assets/logo.png" alt="组间记 Logo" width="96" height="96">
+</p>
 
-## 开源许可
+<p align="center">
+  <img alt="Local-first" src="https://img.shields.io/badge/local--first-data%20stays%20on%20device-2f7d32">
+  <img alt="No account required" src="https://img.shields.io/badge/no%20account-required-455a64">
+  <img alt="GPL-3.0-or-later" src="https://img.shields.io/badge/license-GPL--3.0--or--later-1565c0">
+  <img alt="PWA ready" src="https://img.shields.io/badge/PWA-ready-00695c">
+  <img alt="Android" src="https://img.shields.io/badge/Android-supported-3ddc84">
+</p>
 
-Copyright (C) 2026 J.C.Ding
+一款专注力量训练的记录应用：添加今天要练的动作，每完成一组点一下，组间休息自动开始计时。它适合想认真训练、但不想被复杂表格和健身社交打断的人。
 
-本项目源代码以 GNU General Public License v3.0 or later 开源，详见 [LICENSE](LICENSE)。你可以使用、修改、分发和商业使用本项目，但分发修改版本时也必须按 GPL-3.0-or-later 提供相应源码，并保留版权与许可证声明。
+组间记可以在浏览器中作为 PWA 使用，也可以打包为 Android 应用。训练数据默认保存在你的设备本地，不需要账号。
 
-项目名称、Logo、图标、截图和商店素材不随源代码许可证授予商标使用权，除非另有明确说明。
+## 你可以用它做什么
 
-## 隐私与数据
+- 记录今天的训练动作、组数、重量、次数、时长或距离。
+- 每完成一组后自动进入组间休息倒计时，减少手动开计时器的打断。
+- 保存常用训练计划，下次训练时直接加入今日训练。
+- 设置循环日程，例如推、拉、腿、休息，并按自然日自动安排。
+- 查看训练总结、训练日历和动作记录，知道自己真实完成了什么。
+- 导入或分享训练计划，分享内容不包含训练记录或身体数据。
 
-组间记默认把训练计划、训练记录和设置保存在用户设备本地 IndexedDB 中。除用户主动使用分享相关能力外，应用不需要上传训练数据。
+## 截图
 
-## 安装依赖
+| 记录每一组 | 自动休息计时 | 快捷计时器 |
+| --- | --- | --- |
+| <img src="image/101-one-tap-set-tracking.png" alt="记录每一组" width="220"> | <img src="image/102-automatic-rest-timers.png" alt="自动休息计时" width="220"> | <img src="image/103-quick-timer.png" alt="快捷计时器" width="220"> |
+| 训练计划 | 循环日程 | 训练总结 |
+| <img src="image/104-workout-plans.png" alt="训练计划" width="220"> | <img src="image/105-training-cycle.png" alt="循环日程" width="220"> | <img src="image/106-review-progress.png" alt="训练总结" width="220"> |
+
+## 为什么可信
+
+- **本地优先**：训练计划、训练记录和设置默认保存在本机。
+- **没有账号门槛**：核心训练记录不依赖登录。
+- **开源可审计**：源码以 GPL-3.0-or-later 许可证发布。
+- **克制的分享**：只有你主动分享计划时，计划内容才会用于生成分享数据；训练记录不会随计划分享。
+- **面向实际训练**：界面围绕“今天练什么、完成了几组、何时继续下一组”设计，而不是内容流或社交排名。
+
+## 适合谁
+
+- 用固定训练计划练力量、增肌或康复辅助训练的人。
+- 需要组间休息提醒，但不想在训练时反复切换计时器的人。
+- 希望记录真实完成情况，而不是维护复杂训练表格的人。
+- 希望训练数据尽量留在自己设备上的人。
+
+## 开发运行
+
+安装依赖：
 
 ```bash
 npm install
 ```
 
-## 环境变量
+启动开发环境：
+
+```bash
+npm run dev
+```
+
+构建：
+
+```bash
+npm run build
+```
+
+预览 PWA：
+
+```bash
+npm run preview
+```
+
+预览前请先执行 `npm run build`。
+
+## 配置
 
 复制 `.env.example` 为 `.env` 后按需调整：
 
@@ -29,29 +85,7 @@ VITE_PLAN_SHARE_API_BASE_URL=https://share.represt.app
 VITE_PLAN_SHARE_WEB_BASE_URL=https://share.represt.app
 ```
 
-这两个变量是 Vite 客户端构建变量，会被打进前端产物，不要在其中放密钥。
-
-## 启动开发环境
-
-```bash
-npm run dev
-```
-
-默认使用 Vite 开发服务器，`vite-plugin-pwa` 已开启开发环境调试能力。
-
-## 构建
-
-```bash
-npm run build
-```
-
-## 预览 PWA
-
-```bash
-npm run preview
-```
-
-预览前请先执行 `npm run build`。打开预览地址后，可在浏览器开发者工具中查看 manifest 和 Service Worker 注册情况。
+这些是前端构建变量，会进入浏览器产物，不要放入密钥。
 
 ## Android
 
@@ -69,83 +103,18 @@ npm run android:open
 
 签名文件、keystore、Android 本地配置和构建产物不应提交到仓库。
 
-## F-Droid 准备说明
+## 技术与文档
 
-本仓库使用 `GPL-3.0-or-later` SPDX 标识，适合作为 F-Droid metadata 的 `License` 值。提交 F-Droid 前请确认：
+当前项目使用 React、TypeScript、Tailwind CSS、Vite、Dexie 和 Capacitor。更具体的开发约束、发布流程和图标更新流程见：
 
-- 可从干净仓库执行 `npm ci` 和 `npm run build`
-- Android 构建不依赖未公开的签名文件或本地绝对路径
-- 商店截图、图标和说明文本的授权边界清晰
-- 分享服务地址属于公开配置，不包含密钥
+- [AGENTS.md](AGENTS.md)
+- [docs/release.md](docs/release.md)
+- [docs/update-icons.md](docs/update-icons.md)
 
-GitHub Release 的自动化发布说明见 [docs/release.md](docs/release.md)。
+## 开源许可
 
-## 当前技术栈
+Copyright (C) 2026 J.C.Ding
 
-- Vite
-- React 19
-- TypeScript
-- Tailwind CSS（官方 Vite 插件接入）
-- React Router
-- Dexie
-- vite-plugin-pwa
+本项目源代码以 GNU General Public License v3.0 or later 开源，详见 [LICENSE](LICENSE)。你可以使用、修改、分发和商业使用本项目；分发修改版本时也必须按 GPL-3.0-or-later 提供相应源码，并保留版权与许可证声明。
 
-## 目录结构
-
-```text
-src/
-  app/          应用入口、路由、PWA 注册
-  components/   布局、总结区块、通用 UI 组件
-  db/           Dexie 数据读写与 schema
-  hooks/        页面数据 hook 与时间驱动 hook
-  lib/          输入解析、倒计时、状态展示等轻量工具
-  models/       持久化模型与派生状态类型
-  pages/        训练安排、动作、计划、总结页面
-  styles/       全局样式与 Tailwind 入口
-public/
-  favicon.svg
-  icon.png
-  icon-maskable.png
-assets/
-  logo.png
-scripts/
-  generate-assets.mjs
-```
-
-图标更新流程见 [docs/update-icons.md](docs/update-icons.md)。
-
-## 当前已实现能力
-
-- 自动创建“今日训练”，并按 `sessionDateKey` 识别当天会话
-- 计划列表与计划动作 CRUD（支持可选默认重量、次数）
-- 一套全局循环日程，可按自然日安排计划或休息日
-- 从计划把动作追加到今日训练，并可只选择其中部分动作
-- 命中当日循环计划时，进入训练页会自动加入今日训练且同一天只执行一次
-- 手动向今日训练新增动作
-- 删除今日训练中尚未开始的动作
-- 动作页完成当前组，并记录完成时间
-- 动作页在右上角菜单中撤销最近一次“完成本组”
-- 基于 `restEndsAt` 计算每个动作的独立休息倒计时
-- 动作页手动打开最近一组补录弹层，按动作记录类型补录重量、次数、时长或距离
-- 计划动作配置了默认重量或次数时，新生成组记录会先带入这些初始值
-- 训练完成后查看总结页
-- PWA manifest、Service Worker 注册、离线静态资源缓存
-
-## 数据建模说明
-
-- `WorkoutPlan` 和 `WorkoutSession` 分离，计划编辑不会自动回写已生成训练。
-- `TrainingCycle` 持久化一套全局循环配置，包含循环位数组、锚点日期与锚点位置。
-- `PlanExercise` 除组数与休息时长外，还可选持久化 `weightKg`、`reps` 作为计划默认值。
-- 动作 catalog 通过 `measurementType` 定义记录类型：`weightReps`、`reps`、`duration`、`distance`、`weightDistance`。
-- `WorkoutSession` 记录当天计划来源与最近同步计划时间；会话状态在运行时由实际执行情况派生。
-- `SessionPlanItem` 表示当天训练计划项，训练页按它展示计划动作和临时新增动作。
-- `PerformedExercise` 表示实际开始或完成过的动作，保存完成组数、最近完成时间与休息结束时间。
-- `SetRecord` 按动作记录类型持久化本次训练的真实记录值，包括 `weightKg`、`reps`、`durationSeconds`、`distanceMeters`，并通过 `performedExerciseId` 指向实际执行动作。
-- 总结页和日历记录日只根据真实 `SetRecord` 聚合，未开始的计划项不进入历史记录。
-- `RestTimerState` 是由实际执行动作计算出的界面态，不是单独的数据库表。
-- IndexedDB 当前包含 7 张表：`trainingCycles`、`workoutPlans`、`planExercises`、`workoutSessions`、`sessionPlanItems`、`performedExercises`、`setRecords`。
-
-## 当前未覆盖的能力
-
-- 训练总时长统计
-- 训练中直接编辑长期计划
+项目名称、Logo、图标、截图和商店素材不随源代码许可证授予商标使用权，除非另有明确说明。
