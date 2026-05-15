@@ -15,6 +15,7 @@ import {
   setTrainingTimerBeepVolume,
   type LocalReminderStatus,
 } from '../../native/training-notifications'
+import { ConfirmDialog } from '../ui/ConfirmDialog'
 
 type BusyAction = 'battery' | 'exactAlarm' | 'permission' | 'settings' | 'timerChannel' | null
 
@@ -141,6 +142,7 @@ export function ReminderSettingsContent() {
   const { t } = useTranslation()
   const { refreshStatus, status } = useLocalReminderStatus()
   const [busyAction, setBusyAction] = useState<BusyAction>(null)
+  const [isBatteryDialogOpen, setIsBatteryDialogOpen] = useState(false)
   const [notice, setNotice] = useState<string | null>(null)
   const [beepVolume, setBeepVolume] = useState(() => getTrainingTimerBeepVolume())
   const [repeatFinishAlert, setRepeatFinishAlert] = useState(() => getRepeatFinishAlertInBackground())
@@ -169,6 +171,14 @@ export function ReminderSettingsContent() {
     setRepeatFinishAlertInBackground(enabled)
   }
 
+  function handleConfirmBatterySettings() {
+    setIsBatteryDialogOpen(false)
+    void runAction('battery', async () => {
+      const result = await openBatteryOptimizationSettings()
+      setNotice(result.message)
+    })
+  }
+
   const isAvailable = Boolean(status?.isNotificationPermissionAvailable)
   const isGranted = Boolean(status?.isDisplayPermissionGranted)
   const shouldShowBatteryStatus = Boolean(status?.isNative && status.isTimerForegroundServiceAvailable)
@@ -180,6 +190,15 @@ export function ReminderSettingsContent() {
 
   return (
     <div className="px-4 py-4">
+      <ConfirmDialog
+        open={isBatteryDialogOpen}
+        title={t('settings.reminder.batteryConfirmTitle')}
+        description={t('settings.reminder.batteryConfirmDescription')}
+        confirmLabel={t('settings.reminder.batterySettings')}
+        onCancel={() => setIsBatteryDialogOpen(false)}
+        onConfirm={handleConfirmBatterySettings}
+      />
+
       <div>
         <p className="text-base font-semibold text-[var(--on-surface)]">
           {t('settings.reminder.permissionChecklistTitle')}
@@ -251,12 +270,7 @@ export function ReminderSettingsContent() {
           }
           disabled={!canOpenBatterySettings || busyAction !== null}
           icon={Battery}
-          onClick={() =>
-            void runAction('battery', async () => {
-              const result = await openBatteryOptimizationSettings()
-              setNotice(result.message)
-            })
-          }
+          onClick={() => setIsBatteryDialogOpen(true)}
           path={t('settings.reminder.batteryPath')}
           supporting={t('settings.reminder.batteryDescription')}
           statusLabel={getStepStatusLabel(isBatteryAllowed, shouldShowBatteryStatus, t)}
