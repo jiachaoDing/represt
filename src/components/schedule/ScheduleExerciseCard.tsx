@@ -66,8 +66,9 @@ function getExerciseCardState(
 ) {
   const status = deriveExerciseStatus(exercise)
   const restSnapshot = getRestTimerSnapshot(getRestTimerState(exercise), now)
-  const isReady = status === 'active' && restSnapshot.status === 'ready'
-  const isResting = status === 'active' && !isReady
+  const isReady =
+    status === 'active' && (restSnapshot.status === 'ready' || restSnapshot.status === 'idle')
+  const isResting = status === 'active' && restSnapshot.status === 'running'
 
   if (status === 'completed') {
     return {

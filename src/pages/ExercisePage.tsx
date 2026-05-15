@@ -2,7 +2,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
-import { ArrowRight, Pause } from 'lucide-react'
+import { ArrowRight, Pause, Plus } from 'lucide-react'
 
 import { ExerciseHero } from '../components/exercise/ExerciseHero'
 import { ExerciseLatestRecordCard } from '../components/exercise/ExerciseLatestRecordCard'
@@ -25,15 +25,19 @@ import { hasSeenTimerReminderSettings, REMINDER_SETTINGS_PATH } from '../lib/rem
 
 type ExerciseSetProgressProps = {
   completedSets: number
+  isSubmitting: boolean
   restElapsedRatio: number
   isResting: boolean
+  onAddTargetSet: () => void
   targetSets: number
 }
 
 function ExerciseSetProgress({
   completedSets,
+  isSubmitting,
   restElapsedRatio,
   isResting,
+  onAddTargetSet,
   targetSets,
 }: ExerciseSetProgressProps) {
   const { t } = useTranslation()
@@ -65,9 +69,20 @@ function ExerciseSetProgress({
             )
           })}
         </div>
-        <p className="shrink-0 text-[15px] text-[var(--on-surface-variant)]">
-          {t('exercise.setProgressValue', { current: activeSegments, total: targetSets })}
-        </p>
+        <div className="flex shrink-0 items-center gap-1">
+          <p className="text-[15px] text-[var(--on-surface-variant)]">
+            {t('exercise.setProgressValue', { current: activeSegments, total: targetSets })}
+          </p>
+          <button
+            type="button"
+            aria-label={t('exercise.addTargetSet')}
+            disabled={isSubmitting}
+            onClick={onAddTargetSet}
+            className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--on-surface-variant)] transition-colors hover:bg-[var(--on-surface-variant)]/10 hover:text-[var(--on-surface)] disabled:opacity-40 tap-highlight-transparent"
+          >
+            <Plus size={18} strokeWidth={2.5} aria-hidden="true" />
+          </button>
+        </div>
       </div>
     </section>
   )
@@ -81,13 +96,16 @@ export function ExercisePage() {
   const now = useNow(16)
   const {
     canCompleteSet,
+    canRemoveTargetSet,
     canUndoExercise,
     canUndoLatestSet,
     detail,
     distanceInput,
     durationInput,
     error,
+    handleAddTargetSet,
     handleCompleteSet,
+    handleRemoveTargetSet,
     handleSkipRest,
     handleUndoExercise,
     handleUndoLatestSet,
@@ -155,6 +173,11 @@ export function ExercisePage() {
           label: t('exercise.undoLatestSet'),
           disabled: !canUndoLatestSet,
           onSelect: () => void handleUndoPreviousSetCompletion(),
+        },
+        {
+          label: t('exercise.removeTargetSet'),
+          disabled: !canRemoveTargetSet,
+          onSelect: () => void handleRemoveTargetSet(),
         },
         {
           label: t('exercise.undoExercise'),
@@ -258,8 +281,10 @@ export function ExercisePage() {
 
           <ExerciseSetProgress
             completedSets={detail.exercise.completedSets}
+            isSubmitting={isSubmitting}
             restElapsedRatio={restElapsedRatio}
             isResting={isResting}
+            onAddTargetSet={() => void handleAddTargetSet()}
             targetSets={detail.exercise.targetSets}
           />
 

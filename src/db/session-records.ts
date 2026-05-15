@@ -1,5 +1,6 @@
 import type { PerformedExercise, SessionPlanItem, SetRecord } from '../models/types'
 import { getRestEndsAt } from '../lib/rest-timer'
+import { getTodaySessionDateKey } from '../lib/session-date-key'
 import {
   buildSetRecordValuesForMeasurement,
   getMeasurementTypeForExercise,
@@ -184,6 +185,65 @@ export async function skipPlanItemRest(planItemId: string) {
 
   await db.performedExercises.update(exercise.id, {
     restEndsAt: null,
+  })
+}
+
+export async function increaseSessionPlanItemTargetSets(planItemId: string) {
+  await db.transaction('rw', db.workoutSessions, db.sessionPlanItems, db.performedExercises, async () => {
+    const planItem = await db.sessionPlanItems.get(planItemId)
+    if (!planItem) {
+      throw new Error('当前动作不存在。')
+    }
+
+    const session = await db.workoutSessions.get(planItem.sessionId)
+    if (!session || session.sessionDateKey !== getTodaySessionDateKey()) {
+      throw new Error('只能修改今天的训练。')
+    }
+
+    const performedExercise = await getPerformedExerciseForPlanItem(planItem.id)
+    const nextTargetSets = planItem.targetSets + 1
+
+    await db.sessionPlanItems.update(planItem.id, {
+      targetSets: nextTargetSets,
+    })
+
+    if (performedExercise) {
+      await db.performedExercises.update(performedExercise.id, {
+        targetSets: nextTargetSets,
+      })
+    }
+  })
+}
+
+export async function decreaseSessionPlanItemTargetSets(planItemId: string) {
+  await db.transaction('rw', db.workoutSessions, db.sessionPlanItems, db.performedExercises, async () => {
+    const planItem = await db.sessionPlanItems.get(planItemId)
+    if (!planItem) {
+      throw new Error('当前动作不存在。')
+    }
+
+    const session = await db.workoutSessions.get(planItem.sessionId)
+    if (!session || session.sessionDateKey !== getTodaySessionDateKey()) {
+      throw new Error('只能修改今天的训练。')
+    }
+
+    const performedExercise = await getPerformedExerciseForPlanItem(planItem.id)
+    const completedSets = performedExercise?.completedSets ?? 0
+    const nextTargetSets = planItem.targetSets - 1
+
+    if (nextTargetSets < Math.max(1, completedSets)) {
+      throw new Error('只能减少未完成的组。')
+    }
+
+    await db.sessionPlanItems.update(planItem.id, {
+      targetSets: nextTargetSets,
+    })
+
+    if (performedExercise) {
+      await db.performedExercises.update(performedExercise.id, {
+        targetSets: nextTargetSets,
+      })
+    }
   })
 }
 

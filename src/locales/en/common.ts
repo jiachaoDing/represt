@@ -672,6 +672,8 @@ const common = {
     restUntilNextSet: 'Rest until next set',
     setProgressLabel: 'Set progress',
     setProgressValue: '{{current}} / {{total}} sets',
+    addTargetSet: 'Add one set',
+    removeTargetSet: 'Remove one set',
     latestRecord: 'Previous set record',
     openQuickTimer: 'Open quick timer',
     closeQuickTimer: 'Back to exercise',

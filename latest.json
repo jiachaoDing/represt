@@ -1,13 +1,13 @@
 ﻿{
   "platform": "android",
-  "versionName": "1.0.8",
-  "versionCode": 18,
-  "releaseDate": "2026-05-12",
+  "versionName": "1.0.9",
+  "versionCode": 19,
+  "releaseDate": "2026-05-19",
   "downloadUrl": "https://share.represt.app/downloads/android/latest",
-  "apkUrl": "https://share.represt.app/downloads/android/represt-1.0.8.apk",
-  "fileName": "represt-1.0.8.apk",
+  "apkUrl": "https://share.represt.app/downloads/android/represt-1.0.9.apk",
+  "fileName": "represt-1.0.9.apk",
   "fileSizeBytes": 3889558,
   "sha256": "7ED8C4518DC68DE33CE087FA0147F30188CCB3075556B394B111CF6DF049D7EE",
-  "changelog": ["优化动作选择页","新增25个预设动作","优化动作编辑页"],
+  "changelog": ["尝试修复@•ᴗ•和@神神秘秘之之张之牧之 反馈的完成动作显示重叠问题","@WWW：在训练中的动作页快捷增加组数入口","@51名反馈的权限不方便设置 "],
   "mandatory": false
 }

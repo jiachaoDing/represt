@@ -28,6 +28,8 @@ export {
 } from './session-plan'
 export {
   completePlanItemSet,
+  decreaseSessionPlanItemTargetSets,
+  increaseSessionPlanItemTargetSets,
   skipPlanItemRest,
   undoPlanItemExercise,
   undoLatestPlanItemSet,

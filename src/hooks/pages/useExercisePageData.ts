@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react'
 
 import {
   completePlanItemSet,
+  decreaseSessionPlanItemTargetSets,
   getScheduleExerciseDetail,
+  increaseSessionPlanItemTargetSets,
   skipPlanItemRest,
   undoPlanItemExercise,
   undoLatestPlanItemSet,
@@ -283,22 +285,69 @@ export function useExercisePageData(id: string) {
     })
   }
 
+  async function handleAddTargetSet() {
+    if (!detail) {
+      return false
+    }
+
+    const didAdd = await runMutation(async () => {
+      await increaseSessionPlanItemTargetSets(detail.exercise.id)
+      const nextDetail = await getScheduleExerciseDetail(detail.exercise.id)
+
+      setDetail(nextDetail)
+      syncLatestSetInputs(nextDetail, setWeightInput, setRepsInput, setDurationInput, setDistanceInput)
+    })
+
+    if (didAdd) {
+      void triggerHaptic('light')
+    }
+
+    return didAdd
+  }
+
+  async function handleRemoveTargetSet() {
+    if (!detail) {
+      return false
+    }
+
+    const didRemove = await runMutation(async () => {
+      await decreaseSessionPlanItemTargetSets(detail.exercise.id)
+      const nextDetail = await getScheduleExerciseDetail(detail.exercise.id)
+
+      setDetail(nextDetail)
+      syncLatestSetInputs(nextDetail, setWeightInput, setRepsInput, setDurationInput, setDistanceInput)
+    })
+
+    if (didRemove) {
+      void triggerHaptic('light')
+    }
+
+    return didRemove
+  }
+
   const latestSetRecord = detail?.latestSetRecord ?? null
   const measurementType = getMeasurementTypeForExercise(detail?.exercise ?? {})
   const canCompleteSet =
     detail !== null && detail.exercise.completedSets < detail.exercise.targetSets && !isSubmitting
+  const canRemoveTargetSet =
+    detail !== null &&
+    detail.exercise.targetSets > Math.max(1, detail.exercise.completedSets) &&
+    !isSubmitting
   const canUndoLatestSet = latestSetRecord !== null && !isSubmitting
   const canUndoExercise = latestSetRecord !== null && !isSubmitting
 
   return {
     canCompleteSet,
+    canRemoveTargetSet,
     canUndoExercise,
     canUndoLatestSet,
     detail,
     distanceInput,
     durationInput,
     error,
+    handleAddTargetSet,
     handleCompleteSet,
+    handleRemoveTargetSet,
     handleSkipRest,
     handleUndoExercise,
     handleUndoLatestSet,

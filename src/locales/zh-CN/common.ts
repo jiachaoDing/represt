@@ -672,6 +672,8 @@ const common = {
     restUntilNextSet: '休息到下一组',
     setProgressLabel: '组进度',
     setProgressValue: '{{current}} / {{total}} 组',
+    addTargetSet: '增加一组',
+    removeTargetSet: '减少一组',
     latestRecord: '上一组记录',
     openQuickTimer: '打开快捷计时器',
     closeQuickTimer: '返回动作内容',
