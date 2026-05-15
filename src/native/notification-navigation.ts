@@ -1,6 +1,6 @@
 import type { PluginListenerHandle } from '@capacitor/core'
 
-import { completePlanItemSet } from '../db/session-records'
+import { completePlanItemSet, skipPlanItemRest } from '../db/session-records'
 import { getScheduleExerciseDetail } from '../db/session-schedule'
 import { getDisplayExerciseName } from '../lib/exercise-name'
 import { repeatQuickTimer, toggleQuickTimer } from '../hooks/useQuickTimer'
@@ -38,9 +38,33 @@ async function completeSetFromNotification(exerciseId: string) {
   )
 }
 
+async function skipRestFromNotification(exerciseId: string) {
+  await skipPlanItemRest(exerciseId)
+  const detail = await getScheduleExerciseDetail(exerciseId)
+
+  await scheduleRestTimerNotification({
+    exerciseId,
+    exerciseName: detail ? getDisplayExerciseName(i18n.t, detail.exercise) : '',
+    restEndsAt: detail?.exercise.restEndsAt ?? null,
+  })
+
+  window.dispatchEvent(
+    new CustomEvent(TRAINING_NOTIFICATION_EXERCISE_UPDATED_EVENT, {
+      detail: { exerciseId },
+    }),
+  )
+}
+
 function handleNotificationLaunch(router: AppRouter, event: TrainingTimerNotificationLaunch) {
   if (event.path) {
     void router.navigate(event.path)
+  }
+
+  if (event.launchAction === 'skipRest' && event.exerciseId) {
+    void skipRestFromNotification(event.exerciseId).catch((actionError) => {
+      console.warn(actionError)
+    })
+    return
   }
 
   if (event.launchAction !== 'completeSet' || !event.exerciseId) {

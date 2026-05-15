@@ -9,6 +9,9 @@ final class TrainingTimerNotificationConstants {
     static final String ACTION_REFRESH = "com.represt.app.TRAINING_TIMER_REFRESH";
     static final String ACTION_FINISH_FROM_ALARM = "com.represt.app.TRAINING_TIMER_FINISH_FROM_ALARM";
     static final String LAUNCH_ACTION_COMPLETE_SET = "completeSet";
+    static final String LAUNCH_ACTION_SKIP_REST = "skipRest";
+    static final String LAUNCH_ACTION_QUICK_TIMER_TOGGLE = "quickTimerToggle";
+    static final String LAUNCH_ACTION_QUICK_TIMER_REPEAT = "quickTimerRepeat";
     static final String EVENT_NOTIFICATION_TAPPED = "trainingTimerNotificationTapped";
     static final String EXTRA_ID = "id";
     static final String EXTRA_TIMER_TYPE = "timerType";

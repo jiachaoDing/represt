@@ -14,5 +14,10 @@
     <string name="training_timer_finished_body">Ready to continue training</string>
     <string name="training_timer_remaining_format">%1$s · %2$s</string>
     <string name="training_timer_total_time_format">Total %1$s</string>
-    <string name="training_timer_complete_set_action">✓</string>
+    <string name="training_timer_complete_set_action">Complete set</string>
+    <string name="training_timer_skip_rest_action">Skip rest</string>
+    <string name="training_timer_pause_action">Pause</string>
+    <string name="training_timer_continue_action">Continue</string>
+    <string name="training_timer_repeat_action">Repeat</string>
+    <string name="training_timer_open_action">Open</string>
 </resources>

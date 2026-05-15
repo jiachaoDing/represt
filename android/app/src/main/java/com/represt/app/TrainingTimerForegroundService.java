@@ -251,6 +251,24 @@ public class TrainingTimerForegroundService extends Service {
                 getString(R.string.training_timer_complete_set_action),
                 buildCompleteSetIntent(intent)
             );
+            builder.addAction(
+                R.drawable.ic_notification_check,
+                getString(R.string.training_timer_skip_rest_action),
+                buildSkipRestIntent(intent)
+            );
+        }
+
+        if (isQuickTimer) {
+            builder.addAction(
+                R.drawable.ic_notification_check,
+                getString(isPaused ? R.string.training_timer_continue_action : R.string.training_timer_pause_action),
+                buildQuickTimerToggleIntent(intent)
+            );
+            builder.addAction(
+                R.drawable.ic_notification_check,
+                getString(R.string.training_timer_repeat_action),
+                buildQuickTimerRepeatIntent(intent)
+            );
         }
 
         return builder.build();
@@ -260,7 +278,7 @@ public class TrainingTimerForegroundService extends Service {
         String title = getStringExtra(intent, TrainingTimerNotificationConstants.EXTRA_FINISHED_TITLE, getString(R.string.training_timer_finished_title));
         String body = getStringExtra(intent, TrainingTimerNotificationConstants.EXTRA_FINISHED_BODY, getString(R.string.training_timer_finished_body));
 
-        return new NotificationCompat.Builder(this, TrainingTimerNotificationConstants.FINISHED_CHANNEL_ID)
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, TrainingTimerNotificationConstants.FINISHED_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_stat_represt_notification)
             .setContentTitle(title)
             .setContentText(body)
@@ -272,8 +290,31 @@ public class TrainingTimerForegroundService extends Service {
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setSilent(true)
-            .setShowWhen(true)
-            .build();
+            .setShowWhen(true);
+
+        if (isRestTimer(intent) && getExerciseId(intent) != null) {
+            builder.addAction(
+                R.drawable.ic_notification_check,
+                getString(R.string.training_timer_complete_set_action),
+                buildCompleteSetIntent(intent)
+            );
+        }
+
+        if (isQuickTimer(intent)) {
+            builder.addAction(
+                R.drawable.ic_notification_check,
+                getString(R.string.training_timer_repeat_action),
+                buildQuickTimerRepeatIntent(intent)
+            );
+        }
+
+        builder.addAction(
+            R.drawable.ic_notification_check,
+            getString(R.string.training_timer_open_action),
+            buildOpenIntent(intent)
+        );
+
+        return builder.build();
     }
 
     private PendingIntent buildLaunchIntent(Intent sourceIntent) {
@@ -304,6 +345,54 @@ public class TrainingTimerForegroundService extends Service {
             .putExtra(TrainingTimerNotificationConstants.EXTRA_LAUNCH_ACTION, TrainingTimerNotificationConstants.LAUNCH_ACTION_COMPLETE_SET);
 
         return PendingIntent.getActivity(this, id + 100000, launchIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+    }
+
+    private PendingIntent buildSkipRestIntent(Intent sourceIntent) {
+        int id = sourceIntent.getIntExtra(TrainingTimerNotificationConstants.EXTRA_ID, 0);
+        Intent launchIntent = new Intent(this, MainActivity.class)
+            .setAction(Intent.ACTION_MAIN)
+            .addCategory(Intent.CATEGORY_LAUNCHER)
+            .putExtra(TrainingTimerNotificationConstants.EXTRA_PATH, sourceIntent.getStringExtra(TrainingTimerNotificationConstants.EXTRA_PATH))
+            .putExtra(TrainingTimerNotificationConstants.EXTRA_TIMER_TYPE, sourceIntent.getStringExtra(TrainingTimerNotificationConstants.EXTRA_TIMER_TYPE))
+            .putExtra(TrainingTimerNotificationConstants.EXTRA_EXERCISE_ID, getExerciseId(sourceIntent))
+            .putExtra(TrainingTimerNotificationConstants.EXTRA_LAUNCH_ACTION, TrainingTimerNotificationConstants.LAUNCH_ACTION_SKIP_REST);
+
+        return PendingIntent.getActivity(this, id + 110000, launchIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+    }
+
+    private PendingIntent buildQuickTimerToggleIntent(Intent sourceIntent) {
+        int id = sourceIntent.getIntExtra(TrainingTimerNotificationConstants.EXTRA_ID, 0);
+        Intent launchIntent = new Intent(this, MainActivity.class)
+            .setAction(Intent.ACTION_MAIN)
+            .addCategory(Intent.CATEGORY_LAUNCHER)
+            .putExtra(TrainingTimerNotificationConstants.EXTRA_PATH, sourceIntent.getStringExtra(TrainingTimerNotificationConstants.EXTRA_PATH))
+            .putExtra(TrainingTimerNotificationConstants.EXTRA_TIMER_TYPE, sourceIntent.getStringExtra(TrainingTimerNotificationConstants.EXTRA_TIMER_TYPE))
+            .putExtra(TrainingTimerNotificationConstants.EXTRA_LAUNCH_ACTION, TrainingTimerNotificationConstants.LAUNCH_ACTION_QUICK_TIMER_TOGGLE);
+
+        return PendingIntent.getActivity(this, id + 120000, launchIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+    }
+
+    private PendingIntent buildQuickTimerRepeatIntent(Intent sourceIntent) {
+        int id = sourceIntent.getIntExtra(TrainingTimerNotificationConstants.EXTRA_ID, 0);
+        Intent launchIntent = new Intent(this, MainActivity.class)
+            .setAction(Intent.ACTION_MAIN)
+            .addCategory(Intent.CATEGORY_LAUNCHER)
+            .putExtra(TrainingTimerNotificationConstants.EXTRA_PATH, sourceIntent.getStringExtra(TrainingTimerNotificationConstants.EXTRA_PATH))
+            .putExtra(TrainingTimerNotificationConstants.EXTRA_TIMER_TYPE, sourceIntent.getStringExtra(TrainingTimerNotificationConstants.EXTRA_TIMER_TYPE))
+            .putExtra(TrainingTimerNotificationConstants.EXTRA_LAUNCH_ACTION, TrainingTimerNotificationConstants.LAUNCH_ACTION_QUICK_TIMER_REPEAT);
+
+        return PendingIntent.getActivity(this, id + 130000, launchIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+    }
+
+    private PendingIntent buildOpenIntent(Intent sourceIntent) {
+        int id = sourceIntent.getIntExtra(TrainingTimerNotificationConstants.EXTRA_ID, 0);
+        Intent launchIntent = new Intent(this, MainActivity.class)
+            .setAction(Intent.ACTION_MAIN)
+            .addCategory(Intent.CATEGORY_LAUNCHER)
+            .putExtra(TrainingTimerNotificationConstants.EXTRA_PATH, sourceIntent.getStringExtra(TrainingTimerNotificationConstants.EXTRA_PATH))
+            .putExtra(TrainingTimerNotificationConstants.EXTRA_TIMER_TYPE, sourceIntent.getStringExtra(TrainingTimerNotificationConstants.EXTRA_TIMER_TYPE));
+
+        return PendingIntent.getActivity(this, id + 140000, launchIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
     }
 
     private PendingIntent buildRefreshIntent(Intent sourceIntent) {

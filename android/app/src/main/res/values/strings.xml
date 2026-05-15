@@ -12,7 +12,12 @@
     <string name="training_timer_finished_body">可以继续训练</string>
     <string name="training_timer_remaining_format">%1$s · %2$s</string>
     <string name="training_timer_total_time_format">总时长 %1$s</string>
-    <string name="training_timer_complete_set_action">✓</string>
+    <string name="training_timer_complete_set_action">完成一组</string>
+    <string name="training_timer_skip_rest_action">跳过休息</string>
+    <string name="training_timer_pause_action">暂停</string>
+    <string name="training_timer_continue_action">继续</string>
+    <string name="training_timer_repeat_action">重复</string>
+    <string name="training_timer_open_action">打开</string>
     <string name="package_name">com.represt.app</string>
     <string name="custom_url_scheme">com.represt.app</string>
 </resources>

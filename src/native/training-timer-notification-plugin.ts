@@ -1,7 +1,11 @@
 import { registerPlugin, type PermissionState, type PluginListenerHandle } from '@capacitor/core'
 
 export type TrainingTimerType = 'rest' | 'quick'
-export type TrainingTimerLaunchAction = 'completeSet' | 'quickTimerToggle' | 'quickTimerRepeat'
+export type TrainingTimerLaunchAction =
+  | 'completeSet'
+  | 'skipRest'
+  | 'quickTimerToggle'
+  | 'quickTimerRepeat'
 
 export type TrainingTimerNotificationLaunch = {
   path?: string | null
