@@ -50,7 +50,10 @@ export type SummaryExerciseTrend = {
   points: SummaryTrendPoint[]
 }
 
+export type SummaryTrainingTimeBucket = 'earlyMorning' | 'morning' | 'afternoon' | 'evening' | 'lateNight'
+
 export type SummaryRangeAnalytics = {
+  averageActiveDurationMinutes: number
   completedSets: number
   distribution: SummaryMuscleDistributionItem[]
   endDateKey: string
@@ -59,15 +62,26 @@ export type SummaryRangeAnalytics = {
   range: SummaryRange
   startDateKey: string
   totalDistanceMeters: number
+  totalActiveDurationMinutes: number
   totalDurationSeconds: number
   totalReps: number
   totalWeightRepsVolume: number
   trainingDays: number
+  trainingSegmentCount: number
   trendPoints: SummaryTrendPoint[]
+  preferredTrainingTimeBucket: SummaryTrainingTimeBucket | null
   topExerciseTrend: SummaryExerciseTrend | null
 }
 
 const catalogExercisesById = new Map(exercises.map((exercise) => [exercise.id, exercise]))
+const maxTrainingSegmentGapMs = 60 * 60 * 1000
+const trainingTimeBucketOrder = [
+  'earlyMorning',
+  'morning',
+  'afternoon',
+  'evening',
+  'lateNight',
+] satisfies SummaryTrainingTimeBucket[]
 
 function dateToSessionDateKey(date: Date) {
   const year = date.getFullYear()
@@ -111,6 +125,75 @@ export function getSummaryRangeBounds(dateKey: string, range: SummaryRange) {
 
 function isDateKeyInRange(dateKey: string, startDateKey: string, endDateKey: string) {
   return compareDateKeys(dateKey, startDateKey) >= 0 && compareDateKeys(dateKey, endDateKey) <= 0
+}
+
+function getTrainingTimeBucket(completedAt: string): SummaryTrainingTimeBucket | null {
+  const completedAtDate = new Date(completedAt)
+  if (Number.isNaN(completedAtDate.getTime())) {
+    return null
+  }
+
+  const hour = completedAtDate.getHours()
+  if (hour >= 5 && hour < 9) {
+    return 'earlyMorning'
+  }
+  if (hour >= 9 && hour < 12) {
+    return 'morning'
+  }
+  if (hour >= 12 && hour < 18) {
+    return 'afternoon'
+  }
+  if (hour >= 18) {
+    return 'evening'
+  }
+
+  return 'lateNight'
+}
+
+function getTrainingTimeSegments(records: SetRecord[]) {
+  const sortedRecords = [...records].sort((left, right) =>
+    left.completedAt.localeCompare(right.completedAt),
+  )
+  const firstRecord = sortedRecords[0]
+
+  if (!firstRecord) {
+    return [] satisfies Array<{ durationMinutes: number; startedAt: string }>
+  }
+
+  const segmentRanges: Array<{ endedAt: string; startedAt: string }> = [{
+    endedAt: firstRecord.completedAt,
+    startedAt: firstRecord.completedAt,
+  }]
+
+  for (let index = 1; index < sortedRecords.length; index += 1) {
+    const previousCompletedAt = new Date(sortedRecords[index - 1].completedAt).getTime()
+    const currentCompletedAt = new Date(sortedRecords[index].completedAt).getTime()
+    const gapMs = currentCompletedAt - previousCompletedAt
+    const currentSegment = segmentRanges[segmentRanges.length - 1]
+
+    if (!Number.isNaN(gapMs) && gapMs >= maxTrainingSegmentGapMs) {
+      segmentRanges.push({
+        endedAt: sortedRecords[index].completedAt,
+        startedAt: sortedRecords[index].completedAt,
+      })
+    } else {
+      currentSegment.endedAt = sortedRecords[index].completedAt
+    }
+  }
+
+  return segmentRanges.map((segment) => {
+    const startedAtMs = new Date(segment.startedAt).getTime()
+    const endedAtMs = new Date(segment.endedAt).getTime()
+    const durationMinutes =
+      Number.isNaN(startedAtMs) || Number.isNaN(endedAtMs)
+        ? 0
+        : Math.max(0, Math.floor((endedAtMs - startedAtMs) / 60000))
+
+    return {
+      durationMinutes,
+      startedAt: segment.startedAt,
+    }
+  })
 }
 
 function getExerciseIdentity(exercise: Pick<PerformedExercise, 'catalogExerciseId' | 'id' | 'name'>) {
@@ -440,6 +523,10 @@ export async function getSummaryRangeAnalytics(dateKey: string, range: SummaryRa
   const periodRecordIds = new Set(periodRecords.map((record) => record.id))
   const trainingDateKeys = new Set<string>()
   const exerciseKeys = new Set<string>()
+  const recordsBySessionId = new Map<string, SetRecord[]>()
+  const trainingTimeBucketCounts = new Map<SummaryTrainingTimeBucket, number>()
+  let trainingSegmentCount = 0
+  let totalActiveDurationMinutes = 0
   let totalDistanceMeters = 0
   let totalDurationSeconds = 0
   let totalReps = 0
@@ -451,6 +538,10 @@ export async function getSummaryRangeAnalytics(dateKey: string, range: SummaryRa
     if (session) {
       trainingDateKeys.add(session.sessionDateKey)
     }
+    const sessionRecords = recordsBySessionId.get(record.sessionId) ?? []
+    sessionRecords.push(record)
+    recordsBySessionId.set(record.sessionId, sessionRecords)
+
     if (!exercise) {
       continue
     }
@@ -472,7 +563,27 @@ export async function getSummaryRangeAnalytics(dateKey: string, range: SummaryRa
     }
   }
 
+  for (const sessionRecords of recordsBySessionId.values()) {
+    for (const segment of getTrainingTimeSegments(sessionRecords)) {
+      const bucket = getTrainingTimeBucket(segment.startedAt)
+
+      totalActiveDurationMinutes += segment.durationMinutes
+      trainingSegmentCount += 1
+      if (bucket) {
+        trainingTimeBucketCounts.set(bucket, (trainingTimeBucketCounts.get(bucket) ?? 0) + 1)
+      }
+    }
+  }
+  const averageActiveDurationMinutes =
+    trainingSegmentCount === 0 ? 0 : Math.round(totalActiveDurationMinutes / trainingSegmentCount)
+  const preferredTrainingTimeBucket =
+    trainingTimeBucketOrder
+      .map((bucket, index) => ({ bucket, count: trainingTimeBucketCounts.get(bucket) ?? 0, index }))
+      .filter((item) => item.count > 0)
+      .sort((left, right) => right.count - left.count || left.index - right.index)[0]?.bucket ?? null
+
   return {
+    averageActiveDurationMinutes,
     completedSets: periodRecords.length,
     distribution: buildDistribution({ exerciseProfilesById, performedExercisesById, records: periodRecords }),
     endDateKey,
@@ -481,10 +592,12 @@ export async function getSummaryRangeAnalytics(dateKey: string, range: SummaryRa
     range,
     startDateKey,
     totalDistanceMeters,
+    totalActiveDurationMinutes,
     totalDurationSeconds,
     totalReps,
     totalWeightRepsVolume,
     trainingDays: trainingDateKeys.size,
+    trainingSegmentCount,
     trendPoints: buildRangeTrendPoints({
       endDateKey,
       range,
@@ -500,5 +613,6 @@ export async function getSummaryRangeAnalytics(dateKey: string, range: SummaryRa
       sessionsById,
       startDateKey,
     }),
+    preferredTrainingTimeBucket,
   } satisfies SummaryRangeAnalytics
 }

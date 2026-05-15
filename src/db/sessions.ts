@@ -10,6 +10,7 @@ export type {
   ScheduleExercise,
   ScheduleExerciseDetail,
   SessionSummaryDetail,
+  SessionSummaryTimeSegment,
   PlanSyncResult,
   PlanSyncStatus,
   WorkoutSessionWithExercises,
@@ -73,6 +74,7 @@ export {
   type SummaryRange,
   type SummaryRangeAnalytics,
   type SummaryRecordHighlight,
+  type SummaryTrainingTimeBucket,
   type SummaryTrendPoint,
 } from './summary-analytics'
 

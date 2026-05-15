@@ -55,41 +55,21 @@ function getExerciseRecordPath(input: { catalogExerciseId: string | null; exerci
   return `/summary/exercises/${encodeURIComponent(profileId)}`
 }
 
-function getSecondaryMetric(analytics: SummaryRangeAnalytics, t: TFunction) {
-  if (analytics.totalWeightRepsVolume > 0) {
-    return {
-      label: t('summary.analytics.totalVolume'),
-      value: t('summary.analytics.volumeValue', { value: formatNumber(analytics.totalWeightRepsVolume) }),
-    }
-  }
-  if (analytics.totalReps > 0) {
-    return {
-      label: t('summary.analytics.totalReps'),
-      value: t('common.reps', { value: analytics.totalReps }),
-    }
-  }
-  if (analytics.totalDurationSeconds > 0) {
-    return {
-      label: t('summary.analytics.totalDuration'),
-      value: formatDurationSeconds(analytics.totalDurationSeconds, t),
-    }
-  }
-  if (analytics.totalDistanceMeters > 0) {
-    return {
-      label: t('summary.analytics.totalDistance'),
-      value: formatDistanceMeters(analytics.totalDistanceMeters, t),
-    }
+function formatTrainingDurationMinutes(minutes: number, t: TFunction) {
+  if (minutes < 60) {
+    return t('common.minutes', { value: minutes })
   }
 
-  return {
-    label: t('summary.analytics.totalRecorded'),
-    value: t('common.sets', { value: analytics.completedSets }),
-  }
+  const hours = Math.floor(minutes / 60)
+  const remainingMinutes = minutes % 60
+
+  return remainingMinutes === 0
+    ? t('common.hours', { value: hours })
+    : t('common.hoursMinutes', { hours, minutes: remainingMinutes })
 }
 
 function OverviewCard({ analytics }: { analytics: SummaryRangeAnalytics }) {
   const { t } = useTranslation()
-  const secondaryMetric = getSecondaryMetric(analytics, t)
 
   return (
     <section className="mx-4 mt-4 rounded-[1.25rem] border border-[var(--outline-variant)]/20 bg-[var(--surface)] p-4 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)]">
@@ -101,7 +81,10 @@ function OverviewCard({ analytics }: { analytics: SummaryRangeAnalytics }) {
           { label: t('summary.analytics.trainingDays'), value: t('summary.analytics.daysValue', { value: analytics.trainingDays }) },
           { label: t('summary.analytics.completedSets'), value: t('common.sets', { value: analytics.completedSets }) },
           { label: t('summary.analytics.exerciseCount'), value: t('summary.exerciseCount', { count: analytics.exerciseCount }) },
-          secondaryMetric,
+          {
+            label: t('summary.analytics.totalTrainingDuration'),
+            value: formatTrainingDurationMinutes(analytics.totalActiveDurationMinutes, t),
+          },
         ].map((item, index) => (
           <div
             key={`${item.label}:${index}`}
@@ -109,6 +92,38 @@ function OverviewCard({ analytics }: { analytics: SummaryRangeAnalytics }) {
           >
             <p className="text-[12px] text-[var(--on-surface-variant)]">{item.label}</p>
             <p className="mt-1 text-[20px] font-bold text-[var(--on-surface)]">{item.value}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+function TimeStatsCard({ analytics }: { analytics: SummaryRangeAnalytics }) {
+  const { t } = useTranslation()
+  const preferredBucket = analytics.preferredTrainingTimeBucket
+
+  return (
+    <section className="mx-4 mt-3 rounded-[1.25rem] border border-[var(--outline-variant)]/20 bg-[var(--surface)] p-4 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)]">
+      <h2 className="text-[16px] font-bold text-[var(--on-surface)]">{t('summary.timeStats')}</h2>
+      <div className="mt-3 flex flex-col divide-y divide-[var(--outline-variant)]/25">
+        {[
+          {
+            label: t('summary.analytics.averageTrainingDuration'),
+            value: formatTrainingDurationMinutes(analytics.averageActiveDurationMinutes, t),
+          },
+          {
+            label: t('summary.analytics.trainingSegmentCount'),
+            value: t('summary.analytics.trainingSegmentCountValue', { value: analytics.trainingSegmentCount }),
+          },
+          {
+            label: t('summary.analytics.preferredTrainingTime'),
+            value: preferredBucket ? t(`summary.analytics.timeBuckets.${preferredBucket}`) : '--',
+          },
+        ].map((item) => (
+          <div key={item.label} className="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0">
+            <p className="text-[13px] text-[var(--on-surface-variant)]">{item.label}</p>
+            <p className="text-right text-[15px] font-bold text-[var(--on-surface)]">{item.value}</p>
           </div>
         ))}
       </div>
@@ -348,6 +363,7 @@ export function SummaryAnalyticsSections({ analytics, isLoading }: SummaryAnalyt
   return (
     <>
       <OverviewCard analytics={analytics} />
+      <TimeStatsCard analytics={analytics} />
       <HighlightsCard analytics={analytics} />
       <TrendCard analytics={analytics} />
       <ExerciseTrendCard analytics={analytics} />

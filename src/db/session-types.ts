@@ -35,8 +35,18 @@ export type SessionSummaryExercise = PerformedExercise & {
   setRecords: SetRecord[]
 }
 
+export type SessionSummaryTimeSegment = {
+  durationMinutes: number
+  endedAt: string
+  startedAt: string
+}
+
 export type SessionSummaryDetail = {
+  activeDurationMinutes: number | null
+  endedAtFromLastSet: string | null
   session: WorkoutSessionWithStatus
+  startedAtFromFirstSet: string | null
+  trainingTimeSegments: SessionSummaryTimeSegment[]
   exercises: SessionSummaryExercise[]
 }
 

@@ -5,6 +5,7 @@ import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { SummaryAnalyticsSections, SummaryHighlightsCard } from '../components/summary/SummaryAnalyticsSections'
 import { SessionExerciseSummaryList } from '../components/summary/SessionExerciseSummaryList'
 import { SessionSummaryOverview } from '../components/summary/SessionSummaryOverview'
+import { SessionSummaryTimeStats } from '../components/summary/SessionSummaryTimeStats'
 import { SummaryDateSwitcher } from '../components/summary/SummaryDateSwitcher'
 import { SummaryRangeTabs } from '../components/summary/SummaryRangeTabs'
 import { PageHeader } from '../components/ui/PageHeader'
@@ -172,6 +173,7 @@ export function SummaryPage() {
           <SessionSummaryOverview detail={detail} emptyState={emptyState} isLoading={isLoading} />
           <SummaryHighlightsCard analytics={analytics} />
           <SessionExerciseSummaryList detail={detail} />
+          <SessionSummaryTimeStats detail={detail} />
         </>
       ) : (
         <SummaryAnalyticsSections analytics={analytics} isLoading={isLoading} />

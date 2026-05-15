@@ -10,6 +10,8 @@ import {
 } from './session-core'
 import type { SessionSummaryDetail } from './session-types'
 
+const maxTrainingSegmentGapMs = 60 * 60 * 1000
+
 function getSummaryExerciseMergeKey(exercise: {
   catalogExerciseId?: string | null
   id: string
@@ -22,6 +24,70 @@ function getSummaryExerciseMergeKey(exercise: {
 
   const normalizedName = exercise.name.normalize('NFKC').trim().toLowerCase().replace(/\s+/g, ' ')
   return normalizedName ? `name:${normalizedName}` : `exercise:${exercise.id}`
+}
+
+function getDurationMinutes(startedAt: string, endedAt: string) {
+  const startedAtMs = new Date(startedAt).getTime()
+  const endedAtMs = new Date(endedAt).getTime()
+
+  if (Number.isNaN(startedAtMs) || Number.isNaN(endedAtMs)) {
+    return 0
+  }
+
+  return Math.max(0, Math.floor((endedAtMs - startedAtMs) / 60000))
+}
+
+function getActiveDurationSummary(setRecords: Awaited<ReturnType<typeof getSessionSetRecords>>) {
+  const sortedRecords = [...setRecords].sort((left, right) =>
+    left.completedAt.localeCompare(right.completedAt),
+  )
+  const firstRecord = sortedRecords[0]
+  const lastRecord = sortedRecords[sortedRecords.length - 1]
+
+  if (!firstRecord || !lastRecord) {
+    return {
+      activeDurationMinutes: null,
+      endedAtFromLastSet: null,
+      startedAtFromFirstSet: null,
+      trainingTimeSegments: [],
+    }
+  }
+
+  const segmentRanges: Array<{ endedAt: string; startedAt: string }> = [{
+    endedAt: firstRecord.completedAt,
+    startedAt: firstRecord.completedAt,
+  }]
+
+  for (let index = 1; index < sortedRecords.length; index += 1) {
+    const previousCompletedAt = new Date(sortedRecords[index - 1].completedAt).getTime()
+    const currentCompletedAt = new Date(sortedRecords[index].completedAt).getTime()
+    const gapMs = currentCompletedAt - previousCompletedAt
+    const currentSegment = segmentRanges[segmentRanges.length - 1]
+
+    if (!Number.isNaN(gapMs) && gapMs >= maxTrainingSegmentGapMs) {
+      segmentRanges.push({
+        endedAt: sortedRecords[index].completedAt,
+        startedAt: sortedRecords[index].completedAt,
+      })
+    } else {
+      currentSegment.endedAt = sortedRecords[index].completedAt
+    }
+  }
+  const trainingTimeSegments = segmentRanges.map((segment) => ({
+    ...segment,
+    durationMinutes: getDurationMinutes(segment.startedAt, segment.endedAt),
+  }))
+  const activeDurationMinutes = trainingTimeSegments.reduce(
+    (total, segment) => total + segment.durationMinutes,
+    0,
+  )
+
+  return {
+    activeDurationMinutes,
+    endedAtFromLastSet: lastRecord.completedAt,
+    startedAtFromFirstSet: firstRecord.completedAt,
+    trainingTimeSegments,
+  }
 }
 
 export async function getSessionSummaryDetail(sessionId: string) {
@@ -86,8 +152,10 @@ export async function getSessionSummaryDetail(sessionId: string) {
   const mergedSummaryExercises = Array.from(summaryExerciseGroups.values()).sort(
     (left, right) => left.order - right.order,
   )
+  const activeDurationSummary = getActiveDurationSummary(setRecords)
 
   return {
+    ...activeDurationSummary,
     session: attachDerivedSessionStatus(session, exercises),
     exercises: mergedSummaryExercises,
   } satisfies SessionSummaryDetail
