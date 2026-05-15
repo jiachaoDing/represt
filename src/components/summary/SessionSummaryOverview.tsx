@@ -2,7 +2,6 @@ import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import type { SessionSummaryDetail } from '../../db/sessions'
-import { getDisplayExerciseName } from '../../lib/exercise-name'
 import { getSessionStatusLabel } from '../../lib/session-display'
 
 type SessionSummaryOverviewProps = {
@@ -19,19 +18,6 @@ export function SessionSummaryOverview({
   const { t } = useTranslation()
   const completedSetCount =
     detail?.exercises.reduce((acc, exercise) => acc + exercise.completedSets, 0) ?? 0
-  const completedExerciseNames =
-    detail?.exercises
-      .filter((exercise) => exercise.completedSets > 0)
-      .map((exercise) => getDisplayExerciseName(t, exercise)) ?? []
-  const exerciseNamePreview = completedExerciseNames.slice(0, 3).join(', ')
-  const exerciseNameSuffix =
-    completedExerciseNames.length > 3
-      ? t('summary.exerciseSuffix', { count: completedExerciseNames.length })
-      : ''
-  const summaryText =
-    completedExerciseNames.length > 0
-      ? t('summary.recordedSummary', { preview: exerciseNamePreview, suffix: exerciseNameSuffix })
-      : t('summary.emptyDescription')
 
   if (isLoading) {
     return (
@@ -75,8 +61,6 @@ export function SessionSummaryOverview({
           {getSessionStatusLabel(detail.session.status)}
         </span>
       </div>
-
-      <p className="mt-4 text-[13px] leading-5 text-[var(--on-surface-variant)]">{summaryText}</p>
     </section>
   )
 }

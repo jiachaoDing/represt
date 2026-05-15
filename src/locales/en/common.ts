@@ -266,6 +266,8 @@ const common = {
     exerciseSuffix: ' and {{count}} more exercises',
     exerciseCompleted: 'Exercise completion',
     exerciseCount: '{{count}} exercises',
+    expandExercises: 'Show {{count}} more',
+    collapseExercises: 'Show fewer',
     completedValue: 'Completed',
     weightRepsValue: '{{weight}} kg × {{reps}}',
     weightDistanceValue: '{{weight}} kg × {{distance}}',

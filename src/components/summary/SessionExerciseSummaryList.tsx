@@ -1,3 +1,5 @@
+import { useState } from 'react'
+import { ChevronDown, ChevronUp, List } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import type { SessionSummaryDetail } from '../../db/sessions'
@@ -13,6 +15,7 @@ type SessionExerciseSummaryListProps = {
 }
 
 const maxDotCount = 10
+const defaultVisibleExerciseCount = 2
 
 function SetCompletionDots({ completedSets }: { completedSets: number }) {
   if (completedSets <= 0) {
@@ -37,6 +40,7 @@ function SetCompletionDots({ completedSets }: { completedSets: number }) {
 
 export function SessionExerciseSummaryList({ detail }: SessionExerciseSummaryListProps) {
   const { t } = useTranslation()
+  const [expandedSessionId, setExpandedSessionId] = useState<string | null>(null)
 
   if (!detail) {
     return null
@@ -52,17 +56,34 @@ export function SessionExerciseSummaryList({ detail }: SessionExerciseSummaryLis
     )
   }
 
+  const shouldShowToggle = detail.exercises.length > defaultVisibleExerciseCount
+  const isExpanded = expandedSessionId === detail.session.id
+  const displayedExercises = isExpanded
+    ? detail.exercises
+    : detail.exercises.slice(0, defaultVisibleExerciseCount)
+  const hiddenExerciseCount = detail.exercises.length - defaultVisibleExerciseCount
+  const toggleLabel = isExpanded
+    ? t('summary.collapseExercises')
+    : t('summary.expandExercises', { count: hiddenExerciseCount })
+
   return (
     <section className="mt-6">
       <div className="mb-3 flex items-center justify-between px-4">
         <h2 className="text-[16px] font-bold text-[var(--on-surface)]">{t('summary.exerciseCompleted')}</h2>
-        <span className="text-[12px] font-medium text-[var(--on-surface-variant)]">
-          {t('summary.exerciseCount', { count: detail.exercises.length })}
-        </span>
+        <div className="flex items-center">
+          <Link
+            to="/summary/exercises"
+            className="inline-flex h-9 w-9 items-center justify-center text-[var(--on-surface)] transition-colors tap-highlight-transparent active:scale-[0.96]"
+            aria-label={t('summary.exerciseRecords.entry')}
+            title={t('summary.exerciseRecords.entry')}
+          >
+            <List size={19} strokeWidth={2.25} aria-hidden="true" />
+          </Link>
+        </div>
       </div>
 
       <div className="flex flex-col gap-3 px-4">
-        {detail.exercises.map((exercise) => {
+        {displayedExercises.map((exercise) => {
           const measurementType = getMeasurementTypeForExercise(exercise)
           const recordSummary = getRecordSummaryParts(exercise.setRecords, measurementType, t).join(' · ')
           const displayName = getDisplayExerciseName(t, exercise)
@@ -115,15 +136,29 @@ export function SessionExerciseSummaryList({ detail }: SessionExerciseSummaryLis
             </details>
           )
         })}
-      </div>
 
-      <div className="mt-8 px-4 pb-12 flex justify-center">
-        <Link 
-          to="/summary/exercises"
-          className="inline-flex h-12 w-full max-w-[200px] items-center justify-center rounded-xl bg-[var(--surface-container)] text-[15px] font-medium text-[var(--on-surface)] transition-colors tap-highlight-transparent active:scale-[0.98]"
-        >
-          {t('summary.exerciseRecords.entry')}
-        </Link>
+        {shouldShowToggle ? (
+          <div className="flex items-center justify-center">
+            <span className="h-px w-8 bg-[var(--outline-variant)]" aria-hidden="true" />
+            <button
+              type="button"
+              className="inline-flex h-10 w-10 items-center justify-center text-[var(--on-surface)] transition-colors tap-highlight-transparent active:scale-[0.96]"
+              aria-expanded={isExpanded}
+              aria-label={toggleLabel}
+              title={toggleLabel}
+              onClick={() =>
+                setExpandedSessionId((current) => (current === detail.session.id ? null : detail.session.id))
+              }
+            >
+              {isExpanded ? (
+                <ChevronUp size={18} strokeWidth={2.4} aria-hidden="true" />
+              ) : (
+                <ChevronDown size={18} strokeWidth={2.4} aria-hidden="true" />
+              )}
+            </button>
+            <span className="h-px w-8 bg-[var(--outline-variant)]" aria-hidden="true" />
+          </div>
+        ) : null}
       </div>
     </section>
   )

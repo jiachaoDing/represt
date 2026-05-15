@@ -266,6 +266,8 @@ const common = {
     exerciseSuffix: '等 {{count}} 个动作',
     exerciseCompleted: '动作完成',
     exerciseCount: '{{count}} 个动作',
+    expandExercises: '展开剩余 {{count}} 个',
+    collapseExercises: '收起',
     completedValue: '已完成',
     weightRepsValue: '{{weight}} kg × {{reps}}',
     weightDistanceValue: '{{weight}} kg × {{distance}}',
