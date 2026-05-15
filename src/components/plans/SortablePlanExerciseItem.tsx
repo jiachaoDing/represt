@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react'
+import type { CSSProperties, KeyboardEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
@@ -16,6 +16,7 @@ export function SortablePlanExerciseItem({
   isSelectionMode,
   isSorting,
   isSubmitting,
+  onCopy,
   onEdit,
   onToggleSelected,
   registerItemRef,
@@ -43,6 +44,24 @@ export function SortablePlanExerciseItem({
     touchAction: 'manipulation',
   }
 
+  function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    if (
+      isSubmitting ||
+      event.target !== event.currentTarget ||
+      (event.key !== 'Enter' && event.key !== ' ')
+    ) {
+      return
+    }
+
+    event.preventDefault()
+    if (isSelectionMode) {
+      onToggleSelected(exercise.id)
+      return
+    }
+
+    onEdit(exercise.id)
+  }
+
   return (
     <div
       ref={(element) => {
@@ -54,12 +73,21 @@ export function SortablePlanExerciseItem({
       {...swipeLockHandlers}
       className={[
         isDragging ? 'relative opacity-0 pointer-events-none' : 'relative',
-        isSubmitting ? 'cursor-default' : 'cursor-grab active:cursor-grabbing',
+        isSubmitting ? 'cursor-default' : 'cursor-pointer active:cursor-grabbing',
       ].join(' ')}
-      aria-label={t('plans.dragExercise', { name: displayName })}
-      onClick={isSelectionMode ? () => onToggleSelected(exercise.id) : undefined}
+      aria-label={t(isSelectionMode ? 'plans.dragExercise' : 'plans.editExercise', {
+        name: displayName,
+      })}
+      onClick={
+        isSelectionMode
+          ? () => onToggleSelected(exercise.id)
+          : isSubmitting
+          ? undefined
+          : () => onEdit(exercise.id)
+      }
       {...attributes}
       {...listeners}
+      onKeyDown={handleKeyDown}
     >
       <PlanExerciseCard
         exercise={exercise}
@@ -67,7 +95,7 @@ export function SortablePlanExerciseItem({
         isDragging={isDragging}
         isSelected={isSelected}
         isSubmitting={isSubmitting || isSorting}
-        onEdit={onEdit}
+        onCopy={onCopy}
         selectionMode={isSelectionMode}
       />
     </div>

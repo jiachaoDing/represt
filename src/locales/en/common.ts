@@ -571,6 +571,7 @@ const common = {
     bulkDeleteExercise: 'Delete exercises',
     dragExercise: 'Long press and drag to reorder "{{name}}"',
     editExercise: 'Edit {{name}}',
+    copyExercise: 'Copy {{name}}',
     exerciseName: 'Exercise name',
     exercisePlaceholder: 'Example: Barbell bench press',
     defaultSets: 'Default sets',

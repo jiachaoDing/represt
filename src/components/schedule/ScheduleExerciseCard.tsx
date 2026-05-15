@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { Pencil } from 'lucide-react'
+import { Pencil, Plus } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 import { deriveExerciseStatus } from '../../lib/session-display'
@@ -19,6 +19,7 @@ type ScheduleExerciseCardProps = {
   isSubmitting: boolean
   linkState?: { backTo: string }
   now: number
+  onCopy?: () => void
   onEdit?: () => void
   selectionMode?: boolean
 }
@@ -148,6 +149,7 @@ export function ScheduleExerciseCard({
   isSubmitting,
   linkState,
   now,
+  onCopy,
   onEdit,
   selectionMode = false,
 }: ScheduleExerciseCardProps) {
@@ -213,13 +215,15 @@ export function ScheduleExerciseCard({
   )
 
   return (
-    <div className="relative">
-      <div className="absolute left-4 top-4 z-10">{handleContent}</div>
+    <div className="relative rounded-[1.25rem]">
+      <div className="absolute left-4 top-1/2 z-10 -translate-y-1/2">{handleContent}</div>
 
       <div
-        className={`rounded-[1.25rem] pl-16 pr-4 py-4 transition-shadow duration-200 ${
+        className={`rounded-[1.25rem] pl-16 py-4 transition-shadow duration-200 ${
           cardState.itemClassName
-        } ${isSelectionDisabled ? 'opacity-50' : ''} ${
+        } ${onCopy && !selectionMode ? 'pr-10' : 'pr-4'} ${
+          isSelectionDisabled ? 'opacity-50' : ''
+        } ${
           isDragging ? 'shadow-[0_10px_28px_-18px_rgba(0,0,0,0.35)]' : ''
         }`}
       >
@@ -235,6 +239,21 @@ export function ScheduleExerciseCard({
           content
         )}
       </div>
+      {onCopy && !selectionMode ? (
+        <button
+          type="button"
+          onPointerDown={(event) => event.stopPropagation()}
+          onClick={(event) => {
+            event.stopPropagation()
+            onCopy()
+          }}
+          disabled={isSubmitting}
+          className="absolute right-0 bottom-0 z-10 flex h-6 w-7 items-center justify-center rounded-tl-[0.9rem] rounded-br-[1.25rem] bg-[var(--surface-container)] text-[var(--on-surface)] transition-colors hover:bg-[var(--surface-container-high)] disabled:opacity-40"
+          aria-label={t('plans.copyExercise', { name: displayName })}
+        >
+          <Plus size={14} strokeWidth={2.25} aria-hidden="true" />
+        </button>
+      ) : null}
     </div>
   )
 }

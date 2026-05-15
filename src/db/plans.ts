@@ -252,6 +252,43 @@ export async function createPlanExercises(
   return nextExercises
 }
 
+export async function copyPlanExerciseAfter(planId: string, exerciseId: string) {
+  return db.transaction('rw', db.planExercises, db.workoutPlans, async () => {
+    const exercises = await db.planExercises.where('planId').equals(planId).sortBy('order')
+    const sourceIndex = exercises.findIndex((exercise) => exercise.id === exerciseId)
+    if (sourceIndex < 0) {
+      return null
+    }
+
+    const source = exercises[sourceIndex]
+    const copiedExercise: PlanExercise = {
+      id: crypto.randomUUID(),
+      planId,
+      name: source.name,
+      catalogExerciseId: source.catalogExerciseId ?? null,
+      measurementType: source.measurementType ?? null,
+      targetSets: source.targetSets,
+      restSeconds: source.restSeconds,
+      weightKg: source.weightKg ?? null,
+      reps: source.reps ?? null,
+      durationSeconds: source.durationSeconds ?? null,
+      distanceMeters: source.distanceMeters ?? null,
+      order: sourceIndex + 1,
+    }
+
+    const reorderedExercises = [
+      ...exercises.slice(0, sourceIndex + 1),
+      copiedExercise,
+      ...exercises.slice(sourceIndex + 1),
+    ].map((exercise, order) => ({ ...exercise, order }))
+
+    await db.planExercises.bulkPut(reorderedExercises)
+    await touchPlan(planId)
+
+    return copiedExercise
+  })
+}
+
 export async function importPlanExercises(targetPlanId: string, sourceExerciseIds: string[]) {
   if (sourceExerciseIds.length === 0) {
     return []

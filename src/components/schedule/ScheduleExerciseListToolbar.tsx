@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { BookmarkPlus, ListChecks, ListX } from 'lucide-react'
+import { Bookmark, ListChecks, ListX } from 'lucide-react'
 
 type ScheduleExerciseListToolbarProps = {
   isSelectionMode: boolean
@@ -110,7 +110,7 @@ export function ScheduleExerciseListToolbar({
             className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/10"
             aria-label={t('schedule.saveTodayAsPlan')}
           >
-            <BookmarkPlus size={18} strokeWidth={2.25} />
+            <Bookmark size={18} strokeWidth={2.25} />
           </button>
         ) : null}
       </div>

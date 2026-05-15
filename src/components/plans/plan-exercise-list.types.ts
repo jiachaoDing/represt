@@ -14,6 +14,7 @@ export type PlanExerciseListProps = {
   pendingScrollExerciseId: string | null
   plansCount: number
   onCancelEditing: () => void
+  onCopy: (exerciseId: string) => Promise<boolean>
   onCreate: () => void
   onDeleteSelected: (exerciseIds: string[]) => Promise<boolean>
   onDraftChange: (draft: PlanExerciseDraft) => void
@@ -31,7 +32,7 @@ export type PlanExerciseCardProps = {
   isSelected?: boolean
   isSubmitting: boolean
   selectionMode?: boolean
-  onEdit?: (exerciseId: string) => void
+  onCopy?: (exerciseId: string) => void
 }
 
 export type SortablePlanExerciseItemProps = {
@@ -41,6 +42,7 @@ export type SortablePlanExerciseItemProps = {
   isSelectionMode: boolean
   isSorting: boolean
   isSubmitting: boolean
+  onCopy: (exerciseId: string) => void
   onEdit: (exerciseId: string) => void
   onToggleSelected: (exerciseId: string) => void
   registerItemRef: (exerciseId: string, element: HTMLDivElement | null) => void

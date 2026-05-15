@@ -159,6 +159,7 @@ export function PlansPage() {
           pendingScrollExerciseId={ui.continuousEditScrollExerciseId ?? plans.lastCreatedExerciseId}
           plansCount={plans.plans.length}
           onCancelEditing={ui.closeExerciseEditor}
+          onCopy={ui.handleCopyExerciseAction}
           onCreate={() => {
             if (plans.currentPlan) {
               navigate(`/exercise-picker?target=plan&planId=${plans.currentPlan.id}`)

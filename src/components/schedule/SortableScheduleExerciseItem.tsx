@@ -18,6 +18,7 @@ type SortableScheduleExerciseItemProps = {
   isSorting: boolean
   isSubmitting: boolean
   now: number
+  onCopy: (exerciseId: string) => void
   onEdit: (exerciseId: string) => void
   onToggleSelected: (exerciseId: string) => void
 }
@@ -30,6 +31,7 @@ export function SortableScheduleExerciseItem({
   isSorting,
   isSubmitting,
   now,
+  onCopy,
   onEdit,
   onToggleSelected,
 }: SortableScheduleExerciseItemProps) {
@@ -93,6 +95,7 @@ export function SortableScheduleExerciseItem({
         isSubmitting={isSubmitting || isSorting}
         linkState={backLinkState}
         now={now}
+        onCopy={isSelectionMode ? undefined : () => onCopy(exercise.id)}
         onEdit={isSelectionMode || !canEdit ? undefined : () => onEdit(exercise.id)}
         selectionMode={isSelectionMode}
       />

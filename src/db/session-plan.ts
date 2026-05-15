@@ -312,6 +312,60 @@ export async function addTemporarySessionPlanItems(
   return nextPlanItems
 }
 
+export async function copySessionPlanItemAfter(sessionId: string, planItemId: string) {
+  return db.transaction('rw', db.workoutSessions, db.sessionPlanItems, db.performedExercises, async () => {
+    const session = await getSessionRecord(sessionId)
+    if (!session || session.sessionDateKey !== getTodaySessionDateKey()) {
+      throw new Error('只能修改今天的训练。')
+    }
+
+    const planItems = await getSessionPlanItems(sessionId)
+    const sourceIndex = planItems.findIndex((item) => item.id === planItemId)
+    if (sourceIndex < 0) {
+      throw new Error('当前动作不存在。')
+    }
+
+    const source = planItems[sourceIndex]
+    const copiedItem: SessionPlanItem = {
+      id: crypto.randomUUID(),
+      sessionId,
+      planExerciseId: source.planExerciseId,
+      sourcePlanId: source.sourcePlanId ?? null,
+      sourcePlanSnapshot: source.sourcePlanSnapshot ?? null,
+      origin: source.origin ?? 'manual',
+      name: source.name,
+      catalogExerciseId: source.catalogExerciseId ?? null,
+      measurementType: source.measurementType ?? null,
+      targetSets: source.targetSets,
+      defaultWeightKg: source.defaultWeightKg ?? null,
+      defaultReps: source.defaultReps ?? null,
+      defaultDurationSeconds: source.defaultDurationSeconds ?? null,
+      defaultDistanceMeters: source.defaultDistanceMeters ?? null,
+      restSeconds: source.restSeconds,
+      order: sourceIndex + 1,
+      createdAt: nowIso(),
+    }
+
+    const reorderedPlanItems = [
+      ...planItems.slice(0, sourceIndex + 1),
+      copiedItem,
+      ...planItems.slice(sourceIndex + 1),
+    ].map((item, order) => ({ ...item, order }))
+
+    await db.sessionPlanItems.bulkPut(reorderedPlanItems)
+    await Promise.all(
+      reorderedPlanItems.map(async (item) => {
+        const performedExercise = await getPerformedExerciseForPlanItem(item.id)
+        if (performedExercise) {
+          await db.performedExercises.update(performedExercise.id, { order: item.order })
+        }
+      }),
+    )
+
+    return copiedItem
+  })
+}
+
 export async function replaceSessionPlanItem(
   sessionId: string,
   planItemId: string,

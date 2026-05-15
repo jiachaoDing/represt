@@ -571,6 +571,7 @@ const common = {
     bulkDeleteExercise: '批量删除动作',
     dragExercise: '长按拖动调整“{{name}}”顺序',
     editExercise: '编辑{{name}}',
+    copyExercise: '复制{{name}}',
     exerciseName: '动作名称',
     exercisePlaceholder: '例如：杠铃卧推',
     defaultSets: '默认组数',

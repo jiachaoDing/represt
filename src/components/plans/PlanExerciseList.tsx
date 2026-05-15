@@ -34,6 +34,7 @@ export function PlanExerciseList({
   pendingScrollExerciseId,
   plansCount,
   onCancelEditing,
+  onCopy,
   onCreate,
   onDeleteSelected,
   onDraftChange,
@@ -183,6 +184,10 @@ export function PlanExerciseList({
 
   async function deleteExercise(exerciseId: string) {
     await onDeleteSelected([exerciseId])
+  }
+
+  async function copyExercise(exerciseId: string) {
+    await onCopy(exerciseId)
   }
 
   useEffect(() => {
@@ -339,6 +344,7 @@ export function PlanExerciseList({
                     isSelectionMode={isSelectionMode}
                     isSorting={isSorting}
                     isSubmitting={isSubmitting}
+                    onCopy={(exerciseId) => void copyExercise(exerciseId)}
                     onEdit={onEdit}
                     onToggleSelected={toggleSelectedExercise}
                     registerItemRef={registerItemRef}

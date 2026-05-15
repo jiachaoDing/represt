@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import {
   createPlan,
   createPlanExercise,
+  copyPlanExerciseAfter,
   deletePlan,
   deletePlanExercise,
   importPlanExercises,
@@ -180,6 +181,20 @@ export function usePlansPageData(preferredSelectedPlanId?: string | null) {
     return didImport
   }
 
+  async function handleCopyExercise(planId: string, exerciseId: string) {
+    const didCopy = await runMutation(async () => {
+      const copiedExercise = await copyPlanExerciseAfter(planId, exerciseId)
+      setLastCreatedExerciseId(copiedExercise?.id ?? null)
+      await loadPlans(planId)
+    })
+
+    if (didCopy) {
+      void triggerHaptic('success')
+    }
+
+    return didCopy
+  }
+
   async function handleSaveExercise(
     planId: string,
     exerciseId: string,
@@ -255,6 +270,7 @@ export function usePlansPageData(preferredSelectedPlanId?: string | null) {
     error,
     handleCreateExercise,
     handleCreatePlan,
+    handleCopyExercise,
     handleDeleteExercises,
     handleDeletePlan,
     handleImportExercises,

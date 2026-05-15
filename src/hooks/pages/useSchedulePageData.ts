@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 
 import {
+  copySessionPlanItemAfter,
   deletePendingSessionPlanItem,
   getCurrentSession,
   getOrCreateTodaySession,
@@ -177,6 +178,23 @@ export function useSchedulePageData() {
     return didDelete
   }
 
+  async function handleCopyExercise(planItemId: string) {
+    if (!currentSession) {
+      return false
+    }
+
+    const didCopy = await runMutation(async () => {
+      await copySessionPlanItemAfter(currentSession.id, planItemId)
+      await loadData(selectedPlanId)
+    })
+
+    if (didCopy) {
+      void triggerHaptic('success')
+    }
+
+    return didCopy
+  }
+
   async function handleSyncPlan(): Promise<PlanSyncResult | false> {
     if (!currentSession) {
       return false
@@ -253,6 +271,7 @@ export function useSchedulePageData() {
     didAutoImportToday,
     error,
     handleDeleteExercises,
+    handleCopyExercise,
     handleCreatePlanFromToday,
     handleOverwritePlanFromToday,
     handleReplaceExercise,

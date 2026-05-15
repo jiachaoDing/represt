@@ -20,6 +20,7 @@ export {
   addPlanExercisesToSessionPlan,
   addTemporarySessionPlanItem,
   addTemporarySessionPlanItems,
+  copySessionPlanItemAfter,
   deletePendingSessionPlanItem,
   getSessionPlanSyncStatus,
   markSessionPlanSynced,

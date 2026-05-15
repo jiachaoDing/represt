@@ -1,3 +1,4 @@
+import { Plus } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { getDisplayExerciseName } from '../../lib/exercise-name'
@@ -14,7 +15,7 @@ export function PlanExerciseCard({
   isDragging = false,
   isSelected = false,
   isSubmitting,
-  onEdit,
+  onCopy,
   selectionMode = false,
 }: PlanExerciseCardProps) {
   const { t } = useTranslation()
@@ -49,7 +50,9 @@ export function PlanExerciseCard({
 
   return (
     <div
-      className={`rounded-[1.25rem] border border-[var(--outline-variant)]/20 bg-[var(--surface)] px-4 py-4 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)] transition-shadow duration-200 ${
+      className={`relative overflow-hidden rounded-[1.25rem] border border-[var(--outline-variant)]/20 bg-[var(--surface)] px-4 py-4 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)] transition-shadow duration-200 ${
+        onCopy && !selectionMode ? 'pr-11' : ''
+      } ${
         isDragging ? 'shadow-[0_10px_28px_-18px_rgba(0,0,0,0.35)]' : ''
       }`}
     >
@@ -95,30 +98,22 @@ export function PlanExerciseCard({
           </div>
         </div>
 
-        {onEdit && !selectionMode ? (
-          <button
-            type="button"
-            onClick={() => onEdit(exercise.id)}
-            disabled={isSubmitting}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-[var(--on-surface-variant)] transition-colors hover:bg-[var(--surface-container)] disabled:opacity-40"
-            aria-label={t('plans.editExercise', { name: displayName })}
-          >
-            <svg
-              viewBox="0 0 24 24"
-              width="18"
-              height="18"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M12 20h9" />
-              <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
-            </svg>
-          </button>
-        ) : null}
       </div>
+      {onCopy && !selectionMode ? (
+        <button
+          type="button"
+          onPointerDown={(event) => event.stopPropagation()}
+          onClick={(event) => {
+            event.stopPropagation()
+            onCopy(exercise.id)
+          }}
+          disabled={isSubmitting}
+          className="absolute right-0 bottom-0 flex h-7 w-8 items-center justify-center rounded-tl-[1.1rem] rounded-br-[1.25rem] bg-[var(--surface-container)] text-[var(--on-surface)] transition-colors hover:bg-[var(--surface-container-high)] disabled:opacity-40"
+          aria-label={t('plans.copyExercise', { name: displayName })}
+        >
+          <Plus size={16} strokeWidth={2.25} aria-hidden="true" />
+        </button>
+      ) : null}
     </div>
   )
 }

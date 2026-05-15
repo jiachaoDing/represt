@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { createPortal } from 'react-dom'
-import { BookmarkPlus } from 'lucide-react'
+import { Bookmark } from 'lucide-react'
 import {
   DndContext,
   DragOverlay,
@@ -44,6 +44,7 @@ type ScheduleExerciseListProps = {
   onOpenAdd: () => void
   onOpenSavePlan: () => void
   onDismissSavePlanTip: () => void
+  onCopyExercise: (exerciseId: string) => Promise<boolean>
   onDeleteSelected: (exerciseIds: string[]) => Promise<boolean>
   onEditExercise: (exerciseId: string, draft: PlanExerciseDraft) => Promise<boolean>
   onInitialEditHandled: () => void
@@ -61,6 +62,7 @@ export function ScheduleExerciseList({
   onOpenAdd,
   onOpenSavePlan,
   onDismissSavePlanTip,
+  onCopyExercise,
   onDeleteSelected,
   onEditExercise,
   onInitialEditHandled,
@@ -224,6 +226,15 @@ export function ScheduleExerciseList({
     if (didDelete) {
       clearExerciseEditor(exerciseId)
     }
+  }
+
+  async function copyExercise(exerciseId: string) {
+    const didSave = await saveCurrentExerciseEdit()
+    if (!didSave) {
+      return
+    }
+
+    await onCopyExercise(exerciseId)
   }
 
   async function submitExerciseEdit(event: FormEvent<HTMLFormElement>) {
@@ -408,7 +419,7 @@ export function ScheduleExerciseList({
         <div className="rounded-2xl border border-[var(--primary)]/20 bg-[var(--primary-container)]/30 px-4 py-3">
           <p className="inline-flex flex-wrap items-center gap-1 text-sm leading-5 text-[var(--on-surface)]">
             <span>{t('schedule.saveTodayAsPlanTipPrefix')}</span>
-            <BookmarkPlus
+            <Bookmark
               size={17}
               strokeWidth={2.25}
               aria-label={t('schedule.saveTodayAsPlan')}
@@ -471,6 +482,7 @@ export function ScheduleExerciseList({
                     isSorting={isSorting}
                     isSubmitting={isSubmitting}
                     now={now}
+                    onCopy={(exerciseId) => void copyExercise(exerciseId)}
                     onEdit={(exerciseId) => void switchExerciseEditor(exerciseId)}
                     onToggleSelected={toggleSelectedExercise}
                   />

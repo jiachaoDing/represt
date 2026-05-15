@@ -15,6 +15,7 @@ type UsePlansPageUiOptions = {
   currentPlan: PlanWithExercises | null
   handleCreateExercise: (planId: string, draft: PlanExerciseDraft) => Promise<boolean>
   handleCreatePlan: () => Promise<boolean>
+  handleCopyExercise: (planId: string, exerciseId: string) => Promise<boolean>
   handleDeleteExercises: (planId: string, exerciseIds: string[]) => Promise<boolean>
   handleDeletePlan: (planId: string) => Promise<boolean>
   handleImportExercises: (planId: string, exerciseIds: string[]) => Promise<boolean>
@@ -30,6 +31,7 @@ type UsePlansPageUiOptions = {
 export function usePlansPageUi({
   currentPlan,
   handleCreateExercise,
+  handleCopyExercise,
   handleDeleteExercises,
   handleDeletePlan,
   handleCreatePlan,
@@ -191,6 +193,21 @@ export function usePlansPageUi({
     return didDelete
   }
 
+  async function handleCopyExerciseAction(exerciseId: string) {
+    if (!currentPlan) {
+      return false
+    }
+
+    if (isExerciseEditorActive) {
+      const didSave = await saveExerciseEditor()
+      if (!didSave) {
+        return false
+      }
+    }
+
+    return handleCopyExercise(currentPlan.id, exerciseId)
+  }
+
   async function handleImportExercisesAction(exerciseIds: string[]) {
     if (!currentPlan) {
       return false
@@ -222,6 +239,7 @@ export function usePlansPageUi({
     exerciseDraft,
     handleDeleteExercisesAction,
     handleConfirmDeletePlan,
+    handleCopyExerciseAction,
     handleExerciseSubmit,
     handleImportExercisesAction,
     handlePlanSubmit,

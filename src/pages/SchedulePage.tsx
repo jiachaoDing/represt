@@ -346,6 +346,7 @@ export function SchedulePage() {
                     onOpenAdd={openExercisePicker}
                     onOpenSavePlan={() => setIsPlanSaveSheetOpen(true)}
                     onDismissSavePlanTip={hideSaveTodayAsPlanTip}
+                    onCopyExercise={schedule.handleCopyExercise}
                     onDeleteSelected={schedule.handleDeleteExercises}
                     onEditExercise={schedule.handleReplaceExercise}
                     onInitialEditHandled={() => setInitialEditExerciseId(null)}
