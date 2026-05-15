@@ -8,6 +8,7 @@ import { useResolvedBackTo } from '../../hooks/useRouteBack'
 type PageHeaderProps = {
   actions?: ReactNode
   backFallbackTo?: string
+  backViewTransition?: boolean
   subtitle?: string
   title: string
   titleAlign?: 'start' | 'center' | 'end'
@@ -17,6 +18,7 @@ type PageHeaderProps = {
 export function PageHeader({
   actions,
   backFallbackTo,
+  backViewTransition = true,
   subtitle,
   title,
   titleAlign = 'start',
@@ -51,7 +53,7 @@ export function PageHeader({
           <Link
             to={backLink.backTo}
             state={backLink.backState}
-            viewTransition
+            viewTransition={backViewTransition}
             className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-[var(--on-surface)] transition-colors hover:bg-[var(--on-surface-variant)]/10"
             aria-label={t('common.back')}
           >

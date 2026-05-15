@@ -221,6 +221,7 @@ export function ExercisePage() {
       <PageHeader
         title={displayExerciseName ?? t('exercise.pageTitle')}
         backFallbackTo="/"
+        backViewTransition={false}
         actions={headerActions}
       />
 
@@ -335,7 +336,7 @@ export function ExercisePage() {
                   isFinalResting
                     ? () => void handleSkipCurrentRest()
                     : isCompleted
-                    ? () => navigate('/', { viewTransition: true })
+                    ? () => navigate('/')
                     : () => void handleCompleteCurrentSet()
                 }
                 transition={listSpringTransition}

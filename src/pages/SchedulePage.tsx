@@ -159,20 +159,19 @@ export function SchedulePage() {
     initial: (direction: number) =>
       reduceMotion
         ? { opacity: 0 }
-        : { opacity: 0, rotateX: direction * 82, scale: 0.985 },
+        : { opacity: 0, y: direction * 12, scale: 0.99 },
     animate: {
       opacity: 1,
-      rotateX: 0,
+      y: 0,
       scale: 1,
       transition: quickEaseTransition,
     },
     exit: (direction: number) =>
       reduceMotion
         ? { opacity: 0, transition: quickEaseTransition }
-        : { opacity: 0, rotateX: direction * -82, scale: 0.985, transition: quickEaseTransition },
+        : { opacity: 0, y: direction * -12, scale: 0.99, transition: quickEaseTransition },
   }
   const pageFlipStyle = {
-    backfaceVisibility: 'hidden',
     transformOrigin: 'center top',
   } as const
 
@@ -262,7 +261,7 @@ export function SchedulePage() {
         }
       />
 
-      <div className="relative overflow-hidden [perspective:1200px]">
+      <div className="relative overflow-hidden">
         <AnimatePresence custom={flipDirection} initial={false} mode="wait">
           {isQuickTimerOpen ? (
             <motion.div

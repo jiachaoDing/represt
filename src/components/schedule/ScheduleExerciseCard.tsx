@@ -226,7 +226,6 @@ export function ScheduleExerciseCard({
           <Link
             to={href}
             state={linkState}
-            viewTransition
             className="block w-full transition-transform active:scale-[0.98]"
           >
             {content}
