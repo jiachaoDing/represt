@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { ChevronDown, CopyPlus } from 'lucide-react'
+import { ChevronDown, CopyPlus, Trash2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { ExerciseNameInput } from '../exercise/ExerciseNameInput'
@@ -12,6 +12,7 @@ type PlanExerciseInlineEditorProps = {
   isSubmitting: boolean
   onCancel: () => void
   onDraftChange: (draft: PlanExerciseDraft) => void
+  onDelete?: () => void
   onImportClick?: () => void
   showActions?: boolean
   onSubmit: (event: FormEvent<HTMLFormElement>) => void
@@ -177,6 +178,7 @@ export function PlanExerciseInlineEditor({
   isEditing,
   isSubmitting,
   onCancel,
+  onDelete,
   onDraftChange,
   onImportClick,
   showActions = true,
@@ -281,11 +283,23 @@ export function PlanExerciseInlineEditor({
     <form
       ref={formRef}
       onSubmit={onSubmit}
-      className="scroll-mb-[calc(6rem+env(safe-area-inset-bottom))] rounded-[1.25rem] border border-[var(--outline-variant)]/30 bg-[var(--surface)] p-4 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)]"
+      className="relative scroll-mb-[calc(6rem+env(safe-area-inset-bottom))] rounded-[1.25rem] border border-[var(--outline-variant)]/30 bg-[var(--surface)] p-4 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)]"
     >
+      {onDelete ? (
+        <button
+          type="button"
+          onClick={onDelete}
+          disabled={isSubmitting}
+          className="absolute right-2 top-2 inline-flex h-8 w-8 items-center justify-center rounded-full text-[var(--error)] transition-colors hover:bg-[var(--error-container)] disabled:opacity-40"
+          aria-label={t('common.delete')}
+          title={t('common.delete')}
+        >
+          <Trash2 size={16} strokeWidth={2.25} aria-hidden="true" />
+        </button>
+      ) : null}
       <div className="space-y-4">
         <div className="block">
-          <span className="mb-1 ml-1 block text-xs font-medium text-[var(--on-surface-variant)]">
+          <span className="mb-1 ml-1 block pr-10 text-xs font-medium text-[var(--on-surface-variant)]">
             {t('plans.exerciseName')}
           </span>
           <ExerciseNameInput

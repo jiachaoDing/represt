@@ -181,6 +181,10 @@ export function PlanExerciseList({
     }
   }
 
+  async function deleteExercise(exerciseId: string) {
+    await onDeleteSelected([exerciseId])
+  }
+
   useEffect(() => {
     if (editExerciseId === null) {
       return
@@ -323,6 +327,7 @@ export function PlanExerciseList({
                     isEditing
                     isSubmitting={isSubmitting}
                     onCancel={onCancelEditing}
+                    onDelete={() => void deleteExercise(exercise.id)}
                     onDraftChange={onDraftChange}
                     onSubmit={onSubmit}
                   />

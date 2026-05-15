@@ -219,6 +219,13 @@ export function ScheduleExerciseList({
     }
   }
 
+  async function deleteExercise(exerciseId: string) {
+    const didDelete = await onDeleteSelected([exerciseId])
+    if (didDelete) {
+      clearExerciseEditor(exerciseId)
+    }
+  }
+
   async function submitExerciseEdit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (!editExerciseId || !editDraft || !editDraft.name.trim()) {
@@ -451,6 +458,7 @@ export function ScheduleExerciseList({
                     isEditing
                     isSubmitting={isSubmitting}
                     onCancel={cancelCurrentExerciseEdit}
+                    onDelete={() => void deleteExercise(exercise.id)}
                     onDraftChange={setEditDraft}
                     onSubmit={submitExerciseEdit}
                   />
