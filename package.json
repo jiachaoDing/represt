@@ -1,7 +1,7 @@
 {
   "name": "represt",
   "private": true,
-  "version": "1.0.8",
+  "version": "1.0.9",
   "author": "J.C.Ding",
   "license": "GPL-3.0-or-later",
   "type": "module",
