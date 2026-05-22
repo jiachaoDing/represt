@@ -2,7 +2,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
-import { ArrowRight, Pause, Plus } from 'lucide-react'
+import { ArrowRight, Copy, Pause, Plus } from 'lucide-react'
 
 import { ExerciseHero } from '../components/exercise/ExerciseHero'
 import { ExerciseLatestRecordCard } from '../components/exercise/ExerciseLatestRecordCard'
@@ -110,10 +110,12 @@ export function ExercisePage() {
     handleUndoExercise,
     handleUndoLatestSet,
     handleUpdateLatestSetRecord,
+    handleUsePreviousSetRecord,
     isLoading,
     isSubmitting,
     latestSetRecord,
     measurementType,
+    previousSetRecord,
     repsInput,
     setDistanceInput,
     setDurationInput,
@@ -145,6 +147,13 @@ export function ExercisePage() {
   async function handleSaveRecord(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const didSave = await handleUpdateLatestSetRecord()
+    if (didSave) {
+      setIsRecordFormOpen(false)
+    }
+  }
+
+  async function handleUsePreviousSetRecordAndClose() {
+    const didSave = await handleUsePreviousSetRecord()
     if (didSave) {
       setIsRecordFormOpen(false)
     }
@@ -335,21 +344,34 @@ export function ExercisePage() {
             </div>
 
             <AnimatedDialog open={isRecordFormOpen} onClose={() => setIsRecordFormOpen(false)}>
-              <ExerciseRecordInlineCard
-                isSubmitting={isSubmitting}
-                latestSetRecord={latestSetRecord}
-                distanceInput={distanceInput}
-                durationInput={durationInput}
-                measurementType={measurementType}
-                repsInput={repsInput}
-                weightInput={weightInput}
-                onCancel={() => setIsRecordFormOpen(false)}
-                onDistanceChange={setDistanceInput}
-                onDurationChange={setDurationInput}
-                onRepsChange={setRepsInput}
-                onSubmit={handleSaveRecord}
-                onWeightChange={setWeightInput}
-              />
+              <div className="relative mx-auto w-full max-w-[22rem] pt-9">
+                {previousSetRecord ? (
+                  <button
+                    type="button"
+                    disabled={isSubmitting}
+                    onClick={() => void handleUsePreviousSetRecordAndClose()}
+                    className="absolute right-1 top-0 inline-flex h-8 items-center gap-1.5 rounded-full bg-[var(--surface-container)] px-2.5 text-xs font-medium text-[var(--primary)] shadow-[var(--shadow-soft)] transition-colors hover:bg-[var(--surface-container-high)] disabled:opacity-40"
+                  >
+                    <Copy size={14} strokeWidth={2.2} aria-hidden="true" />
+                    <span>{t('exercise.usePreviousSetRecord')}</span>
+                  </button>
+                ) : null}
+                <ExerciseRecordInlineCard
+                  isSubmitting={isSubmitting}
+                  latestSetRecord={latestSetRecord}
+                  distanceInput={distanceInput}
+                  durationInput={durationInput}
+                  measurementType={measurementType}
+                  repsInput={repsInput}
+                  weightInput={weightInput}
+                  onCancel={() => setIsRecordFormOpen(false)}
+                  onDistanceChange={setDistanceInput}
+                  onDurationChange={setDurationInput}
+                  onRepsChange={setRepsInput}
+                  onSubmit={handleSaveRecord}
+                  onWeightChange={setWeightInput}
+                />
+              </div>
             </AnimatedDialog>
 
             <div className="mt-8 bg-[var(--surface)] pb-[calc(1rem_+_env(safe-area-inset-bottom))] pt-2">

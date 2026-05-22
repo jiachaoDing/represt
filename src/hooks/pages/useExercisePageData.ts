@@ -215,6 +215,35 @@ export function useExercisePageData(id: string) {
     return didSave
   }
 
+  async function handleUsePreviousSetRecord() {
+    if (!detail?.latestSetRecord || !detail.previousSetRecord) {
+      return false
+    }
+
+    const previousSetRecord = detail.previousSetRecord
+    const didSave = await runMutation(async () => {
+      const latestSetRecord = await updateLatestSetRecordValues(detail.exercise.id, {
+        distanceMeters: previousSetRecord.distanceMeters,
+        durationSeconds: previousSetRecord.durationSeconds,
+        weightKg: previousSetRecord.weightKg,
+        reps: previousSetRecord.reps,
+      })
+
+      const nextDetail = {
+        ...detail,
+        latestSetRecord,
+      }
+      setDetail(nextDetail)
+      syncLatestSetInputs(nextDetail, setWeightInput, setRepsInput, setDurationInput, setDistanceInput)
+    })
+
+    if (didSave) {
+      void triggerHaptic('success')
+    }
+
+    return didSave
+  }
+
   async function handleUndoLatestSet() {
     if (!detail?.latestSetRecord) {
       return false
@@ -326,6 +355,7 @@ export function useExercisePageData(id: string) {
   }
 
   const latestSetRecord = detail?.latestSetRecord ?? null
+  const previousSetRecord = detail?.previousSetRecord ?? null
   const measurementType = getMeasurementTypeForExercise(detail?.exercise ?? {})
   const canCompleteSet =
     detail !== null && detail.exercise.completedSets < detail.exercise.targetSets && !isSubmitting
@@ -352,10 +382,12 @@ export function useExercisePageData(id: string) {
     handleUndoExercise,
     handleUndoLatestSet,
     handleUpdateLatestSetRecord,
+    handleUsePreviousSetRecord,
     isLoading,
     isSubmitting,
     latestSetRecord,
     measurementType,
+    previousSetRecord,
     repsInput,
     setDistanceInput,
     setDurationInput,

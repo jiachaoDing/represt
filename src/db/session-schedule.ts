@@ -6,6 +6,7 @@ import {
   getLatestSetRecord,
   getPerformedExerciseForPlanItem,
   getPerformedExercises,
+  getPreviousSetRecord,
   getSessionPlanItems,
   getSessionRecord,
 } from './session-core'
@@ -61,11 +62,16 @@ export async function getScheduleExerciseDetail(planItemId: string) {
   }
 
   const latestSetRecord = performedExercise ? await getLatestSetRecord(performedExercise.id) : null
+  const previousSetRecord =
+    performedExercise && latestSetRecord
+      ? await getPreviousSetRecord(performedExercise.id, latestSetRecord.setNumber)
+      : null
   const exercise = toScheduleExercise(planItem, performedExercise ?? null)
 
   return {
     session: attachDerivedSessionStatus(session, performedExercise ? [performedExercise] : []),
     exercise,
     latestSetRecord,
+    previousSetRecord,
   } satisfies ScheduleExerciseDetail
 }

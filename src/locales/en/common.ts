@@ -738,6 +738,7 @@ const common = {
     reps: 'Reps',
     durationSeconds: 'Duration (sec)',
     distanceMeters: 'Distance (m)',
+    usePreviousSetRecord: 'Use previous set data',
     saveRecord: 'Save record',
     noSetRecord: 'No set records yet.',
     missingRecord: 'Not recorded',

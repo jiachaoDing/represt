@@ -44,6 +44,14 @@ export async function getLatestSetRecord(performedExerciseId: string) {
   return records.sort((left, right) => right.setNumber - left.setNumber)[0]
 }
 
+export async function getPreviousSetRecord(performedExerciseId: string, setNumber: number) {
+  const records = await db.setRecords.where('performedExerciseId').equals(performedExerciseId).toArray()
+
+  return records
+    .filter((record) => record.setNumber < setNumber)
+    .sort((left, right) => right.setNumber - left.setNumber)[0] ?? null
+}
+
 function deriveSessionStatus(
   exercises: Array<Pick<PerformedExercise, 'completedSets' | 'targetSets' | 'restEndsAt'>>,
 ) {

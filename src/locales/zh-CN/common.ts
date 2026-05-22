@@ -738,6 +738,7 @@ const common = {
     reps: '次数',
     durationSeconds: '时长 (秒)',
     distanceMeters: '距离 (m)',
+    usePreviousSetRecord: '上组数据',
     saveRecord: '保存记录',
     noSetRecord: '还没有组记录。',
     missingRecord: '未补录',

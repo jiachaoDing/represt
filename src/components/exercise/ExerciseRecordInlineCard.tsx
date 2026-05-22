@@ -3,13 +3,11 @@ import { useTranslation } from 'react-i18next'
 
 import type { MeasurementType } from '../../domain/exercise-catalog'
 import { getCompletedAtLabel } from '../../lib/session-display'
+import type { SetRecord } from '../../models/types'
 
 type ExerciseRecordInlineCardProps = {
   isSubmitting: boolean
-  latestSetRecord: {
-    completedAt: string
-    setNumber: number
-  } | null
+  latestSetRecord: SetRecord | null
   distanceInput: string
   durationInput: string
   measurementType: MeasurementType

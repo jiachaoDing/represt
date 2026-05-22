@@ -28,6 +28,7 @@ export type ScheduleExerciseDetail = {
   session: WorkoutSessionWithStatus
   exercise: ScheduleExercise
   latestSetRecord: SetRecord | null
+  previousSetRecord: SetRecord | null
 }
 
 export type SessionSummaryExercise = PerformedExercise & {
