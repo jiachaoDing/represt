@@ -1,13 +1,13 @@
 ﻿{
   "platform": "android",
-  "versionName": "1.1.0",
-  "versionCode": 20,
-  "releaseDate": "2026-05-19",
+  "versionName": "1.1.1",
+  "versionCode": 21,
+  "releaseDate": "2026-05-22",
   "downloadUrl": "https://share.represt.app/downloads/android/latest",
-  "apkUrl": "https://share.represt.app/downloads/android/represt-1.1.0.apk",
+  "apkUrl": "https://share.represt.app/downloads/android/represt-1.1.1.apk",
   "fileName": "represt-1.1.0.apk",
   "fileSizeBytes": 3895791,
-  "sha256": "30A72A6F25EAEA0ED62B9B17070CBE7DBEC1B92E76B081DCBF5E3C62F1E7C0BF",
-  "changelog": ["完成@酸奶嘎嘎鹅，提出的部分建议","1.动作编辑卡片增加删除按钮","2.增加快捷复制动作功能"],
+  "sha256": "",
+  "changelog": ["1.增加补录上一组快捷入口","2.增加训练记录快捷复制导入","2.增加快捷复制动作功能"],
   "mandatory": false
 }
