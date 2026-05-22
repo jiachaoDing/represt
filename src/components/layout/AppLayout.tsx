@@ -81,10 +81,10 @@ export function AppLayout() {
       <div className="relative mx-auto flex h-full w-full max-w-[30rem] flex-col">
         <main
           className={[
-            'min-h-0 flex-1 overflow-hidden px-4 pt-[max(0.75rem,env(safe-area-inset-top))]',
+            'min-h-0 flex-1 overflow-hidden px-4 pt-[max(0.75rem,var(--app-safe-area-inset-top))]',
             hideNavigation
-              ? 'pb-[max(1rem,env(safe-area-inset-bottom))]'
-              : 'pb-[calc(5rem+env(safe-area-inset-bottom))]',
+              ? 'pb-[max(1rem,var(--app-safe-area-inset-bottom))]'
+              : 'pb-[calc(5rem_+_var(--app-safe-area-inset-bottom))]',
           ].join(' ')}
         >
           <PageTransition />
@@ -92,7 +92,7 @@ export function AppLayout() {
         
         {!hideNavigation ? (
           <nav className="fixed inset-x-0 bottom-0 z-40 bg-[var(--surface-container)] border-t border-[var(--outline-variant)]/30">
-            <div className="mx-auto max-w-[30rem] pb-[env(safe-area-inset-bottom)]">
+            <div className="mx-auto max-w-[30rem] pb-[var(--app-safe-area-inset-bottom)]">
               <div className="flex h-20">
                 {navigationItems.map((item) => (
                   <NavLink

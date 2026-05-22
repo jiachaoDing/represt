@@ -283,7 +283,7 @@ export function PlanExerciseInlineEditor({
     <form
       ref={formRef}
       onSubmit={onSubmit}
-      className="relative scroll-mb-[calc(6rem+env(safe-area-inset-bottom))] rounded-[1.25rem] border border-[var(--outline-variant)]/30 bg-[var(--surface)] p-4 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)]"
+      className="relative scroll-mb-[calc(6rem_+_var(--app-safe-area-inset-bottom))] rounded-[1.25rem] border border-[var(--outline-variant)]/30 bg-[var(--surface)] p-4 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)]"
     >
       {onDelete ? (
         <button

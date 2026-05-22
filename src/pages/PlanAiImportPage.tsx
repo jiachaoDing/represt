@@ -153,7 +153,7 @@ export function PlanAiImportPage() {
     <div className="flex h-full min-h-0 flex-col">
       <PageHeader title={t('plans.aiImport.title')} backFallbackTo="/plans" />
 
-      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pb-[calc(1rem_+_env(safe-area-inset-bottom))]">
+      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pb-[calc(1rem_+_var(--app-safe-area-inset-bottom))]">
         <section className="shrink-0 rounded-2xl border border-[var(--outline-variant)]/40 bg-[var(--surface)] p-3">
           <div className="mb-2 flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-2">

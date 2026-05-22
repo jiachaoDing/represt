@@ -497,7 +497,7 @@ export function ExercisePickerPage() {
         </div>
       </div>
 
-      <div className="fixed inset-x-0 bottom-[calc(5.75rem+env(safe-area-inset-bottom))] z-50 mx-auto max-w-[30rem] px-4">
+      <div className="fixed inset-x-0 bottom-[calc(5.75rem_+_var(--app-safe-area-inset-bottom))] z-50 mx-auto max-w-[30rem] px-4">
         <div
           className={`flex h-14 items-center gap-3 rounded-full border px-3 shadow-lg ${
             selectedExercises.length > 0

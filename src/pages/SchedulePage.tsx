@@ -138,13 +138,13 @@ export function SchedulePage() {
   const addExerciseButton =
     canShowAddExerciseButton && !isQuickTimerOpen && typeof document !== 'undefined'
       ? createPortal(
-          <div className="fixed inset-x-0 bottom-[calc(6.5rem+env(safe-area-inset-bottom))] z-30 pointer-events-none">
+          <div className="fixed inset-x-0 bottom-[calc(6.5rem_+_var(--app-safe-area-inset-bottom))] z-30 pointer-events-none">
             <div className="mx-auto flex max-w-[30rem] justify-end px-6">
               <button
                 type="button"
                 disabled={schedule.isSubmitting}
                 onClick={openExercisePicker}
-                    aria-label={t('schedule.addExercise')}
+                aria-label={t('schedule.addExercise')}
                 className="pointer-events-auto flex h-12 w-12 items-center justify-center rounded-full bg-[var(--primary-container)] text-[var(--on-primary-container)] shadow-lg transition-transform hover:scale-[1.02] active:scale-95 disabled:opacity-50 tap-highlight-transparent"
               >
                 <Plus size={22} strokeWidth={2.5} />
@@ -288,7 +288,7 @@ export function SchedulePage() {
               style={pageFlipStyle}
             >
               {!schedule.isLoading ? (
-                <div className={isStarterState ? 'flex min-h-[calc(100vh-13rem-env(safe-area-inset-bottom))] items-center' : ''}>
+                <div className={isStarterState ? 'flex min-h-[calc(100vh_-_13rem_-_var(--app-safe-area-inset-bottom))] items-center' : ''}>
                   <TodayTrainingPlanCard
                     cycle={schedule.trainingCycle}
                     currentIndex={schedule.todayCycleDay?.index ?? null}

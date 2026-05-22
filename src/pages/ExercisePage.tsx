@@ -374,7 +374,7 @@ export function ExercisePage() {
               </div>
             </AnimatedDialog>
 
-            <div className="mt-8 bg-[var(--surface)] pb-[calc(1rem_+_env(safe-area-inset-bottom))] pt-2">
+            <div className="mt-8 bg-[var(--surface)] pb-[calc(1rem_+_var(--app-safe-area-inset-bottom))] pt-2">
               <motion.button
                 layout
                 type="button"

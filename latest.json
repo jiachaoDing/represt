@@ -8,6 +8,6 @@
   "fileName": "represt-1.1.0.apk",
   "fileSizeBytes": 3895791,
   "sha256": "",
-  "changelog": ["1.增加补录上一组快捷入口","2.增加训练记录快捷复制导入","2.增加快捷复制动作功能"],
+  "changelog": ["1.增加补录上一组快捷入口","2.增加训练记录快捷复制导入"],
   "mandatory": false
 }

@@ -76,8 +76,8 @@ export function AnimatedSheet({
                       transition: quickEaseTransition,
                     }
               }
-              className={`max-h-[90vh] w-full overflow-auto rounded-t-[28px] bg-[var(--surface-container)] px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-4 shadow-2xl ${
-                isProminent ? 'rounded-t-[2rem] pb-[max(2rem,env(safe-area-inset-bottom))]' : ''
+              className={`max-h-[90vh] w-full overflow-auto rounded-t-[28px] bg-[var(--surface-container)] px-4 pb-[max(1.5rem,var(--app-safe-area-inset-bottom))] pt-4 shadow-2xl ${
+                isProminent ? 'rounded-t-[2rem] pb-[max(2rem,var(--app-safe-area-inset-bottom))]' : ''
               }`}
             >
               <div className={`mx-auto h-1 rounded-full bg-[var(--outline)] ${isProminent ? 'mb-8 w-14' : 'mb-6 w-8'}`} />

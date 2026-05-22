@@ -77,7 +77,7 @@ export function TrainingCyclePageLoading({ showHeader = true }: TrainingCyclePag
   }
 
   return (
-    <div className="flex h-[calc(100vh-5rem-env(safe-area-inset-bottom))] min-h-0 flex-col bg-[var(--surface)]">
+    <div className="flex h-[calc(100vh_-_5rem_-_var(--app-safe-area-inset-bottom))] min-h-0 flex-col bg-[var(--surface)]">
       <PageHeader
         title={t('trainingCycle.title')}
         subtitle={t('trainingCycle.loadingSubtitle')}
