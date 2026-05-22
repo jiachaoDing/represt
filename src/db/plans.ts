@@ -68,7 +68,7 @@ function normalizeExercise(input: Partial<PlanExerciseInput>) {
     name,
     catalogExerciseId,
     measurementType,
-    targetSets: Math.max(1, Math.floor(input.targetSets ?? 3)),
+    targetSets: Math.max(1, Math.floor(input.targetSets ?? 4)),
     restSeconds: Math.max(0, Math.floor(input.restSeconds ?? 90)),
     ...values,
   }

@@ -24,7 +24,7 @@ function normalizeSessionPlanItem(input: Partial<SessionPlanItemInput>) {
     name,
     catalogExerciseId: resolveCatalogExerciseId({ name, catalogExerciseId: input.catalogExerciseId }),
     measurementType,
-    targetSets: Math.max(1, Math.floor(input.targetSets ?? 3)),
+    targetSets: Math.max(1, Math.floor(input.targetSets ?? 4)),
     restSeconds: Math.max(0, Math.floor(input.restSeconds ?? 90)),
     defaultWeightKg: input.defaultWeightKg ?? null,
     defaultReps: input.defaultReps ?? null,

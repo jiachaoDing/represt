@@ -78,6 +78,7 @@ export function ScheduleExerciseList({
   const [selectedExerciseIds, setSelectedExerciseIds] = useState<string[]>([])
   const lastDragOverIdRef = useRef<string | null>(null)
   const itemRefs = useRef(new Map<string, HTMLDivElement>())
+  const suppressNextOutsideClickRef = useRef(false)
   const editStateRef = useRef<{ draft: PlanExerciseDraft | null; exerciseId: string | null }>({
     draft: null,
     exerciseId: null,
@@ -278,19 +279,53 @@ export function ScheduleExerciseList({
     }
 
     const activeEditExerciseId = editExerciseId
-    function handlePointerDown(event: PointerEvent) {
+    function isOutsideEditor(event: Event) {
       const editorElement = itemRefs.current.get(activeEditExerciseId)
       if (!editorElement || !(event.target instanceof Node)) {
-        return
+        return false
       }
 
-      if (!editorElement.contains(event.target)) {
-        void saveCurrentExerciseEdit()
+      return !editorElement.contains(event.target)
+    }
+
+    function stopOutsideEvent(event: Event) {
+      event.preventDefault()
+      event.stopPropagation()
+      if ('stopImmediatePropagation' in event) {
+        event.stopImmediatePropagation()
       }
     }
 
+    function handlePointerDown(event: PointerEvent) {
+      if (!isOutsideEditor(event)) {
+        return
+      }
+
+      suppressNextOutsideClickRef.current = true
+      stopOutsideEvent(event)
+      void saveCurrentExerciseEdit()
+    }
+
+    function handleClick(event: MouseEvent) {
+      if (!isOutsideEditor(event)) {
+        return
+      }
+
+      stopOutsideEvent(event)
+      if (suppressNextOutsideClickRef.current) {
+        suppressNextOutsideClickRef.current = false
+        return
+      }
+
+      void saveCurrentExerciseEdit()
+    }
+
     document.addEventListener('pointerdown', handlePointerDown, true)
-    return () => document.removeEventListener('pointerdown', handlePointerDown, true)
+    document.addEventListener('click', handleClick, true)
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown, true)
+      document.removeEventListener('click', handleClick, true)
+    }
   }, [editExerciseId, saveCurrentExerciseEdit])
 
   function handleDragStart(event: DragStartEvent) {
