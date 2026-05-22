@@ -281,6 +281,18 @@ const common = {
     loadDistanceVolume: '{{volume}}kg·m load distance',
     setNumber: 'Set {{setNumber}}',
     noCompletedSets: 'No completed set records yet',
+    export: {
+      copyDay: 'Copy day summary',
+      copyWeek: 'Copy week summary',
+      copyMonth: 'Copy month summary',
+      copied: 'Summary copied',
+      copyFailed: 'Copy failed. Try again later.',
+      dayTitle: 'Training summary ({{date}})',
+      weekTitle: 'Week summary ({{start}} - {{end}})',
+      monthTitle: 'Month summary ({{start}} - {{end}})',
+      trainingSegments: 'Training windows',
+      recordSummary: 'Record summary',
+    },
     ranges: {
       day: 'Day',
       week: 'Week',

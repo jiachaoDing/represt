@@ -16,9 +16,11 @@ import {
   formatDurationSeconds,
   formatNumber,
 } from '../../lib/set-record-measurement'
+import { SummaryExportButton } from './SummaryExportButton'
 
 type SummaryAnalyticsSectionsProps = {
   analytics: SummaryRangeAnalytics | null
+  exportText?: string | null
   isLoading: boolean
 }
 
@@ -68,14 +70,26 @@ function formatTrainingDurationMinutes(minutes: number, t: TFunction) {
     : t('common.hoursMinutes', { hours, minutes: remainingMinutes })
 }
 
-function OverviewCard({ analytics }: { analytics: SummaryRangeAnalytics }) {
+function OverviewCard({
+  analytics,
+  exportText,
+}: {
+  analytics: SummaryRangeAnalytics
+  exportText: string | null
+}) {
   const { t } = useTranslation()
 
   return (
     <section className="mx-4 mt-4 rounded-[1.25rem] border border-[var(--outline-variant)]/20 bg-[var(--surface)] p-4 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)]">
-      <h2 className="text-[16px] font-bold text-[var(--on-surface)]">
-        {analytics.range === 'week' ? t('summary.analytics.weekOverview') : t('summary.analytics.monthOverview')}
-      </h2>
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-[16px] font-bold text-[var(--on-surface)]">
+          {analytics.range === 'week' ? t('summary.analytics.weekOverview') : t('summary.analytics.monthOverview')}
+        </h2>
+        <SummaryExportButton
+          ariaLabel={t(analytics.range === 'week' ? 'summary.export.copyWeek' : 'summary.export.copyMonth')}
+          text={exportText}
+        />
+      </div>
       <div className="mt-3 grid grid-cols-2 overflow-hidden rounded-2xl border border-[var(--outline-variant)]/30">
         {[
           { label: t('summary.analytics.trainingDays'), value: t('summary.analytics.daysValue', { value: analytics.trainingDays }) },
@@ -338,7 +352,11 @@ export function SummaryHighlightsCard({ analytics }: { analytics: SummaryRangeAn
   return analytics ? <HighlightsCard analytics={analytics} /> : null
 }
 
-export function SummaryAnalyticsSections({ analytics, isLoading }: SummaryAnalyticsSectionsProps) {
+export function SummaryAnalyticsSections({
+  analytics,
+  exportText = null,
+  isLoading,
+}: SummaryAnalyticsSectionsProps) {
   const { t } = useTranslation()
 
   if (isLoading) {
@@ -362,7 +380,7 @@ export function SummaryAnalyticsSections({ analytics, isLoading }: SummaryAnalyt
 
   return (
     <>
-      <OverviewCard analytics={analytics} />
+      <OverviewCard analytics={analytics} exportText={exportText} />
       <TimeStatsCard analytics={analytics} />
       <HighlightsCard analytics={analytics} />
       <TrendCard analytics={analytics} />

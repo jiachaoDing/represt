@@ -281,6 +281,18 @@ const common = {
     loadDistanceVolume: '负重距离量 {{volume}}kg·m',
     setNumber: '第 {{setNumber}} 组',
     noCompletedSets: '还没有完成组记录',
+    export: {
+      copyDay: '复制当天总结',
+      copyWeek: '复制周总结',
+      copyMonth: '复制月总结',
+      copied: '已复制总结',
+      copyFailed: '复制失败，请稍后重试。',
+      dayTitle: '训练总结（{{date}}）',
+      weekTitle: '周总结（{{start}} - {{end}}）',
+      monthTitle: '月总结（{{start}} - {{end}}）',
+      trainingSegments: '训练时段',
+      recordSummary: '记录摘要',
+    },
     ranges: {
       day: '当天',
       week: '本周',

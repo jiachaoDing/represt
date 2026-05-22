@@ -13,6 +13,10 @@ import { getSummaryRangeBounds, type SummaryRange } from '../db/sessions'
 import { useSessionSummaryData } from '../hooks/pages/useSessionSummaryData'
 import { useBackLinkState } from '../hooks/useRouteBack'
 import {
+  buildDaySummaryExportText,
+  buildRangeSummaryExportText,
+} from '../lib/summary-export-text'
+import {
   formatSessionDateKey,
   getTodaySessionDateKey,
   isSessionDateKey,
@@ -100,6 +104,19 @@ export function SummaryPage() {
       }, i18n.resolvedLanguage),
     }
   }, [i18n.resolvedLanguage, rangeBounds.endDateKey, rangeBounds.startDateKey, selectedDateKey, selectedRange])
+  const summaryExportText = useMemo(() => {
+    const locale = i18n.resolvedLanguage ?? i18n.language
+
+    if (selectedRange === 'day') {
+      return detail && detail.exercises.length > 0
+        ? buildDaySummaryExportText(detail, analytics, t, locale)
+        : null
+    }
+
+    return analytics && analytics.completedSets > 0
+      ? buildRangeSummaryExportText(analytics, t, locale)
+      : null
+  }, [analytics, detail, i18n.language, i18n.resolvedLanguage, selectedRange, t])
   const calendarTo = `/calendar${buildSummarySearch(selectedDateKey)}`
   const rangeLabels: Record<SummaryRange, string> = {
     day: t('summary.ranges.day'),
@@ -170,13 +187,22 @@ export function SummaryPage() {
 
       {!isDateMode || selectedRange === 'day' ? (
         <>
-          <SessionSummaryOverview detail={detail} emptyState={emptyState} isLoading={isLoading} />
+          <SessionSummaryOverview
+            detail={detail}
+            emptyState={emptyState}
+            exportText={summaryExportText}
+            isLoading={isLoading}
+          />
           <SummaryHighlightsCard analytics={analytics} />
           <SessionExerciseSummaryList detail={detail} />
           <SessionSummaryTimeStats detail={detail} />
         </>
       ) : (
-        <SummaryAnalyticsSections analytics={analytics} isLoading={isLoading} />
+        <SummaryAnalyticsSections
+          analytics={analytics}
+          exportText={summaryExportText}
+          isLoading={isLoading}
+        />
       )}
     </div>
   )

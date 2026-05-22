@@ -2,17 +2,19 @@ import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import type { SessionSummaryDetail } from '../../db/sessions'
-import { getSessionStatusLabel } from '../../lib/session-display'
+import { SummaryExportButton } from './SummaryExportButton'
 
 type SessionSummaryOverviewProps = {
   detail: SessionSummaryDetail | null
   emptyState?: ReactNode
+  exportText?: string | null
   isLoading: boolean
 }
 
 export function SessionSummaryOverview({
   detail,
   emptyState,
+  exportText = null,
   isLoading,
 }: SessionSummaryOverviewProps) {
   const { t } = useTranslation()
@@ -57,9 +59,10 @@ export function SessionSummaryOverview({
           <p className="mt-2 text-[14px] font-medium text-[var(--on-surface-variant)]">{t('summary.totalCompletedSets')}</p>
         </div>
 
-        <span className="shrink-0 rounded-full bg-[var(--primary-container)] px-3 py-1 text-[12px] font-semibold text-[var(--on-primary-container)]">
-          {getSessionStatusLabel(detail.session.status)}
-        </span>
+        <SummaryExportButton
+          ariaLabel={t('summary.export.copyDay')}
+          text={exportText}
+        />
       </div>
     </section>
   )
