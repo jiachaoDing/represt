@@ -366,9 +366,9 @@ function AppUpdateResultSheet({
             href={sheet.release.downloadUrl}
             target="_blank"
             rel="noreferrer"
-            className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-[var(--primary)] px-4 text-sm font-semibold text-[var(--on-primary)]"
+            className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-[var(--primary)] px-4 text-sm font-semibold leading-none text-[var(--on-primary)] no-underline visited:text-[var(--on-primary)]"
           >
-            {t('settings.support.downloadUpdate')}
+            <span className="text-[var(--on-primary)]">{t('settings.support.downloadUpdate')}</span>
           </a>
         </div>
       ) : null}

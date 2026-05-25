@@ -1,13 +1,13 @@
 ﻿{
   "platform": "android",
-  "versionName": "1.1.1",
-  "versionCode": 21,
+  "versionName": "1.1.2",
+  "versionCode": 22,
   "releaseDate": "2026-05-22",
   "downloadUrl": "https://share.represt.app/downloads/android/latest",
-  "apkUrl": "https://share.represt.app/downloads/android/represt-1.1.1.apk",
-  "fileName": "represt-1.1.0.apk",
-  "fileSizeBytes": 3895791,
-  "sha256": "",
-  "changelog": ["1.增加补录上一组快捷入口","2.增加训练记录快捷复制导入"],
+  "apkUrl": "https://share.represt.app/downloads/android/represt-1.1.2.apk",
+  "fileName": "represt-1.1.2.apk",
+  "fileSizeBytes": 3897839,
+  "sha256": "DBB71F5DCE94379B90D5B3E4B30E93864F1860825985C158A7842E18DBCD3A8A",
+  "changelog": ["优化安卓底部快捷栏屏幕适配","修复更新下载按钮UI显示bug"],
   "mandatory": false
 }
