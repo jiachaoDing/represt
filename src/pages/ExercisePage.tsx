@@ -17,6 +17,7 @@ import { ConfirmDialog } from '../components/ui/ConfirmDialog'
 import { OverflowMenu } from '../components/ui/OverflowMenu'
 import { PageHeader } from '../components/ui/PageHeader'
 import { useNow } from '../hooks/useNow'
+import { useAppResume } from '../hooks/useAppResume'
 import { useExercisePageData } from '../hooks/pages/useExercisePageData'
 import { listSpringTransition, quickEaseTransition } from '../components/motion/motion-tokens'
 import { getRestTimerSnapshot, getRestTimerState } from '../lib/rest-timer'
@@ -121,12 +122,19 @@ export function ExercisePage() {
     setDurationInput,
     setRepsInput,
     setWeightInput,
+    refreshDetail,
     weightInput,
   } = useExercisePageData(id)
   const [isRecordFormOpen, setIsRecordFormOpen] = useState(false)
   const [isUndoExerciseDialogOpen, setIsUndoExerciseDialogOpen] = useState(false)
   const [quickTimerView, setQuickTimerView] = useState({ exerciseId: id, isOpen: false })
+  const [resumeRenderKey, setResumeRenderKey] = useState(0)
   const isQuickTimerOpen = quickTimerView.exerciseId === id && quickTimerView.isOpen
+
+  useAppResume(() => {
+    setResumeRenderKey((current) => current + 1)
+    void refreshDetail()
+  })
 
   async function handleCompleteCurrentSet() {
     if (detail && detail.exercise.restSeconds > 0 && !hasSeenTimerReminderSettings()) {
@@ -298,7 +306,10 @@ export function ExercisePage() {
           />
 
           <main className="flex min-h-0 flex-1 flex-col px-4">
-            <div className="relative min-h-0 flex-1 overflow-hidden [perspective:1200px]">
+            <div
+              key={resumeRenderKey}
+              className="relative min-h-0 flex-1 overflow-hidden [perspective:1200px]"
+            >
               <AnimatePresence custom={flipDirection} initial={false} mode="wait">
                 {isQuickTimerOpen ? (
                   <motion.div

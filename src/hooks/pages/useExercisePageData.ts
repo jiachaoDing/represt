@@ -111,6 +111,18 @@ export function useExercisePageData(id: string) {
     }
   }, [id])
 
+  async function refreshDetail() {
+    try {
+      setError(null)
+      const result = await getScheduleExerciseDetail(id)
+      setDetail(result)
+      syncLatestSetInputs(result, setWeightInput, setRepsInput, setDurationInput, setDistanceInput)
+    } catch (loadError) {
+      console.error(loadError)
+      setError(i18n.t('exercise.loadFailed'))
+    }
+  }
+
   useEffect(() => {
     function handleNotificationExerciseUpdated(event: Event) {
       const exerciseId = (event as CustomEvent<{ exerciseId?: string }>).detail?.exerciseId
@@ -388,6 +400,7 @@ export function useExercisePageData(id: string) {
     latestSetRecord,
     measurementType,
     previousSetRecord,
+    refreshDetail,
     repsInput,
     setDistanceInput,
     setDurationInput,
