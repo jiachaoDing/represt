@@ -10,6 +10,7 @@ import {
   ChevronRight,
   Dumbbell,
   Download,
+  HeartHandshake,
   Info,
   Languages,
   Mail,
@@ -40,6 +41,11 @@ import {
 import { triggerHaptic } from '../lib/haptics'
 import { notifyPlansChanged } from '../lib/plan-change-events'
 import { REMINDER_SETTINGS_PATH } from '../lib/reminder-settings'
+import {
+  getSupportBillingProduct,
+  purchaseDeveloperSupport,
+  syncSupportPurchases,
+} from '../lib/support-billing'
 import { getAppDistributionChannel } from '../native/app-distribution'
 import type { AppDistributionChannel } from '../native/app-distribution-plugin'
 import {
@@ -62,6 +68,7 @@ const WEB_APP_VERSION = __APP_VERSION__
 const PRIVACY_POLICY_URL = 'https://represt.app/privacy'
 const FEEDBACK_EMAIL = 'mailto:support@represt.app?subject=RepRest%20feedback'
 const GOOGLE_PLAY_URL = 'https://play.google.com/store/apps/details?id=com.represt.app'
+const KOFI_URL = 'https://ko-fi.com/dingjc'
 
 type SettingsSectionProps = {
   children: ReactNode
@@ -574,6 +581,136 @@ function AppUpdateResultSheet({
   )
 }
 
+type SupportDeveloperNotice = 'cancelled' | 'failed' | 'pending' | 'thanks' | 'unavailable'
+
+function SupportDeveloperSettingsRow() {
+  const { t } = useTranslation()
+  const [distributionChannel, setDistributionChannel] = useState<AppDistributionChannel | null>(null)
+  const [formattedPrice, setFormattedPrice] = useState<string | null>(null)
+  const [isLoadingProduct, setIsLoadingProduct] = useState(false)
+  const [isPurchasing, setIsPurchasing] = useState(false)
+  const [notice, setNotice] = useState<SupportDeveloperNotice | null>(null)
+
+  useEffect(() => {
+    let isMounted = true
+
+    async function loadSupportState() {
+      const channel = await getAppDistributionChannel()
+      if (!isMounted) {
+        return
+      }
+
+      setDistributionChannel(channel)
+      if (channel !== 'play') {
+        return
+      }
+
+      const syncResult = await syncSupportPurchases()
+      if (!isMounted) {
+        return
+      }
+
+      if (syncResult.consumedCount > 0) {
+        setNotice('thanks')
+      } else if (syncResult.hasPending) {
+        setNotice('pending')
+      }
+
+      setIsLoadingProduct(true)
+      const product = await getSupportBillingProduct()
+      if (!isMounted) {
+        return
+      }
+
+      setFormattedPrice(product.available ? product.formattedPrice ?? null : null)
+      if (!product.available) {
+        setNotice((currentNotice) => currentNotice ?? 'unavailable')
+      }
+      setIsLoadingProduct(false)
+    }
+
+    void loadSupportState()
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  async function handlePurchaseSupport() {
+    if (isPurchasing || distributionChannel !== 'play') {
+      return
+    }
+
+    setIsPurchasing(true)
+    setNotice(null)
+
+    const result = await purchaseDeveloperSupport()
+    if (result.status === 'purchased') {
+      setNotice('thanks')
+    } else if (result.status === 'pending') {
+      setNotice('pending')
+    } else if (result.status === 'cancelled') {
+      setNotice('cancelled')
+    } else if (result.status === 'unavailable') {
+      setNotice('unavailable')
+    } else {
+      setNotice('failed')
+    }
+
+    setIsPurchasing(false)
+  }
+
+  if (distributionChannel === null) {
+    return (
+      <SettingsRow
+        icon={HeartHandshake}
+        label={t('settings.supportDeveloper.title')}
+        supporting={t('settings.supportDeveloper.loading')}
+      />
+    )
+  }
+
+  if (distributionChannel !== 'play') {
+    return (
+      <a href={KOFI_URL} target="_blank" rel="noreferrer">
+        <SettingsRow
+          icon={HeartHandshake}
+          label={t('settings.supportDeveloper.title')}
+          supporting={t('settings.supportDeveloper.kofiDescription')}
+          right={<ChevronRight size={16} strokeWidth={2.2} aria-hidden="true" />}
+        />
+      </a>
+    )
+  }
+
+  const supportDescription =
+    notice !== null
+      ? t(`settings.supportDeveloper.${notice}`)
+      : isLoadingProduct
+        ? t('settings.supportDeveloper.loading')
+        : formattedPrice
+          ? t('settings.supportDeveloper.playDescriptionWithPrice', { price: formattedPrice })
+          : t('settings.supportDeveloper.playDescription')
+
+  return (
+    <SettingsRow
+      icon={HeartHandshake}
+      label={t('settings.supportDeveloper.title')}
+      supporting={supportDescription}
+      onClick={() => void handlePurchaseSupport()}
+      right={
+        isPurchasing ? (
+          <span className="text-xs font-medium text-[var(--on-surface-variant)]">
+            {t('settings.supportDeveloper.processing')}
+          </span>
+        ) : (
+          <ChevronRight size={16} strokeWidth={2.2} aria-hidden="true" />
+        )
+      }
+    />
+  )
+}
+
 function AppUpdateSettingsRow() {
   const { t } = useTranslation()
   const [distributionChannel, setDistributionChannel] = useState<AppDistributionChannel>('apk')
@@ -765,6 +902,8 @@ export function SettingsPage() {
               right={<ChevronRight size={16} strokeWidth={2.2} aria-hidden="true" />}
             />
           </a>
+          <RowDivider />
+          <SupportDeveloperSettingsRow />
           <RowDivider />
           <AppUpdateSettingsRow />
           <RowDivider />
