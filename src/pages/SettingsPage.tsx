@@ -1,9 +1,10 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ChangeEvent, type ReactNode } from 'react'
 import { App as CapacitorApp } from '@capacitor/app'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import type { LucideIcon } from 'lucide-react'
 import {
+  Archive,
   ArrowUpRight,
   Check,
   ChevronRight,
@@ -15,12 +16,14 @@ import {
   Palette,
   Share2,
   ShieldCheck,
+  Upload,
   Vibrate,
 } from 'lucide-react'
 
 import { PlanShareManageSheet } from '../components/plans/PlanShareManageSheet'
 import { ReminderSettingsEntry } from '../components/settings/LocalReminderSettings'
 import { AnimatedSheet } from '../components/motion/AnimatedSheet'
+import { ConfirmDialog } from '../components/ui/ConfirmDialog'
 import { PageHeader } from '../components/ui/PageHeader'
 import { clearStoredCurrentSessionId } from '../db/sessions'
 import { useHapticsPreference } from '../hooks/useHapticsPreference'
@@ -35,9 +38,17 @@ import {
   type CurrentAppBuildInfo,
 } from '../lib/app-update'
 import { triggerHaptic } from '../lib/haptics'
+import { notifyPlansChanged } from '../lib/plan-change-events'
 import { REMINDER_SETTINGS_PATH } from '../lib/reminder-settings'
 import { getAppDistributionChannel } from '../native/app-distribution'
 import type { AppDistributionChannel } from '../native/app-distribution-plugin'
+import {
+  downloadFullDataBackup,
+  parseFullDataBackupJson,
+  restoreFullDataBackup,
+  type FullDataBackup,
+  type FullDataBackupParseError,
+} from '../lib/full-data-backup'
 import {
   getDebugDateOffsetDays,
   getTodaySessionDateKey,
@@ -324,6 +335,183 @@ function PlanShareSettingsRow() {
   )
 }
 
+function getFullDataBackupErrorMessage(
+  t: ReturnType<typeof useTranslation>['t'],
+  error: FullDataBackupParseError,
+) {
+  if (error === 'missingJson') {
+    return t('settings.fullBackup.errors.missingFile')
+  }
+
+  if (error === 'invalidJson') {
+    return t('settings.fullBackup.errors.invalidJson')
+  }
+
+  if (error === 'unsupportedVersion') {
+    return t('settings.fullBackup.errors.unsupportedVersion')
+  }
+
+  return t('settings.fullBackup.errors.invalidShape')
+}
+
+function FullDataBackupSettingsRow() {
+  const { t } = useTranslation()
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const [isOpen, setIsOpen] = useState(false)
+  const [pendingBackup, setPendingBackup] = useState<FullDataBackup | null>(null)
+  const [message, setMessage] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [isBusy, setIsBusy] = useState(false)
+
+  function resetFeedback() {
+    setMessage(null)
+    setError(null)
+  }
+
+  function closeSheet() {
+    setIsOpen(false)
+    setPendingBackup(null)
+    resetFeedback()
+  }
+
+  async function handleExport() {
+    try {
+      setIsBusy(true)
+      resetFeedback()
+      await downloadFullDataBackup()
+      setMessage(t('settings.fullBackup.exported'))
+      void triggerHaptic('success')
+    } catch (exportError) {
+      console.error(exportError)
+      setError(t('settings.fullBackup.errors.exportFailed'))
+      void triggerHaptic('error')
+    } finally {
+      setIsBusy(false)
+    }
+  }
+
+  async function handleImportFile(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0] ?? null
+    event.target.value = ''
+    if (!file) {
+      return
+    }
+
+    try {
+      setIsBusy(true)
+      resetFeedback()
+      const result = parseFullDataBackupJson(await file.text())
+      if (!result.ok) {
+        setError(getFullDataBackupErrorMessage(t, result.error))
+        void triggerHaptic('error')
+        return
+      }
+
+      setPendingBackup(result.data)
+    } catch (importError) {
+      console.error(importError)
+      setError(t('settings.fullBackup.errors.readFailed'))
+      void triggerHaptic('error')
+    } finally {
+      setIsBusy(false)
+    }
+  }
+
+  async function handleConfirmImport() {
+    if (!pendingBackup) {
+      return
+    }
+
+    try {
+      setIsBusy(true)
+      resetFeedback()
+      await restoreFullDataBackup(pendingBackup)
+      clearStoredCurrentSessionId()
+      notifyPlansChanged(null)
+      setPendingBackup(null)
+      setMessage(t('settings.fullBackup.imported'))
+      void triggerHaptic('success')
+      window.setTimeout(() => window.location.reload(), 600)
+    } catch (restoreError) {
+      console.error(restoreError)
+      setError(t('settings.fullBackup.errors.importFailed'))
+      void triggerHaptic('error')
+    } finally {
+      setIsBusy(false)
+    }
+  }
+
+  return (
+    <>
+      <SettingsRow
+        icon={Archive}
+        label={t('settings.fullBackup.title')}
+        supporting={t('settings.fullBackup.description')}
+        onClick={() => setIsOpen(true)}
+        right={<ChevronRight size={16} strokeWidth={2.2} aria-hidden="true" />}
+      />
+      <AnimatedSheet open={isOpen} onClose={closeSheet} title={t('settings.fullBackup.title')}>
+        <div className="space-y-2">
+          <button
+            type="button"
+            onClick={() => void handleExport()}
+            disabled={isBusy}
+            className="flex min-h-12 w-full items-center gap-3 rounded-xl bg-[var(--surface)] px-4 text-left text-sm font-medium text-[var(--on-surface)] transition-colors hover:bg-[var(--surface-container)] disabled:opacity-50"
+          >
+            <Download size={18} strokeWidth={2.2} className="text-[var(--primary)]" aria-hidden="true" />
+            <span className="min-w-0 flex-1">
+              <span className="block truncate">{t('settings.fullBackup.exportAction')}</span>
+              <span className="mt-0.5 block truncate text-xs text-[var(--on-surface-variant)]">
+                {t('settings.fullBackup.exportDescription')}
+              </span>
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isBusy}
+            className="flex min-h-12 w-full items-center gap-3 rounded-xl bg-[var(--surface)] px-4 text-left text-sm font-medium text-[var(--on-surface)] transition-colors hover:bg-[var(--surface-container)] disabled:opacity-50"
+          >
+            <Upload size={18} strokeWidth={2.2} className="text-[var(--primary)]" aria-hidden="true" />
+            <span className="min-w-0 flex-1">
+              <span className="block truncate">{t('settings.fullBackup.importAction')}</span>
+              <span className="mt-0.5 block truncate text-xs text-[var(--on-surface-variant)]">
+                {t('settings.fullBackup.importDescription')}
+              </span>
+            </span>
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="application/json,.json"
+            onChange={(event) => void handleImportFile(event)}
+            className="hidden"
+          />
+        </div>
+        {message ? (
+          <p className="mt-3 rounded-xl bg-[var(--primary-container)] px-4 py-3 text-sm leading-5 text-[var(--on-primary-container)]">
+            {message}
+          </p>
+        ) : null}
+        {error ? (
+          <p className="mt-3 rounded-xl bg-[var(--error-container)] px-4 py-3 text-sm leading-5 text-[var(--on-error-container)]">
+            {error}
+          </p>
+        ) : null}
+      </AnimatedSheet>
+      <ConfirmDialog
+        open={pendingBackup !== null}
+        danger
+        title={t('settings.fullBackup.confirmImportTitle')}
+        description={t('settings.fullBackup.confirmImportDescription')}
+        confirmLabel={t('settings.fullBackup.confirmImportAction')}
+        onCancel={() => setPendingBackup(null)}
+        onConfirm={() => void handleConfirmImport()}
+      />
+    </>
+  )
+}
+
 type AppUpdateSheetState =
   | { kind: 'error' }
   | { current: CurrentAppBuildInfo; kind: 'update'; release: AndroidReleaseInfo }
@@ -557,6 +745,8 @@ export function SettingsPage() {
           />
           <RowDivider />
           <PlanShareSettingsRow />
+          <RowDivider />
+          <FullDataBackupSettingsRow />
         </SettingsSection>
 
         <SettingsSection title={t('settings.sections.support')}>

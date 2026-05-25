@@ -105,6 +105,28 @@ const common = {
     exerciseRecords: {
       description: '查看动作记录和管理可选动作',
     },
+    fullBackup: {
+      title: '数据备份',
+      description: '导出或恢复所有记录和设置',
+      exportAction: '导出备份文件',
+      exportDescription: '下载包含所有记录和设置的 JSON 文件',
+      importAction: '导入备份文件',
+      importDescription: '从之前导出的文件覆盖恢复',
+      confirmImportTitle: '确认恢复备份？',
+      confirmImportDescription: '导入后会替换当前设备上的训练记录、计划、循环日程、动作模型和设置。此操作不能撤销。',
+      confirmImportAction: '覆盖恢复',
+      exported: '备份文件已导出。',
+      imported: '备份已恢复，应用即将刷新。',
+      errors: {
+        missingFile: '备份文件为空。',
+        invalidJson: '备份文件不是有效 JSON。',
+        invalidShape: '备份文件格式不正确。',
+        unsupportedVersion: '备份文件版本不兼容，请使用当前版本导出的文件。',
+        readFailed: '读取备份文件失败，请重试。',
+        exportFailed: '导出备份失败，请重试。',
+        importFailed: '恢复备份失败，当前数据未被替换。',
+      },
+    },
     planTransfer: {
       title: '计划导入导出',
       description: '导出计划，或导入计划与循环日程',

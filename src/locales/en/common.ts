@@ -105,6 +105,28 @@ const common = {
     exerciseRecords: {
       description: 'View exercise records and manage selectable exercises',
     },
+    fullBackup: {
+      title: 'Data backup',
+      description: 'Export or restore all records and settings',
+      exportAction: 'Export backup file',
+      exportDescription: 'Download a JSON file with all records and settings',
+      importAction: 'Import backup file',
+      importDescription: 'Restore from a previously exported file',
+      confirmImportTitle: 'Restore backup?',
+      confirmImportDescription: 'Importing will replace the training records, plans, cycle, exercise models, and settings on this device. This cannot be undone.',
+      confirmImportAction: 'Replace data',
+      exported: 'Backup file exported.',
+      imported: 'Backup restored. The app will refresh.',
+      errors: {
+        missingFile: 'The backup file is empty.',
+        invalidJson: 'The backup file is not valid JSON.',
+        invalidShape: 'The backup file format is invalid.',
+        unsupportedVersion: 'This backup version is not compatible. Use a file exported by the current app version.',
+        readFailed: 'Could not read the backup file. Please try again.',
+        exportFailed: 'Could not export the backup. Please try again.',
+        importFailed: 'Could not restore the backup. Current data was not replaced.',
+      },
+    },
     planTransfer: {
       title: 'Plan import/export',
       description: 'Export plans, or import plans and cycles',
