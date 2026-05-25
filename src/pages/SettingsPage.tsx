@@ -65,6 +65,7 @@ import { useThemePreference, type ThemePreference } from '../lib/theme'
 import { isNativePluginAvailable } from '../native/capacitor-platform'
 
 const WEB_APP_VERSION = __APP_VERSION__
+const OFFICIAL_SITE_URL = 'https://represt.app/'
 const PRIVACY_POLICY_URL = 'https://represt.app/privacy'
 const FEEDBACK_EMAIL = 'mailto:support@represt.app?subject=RepRest%20feedback'
 const GOOGLE_PLAY_URL = 'https://play.google.com/store/apps/details?id=com.represt.app'
@@ -711,7 +712,7 @@ function SupportDeveloperSettingsRow() {
   )
 }
 
-function AppUpdateSettingsRow() {
+function AppUpdateSettingsRow({ appVersion }: { appVersion: string }) {
   const { t } = useTranslation()
   const [distributionChannel, setDistributionChannel] = useState<AppDistributionChannel>('apk')
   const [isChecking, setIsChecking] = useState(false)
@@ -738,7 +739,7 @@ function AppUpdateSettingsRow() {
           icon={ArrowUpRight}
           label={t('settings.support.playUpdate')}
           supporting={t('settings.support.playUpdateDescription')}
-          right={<ChevronRight size={16} strokeWidth={2.2} aria-hidden="true" />}
+          right={<RowValue value={appVersion} />}
         />
       </a>
     )
@@ -774,7 +775,7 @@ function AppUpdateSettingsRow() {
               {t('settings.support.checkingUpdate')}
             </span>
           ) : (
-            <ChevronRight size={16} strokeWidth={2.2} aria-hidden="true" />
+            <RowValue value={appVersion} />
           )
         }
       />
@@ -905,14 +906,16 @@ export function SettingsPage() {
           <RowDivider />
           <SupportDeveloperSettingsRow />
           <RowDivider />
-          <AppUpdateSettingsRow />
+          <AppUpdateSettingsRow appVersion={appVersion} />
           <RowDivider />
-          <SettingsRow
-            icon={Info}
-            label={t('settings.support.about')}
-            supporting={t('common.appName')}
-            right={<span className="text-xs font-medium text-[var(--on-surface-variant)]">{appVersion}</span>}
-          />
+          <a href={OFFICIAL_SITE_URL} target="_blank" rel="noreferrer">
+            <SettingsRow
+              icon={Info}
+              label={t('settings.support.about')}
+              supporting={t('common.appName')}
+              right={<ChevronRight size={16} strokeWidth={2.2} aria-hidden="true" />}
+            />
+          </a>
         </SettingsSection>
 
         {showDebugSettings ? (
