@@ -6,11 +6,11 @@ type SummaryRangeTabsProps = {
   labels: Record<SummaryRange, string>
 }
 
-const ranges: SummaryRange[] = ['day', 'week', 'month']
+const ranges: SummaryRange[] = ['day', 'month']
 
 export function SummaryRangeTabs({ activeRange, labels, onChange }: SummaryRangeTabsProps) {
   return (
-    <div className="mx-4 mt-3 grid grid-cols-3 rounded-2xl bg-[var(--surface-container)] p-1">
+    <div className="mx-4 mt-3 grid grid-cols-2 rounded-2xl bg-[var(--surface-container)] p-1">
       {ranges.map((range) => (
         <button
           key={range}

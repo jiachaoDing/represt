@@ -4,10 +4,11 @@ import { useTranslation } from 'react-i18next'
 
 type SummaryExportButtonProps = {
   ariaLabel: string
+  size?: 'default' | 'large'
   text: string | null
 }
 
-export function SummaryExportButton({ ariaLabel, text }: SummaryExportButtonProps) {
+export function SummaryExportButton({ ariaLabel, size = 'default', text }: SummaryExportButtonProps) {
   const { t } = useTranslation()
   const [status, setStatus] = useState<'idle' | 'copied' | 'error'>('idle')
   const title = status === 'error'
@@ -38,7 +39,8 @@ export function SummaryExportButton({ ariaLabel, text }: SummaryExportButtonProp
     <button
       type="button"
       className={[
-        'inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors tap-highlight-transparent active:scale-[0.96]',
+        'inline-flex shrink-0 items-center justify-center rounded-full transition-colors tap-highlight-transparent active:scale-[0.96]',
+        size === 'large' ? 'h-14 w-14' : 'h-9 w-9',
         status === 'copied'
           ? 'bg-[var(--primary-container)] text-[var(--on-primary-container)]'
           : 'bg-[var(--surface-container)] text-[var(--on-surface)]',
@@ -51,9 +53,9 @@ export function SummaryExportButton({ ariaLabel, text }: SummaryExportButtonProp
       onClick={() => void copySummary()}
     >
       {status === 'copied' ? (
-        <Check size={17} strokeWidth={2.4} aria-hidden="true" />
+        <Check size={size === 'large' ? 26 : 17} strokeWidth={2.4} aria-hidden="true" />
       ) : (
-        <Copy size={17} strokeWidth={2.2} aria-hidden="true" />
+        <Copy size={size === 'large' ? 26 : 17} strokeWidth={2.2} aria-hidden="true" />
       )}
     </button>
   )

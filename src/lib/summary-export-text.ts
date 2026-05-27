@@ -6,7 +6,6 @@ import type {
   SummaryMetricKind,
   SummaryRangeAnalytics,
   SummaryRecordHighlight,
-  SummaryTrendPoint,
 } from '../db/sessions'
 import { getDisplayExerciseName } from './exercise-name'
 import {
@@ -100,14 +99,6 @@ function formatHighlight(item: SummaryRecordHighlight, t: TFunction) {
   return `${displayName}: ${recordType} · ${getMetricLabel(item.metricKind, t)} · ${formatMetricValue(item.metricKind, item.value, t)}`
 }
 
-function formatTrendPoint(point: SummaryTrendPoint, analytics: SummaryRangeAnalytics, t: TFunction) {
-  const label = analytics.range === 'month'
-    ? t('summary.analytics.weekNumber', { value: point.label })
-    : point.label
-
-  return `${label}: ${t('common.sets', { value: point.value })}`
-}
-
 function joinLines(lines: string[]) {
   return lines.filter((line) => line.trim().length > 0).join('\n')
 }
@@ -173,9 +164,8 @@ export function buildRangeSummaryExportText(
     month: 'long',
     day: 'numeric',
   }, locale)
-  const titleKey = analytics.range === 'week' ? 'summary.export.weekTitle' : 'summary.export.monthTitle'
   const lines = [
-    `# ${t(titleKey, { start: startLabel, end: endLabel })}`,
+    `# ${t('summary.export.monthTitle', { start: startLabel, end: endLabel })}`,
     '',
     `- ${t('summary.analytics.trainingDays')}: ${t('summary.analytics.daysValue', { value: analytics.trainingDays })}`,
     `- ${t('summary.analytics.completedSets')}: ${t('common.sets', { value: analytics.completedSets })}`,
@@ -189,34 +179,6 @@ export function buildRangeSummaryExportText(
         : '--'
     }`,
   ]
-
-  if (analytics.highlights.length > 0) {
-    lines.push('', `## ${t('summary.analytics.highlights')}`)
-    lines.push(...analytics.highlights.map((item) => `- ${formatHighlight(item, t)}`))
-  }
-
-  if (analytics.trendPoints.length > 0) {
-    lines.push('', `## ${analytics.range === 'week' ? t('summary.analytics.weekTrend') : t('summary.analytics.monthTrend')}`)
-    lines.push(...analytics.trendPoints.map((point) => `- ${formatTrendPoint(point, analytics, t)}`))
-  }
-
-  if (analytics.topExerciseTrend) {
-    const trend = analytics.topExerciseTrend
-    const displayName = getDisplayExerciseName(t, {
-      catalogExerciseId: trend.catalogExerciseId,
-      name: trend.exerciseName,
-    })
-
-    lines.push('', `## ${t('summary.analytics.exerciseTrend')}`)
-    lines.push(`- ${displayName} · ${getMetricLabel(trend.metricKind, t)}`)
-    lines.push(...trend.points.map((point) => {
-      const label = analytics.range === 'month'
-        ? t('summary.analytics.weekNumber', { value: point.label })
-        : point.label
-
-      return `  - ${label}: ${formatMetricValue(trend.metricKind, point.value, t)}`
-    }))
-  }
 
   return joinLines(lines)
 }

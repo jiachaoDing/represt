@@ -72,6 +72,11 @@ export function ExerciseRecordsListPage() {
           return leftHasRecords ? -1 : 1
         }
         if (leftHasRecords && rightHasRecords) {
+          const dateDelta = (right.latestSessionDateKey ?? '').localeCompare(left.latestSessionDateKey ?? '')
+          if (dateDelta !== 0) {
+            return dateDelta
+          }
+
           return (right.latestCompletedAt ?? '').localeCompare(left.latestCompletedAt ?? '')
         }
 

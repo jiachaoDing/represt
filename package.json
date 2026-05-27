@@ -12,7 +12,9 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "android:sync": "npm run assets:generate && npm run build && cap sync android",
-    "android:open": "cap open android"
+    "android:open": "cap open android",
+    "android:release:latest": "powershell -ExecutionPolicy Bypass -File scripts/generate-android-latest.ps1",
+    "android:release:upload": "powershell -ExecutionPolicy Bypass -File scripts/upload-android-release.ps1"
   },
   "dependencies": {
     "@capacitor/app": "^8.1.0",

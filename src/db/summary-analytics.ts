@@ -11,7 +11,7 @@ import type { ExerciseProfile, PerformedExercise, SetRecord, WorkoutSession } fr
 import { db } from './app-db'
 import { getExerciseProfileId } from './exercise-records'
 
-export type SummaryRange = 'day' | 'week' | 'month'
+export type SummaryRange = 'day' | 'month'
 
 export type SummaryMetricKind =
   | 'highestWeight'
@@ -95,25 +95,22 @@ function compareDateKeys(left: string, right: string) {
   return left.localeCompare(right)
 }
 
+function getWeekStartDateKey(dateKey: string) {
+  const date = parseSessionDateKey(dateKey) ?? new Date()
+  const day = date.getDay()
+  const mondayOffset = day === 0 ? -6 : 1 - day
+  const start = new Date(date)
+  start.setDate(date.getDate() + mondayOffset)
+
+  return dateToSessionDateKey(start)
+}
+
 export function getSummaryRangeBounds(dateKey: string, range: SummaryRange) {
   if (range === 'day') {
     return { startDateKey: dateKey, endDateKey: dateKey }
   }
 
   const date = parseSessionDateKey(dateKey) ?? new Date()
-
-  if (range === 'week') {
-    const day = date.getDay()
-    const mondayOffset = day === 0 ? -6 : 1 - day
-    const start = new Date(date)
-    start.setDate(date.getDate() + mondayOffset)
-
-    return {
-      startDateKey: dateToSessionDateKey(start),
-      endDateKey: addDaysToSessionDateKey(dateToSessionDateKey(start), 6),
-    }
-  }
-
   const start = new Date(date.getFullYear(), date.getMonth(), 1)
   const end = new Date(date.getFullYear(), date.getMonth() + 1, 0)
 
@@ -348,19 +345,6 @@ function buildRangeTrendPoints(input: {
     return [] satisfies SummaryTrendPoint[]
   }
 
-  if (input.range === 'week') {
-    return Array.from({ length: 7 }, (_, index) => {
-      const dateKey = addDaysToSessionDateKey(input.startDateKey, index)
-      const value = input.records.filter((record) => input.sessionsById.get(record.sessionId)?.sessionDateKey === dateKey).length
-
-      return {
-        key: dateKey,
-        label: dateKey.slice(5),
-        value,
-      } satisfies SummaryTrendPoint
-    })
-  }
-
   const weekPoints = Array.from({ length: 4 }, (_, index) => ({
     key: addDaysToSessionDateKey(input.startDateKey, index * 7),
     label: `${index + 1}`,
@@ -444,7 +428,7 @@ function buildTopExerciseTrend(input: {
 }) {
   const monthWeekLabels = new Map<string, string>()
   if (input.range === 'month') {
-    let weekStart = getSummaryRangeBounds(input.startDateKey, 'week').startDateKey
+    let weekStart = getWeekStartDateKey(input.startDateKey)
     let weekIndex = 1
 
     while (compareDateKeys(weekStart, input.endDateKey) <= 0) {
@@ -481,7 +465,7 @@ function buildTopExerciseTrend(input: {
           continue
         }
 
-        const weekStart = input.range === 'month' ? getSummaryRangeBounds(dateKey, 'week').startDateKey : null
+        const weekStart = input.range === 'month' ? getWeekStartDateKey(dateKey) : null
         const key = weekStart ?? dateKey
         const label = weekStart ? monthWeekLabels.get(weekStart) ?? '' : dateKey.slice(5)
         const current = pointsByBucket.get(key)

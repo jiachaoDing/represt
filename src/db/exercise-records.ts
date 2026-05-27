@@ -65,6 +65,7 @@ export type ExerciseRecordSummary = {
   completedSets: number
   displayNameOverride?: string | null
   latestCompletedAt: string | null
+  latestSessionDateKey: string | null
   measurementType: MeasurementType
   name: string
   primaryMetric: ExerciseRecordMetric | null
@@ -236,12 +237,16 @@ function buildSummary(group: ExerciseRecordGroup): ExerciseRecordSummary {
   const latestCompletedAt = group.records
     .map((record) => record.setRecord.completedAt)
     .sort((left, right) => right.localeCompare(left))[0] ?? null
+  const latestSessionDateKey = group.records
+    .map((record) => record.session.sessionDateKey)
+    .sort((left, right) => right.localeCompare(left))[0] ?? null
 
   return {
     catalogExerciseId: group.catalogExerciseId,
     completedSets: group.records.length,
     displayNameOverride: group.displayNameOverride ?? null,
     latestCompletedAt,
+    latestSessionDateKey,
     measurementType,
     name: group.name,
     primaryMetric,

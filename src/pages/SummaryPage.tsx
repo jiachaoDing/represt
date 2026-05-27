@@ -5,11 +5,10 @@ import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { SummaryAnalyticsSections, SummaryHighlightsCard } from '../components/summary/SummaryAnalyticsSections'
 import { SessionExerciseSummaryList } from '../components/summary/SessionExerciseSummaryList'
 import { SessionSummaryOverview } from '../components/summary/SessionSummaryOverview'
-import { SessionSummaryTimeStats } from '../components/summary/SessionSummaryTimeStats'
 import { SummaryDateSwitcher } from '../components/summary/SummaryDateSwitcher'
 import { SummaryRangeTabs } from '../components/summary/SummaryRangeTabs'
 import { PageHeader } from '../components/ui/PageHeader'
-import { getSummaryRangeBounds, type SummaryRange } from '../db/sessions'
+import type { SummaryRange } from '../db/sessions'
 import { useSessionSummaryData } from '../hooks/pages/useSessionSummaryData'
 import { useBackLinkState } from '../hooks/useRouteBack'
 import {
@@ -27,7 +26,7 @@ function buildSummarySearch(dateKey: string) {
 }
 
 function isSummaryRange(value: string | null): value is SummaryRange {
-  return value === 'day' || value === 'week' || value === 'month'
+  return value === 'day' || value === 'month'
 }
 
 export function SummaryPage() {
@@ -42,7 +41,11 @@ export function SummaryPage() {
   }, [searchParams, todayDateKey])
   const selectedRange = useMemo<SummaryRange>(() => {
     const currentRange = searchParams.get('range')
-    return isSummaryRange(currentRange) ? currentRange : 'day'
+    if (isSummaryRange(currentRange)) {
+      return currentRange
+    }
+
+    return 'day'
   }, [searchParams])
   const isDateMode = !sessionId
   const { analytics, detail, error, isLoading } = useSessionSummaryData({
@@ -51,10 +54,6 @@ export function SummaryPage() {
     sessionId,
   })
 
-  const rangeBounds = useMemo(
-    () => getSummaryRangeBounds(selectedDateKey, selectedRange),
-    [selectedDateKey, selectedRange],
-  )
   const dateLabels = useMemo(() => {
     if (selectedRange === 'month') {
       const monthLabel = formatSessionDateKey(selectedDateKey, {
@@ -66,24 +65,6 @@ export function SummaryPage() {
         compact: monthLabel,
         full: monthLabel,
         short: monthLabel,
-      }
-    }
-
-    if (selectedRange === 'week') {
-      const startLabel = formatSessionDateKey(rangeBounds.startDateKey, {
-        month: 'short',
-        day: 'numeric',
-      }, i18n.resolvedLanguage)
-      const endLabel = formatSessionDateKey(rangeBounds.endDateKey, {
-        month: 'short',
-        day: 'numeric',
-      }, i18n.resolvedLanguage)
-      const label = `${startLabel} - ${endLabel}`
-
-      return {
-        compact: label,
-        full: label,
-        short: label,
       }
     }
 
@@ -103,7 +84,7 @@ export function SummaryPage() {
         weekday: 'short',
       }, i18n.resolvedLanguage),
     }
-  }, [i18n.resolvedLanguage, rangeBounds.endDateKey, rangeBounds.startDateKey, selectedDateKey, selectedRange])
+  }, [i18n.resolvedLanguage, selectedDateKey, selectedRange])
   const summaryExportText = useMemo(() => {
     const locale = i18n.resolvedLanguage ?? i18n.language
 
@@ -120,7 +101,6 @@ export function SummaryPage() {
   const calendarTo = `/calendar${buildSummarySearch(selectedDateKey)}`
   const rangeLabels: Record<SummaryRange, string> = {
     day: t('summary.ranges.day'),
-    week: t('summary.ranges.week'),
     month: t('summary.ranges.month'),
   }
   function handleRangeChange(range: SummaryRange) {
@@ -193,9 +173,10 @@ export function SummaryPage() {
             exportText={summaryExportText}
             isLoading={isLoading}
           />
-          <SummaryHighlightsCard analytics={analytics} />
           <SessionExerciseSummaryList detail={detail} />
-          <SessionSummaryTimeStats detail={detail} />
+          <div className="mb-20">
+            <SummaryHighlightsCard analytics={analytics} />
+          </div>
         </>
       ) : (
         <SummaryAnalyticsSections
