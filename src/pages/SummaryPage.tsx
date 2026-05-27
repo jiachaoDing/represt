@@ -7,9 +7,11 @@ import { SessionExerciseSummaryList } from '../components/summary/SessionExercis
 import { SessionSummaryOverview } from '../components/summary/SessionSummaryOverview'
 import { SummaryDateSwitcher } from '../components/summary/SummaryDateSwitcher'
 import { SummaryRangeTabs } from '../components/summary/SummaryRangeTabs'
+import { SummaryTrainingHeatmap } from '../components/summary/SummaryTrainingHeatmap'
 import { PageHeader } from '../components/ui/PageHeader'
 import type { SummaryRange } from '../db/sessions'
 import { useSessionSummaryData } from '../hooks/pages/useSessionSummaryData'
+import { useSummaryTrainingHeatmap } from '../hooks/pages/useSummaryTrainingHeatmap'
 import { useBackLinkState } from '../hooks/useRouteBack'
 import {
   buildDaySummaryExportText,
@@ -53,6 +55,10 @@ export function SummaryPage() {
     sessionDateKey: isDateMode ? selectedDateKey : undefined,
     sessionId,
   })
+  const heatmap = useSummaryTrainingHeatmap(
+    selectedDateKey,
+    isDateMode && selectedRange === 'month',
+  )
 
   const dateLabels = useMemo(() => {
     if (selectedRange === 'month') {
@@ -183,6 +189,14 @@ export function SummaryPage() {
           analytics={analytics}
           exportText={summaryExportText}
           isLoading={isLoading}
+          middleContent={(
+            <SummaryTrainingHeatmap
+              data={heatmap.data}
+              detailTo={`/summary/heatmap?date=${selectedDateKey}`}
+              error={heatmap.error}
+              isLoading={heatmap.isLoading}
+            />
+          )}
         />
       )}
     </div>

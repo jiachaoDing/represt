@@ -58,6 +58,7 @@ const common = {
       settings: 'Settings',
       reminderSettings: 'Reminder settings',
       summary: 'Training summary',
+      summaryHeatmap: 'Training heatmap',
       exerciseRecords: 'Exercise records',
       calendar: 'Training calendar',
   },
@@ -347,6 +348,18 @@ const common = {
     ranges: {
       day: 'Day',
       month: 'Month',
+    },
+    heatmap: {
+      title: 'Training heatmap',
+      rangeLabel: '{{start}} - {{end}}',
+      less: 'Less',
+      more: 'More',
+      openFullYear: 'View full-year heatmap',
+      loadFailed: 'Could not load the training heatmap. Please try again later.',
+      dayLabel: '{{date}}, {{sets}} sets from {{exercises}} exercises',
+      emptyDayLabel: '{{date}}, no training records',
+      selectDayTitle: 'Select a day',
+      selectDayDescription: 'Tap a colored cell to view exercises, sets, and completion times.',
     },
       analytics: {
       monthOverview: 'Month summary',

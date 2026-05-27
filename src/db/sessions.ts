@@ -78,6 +78,12 @@ export {
   type SummaryTrainingTimeBucket,
   type SummaryTrendPoint,
 } from './summary-analytics'
+export {
+  getSummaryTrainingHeatmap,
+  type SummaryTrainingHeatmapData,
+  type SummaryTrainingHeatmapDay,
+  type SummaryTrainingHeatmapExercise,
+} from './summary-heatmap'
 
 const CURRENT_SESSION_KEY = 'trainre.current-session-id.v1'
 let getOrCreateTodaySessionPromise: Promise<WorkoutSessionWithExercises> | null = null

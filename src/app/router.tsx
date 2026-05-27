@@ -13,6 +13,7 @@ import {
   ReminderSettingsPage,
   SchedulePage,
   SettingsPage,
+  SummaryHeatmapPage,
   SummaryPage,
   PlanAiImportPage,
   PlansPage,
@@ -93,6 +94,11 @@ export const router = createBrowserRouter([
         path: 'summary/exercises/:profileId',
         element: lazyRoute(<ExerciseRecordsPage />),
         handle: { titleKey: 'routes.exerciseRecords' },
+      },
+      {
+        path: 'summary/heatmap',
+        element: lazyRoute(<SummaryHeatmapPage />),
+        handle: { titleKey: 'routes.summaryHeatmap' },
       },
       {
         path: 'summary/:sessionId',

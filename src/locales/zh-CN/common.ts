@@ -58,6 +58,7 @@ const common = {
       settings: '设置',
       reminderSettings: '提醒设置',
       summary: '训练总结',
+      summaryHeatmap: '训练热力图',
       exerciseRecords: '动作记录',
       calendar: '训练日历',
   },
@@ -347,6 +348,18 @@ const common = {
     ranges: {
       day: '当天',
       month: '本月',
+    },
+    heatmap: {
+      title: '训练热力图',
+      rangeLabel: '{{start}} - {{end}}',
+      less: '少',
+      more: '多',
+      openFullYear: '查看全年热力图',
+      loadFailed: '训练热力图加载失败，请稍后重试。',
+      dayLabel: '{{date}}，完成 {{sets}} 组，来自 {{exercises}} 个动作',
+      emptyDayLabel: '{{date}}，没有训练记录',
+      selectDayTitle: '选择一天查看记录',
+      selectDayDescription: '点击有颜色的格子，查看当天动作、组数和完成时间。',
     },
       analytics: {
       monthOverview: '月总结',

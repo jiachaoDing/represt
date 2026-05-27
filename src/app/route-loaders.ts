@@ -7,6 +7,7 @@ export const loadReminderSettingsPage = () => import('../pages/ReminderSettingsP
 export const loadSchedulePage = () => import('../pages/SchedulePage')
 export const loadSettingsPage = () => import('../pages/SettingsPage')
 export const loadSummaryPage = () => import('../pages/SummaryPage')
+export const loadSummaryHeatmapPage = () => import('../pages/SummaryHeatmapPage')
 export const loadTrainingCyclePage = () => import('../pages/TrainingCyclePage')
 export const loadPlansPage = () => import('../pages/PlansPage')
 export const loadPlanAiImportPage = () => import('../pages/PlanAiImportPage')

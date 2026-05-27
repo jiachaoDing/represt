@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { type ReactNode, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import { ChevronDown, ChevronUp } from 'lucide-react'
@@ -28,6 +28,7 @@ type SummaryAnalyticsSectionsProps = {
   analytics: SummaryRangeAnalytics | null
   exportText?: string | null
   isLoading: boolean
+  middleContent?: ReactNode
 }
 
 function formatMetricValue(kind: SummaryMetricKind, value: number, t: TFunction) {
@@ -295,6 +296,7 @@ export function SummaryAnalyticsSections({
   analytics,
   exportText = null,
   isLoading,
+  middleContent = null,
 }: SummaryAnalyticsSectionsProps) {
   const { t } = useTranslation()
 
@@ -306,19 +308,23 @@ export function SummaryAnalyticsSections({
 
   if (!analytics || analytics.completedSets === 0) {
     return (
-      <section className="mx-4 mt-6 rounded-[1.25rem] border border-dashed border-[var(--outline-variant)]/40 bg-[var(--surface)] px-5 py-8 text-center">
-        <p className="text-base font-semibold text-[var(--on-surface)]">
-          {t('summary.analytics.emptyMonthTitle')}
-        </p>
-        <p className="mt-2 text-sm leading-5 text-[var(--on-surface-variant)]">
-          {t('summary.emptyDescription')}
-        </p>
-      </section>
+      <>
+        {middleContent}
+        <section className="mx-4 mt-6 rounded-[1.25rem] border border-dashed border-[var(--outline-variant)]/40 bg-[var(--surface)] px-5 py-8 text-center">
+          <p className="text-base font-semibold text-[var(--on-surface)]">
+            {t('summary.analytics.emptyMonthTitle')}
+          </p>
+          <p className="mt-2 text-sm leading-5 text-[var(--on-surface-variant)]">
+            {t('summary.emptyDescription')}
+          </p>
+        </section>
+      </>
     )
   }
 
   return (
     <>
+      {middleContent}
       <OverviewCard analytics={analytics} exportText={exportText} />
       <DistributionCard analytics={analytics} />
     </>
