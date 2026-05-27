@@ -301,7 +301,7 @@ export function SummaryTrainingHeatmap({
                 </span>
               ))}
             </div>
-            <div ref={scrollRef} className="scrollbar-hide min-w-0 flex-1 overflow-x-auto pb-2 pr-3">
+            <div ref={scrollRef} className="scrollbar-hide min-w-0 flex-1 overflow-x-auto pb-2 pl-1 pr-3 pt-1">
               <div className="flex w-max gap-1.5 pr-3">
                 {weekColumns.map((week, weekIndex) => (
                   <div key={weekIndex} className="grid grid-rows-7 gap-1.5">

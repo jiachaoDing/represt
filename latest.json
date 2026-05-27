@@ -1,7 +1,7 @@
 ﻿{
     "platform":  "android",
-    "versionName":  "1.1.3",
-    "versionCode":  23,
+    "versionName":  "1.1.4",
+    "versionCode":  24,
     "releaseDate":  "2026-05-27",
     "downloadUrl":  "https://share.represt.app/downloads/android/latest",
     "apkUrl":  "https://share.represt.app/downloads/android/represt-1.1.3.apk",
