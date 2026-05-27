@@ -4,7 +4,6 @@ import { useLocation } from 'react-router-dom'
 import {
   copySessionPlanItemAfter,
   deletePendingSessionPlanItem,
-  getCurrentSession,
   getOrCreateTodaySession,
   getSessionPlanSyncStatus,
   markSessionPlanSynced,
@@ -29,6 +28,7 @@ import { triggerHaptic } from '../../lib/haptics'
 import { notifyPlansChanged } from '../../lib/plan-change-events'
 import type { PlanExerciseDraft } from '../../lib/plan-editor'
 import type { TrainingCycle } from '../../models/types'
+import { useAppResume } from '../useAppResume'
 
 export function useSchedulePageData() {
   const location = useLocation()
@@ -47,7 +47,7 @@ export function useSchedulePageData() {
   const fetchData = useCallback(async () => {
     const [planItems, session, cycle] = await Promise.all([
       listPlansWithExercises(),
-      getCurrentSession(),
+      getOrCreateTodaySession(),
       getTrainingCycle(),
     ])
 
@@ -84,6 +84,15 @@ export function useSchedulePageData() {
     })
   }, [fetchData])
 
+  const refreshData = useCallback(async () => {
+    try {
+      await loadData(selectedPlanId)
+    } catch (loadError) {
+      console.error(loadError)
+      setError('训练安排加载失败，请刷新页面后重试。')
+    }
+  }, [loadData, selectedPlanId])
+
   async function runMutation(action: () => Promise<void>) {
     try {
       setIsSubmitting(true)
@@ -106,9 +115,7 @@ export function useSchedulePageData() {
     async function initialize() {
       try {
         setError(null)
-        await getOrCreateTodaySession()
-        const { planItems } = await fetchData()
-        await loadData(planItems[0]?.id ?? null)
+        await loadData()
       } catch (loadError) {
         console.error(loadError)
         setError('训练安排加载失败，请刷新页面后重试。')
@@ -118,24 +125,23 @@ export function useSchedulePageData() {
     }
 
     void initialize()
-  }, [fetchData, loadData])
+  }, [loadData])
 
   useEffect(() => {
     if (location.pathname !== '/' || isLoading) {
       return
     }
 
-    async function refreshData() {
-      try {
-        await loadData(selectedPlanId)
-      } catch (loadError) {
-        console.error(loadError)
-        setError('训练安排加载失败，请刷新页面后重试。')
-      }
+    void refreshData()
+  }, [isLoading, location.pathname, refreshData])
+
+  useAppResume(() => {
+    if (location.pathname !== '/' || isLoading) {
+      return
     }
 
     void refreshData()
-  }, [isLoading, loadData, location.pathname, selectedPlanId])
+  })
 
   async function handleReplaceExercise(planItemId: string, draft: PlanExerciseDraft) {
     if (!currentSession) {
