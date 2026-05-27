@@ -25,7 +25,7 @@ import {
   draftToSessionPlanInput,
 } from './schedule-page-data.utils'
 import { triggerHaptic } from '../../lib/haptics'
-import { notifyPlansChanged } from '../../lib/plan-change-events'
+import { notifyPlansChanged, subscribeToPlansChanged } from '../../lib/plan-change-events'
 import type { PlanExerciseDraft } from '../../lib/plan-editor'
 import type { TrainingCycle } from '../../models/types'
 import { useAppResume } from '../useAppResume'
@@ -128,12 +128,18 @@ export function useSchedulePageData() {
   }, [loadData])
 
   useEffect(() => {
-    if (location.pathname !== '/' || isLoading) {
-      return
-    }
-
-    void refreshData()
-  }, [isLoading, location.pathname, refreshData])
+    return subscribeToPlansChanged((preferredPlanId) => {
+      void (async () => {
+        try {
+          setError(null)
+          await loadData(preferredPlanId ?? selectedPlanId)
+        } catch (loadError) {
+          console.error(loadError)
+          setError('训练安排加载失败，请刷新页面后重试。')
+        }
+      })()
+    })
+  }, [loadData, selectedPlanId])
 
   useAppResume(() => {
     if (location.pathname !== '/' || isLoading) {
