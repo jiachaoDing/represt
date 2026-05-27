@@ -3,6 +3,11 @@ import type { TFunction } from 'i18next'
 import { exercises, type MeasurementType } from '../domain/exercise-catalog'
 import { resolveCatalogExerciseId } from './exercise-name'
 import type { SetRecord } from '../models/types'
+import {
+  formatLoadDistanceVolume,
+  formatWeightKg,
+  formatWeightRepsVolume,
+} from './weight-units'
 
 type SetRecordValueInput = {
   weightKg?: number | null
@@ -89,12 +94,12 @@ export function formatSetRecordValue(
     if (setRecord.weightKg !== null && setRecord.reps !== null) {
       return t('summary.weightRepsValue', {
         reps: setRecord.reps,
-        weight: formatNumber(setRecord.weightKg),
+        weight: formatWeightKg(setRecord.weightKg, t),
       })
     }
 
     if (setRecord.weightKg !== null) {
-      return t('common.kg', { value: formatNumber(setRecord.weightKg) })
+      return formatWeightKg(setRecord.weightKg, t)
     }
 
     return setRecord.reps === null ? t('summary.completedValue') : t('common.reps', { value: setRecord.reps })
@@ -119,12 +124,12 @@ export function formatSetRecordValue(
   if (setRecord.weightKg !== null && setRecord.distanceMeters !== null) {
     return t('summary.weightDistanceValue', {
       distance: formatDistanceMeters(setRecord.distanceMeters, t),
-      weight: formatNumber(setRecord.weightKg),
+      weight: formatWeightKg(setRecord.weightKg, t),
     })
   }
 
   if (setRecord.weightKg !== null) {
-    return t('common.kg', { value: formatNumber(setRecord.weightKg) })
+    return formatWeightKg(setRecord.weightKg, t)
   }
 
   return setRecord.distanceMeters === null
@@ -152,7 +157,7 @@ export function getRecordSummaryParts(
   const parts: string[] = []
 
   if ((measurementType === 'weightReps' || measurementType === 'weightDistance') && weights.length > 0) {
-    parts.push(t('summary.highestWeight', { weight: formatNumber(Math.max(...weights)) }))
+    parts.push(t('summary.highestWeight', { weight: formatWeightKg(Math.max(...weights), t) }))
   }
 
   if ((measurementType === 'weightReps' || measurementType === 'reps') && reps.length > 0) {
@@ -168,7 +173,7 @@ export function getRecordSummaryParts(
       0,
     )
     if (volume > 0) {
-      parts.push(t('summary.totalVolume', { volume: formatNumber(volume) }))
+      parts.push(t('summary.totalVolume', { volume: formatWeightRepsVolume(volume, t) }))
     }
   }
 
@@ -195,7 +200,7 @@ export function getRecordSummaryParts(
       0,
     )
     if (volume > 0) {
-      parts.push(t('summary.loadDistanceVolume', { volume: formatNumber(volume) }))
+      parts.push(t('summary.loadDistanceVolume', { volume: formatLoadDistanceVolume(volume, t) }))
     }
   }
 

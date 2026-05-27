@@ -18,6 +18,7 @@ const backupTableNames = [
 const restorableLocalStorageKeys = [
   'trainre.languagePreference',
   'trainre.themePreference',
+  'trainre.weightUnitPreference',
   'trainre:haptics-enabled',
   'trainre:timer-reminder-settings-seen',
   'trainre:timer-beep-volume',

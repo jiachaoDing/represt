@@ -1,3 +1,5 @@
+import { parseDisplayWeightToKg } from './weight-units'
+
 export function parseIntegerInput(value: string) {
   const parsed = Number.parseInt(value, 10)
   return Number.isFinite(parsed) ? parsed : undefined
@@ -8,8 +10,7 @@ export function toOptionalNumberString(value: number | null) {
 }
 
 export function parseOptionalWeightKg(value: string) {
-  const parsed = Number.parseFloat(value.trim())
-  return Number.isFinite(parsed) ? Math.max(0, parsed) : null
+  return parseDisplayWeightToKg(value)
 }
 
 export function parseOptionalReps(value: string) {

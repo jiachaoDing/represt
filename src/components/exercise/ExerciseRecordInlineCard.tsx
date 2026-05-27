@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 
 import type { MeasurementType } from '../../domain/exercise-catalog'
 import { getCompletedAtLabel } from '../../lib/session-display'
+import { useWeightUnitPreference } from '../../lib/weight-units'
 import type { SetRecord } from '../../models/types'
 
 type ExerciseRecordInlineCardProps = {
@@ -37,14 +38,16 @@ export function ExerciseRecordInlineCard({
   onWeightChange,
 }: ExerciseRecordInlineCardProps) {
   const { i18n, t } = useTranslation()
+  const { unit: weightUnit } = useWeightUnitPreference()
+  const weightUnitLabel = t(`common.weight.${weightUnit}`, { value: '' }).trim()
   const fields = [
     measurementType === 'weightReps' || measurementType === 'weightDistance'
       ? {
           inputMode: 'decimal' as const,
-          label: t('exercise.weightKg'),
+          label: `${t('exercise.weightKg')} (${weightUnitLabel})`,
           min: 0,
           onChange: onWeightChange,
-          step: '0.5',
+          step: weightUnit === 'lb' ? '1' : '0.5',
           value: weightInput,
         }
       : null,

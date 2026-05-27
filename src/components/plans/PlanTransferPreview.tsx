@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 
 import type { PlanTransferData, PlanTransferExercise } from '../../lib/plan-transfer'
 import { formatNumber } from '../../lib/set-record-measurement'
+import { formatWeightKg } from '../../lib/weight-units'
 
 type PlanTransferPreviewProps = {
   data: PlanTransferData
@@ -28,7 +29,7 @@ function getExerciseValueParts(
   exercise: PlanTransferExercise,
 ) {
   return [
-    exercise.weightKg === null ? null : t('common.kg', { value: formatNumber(exercise.weightKg) }),
+    exercise.weightKg === null ? null : formatWeightKg(exercise.weightKg, t),
     exercise.reps === null ? null : t('common.reps', { value: exercise.reps }),
     exercise.durationSeconds === null ? null : t('common.seconds', { value: exercise.durationSeconds }),
     exercise.distanceMeters === null ? null : t('common.meters', { value: formatNumber(exercise.distanceMeters) }),

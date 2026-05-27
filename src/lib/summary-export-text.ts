@@ -17,6 +17,11 @@ import {
   getRecordSummaryParts,
 } from './set-record-measurement'
 import { formatSessionDateKey } from './session-date-key'
+import {
+  formatLoadDistanceVolume,
+  formatWeightKg,
+  formatWeightRepsVolume,
+} from './weight-units'
 
 function formatTrainingDurationMinutes(minutes: number | null, t: TFunction) {
   if (minutes === null) {
@@ -67,7 +72,7 @@ function formatTrainingTimeSegments(
 
 function formatMetricValue(kind: SummaryMetricKind, value: number, t: TFunction) {
   if (kind === 'highestWeight') {
-    return t('common.kg', { value: formatNumber(value) })
+    return formatWeightKg(value, t)
   }
   if (kind === 'maxReps') {
     return t('common.reps', { value: formatNumber(value) })
@@ -79,10 +84,10 @@ function formatMetricValue(kind: SummaryMetricKind, value: number, t: TFunction)
     return formatDistanceMeters(value, t)
   }
   if (kind === 'loadDistanceVolume') {
-    return t('summary.analytics.loadDistanceValue', { value: formatNumber(value) })
+    return t('summary.analytics.loadDistanceValue', { value: formatLoadDistanceVolume(value, t) })
   }
 
-  return t('summary.analytics.volumeValue', { value: formatNumber(value) })
+  return t('summary.analytics.volumeValue', { value: formatWeightRepsVolume(value, t) })
 }
 
 function getMetricLabel(kind: SummaryMetricKind, t: TFunction) {

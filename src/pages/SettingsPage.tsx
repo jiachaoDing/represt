@@ -15,6 +15,7 @@ import {
   Languages,
   Mail,
   Palette,
+  Scale,
   Share2,
   ShieldCheck,
   Upload,
@@ -62,6 +63,7 @@ import {
   setDebugTodaySessionDateKey,
 } from '../lib/session-date-key'
 import { useThemePreference, type ThemePreference } from '../lib/theme'
+import { useWeightUnitPreference, type WeightUnit } from '../lib/weight-units'
 import { isNativePluginAvailable } from '../native/capacitor-platform'
 
 const WEB_APP_VERSION = __APP_VERSION__
@@ -320,6 +322,37 @@ function ThemeSettingsRow() {
         value={preference}
         options={options}
         onChange={setPreference}
+      />
+    </>
+  )
+}
+
+function WeightUnitSettingsRow() {
+  const { t } = useTranslation()
+  const { unit, setUnit } = useWeightUnitPreference()
+  const [isOpen, setIsOpen] = useState(false)
+  const options: Array<{ value: WeightUnit; label: string }> = [
+    { value: 'kg', label: t('settings.weightUnit.kg') },
+    { value: 'lb', label: t('settings.weightUnit.lb') },
+  ]
+  const currentLabel = options.find((option) => option.value === unit)?.label ?? options[0].label
+
+  return (
+    <>
+      <SettingsRow
+        icon={Scale}
+        label={t('settings.weightUnit.title')}
+        supporting={t('settings.weightUnit.subtitle')}
+        onClick={() => setIsOpen(true)}
+        right={<RowValue value={currentLabel} />}
+      />
+      <PreferenceSheet
+        open={isOpen}
+        onClose={() => setIsOpen(false)}
+        title={t('settings.weightUnit.title')}
+        value={unit}
+        options={options}
+        onChange={setUnit}
       />
     </>
   )
@@ -863,6 +896,8 @@ export function SettingsPage() {
           <LanguageSettingsRow />
           <RowDivider />
           <ThemeSettingsRow />
+          <RowDivider />
+          <WeightUnitSettingsRow />
           <RowDivider />
           <HapticsSettingsRow />
         </SettingsSection>

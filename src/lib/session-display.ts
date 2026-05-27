@@ -1,6 +1,7 @@
 import { getRestTimerSnapshot, getRestTimerState } from './rest-timer'
 import i18n from '../i18n'
 import type { SessionStatus } from '../models/types'
+import { formatWeightKg } from './weight-units'
 
 export type DerivedExerciseStatus = 'pending' | 'active' | 'completed'
 
@@ -80,7 +81,7 @@ export function getCompletedAtLabel(completedAt: string, locale = 'zh-CN') {
 }
 
 export function getWeightLabel(weightKg: number | null) {
-  return weightKg === null ? i18n.t('exercise.missingRecord') : i18n.t('common.kg', { value: weightKg })
+  return weightKg === null ? i18n.t('exercise.missingRecord') : formatWeightKg(weightKg, i18n.t)
 }
 
 export function getRepsLabel(reps: number | null) {

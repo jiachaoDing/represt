@@ -1,4 +1,5 @@
 import type { MeasurementType } from '../domain/exercise-catalog'
+import { kgToDisplayWeightString } from './weight-units'
 
 export type PlanExerciseDraft = {
   name: string
@@ -45,7 +46,7 @@ export function toPlanExerciseDraft(input?: {
     measurementType: input.measurementType ?? null,
     targetSets: String(input.targetSets),
     restSeconds: String(input.restSeconds),
-    weightKg: input.weightKg === null || input.weightKg === undefined ? '' : String(input.weightKg),
+    weightKg: kgToDisplayWeightString(input.weightKg),
     reps: input.reps === null || input.reps === undefined ? '' : String(input.reps),
     durationSeconds:
       input.durationSeconds === null || input.durationSeconds === undefined ? '' : String(input.durationSeconds),

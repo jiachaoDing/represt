@@ -7,6 +7,7 @@ import {
   formatDurationSeconds,
   getMeasurementTypeForExercise,
 } from '../../lib/set-record-measurement'
+import { formatWeightKg } from '../../lib/weight-units'
 import type { PlanExerciseCardProps } from './plan-exercise-list.types'
 
 export function PlanExerciseCard({
@@ -24,7 +25,9 @@ export function PlanExerciseCard({
   const valueLabels =
     measurementType === 'weightReps'
       ? [
-          exercise.weightKg ? t('common.kg', { value: exercise.weightKg }) : t('plans.weightEmpty'),
+          exercise.weightKg !== null && exercise.weightKg !== undefined
+            ? formatWeightKg(exercise.weightKg, t)
+            : t('plans.weightEmpty'),
           exercise.reps ? t('common.reps', { value: exercise.reps }) : t('plans.repsEmpty'),
         ]
       : measurementType === 'reps'
@@ -42,7 +45,9 @@ export function PlanExerciseCard({
             : t('plans.distanceEmpty'),
         ]
       : [
-          exercise.weightKg ? t('common.kg', { value: exercise.weightKg }) : t('plans.weightEmpty'),
+          exercise.weightKg !== null && exercise.weightKg !== undefined
+            ? formatWeightKg(exercise.weightKg, t)
+            : t('plans.weightEmpty'),
           exercise.distanceMeters
             ? formatDistanceMeters(exercise.distanceMeters, t)
             : t('plans.distanceEmpty'),

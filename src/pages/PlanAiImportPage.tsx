@@ -14,6 +14,7 @@ import {
 import { formatNumber } from '../lib/set-record-measurement'
 import { triggerHaptic } from '../lib/haptics'
 import { setTrainingCycleSlots } from '../db/training-cycle'
+import { formatWeightKg } from '../lib/weight-units'
 
 function getParseErrorMessage(t: ReturnType<typeof useTranslation>['t'], error: PlanAiImportParseError) {
   if (error === 'missingJson') {
@@ -36,7 +37,7 @@ function getExerciseValueParts(
   exercise: PlanAiImportData['plans'][number]['exercises'][number],
 ) {
   return [
-    exercise.weightKg === null ? null : t('common.kg', { value: formatNumber(exercise.weightKg) }),
+    exercise.weightKg === null ? null : formatWeightKg(exercise.weightKg, t),
     exercise.reps === null ? null : t('common.reps', { value: exercise.reps }),
     exercise.durationSeconds === null ? null : t('common.seconds', { value: exercise.durationSeconds }),
     exercise.distanceMeters === null ? null : t('common.meters', { value: formatNumber(exercise.distanceMeters) }),

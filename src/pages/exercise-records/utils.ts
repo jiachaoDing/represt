@@ -6,6 +6,11 @@ import {
   formatDurationSeconds,
   formatNumber,
 } from '../../lib/set-record-measurement'
+import {
+  formatLoadDistanceVolume,
+  formatWeightKg,
+  formatWeightRepsVolume,
+} from '../../lib/weight-units'
 import type {
   ExerciseRecordDetail,
   ExerciseRecordMetricKind,
@@ -13,7 +18,7 @@ import type {
 
 export function formatMetricValue(kind: ExerciseRecordMetricKind, value: number, t: TFunction) {
   if (kind === 'highestWeight') {
-    return t('common.kg', { value: formatNumber(value) })
+    return formatWeightKg(value, t)
   }
   if (kind === 'maxReps') {
     return t('common.reps', { value: formatNumber(value) })
@@ -25,10 +30,10 @@ export function formatMetricValue(kind: ExerciseRecordMetricKind, value: number,
     return formatDistanceMeters(value, t)
   }
   if (kind === 'loadDistanceVolume') {
-    return t('summary.analytics.loadDistanceValue', { value: formatNumber(value) })
+    return t('summary.analytics.loadDistanceValue', { value: formatLoadDistanceVolume(value, t) })
   }
 
-  return t('summary.analytics.volumeValue', { value: formatNumber(value) })
+  return t('summary.analytics.volumeValue', { value: formatWeightRepsVolume(value, t) })
 }
 
 export function formatTotalWork(detail: ExerciseRecordDetail, t: TFunction) {

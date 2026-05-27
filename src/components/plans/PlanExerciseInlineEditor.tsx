@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { ExerciseNameInput } from '../exercise/ExerciseNameInput'
 import { getMeasurementTypeForExercise } from '../../lib/set-record-measurement'
 import type { PlanExerciseDraft } from '../../lib/plan-editor'
+import { useWeightUnitPreference } from '../../lib/weight-units'
 
 type PlanExerciseInlineEditorProps = {
   draft: PlanExerciseDraft
@@ -58,6 +59,25 @@ const defaultWeightValues = [
   '60',
   '80',
   '100',
+]
+const defaultPoundWeightValues = [
+  '0',
+  '5',
+  '10',
+  '15',
+  '20',
+  '25',
+  '30',
+  '35',
+  '40',
+  '45',
+  '50',
+  '60',
+  '75',
+  '100',
+  '135',
+  '185',
+  '225',
 ]
 const defaultRepValues = [
   ...Array.from({ length: 20 }, (_, index) => String(index + 1)),
@@ -185,6 +205,7 @@ export function PlanExerciseInlineEditor({
   onSubmit,
 }: PlanExerciseInlineEditorProps) {
   const { t } = useTranslation()
+  const { unit: weightUnit } = useWeightUnitPreference()
   const formRef = useRef<HTMLFormElement>(null)
   const measurementType = getMeasurementTypeForExercise(draft)
   const setOptions = withCurrentOption(defaultSetValues, draft.targetSets).map((value) => ({
@@ -209,9 +230,14 @@ export function PlanExerciseInlineEditor({
       label: `${t('common.minutes', { value: minutes })} ${t('common.seconds', { value: remainingSeconds })}`,
     }
   })
-  const weightOptions = withCurrentOption(defaultWeightValues, draft.weightKg).map((value) => ({
+  const weightStep = weightUnit === 'lb' ? '1' : '0.5'
+  const weightUnitLabel = t(`common.weight.${weightUnit}`, { value: '' }).trim()
+  const weightOptions = withCurrentOption(
+    weightUnit === 'lb' ? defaultPoundWeightValues : defaultWeightValues,
+    draft.weightKg,
+  ).map((value) => ({
     value,
-    label: t('common.kg', { value }),
+    label: t(`common.weight.${weightUnit}`, { value }),
   }))
   const repOptions = withCurrentOption(defaultRepValues, draft.reps).map((value) => ({
     value,
@@ -221,12 +247,12 @@ export function PlanExerciseInlineEditor({
     measurementType === 'weightReps' || measurementType === 'weightDistance'
       ? {
           inputMode: 'decimal' as const,
-          label: t('plans.defaultWeight'),
+          label: `${t('plans.defaultWeight')} (${weightUnitLabel})`,
           min: 0,
           onChange: (value: string) => onDraftChange({ ...draft, weightKg: value }),
           options: weightOptions,
           placeholder: t('plans.optional'),
-          step: '0.5',
+          step: weightStep,
           value: draft.weightKg,
         }
       : null,

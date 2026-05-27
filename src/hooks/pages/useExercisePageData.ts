@@ -27,6 +27,7 @@ import {
 } from '../../native/training-notifications'
 import { TRAINING_NOTIFICATION_EXERCISE_UPDATED_EVENT } from '../../native/notification-navigation'
 import { getMeasurementTypeForExercise } from '../../lib/set-record-measurement'
+import { kgToDisplayWeightString } from '../../lib/weight-units'
 
 function syncLatestSetInputs(
   detail: ScheduleExerciseDetail | null,
@@ -35,7 +36,7 @@ function syncLatestSetInputs(
   setDurationInput: (value: string) => void,
   setDistanceInput: (value: string) => void,
 ) {
-  setWeightInput(toOptionalNumberString(detail?.latestSetRecord?.weightKg ?? null))
+  setWeightInput(kgToDisplayWeightString(detail?.latestSetRecord?.weightKg ?? null))
   setRepsInput(toOptionalNumberString(detail?.latestSetRecord?.reps ?? null))
   setDurationInput(toOptionalNumberString(detail?.latestSetRecord?.durationSeconds ?? null))
   setDistanceInput(toOptionalNumberString(detail?.latestSetRecord?.distanceMeters ?? null))
