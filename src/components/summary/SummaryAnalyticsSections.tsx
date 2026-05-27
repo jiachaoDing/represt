@@ -65,15 +65,15 @@ function getExerciseRecordPath(input: { catalogExerciseId: string | null; exerci
 
 function formatTrainingDurationMinutes(minutes: number, t: TFunction) {
   if (minutes < 60) {
-    return t('common.minutes', { value: minutes })
+    return t('summary.analytics.durationMinutesCompact', { value: minutes })
   }
 
   const hours = Math.floor(minutes / 60)
   const remainingMinutes = minutes % 60
 
   return remainingMinutes === 0
-    ? t('common.hours', { value: hours })
-    : t('common.hoursMinutes', { hours, minutes: remainingMinutes })
+    ? t('summary.analytics.durationHoursCompact', { value: hours })
+    : t('summary.analytics.durationHoursMinutesCompact', { hours, minutes: remainingMinutes })
 }
 
 function getPreferredTrainingTimeLabel(analytics: SummaryRangeAnalytics, t: TFunction) {
@@ -109,11 +109,11 @@ function OverviewCard({
   const metrics = [
     {
       label: t('summary.analytics.trainingDaysFull'),
-      value: t('summary.analytics.daysValue', { value: analytics.trainingDays }),
+      value: String(analytics.trainingDays),
     },
     {
       label: t('summary.analytics.completedSetsFull'),
-      value: t('common.sets', { value: analytics.completedSets }),
+      value: String(analytics.completedSets),
     },
     {
       label: t('summary.analytics.exerciseQuantity'),
@@ -121,7 +121,7 @@ function OverviewCard({
     },
     {
       label: t('summary.analytics.trainingSegmentCount'),
-      value: t('summary.analytics.trainingSegmentCountValue', { value: analytics.trainingSegmentCount }),
+      value: String(analytics.trainingSegmentCount),
     },
     {
       label: t('summary.analytics.preferredTrainingTime'),
@@ -145,20 +145,20 @@ function OverviewCard({
         />
       </div>
 
-      <div className="mt-6 grid grid-cols-3 gap-x-4 gap-y-5 border-b border-[var(--outline-variant)]/30 pb-5">
+      <div className="mt-6 grid grid-cols-3 gap-x-3 gap-y-5 border-b border-[var(--outline-variant)]/30 pb-5">
         {metrics.slice(0, 3).map((item) => (
           <div key={item.label} className="min-w-0">
             <p className="text-[13px] font-medium text-[var(--on-surface-variant)]">{item.label}</p>
-            <p className="mt-2 truncate text-[22px] font-bold leading-7 text-[var(--on-surface)]">{item.value}</p>
+            <p className="mt-2 whitespace-nowrap text-[21px] font-bold leading-7 text-[var(--on-surface)]">{item.value}</p>
           </div>
         ))}
       </div>
 
-      <div className="mt-5 grid grid-cols-3 gap-x-4 gap-y-5">
+      <div className="mt-5 grid grid-cols-3 gap-x-3 gap-y-5">
         {metrics.slice(3).map((item) => (
           <div key={item.label} className="min-w-0">
             <p className="text-[13px] font-medium text-[var(--on-surface-variant)]">{item.label}</p>
-            <p className="mt-2 truncate text-[22px] font-bold leading-7 text-[var(--on-surface)]">{item.value}</p>
+            <p className="mt-2 whitespace-nowrap text-[21px] font-bold leading-7 text-[var(--on-surface)]">{item.value}</p>
           </div>
         ))}
       </div>
