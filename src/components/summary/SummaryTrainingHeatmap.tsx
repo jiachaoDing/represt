@@ -290,7 +290,7 @@ export function SummaryTrainingHeatmap({
             ))}
           </div>
         ) : (
-          <div className="flex gap-2.5">
+          <div className="flex gap-2.5" data-primary-tab-swipe-lock="true">
             <div className="grid shrink-0 grid-rows-7 gap-1.5 pt-0.5">
               {weekLabels.map((label, index) => (
                 <span
@@ -301,7 +301,10 @@ export function SummaryTrainingHeatmap({
                 </span>
               ))}
             </div>
-            <div ref={scrollRef} className="scrollbar-hide min-w-0 flex-1 overflow-x-auto pb-2 pl-1 pr-3 pt-1">
+            <div
+              ref={scrollRef}
+              className="scrollbar-hide min-w-0 flex-1 overflow-x-auto overscroll-x-contain pb-2 pl-1 pr-3 pt-1"
+            >
               <div className="flex w-max gap-1.5 pr-3">
                 {weekColumns.map((week, weekIndex) => (
                   <div key={weekIndex} className="grid grid-rows-7 gap-1.5">

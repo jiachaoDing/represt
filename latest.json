@@ -4,13 +4,13 @@
     "versionCode":  24,
     "releaseDate":  "2026-05-27",
     "downloadUrl":  "https://share.represt.app/downloads/android/latest",
-    "apkUrl":  "https://share.represt.app/downloads/android/represt-1.1.3.apk",
-    "fileName":  "represt-1.1.3.apk",
-    "fileSizeBytes":  4583983,
-    "sha256":  "763D6BC67A9DB65FBA8AD0C123FA8373DD0A8F3EFE65B24172BADE7BB663A28B",
+    "apkUrl":  "https://share.represt.app/downloads/android/represt-1.1.4.apk",
+    "fileName":  "represt-1.1.4.apk",
+    "fileSizeBytes":  4590012,
+    "sha256":  "D0F0C2AFA6A6F17BE7C5EF2F230E73CD23A816BDB6E58DD7465FA4BE9BDE41FE",
     "changelog":  [
-                      "尝试长时间后台时动作页出现的白屏问题",
-                      "修复循环日程跨周期自动导入问题","优化设置页面，添加数据导入导出功能"
+                      "优化总结页面",
+                      "增加全局单位切换（支持磅）"
                   ],
     "mandatory":  false
 }

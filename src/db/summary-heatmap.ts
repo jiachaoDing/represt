@@ -1,7 +1,7 @@
 import type { MeasurementType } from '../domain/exercise-catalog'
 import { resolveCatalogExerciseId } from '../lib/exercise-name'
 import { getMeasurementTypeForExercise } from '../lib/set-record-measurement'
-import { parseSessionDateKey } from '../lib/session-date-key'
+import { getTodaySessionDateKey, parseSessionDateKey } from '../lib/session-date-key'
 import type { PerformedExercise, SetRecord } from '../models/types'
 import { db } from './app-db'
 
@@ -43,11 +43,16 @@ function dateToSessionDateKey(date: Date) {
 
 function getHeatmapRange(selectedDateKey: string) {
   const selectedDate = parseSessionDateKey(selectedDateKey) ?? new Date()
-  const endDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0)
+  const monthEndDateKey = dateToSessionDateKey(
+    new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0),
+  )
+  const todayDateKey = getTodaySessionDateKey()
+  const endDateKey = monthEndDateKey > todayDateKey ? todayDateKey : monthEndDateKey
+  const endDate = parseSessionDateKey(endDateKey) ?? selectedDate
   const startDate = new Date(endDate.getFullYear(), endDate.getMonth() - 11, 1)
 
   return {
-    endDateKey: dateToSessionDateKey(endDate),
+    endDateKey,
     startDateKey: dateToSessionDateKey(startDate),
   }
 }
