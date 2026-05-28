@@ -114,7 +114,7 @@ public class TrainingTimerNotificationPlugin extends Plugin {
             .putExtra(TrainingTimerNotificationConstants.EXTRA_PATH, call.getString("path"))
             .putExtra(TrainingTimerNotificationConstants.EXTRA_PLAY_FINAL_BEEPS, call.getBoolean("playFinalBeeps", false))
             .putExtra(TrainingTimerNotificationConstants.EXTRA_REPEAT_FINISH_ALERT_IN_BACKGROUND, call.getBoolean("repeatFinishAlertInBackground", true))
-            .putExtra(TrainingTimerNotificationConstants.EXTRA_BEEP_VOLUME, clampBeepVolume(call.getDouble("beepVolume", 0.2)))
+            .putExtra(TrainingTimerNotificationConstants.EXTRA_BEEP_VOLUME, clampBeepVolume(call.getDouble("beepVolume", 1.0)))
             .putExtra(TrainingTimerNotificationConstants.EXTRA_IS_PAUSED, call.getBoolean("isPaused", false))
             .putExtra(TrainingTimerNotificationConstants.EXTRA_REMAINING_MS, call.getLong("remainingMs", 0L))
             .putExtra(TrainingTimerNotificationConstants.EXTRA_TOTAL_SECONDS, call.getInt("totalSeconds", 0));
@@ -360,7 +360,7 @@ public class TrainingTimerNotificationPlugin extends Plugin {
 
     private double clampBeepVolume(double volume) {
         if (Double.isNaN(volume)) {
-            return 0.2;
+            return 1.0;
         }
 
         return Math.max(0.0, Math.min(1.0, volume));

@@ -194,7 +194,7 @@ public class TrainingTimerForegroundService extends Service {
             System.currentTimeMillis(),
             intent.getBooleanExtra(TrainingTimerNotificationConstants.EXTRA_PLAY_FINAL_BEEPS, false),
             intent.getBooleanExtra(TrainingTimerNotificationConstants.EXTRA_REPEAT_FINISH_ALERT_IN_BACKGROUND, true),
-            clampBeepVolume((float) intent.getDoubleExtra(TrainingTimerNotificationConstants.EXTRA_BEEP_VOLUME, 0.2)),
+            clampBeepVolume((float) intent.getDoubleExtra(TrainingTimerNotificationConstants.EXTRA_BEEP_VOLUME, 1.0)),
             isPaused,
             remainingMs,
             Math.max(0, intent.getIntExtra(TrainingTimerNotificationConstants.EXTRA_TOTAL_SECONDS, 0))
@@ -618,7 +618,7 @@ public class TrainingTimerForegroundService extends Service {
 
     private float clampBeepVolume(float volume) {
         if (Float.isNaN(volume)) {
-            return 0.2f;
+            return 1.0f;
         }
 
         return Math.max(0f, Math.min(1f, volume));
@@ -670,7 +670,7 @@ public class TrainingTimerForegroundService extends Service {
                 System.currentTimeMillis(),
                 intent.getBooleanExtra(TrainingTimerNotificationConstants.EXTRA_PLAY_FINAL_BEEPS, false),
                 intent.getBooleanExtra(TrainingTimerNotificationConstants.EXTRA_REPEAT_FINISH_ALERT_IN_BACKGROUND, true),
-                clampBeepVolume((float) intent.getDoubleExtra(TrainingTimerNotificationConstants.EXTRA_BEEP_VOLUME, 0.2)),
+                clampBeepVolume((float) intent.getDoubleExtra(TrainingTimerNotificationConstants.EXTRA_BEEP_VOLUME, 1.0)),
                 false,
                 0L,
                 Math.max(0, intent.getIntExtra(TrainingTimerNotificationConstants.EXTRA_TOTAL_SECONDS, 0))

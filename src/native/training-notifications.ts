@@ -26,7 +26,7 @@ const LEGACY_REST_TIMER_FOREGROUND_NOTIFICATION_ID = 920001
 const QUICK_TIMER_FOREGROUND_NOTIFICATION_ID = 920002
 const TIMER_BEEP_VOLUME_STORAGE_KEY = 'trainre:timer-beep-volume'
 const REPEAT_FINISH_ALERT_STORAGE_KEY = 'trainre:repeat-finish-alert-in-background'
-const DEFAULT_TIMER_BEEP_VOLUME = 0.2
+const DEFAULT_TIMER_BEEP_VOLUME = 1
 const DEFAULT_REPEAT_FINISH_ALERT_IN_BACKGROUND = true
 
 function clampTimerBeepVolume(value: number) {
