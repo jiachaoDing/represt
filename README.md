@@ -87,6 +87,17 @@ VITE_PLAN_SHARE_WEB_BASE_URL=https://share.represt.app
 
 这些是前端构建变量，会进入浏览器产物，不要放入密钥。
 
+未设置变量时，开发环境默认连接 `http://localhost:8787`，生产构建默认连接 `https://share.represt.app`。
+
+Cloudflare Pages 从 Git 构建时不会读取本机被忽略的 `.env`。需要覆盖默认地址时，在前端 Pages 项目的对应环境（Production / Preview）中设置以下构建变量，然后重新部署：
+
+| 构建变量 | 线上服务地址 |
+| --- | --- |
+| `VITE_PLAN_SHARE_API_BASE_URL` | `https://share.represt.app` |
+| `VITE_PLAN_SHARE_WEB_BASE_URL` | `https://share.represt.app` |
+
+构建命令为 `npm run build`，输出目录为 `dist`。变量在构建时写入前端产物，修改后需要重新构建；分享 Worker 的运行时变量不会改变已部署的前端地址。
+
 ## Android
 
 项目已接入 Capacitor。同步 Android 工程：

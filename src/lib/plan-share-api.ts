@@ -45,7 +45,9 @@ export class PlanShareApiError extends Error {
   }
 }
 
-const defaultShareBaseUrl = 'http://localhost:8787'
+const defaultShareBaseUrl = import.meta.env.DEV
+  ? 'http://localhost:8787'
+  : 'https://share.represt.app'
 
 function trimTrailingSlash(value: string) {
   return value.replace(/\/+$/, '')
