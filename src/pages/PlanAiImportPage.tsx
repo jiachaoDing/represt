@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom'
 
 import { AnimatedDialog } from '../components/motion/AnimatedDialog'
 import { PageHeader } from '../components/ui/PageHeader'
+import { AccountSyncSettings } from '../components/settings/AccountSyncSettings'
 import { createPlanWithExercises, type PlanWithExercises } from '../db/plans'
 import {
   parsePlanAiImportResponse,
@@ -155,6 +156,9 @@ export function PlanAiImportPage() {
       <PageHeader title={t('plans.aiImport.title')} backFallbackTo="/plans" />
 
       <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pb-[calc(1rem_+_var(--app-safe-area-inset-bottom))]">
+        <section className="shrink-0 overflow-hidden rounded-2xl border border-[var(--outline-variant)]/40 bg-[var(--surface)]">
+          <AccountSyncSettings />
+        </section>
         <section className="shrink-0 rounded-2xl border border-[var(--outline-variant)]/40 bg-[var(--surface)] p-3">
           <div className="mb-2 flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-2">

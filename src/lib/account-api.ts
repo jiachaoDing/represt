@@ -56,3 +56,17 @@ export function uploadAccountData(session: AccountSession, pending: NonNullable<
 }
 
 export function getAccountGuideUrl() { return `${getPlanShareApiBaseUrl()}/api/account/guide` }
+
+export function createAccountAiAccess(session: AccountSession) {
+  return request<{ token: string; expiresAt: string }>('/api/account/ai-access', 'POST', {}, session)
+}
+
+export function getAccountAiAccess(session: AccountSession) {
+  return request<{ expiresAt: string | null }>('/api/account/ai-access', 'GET', undefined, session)
+}
+
+export function revokeAccountAiAccess(session: AccountSession) {
+  return request<{ revoked: boolean }>('/api/account/ai-access', 'DELETE', undefined, session)
+}
+
+export function getAccountDashboardUrl() { return `${getPlanShareApiBaseUrl()}/account` }
