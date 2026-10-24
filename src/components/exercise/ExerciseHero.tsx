@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next'
 
 import { quickEaseTransition } from '../motion/motion-tokens'
 import { getExerciseHeroData, getExerciseHeroTone } from '../../lib/exercise-hero'
+import { getMeasurementTypeForExercise } from '../../lib/set-record-measurement'
+import { formatWeightKg } from '../../lib/weight-units'
 import type { ScheduleExerciseDetail } from '../../db/sessions'
 
 type ExerciseHeroProps = {
@@ -14,6 +16,9 @@ export function ExerciseHero({ detail, now }: ExerciseHeroProps) {
   const { t } = useTranslation()
   const reduceMotion = useReducedMotion()
   const hero = getExerciseHeroData(detail, now, t)
+  const measurementType = getMeasurementTypeForExercise(detail.exercise)
+  const showWeight = measurementType === 'weightReps' || measurementType === 'weightDistance'
+  const showReps = measurementType === 'weightReps' || measurementType === 'reps'
 
   if (!hero) {
     return null
@@ -65,6 +70,31 @@ export function ExerciseHero({ detail, now }: ExerciseHeroProps) {
 
           {hero.supporting ? (
             <p className="mt-4 text-[16px] text-[var(--on-surface-variant)]">{hero.supporting}</p>
+          ) : null}
+
+          {showWeight || showReps ? (
+            <dl className="mt-5 flex flex-wrap justify-center gap-x-8 gap-y-3">
+              {showWeight ? (
+                <div>
+                  <dt className="text-[12px] text-[var(--on-surface-variant)]">{t('plans.defaultWeight')}</dt>
+                  <dd className="mt-1 text-[16px] font-medium tabular-nums text-[var(--on-surface)]">
+                    {detail.exercise.defaultWeightKg == null
+                      ? t('exercise.defaultNotSet')
+                      : formatWeightKg(detail.exercise.defaultWeightKg, t)}
+                  </dd>
+                </div>
+              ) : null}
+              {showReps ? (
+                <div>
+                  <dt className="text-[12px] text-[var(--on-surface-variant)]">{t('plans.defaultReps')}</dt>
+                  <dd className="mt-1 text-[16px] font-medium tabular-nums text-[var(--on-surface)]">
+                    {detail.exercise.defaultReps == null
+                      ? t('exercise.defaultNotSet')
+                      : t('common.reps', { value: detail.exercise.defaultReps })}
+                  </dd>
+                </div>
+              ) : null}
+            </dl>
           ) : null}
         </motion.div>
       </AnimatePresence>
