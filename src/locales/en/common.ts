@@ -1,4 +1,27 @@
 const common = {
+  accountSync: {
+    title: 'Account & sync', description: 'Manually sync data for AI analysis and plan edits',
+    loginDescription: 'Register or sign in with your email. Training data stays on this device; signing in does not upload or download data.',
+    email: 'Email', password: 'Password', passwordHint: 'Use at least 10 characters. Email verification and password recovery emails are not enabled; keep your password safe.',
+    signIn: 'Sign in', register: 'Register & sign in', working: 'Working…', haveAccount: 'Already registered? Sign in', needAccount: 'New account? Register',
+    signedIn: 'Signed in. Tap Sync to upload data from this device.', signOut: 'Sign out',
+    sync: 'Sync', syncing: 'Syncing…', retry: 'Retry sync', synced: 'Sync complete. Cloud plans were received and current data was uploaded.',
+    lastSync: 'Last sync: {{time}}', neverSynced: 'Not synced yet', manualOnly: 'Tap Sync to upload this device’s data and receive cloud plans. Cloud training history never replaces local history.',
+    pending: 'An upload is awaiting confirmation. Sync will first recover that operation; sync again afterwards to upload any newer data.',
+    conflictTitle: 'Plans have changed', conflictDescription: 'Local and cloud plans or the training cycle have both changed. Choose the complete plan set to use. Training history stays unchanged.',
+    localPlans: 'Local: {{names}}', cloudPlans: 'Cloud: {{names}}', empty: 'No plans', keepLocal: 'Keep local plans', useCloud: 'Use cloud plans',
+    exerciseDetails: '{{name}} · {{sets}} sets · {{rest}} s rest', weight: '{{value}} kg', reps: '{{value}} reps', duration: '{{value}} s', distance: '{{value}} m',
+    cycleDetails: 'Cycle: {{plans}}; {{date}} is day {{day}}', restDay: 'Rest',
+    copyAi: 'Copy AI instructions', copied: 'Copied. Provide your account password to the AI separately.',
+    aiDescription: 'Sync first, then give these instructions and your account credentials to an AI with HTTP tools. Anyone using the same account has the same permissions. Sync again after the AI edits your plans.',
+    aiText: 'Access my RepRest data using these API instructions: {{url}}\nEmail: {{email}}\nI will provide the password separately. Sign in to obtain a token, read my training data and edit plans as requested. The data is a manual snapshot; state its timestamp. Read the current version before editing, preserve unchanged plans and existing IDs, and do not edit training history. When finished, remind me to tap Sync in the app.',
+    errors: {
+      network: 'Connection failed. Check your network and retry.', notConfigured: 'Account services are not configured yet. The backend must be deployed first.',
+      changed: 'Data has changed. Sync again to check local and cloud plans.', credentials: 'Sign-in details are invalid or expired. Sign out and sign in again.',
+      exists: 'This email is registered. Switch to sign in.', tooLarge: 'Data exceeds the service capacity. Existing data was not overwritten.',
+      failed: 'The operation failed. Please retry later.', copy: 'Copy failed. Check your browser clipboard permissions.',
+    },
+  },
   common: {
     appName: 'RepRest',
     cancel: 'Cancel',

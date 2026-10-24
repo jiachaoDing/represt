@@ -1,4 +1,27 @@
 const common = {
+  accountSync: {
+    title: '账号与同步', description: '手动同步数据，供 AI 分析和调整计划',
+    loginDescription: '用邮箱注册或登录。训练数据仍保存在本机，登录不会自动上传或下载。',
+    email: '邮箱', password: '密码', passwordHint: '密码至少 10 位。当前不发送邮箱验证或密码找回邮件，请自行保管密码。',
+    signIn: '登录', register: '注册并登录', working: '处理中…', haveAccount: '已有账号，去登录', needAccount: '没有账号，去注册',
+    signedIn: '登录成功，点击同步即可上传当前设备数据。', signOut: '退出登录',
+    sync: '同步', syncing: '正在同步…', retry: '重试同步', synced: '同步完成，云端计划已接收，当前数据已上传。',
+    lastSync: '上次同步：{{time}}', neverSynced: '尚未同步', manualOnly: '仅在点击同步时上传当前设备数据、接收云端计划。历史训练记录不会从云端覆盖本机。',
+    pending: '有一次上传尚未确认。再次同步会先恢复这次操作；期间新增的数据可在随后再次同步时上传。',
+    conflictTitle: '计划版本不同', conflictDescription: '本机与云端的计划或循环日程均有变化。请选择本次采用的整套计划；历史训练记录保持原样。',
+    localPlans: '本机：{{names}}', cloudPlans: '云端：{{names}}', empty: '无计划', keepLocal: '保留本机计划', useCloud: '采用云端计划',
+    exerciseDetails: '{{name}} · {{sets}} 组 · 休息 {{rest}} 秒', weight: '{{value}} kg', reps: '{{value}} 次', duration: '{{value}} 秒', distance: '{{value}} m',
+    cycleDetails: '循环：{{plans}}；{{date}} 对应第 {{day}} 天', restDay: '休息',
+    copyAi: '复制 AI 访问说明', copied: '已复制，请另行向 AI 提供账号密码。',
+    aiDescription: '先同步，再把访问说明和账号密码交给具备 HTTP 工具的 AI。使用同一账号的访问者拥有相同权限。AI 改完计划后，再点击同步。',
+    aiText: '请按此接口说明访问我的 RepRest 数据：{{url}}\n登录邮箱：{{email}}\n密码由我另行提供。请通过登录接口取得令牌，读取训练数据并按我的要求修改计划。数据是手动同步的快照，请说明快照时间；修改计划前读取当前版本，保留未修改的计划和已有 ID，不改训练历史。完成后提醒我在应用中点击同步。',
+    errors: {
+      network: '连接失败，请检查网络后重试。', notConfigured: '账号服务尚未配置完成，请等待服务端部署。',
+      changed: '数据版本已变化，请再次同步，重新检查本机和云端计划。', credentials: '登录信息无效或已过期，请退出后重新登录。',
+      exists: '该邮箱已注册，请切换到登录。', tooLarge: '数据超过服务容量限制，原有数据未被覆盖。',
+      failed: '操作失败，请稍后重试。', copy: '复制失败，请检查浏览器的剪贴板权限。',
+    },
+  },
   common: {
     appName: '组间记',
     cancel: '取消',

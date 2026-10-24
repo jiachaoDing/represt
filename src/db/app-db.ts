@@ -12,6 +12,7 @@ import type {
   WorkoutPlan,
   WorkoutSession,
 } from '../models/types'
+import type { AccountSyncState } from '../lib/account-types'
 
 export type SharedPlanRecord = {
   code: string
@@ -55,6 +56,7 @@ class RepRestDatabase extends Dexie {
   setRecords!: EntityTable<SetRecord, 'id'>
   exerciseProfiles!: EntityTable<ExerciseProfile, 'id'>
   sharedPlanRecords!: EntityTable<SharedPlanRecord, 'code'>
+  accountSync!: EntityTable<AccountSyncState, 'id'>
 
   constructor() {
     super('trainre')
@@ -147,6 +149,8 @@ class RepRestDatabase extends Dexie {
           tx.table('performedExercises').bulkPut(performedExercises),
         ])
       })
+
+    this.version(19).stores({ accountSync: 'id' })
   }
 }
 

@@ -6,6 +6,7 @@
   "license": "GPL-3.0-or-later",
   "type": "module",
   "scripts": {
+    "test": "vitest run",
     "dev": "vite",
     "assets:generate": "node scripts/generate-assets.mjs",
     "build": "tsc -b && vite build",
@@ -46,13 +47,15 @@
     "eslint": "^9.39.4",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
+    "fake-indexeddb": "^6.2.6",
     "globals": "^17.5.0",
     "sharp": "^0.34.5",
     "tailwindcss": "^4.2.4",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.58.2",
     "vite": "^7.3.2",
-    "vite-plugin-pwa": "^1.2.0"
+    "vite-plugin-pwa": "^1.2.0",
+    "vitest": "^5.0.5"
   },
   "overrides": {
     "@rollup/plugin-terser": {

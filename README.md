@@ -121,6 +121,7 @@ npm run android:open
 - [AGENTS.md](AGENTS.md)
 - [docs/release.md](docs/release.md)
 - [docs/update-icons.md](docs/update-icons.md)
+- [docs/account-sync.md](docs/account-sync.md)
 
 ## 开源许可
 

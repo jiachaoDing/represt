@@ -3,7 +3,7 @@ import { db } from '../db/app-db'
 const BACKUP_APP_ID = 'represt'
 const FULL_DATA_BACKUP_SCHEMA_VERSION = 1
 
-const backupTableNames = [
+export const backupTableNames = [
   'trainingCycles',
   'workoutPlans',
   'planExercises',
@@ -112,11 +112,11 @@ function getDownloadFileName() {
 export async function buildFullDataBackup(): Promise<FullDataBackup> {
   const tables = {} as FullDataBackupTables
 
-  await Promise.all(
+  await db.transaction('r', backupTableNames, () => Promise.all(
     backupTableNames.map(async (tableName) => {
       tables[tableName] = await db.table(tableName).toArray()
     }),
-  )
+  ))
 
   return {
     app: BACKUP_APP_ID,
@@ -202,9 +202,10 @@ export function parseFullDataBackupJson(text: string): FullDataBackupParseResult
 }
 
 export async function restoreFullDataBackup(backup: FullDataBackup) {
-  const tables = backupTableNames.map((tableName) => db.table(tableName))
+  const tables = [...backupTableNames.map((tableName) => db.table(tableName)), db.accountSync]
 
   await db.transaction('rw', tables, async () => {
+    await db.accountSync.clear()
     for (const tableName of backupTableNames) {
       await db.table(tableName).clear()
     }

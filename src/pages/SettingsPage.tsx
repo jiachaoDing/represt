@@ -24,6 +24,7 @@ import {
 
 import { PlanShareManageSheet } from '../components/plans/PlanShareManageSheet'
 import { ReminderSettingsEntry } from '../components/settings/LocalReminderSettings'
+import { AccountSyncSettings } from '../components/settings/AccountSyncSettings'
 import { AnimatedSheet } from '../components/motion/AnimatedSheet'
 import { ConfirmDialog } from '../components/ui/ConfirmDialog'
 import { PageHeader } from '../components/ui/PageHeader'
@@ -918,6 +919,8 @@ export function SettingsPage() {
           />
           <RowDivider />
           <PlanShareSettingsRow />
+          <RowDivider />
+          <AccountSyncSettings />
           <RowDivider />
           <FullDataBackupSettingsRow />
         </SettingsSection>
