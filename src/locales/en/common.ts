@@ -809,7 +809,6 @@ const common = {
     addTargetSet: 'Add one set',
     removeTargetSet: 'Remove one set',
     latestRecord: 'Previous set record',
-    defaultNotSet: 'Not set',
     openQuickTimer: 'Open quick timer',
     closeQuickTimer: 'Back to exercise',
     quickTimerTitle: 'Quick timer',

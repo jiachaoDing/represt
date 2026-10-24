@@ -17,8 +17,11 @@ export function ExerciseHero({ detail, now }: ExerciseHeroProps) {
   const reduceMotion = useReducedMotion()
   const hero = getExerciseHeroData(detail, now, t)
   const measurementType = getMeasurementTypeForExercise(detail.exercise)
-  const showWeight = measurementType === 'weightReps' || measurementType === 'weightDistance'
-  const showReps = measurementType === 'weightReps' || measurementType === 'reps'
+  const { defaultWeightKg, defaultReps } = detail.exercise
+  const showWeight =
+    (measurementType === 'weightReps' || measurementType === 'weightDistance') && defaultWeightKg != null
+  const showReps =
+    (measurementType === 'weightReps' || measurementType === 'reps') && defaultReps != null
 
   if (!hero) {
     return null
@@ -78,9 +81,7 @@ export function ExerciseHero({ detail, now }: ExerciseHeroProps) {
                 <div>
                   <dt className="text-[12px] text-[var(--on-surface-variant)]">{t('plans.defaultWeight')}</dt>
                   <dd className="mt-1 text-[16px] font-medium tabular-nums text-[var(--on-surface)]">
-                    {detail.exercise.defaultWeightKg == null
-                      ? t('exercise.defaultNotSet')
-                      : formatWeightKg(detail.exercise.defaultWeightKg, t)}
+                    {formatWeightKg(defaultWeightKg, t)}
                   </dd>
                 </div>
               ) : null}
@@ -88,9 +89,7 @@ export function ExerciseHero({ detail, now }: ExerciseHeroProps) {
                 <div>
                   <dt className="text-[12px] text-[var(--on-surface-variant)]">{t('plans.defaultReps')}</dt>
                   <dd className="mt-1 text-[16px] font-medium tabular-nums text-[var(--on-surface)]">
-                    {detail.exercise.defaultReps == null
-                      ? t('exercise.defaultNotSet')
-                      : t('common.reps', { value: detail.exercise.defaultReps })}
+                    {t('common.reps', { value: defaultReps })}
                   </dd>
                 </div>
               ) : null}

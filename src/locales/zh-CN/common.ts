@@ -809,7 +809,6 @@ const common = {
     addTargetSet: '增加一组',
     removeTargetSet: '减少一组',
     latestRecord: '上一组记录',
-    defaultNotSet: '未设置',
     openQuickTimer: '打开快捷计时器',
     closeQuickTimer: '返回动作内容',
     quickTimerTitle: '快捷计时器',
