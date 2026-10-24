@@ -10,6 +10,7 @@ export type AccountCloudState = {
   plans: AccountPlans | null
   pending: boolean
 }
+export type AccountRestore = { userId: string; version: number; syncedAt: string; backup: FullDataBackup }
 export type AccountSyncState = {
   id: string
   baseline: AccountPlans | null

@@ -1,5 +1,6 @@
 import { getPlanShareApiBaseUrl } from './plan-share-api'
 import type { AccountCloudState, AccountSession, AccountSyncState } from './account-types'
+import type { FullDataBackup } from './full-data-backup'
 
 const sessionKey = 'trainre.accountSession.v1'
 
@@ -49,6 +50,10 @@ export function fetchAccountPlans(session: AccountSession) {
   return request<AccountCloudState>('/api/account/plans', 'GET', undefined, session)
 }
 
+export function fetchAccountData(session: AccountSession, version: number) {
+  return request<{ version: number; syncedAt: string; backup: FullDataBackup }>(`/api/account/data?version=${version}`, 'GET', undefined, session)
+}
+
 export function uploadAccountData(session: AccountSession, pending: NonNullable<AccountSyncState['pending']>) {
   return request<{ version: number; syncedAt: string }>('/api/account/sync', 'POST', {
     version: pending.version, operationId: pending.operationId, backup: pending.backup,
@@ -70,3 +75,12 @@ export function revokeAccountAiAccess(session: AccountSession) {
 }
 
 export function getAccountDashboardUrl() { return `${getPlanShareApiBaseUrl()}/account` }
+
+export async function createAccountDashboardUrl(session: AccountSession, language: string) {
+  const { token } = await request<{ token: string }>('/api/auth/one-time-token/generate', 'GET', undefined, session)
+  if (!token) throw new AccountApiError('INVALID_RESPONSE')
+  const url = new URL(getAccountDashboardUrl())
+  url.searchParams.set('lang', language)
+  url.hash = new URLSearchParams({ login: token }).toString()
+  return url.toString()
+}

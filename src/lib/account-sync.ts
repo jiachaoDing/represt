@@ -1,9 +1,9 @@
 import { db } from '../db/app-db'
-import { AccountApiError, fetchAccountPlans, uploadAccountData } from './account-api'
-import { backupTableNames, buildFullDataBackup } from './full-data-backup'
+import { AccountApiError, fetchAccountData, fetchAccountPlans, uploadAccountData } from './account-api'
+import { backupTableNames, buildFullDataBackup, parseFullDataBackupJson, restoreFullDataBackup } from './full-data-backup'
 import { backupWithPlans, chooseAccountPlans, plansFromBackup, planSignature } from './account-plans'
 import { notifyPlansChanged } from './plan-change-events'
-import type { AccountPlans, AccountSession, AccountSyncState } from './account-types'
+import type { AccountPlans, AccountRestore, AccountSession, AccountSyncState } from './account-types'
 
 export class AccountPlanConflict extends Error {
   readonly local: AccountPlans
@@ -64,6 +64,29 @@ async function applyPending(session: AccountSession, state: AccountSyncState) {
 }
 
 let syncing = false
+
+export async function prepareAccountRestore(session: AccountSession): Promise<AccountRestore> {
+  const cloud = await fetchAccountPlans(session)
+  const snapshot = await fetchAccountData(session, cloud.version)
+  const parsed = parseFullDataBackupJson(JSON.stringify(snapshot.backup))
+  if (!parsed.ok || !cloud.plans || !snapshot.syncedAt || snapshot.version !== cloud.version) throw new AccountApiError('INVALID_RESPONSE')
+  return { userId: session.user.id, version: cloud.version, syncedAt: snapshot.syncedAt,
+    backup: backupWithPlans(parsed.data, cloud.plans) }
+}
+
+export async function restoreAccountData(session: AccountSession, restore: AccountRestore) {
+  if (syncing) throw new AccountApiError('BUSY')
+  if (session.user.id !== restore.userId) throw new AccountApiError('UNAUTHORIZED')
+  syncing = true
+  try {
+    const cloud = await fetchAccountPlans(session)
+    if (cloud.version !== restore.version) throw new AccountApiError('VERSION_CONFLICT')
+    await restoreFullDataBackup(restore.backup, { id: session.user.id, pending: null,
+      baseline: plansFromBackup(restore.backup), syncedAt: restore.syncedAt })
+    notifyPlansChanged(null)
+    return restore.syncedAt
+  } finally { syncing = false }
+}
 
 export async function syncAccount(session: AccountSession, resolution?: AccountResolution) {
   if (syncing) throw new AccountApiError('BUSY')

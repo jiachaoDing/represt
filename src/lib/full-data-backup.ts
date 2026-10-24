@@ -1,4 +1,5 @@
 import { db } from '../db/app-db'
+import type { AccountSyncState } from './account-types'
 
 const BACKUP_APP_ID = 'represt'
 const FULL_DATA_BACKUP_SCHEMA_VERSION = 1
@@ -201,7 +202,7 @@ export function parseFullDataBackupJson(text: string): FullDataBackupParseResult
   }
 }
 
-export async function restoreFullDataBackup(backup: FullDataBackup) {
+export async function restoreFullDataBackup(backup: FullDataBackup, syncState?: AccountSyncState) {
   const tables = [...backupTableNames.map((tableName) => db.table(tableName)), db.accountSync]
 
   await db.transaction('rw', tables, async () => {
@@ -216,6 +217,7 @@ export async function restoreFullDataBackup(backup: FullDataBackup) {
         await db.table(tableName).bulkPut(records)
       }
     }
+    if (syncState) await db.accountSync.put(syncState)
   })
 
   applyRestorableLocalStorage(backup.localStorage)

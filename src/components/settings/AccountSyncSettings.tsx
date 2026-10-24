@@ -1,14 +1,17 @@
 import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ChartNoAxesCombined, ChevronRight, Cloud, Copy, LogOut, RefreshCw, ShieldOff } from 'lucide-react'
+import { ChartNoAxesCombined, ChevronRight, Cloud, CloudDownload, Copy, LogOut, RefreshCw, ShieldOff } from 'lucide-react'
 import { AnimatedSheet } from '../motion/AnimatedSheet'
+import { ConfirmDialog } from '../ui/ConfirmDialog'
 import { SettingsRow } from './SettingsRow'
 import { db } from '../../db/app-db'
 import { AccountApiError, createAccountAiAccess, getAccountAiAccess, getAccountDashboardUrl, getAccountGuideUrl, readAccountSession, revokeAccountAiAccess, signInAccount, signOutAccount } from '../../lib/account-api'
-import { AccountPlanConflict, syncAccount } from '../../lib/account-sync'
+import { AccountPlanConflict, prepareAccountRestore, restoreAccountData, syncAccount } from '../../lib/account-sync'
+import { clearStoredCurrentSessionId } from '../../db/sessions'
+import { openAccountDashboard } from '../../lib/account-dashboard'
 import { planSignature } from '../../lib/account-plans'
 import { triggerHaptic } from '../../lib/haptics'
-import type { AccountSession } from '../../lib/account-types'
+import type { AccountRestore, AccountSession } from '../../lib/account-types'
 
 const inputClass = 'min-h-12 w-full rounded-xl border border-[var(--outline-variant)] bg-[var(--surface)] px-3 text-sm text-[var(--on-surface)]'
 const buttonClass = 'flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[var(--primary)] px-4 text-sm font-semibold text-[var(--on-primary)] disabled:opacity-50'
@@ -30,6 +33,7 @@ export function AccountSyncSettings() {
   const [syncedAt, setSyncedAt] = useState<string | null>(null)
   const [pending, setPending] = useState(false)
   const [conflict, setConflict] = useState<AccountPlanConflict | null>(null)
+  const [restore, setRestore] = useState<AccountRestore | null>(null)
 
   function report(error: unknown) {
     const code = error instanceof AccountApiError ? error.code : 'REQUEST_FAILED'
@@ -37,7 +41,8 @@ export function AccountSyncSettings() {
       ['VERSION_CONFLICT', 'LOCAL_CHANGED', 'OPERATION_CONFLICT'].includes(code) ? 'changed' :
       ['UNAUTHORIZED', 'INVALID_EMAIL_OR_PASSWORD', 'SESSION_EXPIRED'].includes(code) ? 'credentials' :
       code === 'USER_ALREADY_EXISTS' || code === 'USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL' ? 'exists' :
-      ['DATA_TOO_LARGE', 'PLANS_TOO_LARGE'].includes(code) ? 'tooLarge' : 'failed'
+      ['DATA_TOO_LARGE', 'PLANS_TOO_LARGE'].includes(code) ? 'tooLarge' : code === 'NO_DATA' ? 'noData' :
+      code === 'AI_ACCESS_COPY_UNAVAILABLE' ? 'aiCopyUnavailable' : 'failed'
     setError(t(`accountSync.errors.${key}`))
     void triggerHaptic('error')
   }
@@ -110,6 +115,35 @@ export function AccountSyncSettings() {
     finally { setBusy(false) }
   }
 
+  async function showDashboard() {
+    if (!session || busy) return
+    setBusy(true); setError(''); setMessage('')
+    try { await openAccountDashboard(session, i18n.resolvedLanguage ?? i18n.language) }
+    catch (error) { report(error) }
+    finally { setBusy(false) }
+  }
+
+  async function previewRestore() {
+    if (!session || busy) return
+    setBusy(true); setError(''); setMessage('')
+    try { setRestore(await prepareAccountRestore(session)) }
+    catch (error) { report(error) }
+    finally { setBusy(false) }
+  }
+
+  async function confirmRestore() {
+    if (!session || !restore || busy) return
+    setBusy(true); setError(''); setMessage('')
+    try {
+      const at = await restoreAccountData(session, restore)
+      clearStoredCurrentSessionId()
+      setConflict(null); setPending(false); setSyncedAt(at); setRestore(null)
+      setMessage(t('accountSync.restored')); void triggerHaptic('success')
+      window.setTimeout(() => window.location.reload(), 600)
+    } catch (error) { setRestore(null); report(error) }
+    finally { setBusy(false) }
+  }
+
   async function logout() {
     if (!session || busy) return
     setBusy(true); setError(''); setMessage('')
@@ -132,6 +166,10 @@ export function AccountSyncSettings() {
             <RefreshCw size={18} className={syncing ? 'animate-spin motion-reduce:animate-none' : ''} aria-hidden="true" />
             {t(syncing ? 'accountSync.syncing' : pending ? 'accountSync.retry' : 'accountSync.sync')}
           </button>
+          <button type="button" disabled={busy} onClick={() => void previewRestore()} className="flex min-h-12 w-full items-center gap-3 rounded-xl bg-[var(--surface)] px-4 text-sm text-[var(--on-surface)] disabled:opacity-50">
+            <CloudDownload size={18} aria-hidden="true" />{t('accountSync.restore')}
+          </button>
+          <p className="text-xs leading-5 text-[var(--on-surface-variant)]">{t('accountSync.restoreHint')}</p>
           {conflict ? <section className="space-y-3 rounded-xl bg-[var(--tertiary-container)] p-4 text-sm text-[var(--on-tertiary-container)]">
             <p className="font-semibold">{t('accountSync.conflictTitle')}</p>
             <p>{t('accountSync.conflictDescription')}</p>
@@ -174,7 +212,7 @@ export function AccountSyncSettings() {
             <span>{t('accountSync.manualCopy')}</span>
             <textarea readOnly value={manualGuide} onFocus={(event) => event.target.select()} rows={7} className={`${inputClass} py-3`} />
           </label> : null}
-          <a href={getAccountDashboardUrl()} target="_blank" rel="noreferrer" className="flex min-h-12 items-center gap-3 rounded-xl bg-[var(--surface)] px-4 text-sm text-[var(--on-surface)]"><ChartNoAxesCombined size={18} aria-hidden="true" />{t('accountSync.dashboard')}</a>
+          <button type="button" onClick={() => void showDashboard()} disabled={busy} className="flex min-h-12 w-full items-center gap-3 rounded-xl bg-[var(--surface)] px-4 text-sm text-[var(--on-surface)] disabled:opacity-50"><ChartNoAxesCombined size={18} aria-hidden="true" />{t('accountSync.dashboard')}</button>
           <button type="button" disabled={busy} onClick={() => void logout()} className="flex min-h-11 items-center gap-2 text-sm text-[var(--on-surface-variant)]">
             <LogOut size={16} aria-hidden="true" />{t('accountSync.signOut')}
           </button>
@@ -194,5 +232,9 @@ export function AccountSyncSettings() {
         {error ? <p role="alert" className="rounded-xl bg-[var(--error-container)] p-3 text-sm text-[var(--on-error-container)]">{error}</p> : null}
       </div>
     </AnimatedSheet>
+    <ConfirmDialog open={restore !== null} danger title={t('accountSync.restoreTitle')}
+      description={t('accountSync.restoreDescription', { time: restore ? new Date(restore.syncedAt).toLocaleString(i18n.resolvedLanguage) : '',
+        sessions: restore?.backup.tables.workoutSessions.length ?? 0, sets: restore?.backup.tables.setRecords.length ?? 0 })}
+      confirmLabel={t('accountSync.restoreConfirm')} onCancel={() => { if (!busy) setRestore(null) }} onConfirm={() => void confirmRestore()} />
   </>
 }
