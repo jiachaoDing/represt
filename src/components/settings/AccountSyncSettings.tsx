@@ -1,11 +1,11 @@
 import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ChartNoAxesCombined, ChevronRight, Cloud, CloudDownload, Copy, LogOut, RefreshCw, ShieldOff } from 'lucide-react'
+import { ChartNoAxesCombined, ChevronRight, Cloud, CloudDownload, ExternalLink, LogOut, RefreshCw } from 'lucide-react'
 import { AnimatedSheet } from '../motion/AnimatedSheet'
 import { ConfirmDialog } from '../ui/ConfirmDialog'
 import { SettingsRow } from './SettingsRow'
 import { db } from '../../db/app-db'
-import { AccountApiError, createAccountAiAccess, getAccountAiAccess, getAccountDashboardUrl, getAccountGuideUrl, readAccountSession, revokeAccountAiAccess, signInAccount, signOutAccount } from '../../lib/account-api'
+import { AccountApiError, getAccountMcpUrl, readAccountSession, signInAccount, signOutAccount } from '../../lib/account-api'
 import { AccountPlanConflict, prepareAccountRestore, restoreAccountData, syncAccount } from '../../lib/account-sync'
 import { clearStoredCurrentSessionId } from '../../db/sessions'
 import { openAccountDashboard } from '../../lib/account-dashboard'
@@ -25,9 +25,6 @@ export function AccountSyncSettings() {
   const [password, setPassword] = useState('')
   const [busy, setBusy] = useState(false)
   const [syncing, setSyncing] = useState(false)
-  const [copying, setCopying] = useState(false)
-  const [aiExpiresAt, setAiExpiresAt] = useState<string | null>(null)
-  const [manualGuide, setManualGuide] = useState('')
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
   const [syncedAt, setSyncedAt] = useState<string | null>(null)
@@ -41,8 +38,7 @@ export function AccountSyncSettings() {
       ['VERSION_CONFLICT', 'LOCAL_CHANGED', 'OPERATION_CONFLICT'].includes(code) ? 'changed' :
       ['UNAUTHORIZED', 'INVALID_EMAIL_OR_PASSWORD', 'SESSION_EXPIRED'].includes(code) ? 'credentials' :
       code === 'USER_ALREADY_EXISTS' || code === 'USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL' ? 'exists' :
-      ['DATA_TOO_LARGE', 'PLANS_TOO_LARGE'].includes(code) ? 'tooLarge' : code === 'NO_DATA' ? 'noData' :
-      code === 'AI_ACCESS_COPY_UNAVAILABLE' ? 'aiCopyUnavailable' : 'failed'
+      ['DATA_TOO_LARGE', 'PLANS_TOO_LARGE'].includes(code) ? 'tooLarge' : code === 'NO_DATA' ? 'noData' : 'failed'
     setError(t(`accountSync.errors.${key}`))
     void triggerHaptic('error')
   }
@@ -51,11 +47,10 @@ export function AccountSyncSettings() {
     const state = current ? await db.accountSync.get(current.user.id) : null
     setSyncedAt(state?.syncedAt ?? null)
     setPending(Boolean(state?.pending))
-    if (current) setAiExpiresAt((await getAccountAiAccess(current)).expiresAt)
   }
 
   async function show() {
-    setError(''); setMessage(''); setConflict(null); setManualGuide(''); setAiExpiresAt(null)
+    setError(''); setMessage(''); setConflict(null)
     const current = readAccountSession()
     setSession(current); setOpen(true)
     try { await loadStatus(current) } catch (error) { report(error) }
@@ -87,32 +82,6 @@ export function AccountSyncSettings() {
       if (error instanceof AccountPlanConflict) setConflict(error)
       else { setConflict(null); report(error) }
     } finally { await loadStatus(session).catch(() => {}); setBusy(false); setSyncing(false) }
-  }
-
-  async function copyGuide() {
-    if (!session || busy) return
-    setBusy(true); setCopying(true); setError(''); setMessage(''); setManualGuide('')
-    try {
-      const access = await createAccountAiAccess(session)
-      setAiExpiresAt(access.expiresAt)
-      const instructions = t('accountSync.aiText', { url: getAccountGuideUrl(), token: access.token,
-        expiresAt: access.expiresAt, dashboard: getAccountDashboardUrl() })
-      try {
-        await navigator.clipboard.writeText(instructions)
-        setMessage(t('accountSync.copied'))
-      } catch { setManualGuide(instructions); setError(t('accountSync.errors.copy')) }
-    } catch (error) { report(error) }
-    finally { setBusy(false); setCopying(false) }
-  }
-
-  async function revokeAiAccess() {
-    if (!session || busy) return
-    setBusy(true); setError(''); setMessage('')
-    try {
-      await revokeAccountAiAccess(session)
-      setAiExpiresAt(null); setManualGuide(''); setMessage(t('accountSync.revoked'))
-    } catch (error) { report(error) }
-    finally { setBusy(false) }
   }
 
   async function showDashboard() {
@@ -148,13 +117,13 @@ export function AccountSyncSettings() {
     if (!session || busy) return
     setBusy(true); setError(''); setMessage('')
     try { await signOutAccount(session) } catch (error) { report(error) }
-    finally { setSession(null); setPassword(''); setConflict(null); setManualGuide(''); setAiExpiresAt(null); setBusy(false) }
+    finally { setSession(null); setPassword(''); setConflict(null); setBusy(false) }
   }
 
   return <>
     <SettingsRow icon={Cloud} label={t('accountSync.title')} supporting={t('accountSync.description')}
       onClick={() => void show()} right={<ChevronRight size={16} strokeWidth={2.2} aria-hidden="true" />} />
-    <AnimatedSheet open={open} onClose={() => { if (!busy) { setOpen(false); setManualGuide('') } }} title={t('accountSync.title')}>
+    <AnimatedSheet open={open} onClose={() => { if (!busy) setOpen(false) }} title={t('accountSync.title')}>
       <div className="max-h-[65dvh] space-y-4 overflow-y-auto pb-4">
         {session ? <>
           <div className="space-y-1 text-sm text-[var(--on-surface-variant)]">
@@ -200,18 +169,10 @@ export function AccountSyncSettings() {
               <button type="button" disabled={busy} className={buttonClass} onClick={() => void synchronize('cloud')}>{t('accountSync.useCloud')}</button>
             </div>
           </section> : null}
-          <button type="button" onClick={() => void copyGuide()} disabled={busy} className="flex min-h-12 w-full items-center gap-3 rounded-xl bg-[var(--surface)] px-4 text-sm text-[var(--on-surface)] disabled:opacity-50">
-            <Copy size={18} aria-hidden="true" />{t(copying ? 'accountSync.working' : 'accountSync.copyAi')}
-          </button>
-          <p className="text-xs leading-5 text-[var(--on-surface-variant)]">{t('accountSync.aiDescription')}</p>
-          {aiExpiresAt ? <div className="flex items-center gap-2 text-xs text-[var(--on-surface-variant)]">
-            <span className="flex-1">{t('accountSync.aiExpires', { time: new Date(aiExpiresAt).toLocaleString(i18n.resolvedLanguage) })}</span>
-            <button type="button" disabled={busy} onClick={() => void revokeAiAccess()} aria-label={t('accountSync.revokeAi')} className="flex min-h-11 min-w-11 items-center justify-center text-[var(--error)] disabled:opacity-50"><ShieldOff size={18} aria-hidden="true" /></button>
-          </div> : null}
-          {manualGuide ? <label className="block space-y-1 text-xs text-[var(--on-surface-variant)]">
-            <span>{t('accountSync.manualCopy')}</span>
-            <textarea readOnly value={manualGuide} onFocus={(event) => event.target.select()} rows={7} className={`${inputClass} py-3`} />
-          </label> : null}
+          <a href={getAccountMcpUrl()} target="_blank" rel="noopener noreferrer" className="flex min-h-12 w-full items-center gap-3 rounded-xl bg-[var(--surface)] px-4 text-sm text-[var(--on-surface)]">
+            <ExternalLink size={18} aria-hidden="true" />{t('accountSync.openMcp')}
+          </a>
+          <p className="text-xs leading-5 text-[var(--on-surface-variant)]">{t('accountSync.mcpDescription')}</p>
           <button type="button" onClick={() => void showDashboard()} disabled={busy} className="flex min-h-12 w-full items-center gap-3 rounded-xl bg-[var(--surface)] px-4 text-sm text-[var(--on-surface)] disabled:opacity-50"><ChartNoAxesCombined size={18} aria-hidden="true" />{t('accountSync.dashboard')}</button>
           <button type="button" disabled={busy} onClick={() => void logout()} className="flex min-h-11 items-center gap-2 text-sm text-[var(--on-surface-variant)]">
             <LogOut size={16} aria-hidden="true" />{t('accountSync.signOut')}

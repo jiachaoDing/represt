@@ -1,0 +1,15 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "represt-training-mcp",
+  "version": "2.0.0",
+  "description": "Read your Represt training history and make explicitly requested plan and cycle changes using Represt OAuth.",
+  "homepage": "https://share.represt.app/mcp",
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Represt Training MCP",
+        "shortDescription": "Training history, plans and cycles with your own Represt authorization"
+      }
+    }
+  }
+}

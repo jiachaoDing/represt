@@ -19,7 +19,10 @@ dist-ssr
 dev-dist
 *.tsbuildinfo
 .vite
+.wrangler/
 coverage
+/mcp-server/assets/*.bin
+/sites/represt-mcp/
 .asset-work
 *.apk
 *.aab
