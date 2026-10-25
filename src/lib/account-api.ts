@@ -52,12 +52,13 @@ export function fetchAccountPlans(session: AccountSession) {
 }
 
 export function fetchAccountData(session: AccountSession, version: number) {
-  return request<{ version: number; syncedAt: string; backup: FullDataBackup }>(`/api/account/data?version=${version}`, 'GET', undefined, session)
+  return request<{ version: number; snapshotVersion?: number | null; syncedAt: string; backup: FullDataBackup }>(`/api/account/data?version=${version}`, 'GET', undefined, session)
 }
 
 export function uploadAccountData(session: AccountSession, pending: NonNullable<AccountSyncState['pending']>) {
   return request<{ version: number; syncedAt: string }>('/api/account/sync', 'POST', {
-    version: pending.version, operationId: pending.operationId, backup: pending.backup,
+    version: pending.version, operationId: pending.operationId,
+    ...(pending.delta ? { baseSnapshotVersion: pending.delta.baseSnapshotVersion, delta: pending.delta.changes } : { backup: pending.backup }),
   }, session)
 }
 

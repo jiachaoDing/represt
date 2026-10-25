@@ -73,11 +73,12 @@ export function AccountSyncSettings() {
     if (!session || busy) return
     setBusy(true); setSyncing(true); setError(''); setMessage('')
     try {
-      const at = await syncAccount(session, source && conflict ? {
+      const result = await syncAccount(session, source && conflict ? {
         source, version: conflict.version, localSignature: planSignature(conflict.local),
       } : undefined)
-      setConflict(null); setSyncedAt(at); setPending(false)
-      setMessage(t('accountSync.synced')); void triggerHaptic('success')
+      setConflict(null); setSyncedAt(result.syncedAt); setPending(false)
+      setMessage(t(result.uploaded ? 'accountSync.synced' : 'accountSync.upToDate'))
+      if (result.uploaded) void triggerHaptic('success')
     } catch (error) {
       if (error instanceof AccountPlanConflict) setConflict(error)
       else { setConflict(null); report(error) }

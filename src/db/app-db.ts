@@ -151,6 +151,8 @@ class RepRestDatabase extends Dexie {
       })
 
     this.version(19).stores({ accountSync: 'id' })
+    this.version(20).stores({ accountSync: 'id' })
+      .upgrade((tx) => tx.table('accountSync').toCollection().modify({ snapshot: null }))
   }
 }
 

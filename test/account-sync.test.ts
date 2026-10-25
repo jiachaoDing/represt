@@ -7,6 +7,7 @@ import { AccountPlanConflict, prepareAccountRestore, restoreAccountData, syncAcc
 import { backupWithPlans, chooseAccountPlans, plansFromBackup, planSignature } from '../src/lib/account-plans'
 import { buildFullDataBackup, restoreFullDataBackup } from '../src/lib/full-data-backup'
 import type { AccountPlans } from '../src/lib/account-types'
+import { describeAccountSnapshot } from '../src/lib/account-sync-data'
 
 vi.mock('../src/lib/account-api', async (original) => ({
   ...await original<typeof import('../src/lib/account-api')>(), fetchAccountPlans: vi.fn(), fetchAccountData: vi.fn(), uploadAccountData: vi.fn(),
@@ -62,6 +63,66 @@ describe('manual account sync', () => {
     expect(uploaded.backup.tables).not.toHaveProperty('accountSync')
   })
 
+  it('skips uploads when business data is unchanged, including export time and object key order', async () => {
+    const base = await seed()
+    vi.mocked(fetchAccountPlans).mockResolvedValue({ version: 0, syncedAt: null, baseline: null, plans: null, pending: false, snapshotVersion: null })
+    await syncAccount(session)
+    const set = (await db.setRecords.get('set-1'))!
+    await db.setRecords.put({ reps: set.reps, ...set })
+    vi.mocked(fetchAccountPlans).mockResolvedValue({ version: 1, syncedAt: time, baseline: base, plans: base, pending: false, snapshotVersion: 1 })
+    expect(await syncAccount(session)).toEqual({ syncedAt: time, uploaded: false })
+    expect(uploadAccountData).toHaveBeenCalledTimes(1)
+    expect(fetchAccountData).not.toHaveBeenCalled()
+    expect((await db.accountSync.get(session.user.id))?.pending).toBeNull()
+  })
+
+  it('uploads only changed records and explicit deletions, using shared-plan codes as keys', async () => {
+    const base = await seed()
+    await db.sharedPlanRecords.put({ code: 'shared-1', url: 'https://example.test', title: 'Shared', createdAt: time, expiresAt: null })
+    vi.mocked(fetchAccountPlans).mockResolvedValue({ version: 0, syncedAt: null, baseline: null, plans: null, pending: false })
+    await syncAccount(session)
+    const set = (await db.setRecords.get('set-1'))!
+    await db.setRecords.delete('set-1')
+    await db.setRecords.put({ ...set, id: 'set-2', weightKg: 70 })
+    await db.sharedPlanRecords.delete('shared-1')
+    await db.workoutPlans.update('plan-1', { name: 'Lower' })
+    vi.mocked(fetchAccountPlans).mockResolvedValue({ version: 1, syncedAt: time, baseline: base, plans: base, pending: false, snapshotVersion: 1 })
+    vi.mocked(uploadAccountData).mockResolvedValue({ version: 2, syncedAt: time })
+    await syncAccount(session)
+    const delta = vi.mocked(uploadAccountData).mock.calls[1][1].delta!
+    expect(delta.baseSnapshotVersion).toBe(1)
+    expect(delta.changes.tables.setRecords).toEqual({ upserts: [{ ...set, id: 'set-2', weightKg: 70 }], deletes: ['set-1'] })
+    expect(delta.changes.tables.sharedPlanRecords).toEqual({ upserts: [], deletes: ['shared-1'] })
+    expect(delta.changes.tables.workoutPlans?.upserts).toMatchObject([{ id: 'plan-1', name: 'Lower' }])
+    expect(delta.changes.tables).not.toHaveProperty('planExercises')
+    expect(delta.changes).not.toHaveProperty('localStorage')
+    expect(fetchAccountData).not.toHaveBeenCalled()
+  })
+
+  it('captures settings changes and removals without uploading training history', async () => {
+    const base = await seed()
+    const storage = new Map([['trainre.themePreference', 'dark']])
+    vi.stubGlobal('window', { localStorage: { getItem: (key: string) => storage.get(key) ?? null }, dispatchEvent: vi.fn() })
+    vi.mocked(fetchAccountPlans).mockResolvedValue({ version: 0, syncedAt: null, baseline: null, plans: null, pending: false })
+    await syncAccount(session)
+    storage.clear()
+    vi.mocked(fetchAccountPlans).mockResolvedValue({ version: 1, syncedAt: time, baseline: base, plans: base, pending: false, snapshotVersion: 1 })
+    await syncAccount(session)
+    expect(vi.mocked(uploadAccountData).mock.calls[1][1].delta?.changes).toMatchObject({ tables: {}, localStorage: {} })
+  })
+
+  it('falls back to a full backup if another device replaced the snapshot or the server has no delta support', async () => {
+    const base = await seed()
+    const snapshot = await describeAccountSnapshot(await buildFullDataBackup(), 1)
+    await db.accountSync.put({ id: session.user.id, baseline: base, syncedAt: time, pending: null, snapshot })
+    vi.mocked(fetchAccountPlans).mockResolvedValue({ version: 2, syncedAt: time, baseline: base, plans: base, pending: false, snapshotVersion: 2 })
+    await syncAccount(session)
+    expect(vi.mocked(uploadAccountData).mock.calls[0][1].delta).toBeUndefined()
+    vi.mocked(fetchAccountPlans).mockResolvedValue({ version: 3, syncedAt: time, baseline: base, plans: base, pending: false })
+    await syncAccount(session)
+    expect(vi.mocked(uploadAccountData).mock.calls[1][1].delta).toBeUndefined()
+  })
+
   it('takes AI plans while keeping IDs, cycle anchors and historical records', async () => {
     const base = await seed()
     const remote = changed(base)
@@ -73,6 +134,59 @@ describe('manual account sync', () => {
     expect(await db.planExercises.get('exercise-1')).toMatchObject({ targetSets: 5 })
     expect(await db.trainingCycles.get('default')).toMatchObject({ anchorDateKey: '2026-10-20', slots: [{ id: 'slot-1', planId: 'plan-1' }] })
     expect(await db.setRecords.get('set-1')).toMatchObject({ weightKg: 60, reps: 8 })
+  })
+
+  it('uses the unchanged snapshot base after AI edits and does not resend history or churn plan timestamps', async () => {
+    const base = await seed()
+    vi.mocked(fetchAccountPlans).mockResolvedValue({ version: 0, syncedAt: null, baseline: null, plans: null, pending: false })
+    await syncAccount(session)
+    const remote = changed(base)
+    remote.plans[0].updatedAt = '2026-10-25T01:00:00.000Z'
+    vi.mocked(fetchAccountPlans).mockResolvedValue({ version: 2, syncedAt: time, baseline: base, plans: remote, pending: true, snapshotVersion: 1 })
+    vi.mocked(uploadAccountData).mockResolvedValue({ version: 3, syncedAt: time })
+    await syncAccount(session)
+    const pending = vi.mocked(uploadAccountData).mock.calls[1][1]
+    expect(pending.version).toBe(2)
+    expect(pending.delta?.baseSnapshotVersion).toBe(1)
+    expect(pending.delta?.changes.tables).not.toHaveProperty('setRecords')
+    expect((await db.workoutPlans.get('plan-1'))?.updatedAt).toBe(remote.plans[0].updatedAt)
+    vi.mocked(fetchAccountPlans).mockResolvedValue({ version: 3, syncedAt: time, baseline: remote, plans: remote, pending: false, snapshotVersion: 3 })
+    expect((await syncAccount(session)).uploaded).toBe(false)
+    expect(uploadAccountData).toHaveBeenCalledTimes(2)
+  })
+
+  it('retries exactly the same delta and leaves newer history for the following sync', async () => {
+    const base = await seed()
+    vi.mocked(fetchAccountPlans).mockResolvedValue({ version: 0, syncedAt: null, baseline: null, plans: null, pending: false })
+    await syncAccount(session)
+    vi.mocked(fetchAccountPlans).mockResolvedValue({ version: 1, syncedAt: time, baseline: base, plans: base, pending: false, snapshotVersion: 1 })
+    await db.setRecords.update('set-1', { weightKg: 70 })
+    vi.mocked(uploadAccountData).mockRejectedValueOnce(new AccountApiError('NETWORK'))
+    await expect(syncAccount(session)).rejects.toThrow('NETWORK')
+    const original = structuredClone((await db.accountSync.get(session.user.id))!.pending!)
+    await db.setRecords.update('set-1', { weightKg: 80 })
+    vi.mocked(uploadAccountData).mockResolvedValue({ version: 2, syncedAt: time })
+    await syncAccount(session)
+    expect(vi.mocked(uploadAccountData).mock.calls[2][1]).toEqual(original)
+    expect((await db.setRecords.get('set-1'))?.weightKg).toBe(80)
+    vi.mocked(fetchAccountPlans).mockResolvedValue({ version: 2, syncedAt: time, baseline: base, plans: base, pending: false, snapshotVersion: 2 })
+    await syncAccount(session)
+    expect(vi.mocked(uploadAccountData).mock.calls[3][1].delta?.changes.tables.setRecords?.upserts).toMatchObject([{ weightKg: 80 }])
+  })
+
+  it('clears a rejected delta without applying cloud plans and rebuilds from the next cloud version', async () => {
+    const base = await seed()
+    const snapshot = await describeAccountSnapshot(backupWithPlans(await buildFullDataBackup(), base), 1)
+    await db.accountSync.put({ id: session.user.id, baseline: base, syncedAt: time, pending: null, snapshot })
+    await db.setRecords.update('set-1', { weightKg: 70 })
+    vi.mocked(fetchAccountPlans).mockResolvedValue({ version: 1, syncedAt: time, baseline: base, plans: base, pending: false, snapshotVersion: 1 })
+    vi.mocked(uploadAccountData).mockRejectedValueOnce(new AccountApiError('VERSION_CONFLICT'))
+    await expect(syncAccount(session)).rejects.toThrow('VERSION_CONFLICT')
+    expect((await db.accountSync.get(session.user.id))?.pending).toBeNull()
+    expect((await db.setRecords.get('set-1'))?.weightKg).toBe(70)
+    vi.mocked(fetchAccountPlans).mockResolvedValue({ version: 2, syncedAt: time, baseline: base, plans: base, pending: false, snapshotVersion: 2 })
+    await syncAccount(session)
+    expect(vi.mocked(uploadAccountData).mock.calls[1][1].delta).toBeUndefined()
   })
 
   it('does not upload or modify either side when plans conflict', async () => {
@@ -163,6 +277,18 @@ describe('manual account sync', () => {
     expect(uploadAccountData).not.toHaveBeenCalled()
   })
 
+  it('establishes the restored snapshot baseline and skips a redundant upload', async () => {
+    const base = await seed()
+    const backup = backupWithPlans(await buildFullDataBackup(), base)
+    vi.mocked(fetchAccountPlans).mockResolvedValue({ version: 1, syncedAt: time, baseline: base, plans: base, pending: false, snapshotVersion: 1 })
+    vi.mocked(fetchAccountData).mockResolvedValue({ version: 1, snapshotVersion: 1, syncedAt: time, backup })
+    await db.setRecords.update('set-1', { weightKg: 999 })
+    await restoreAccountData(session, await prepareAccountRestore(session))
+    expect((await db.accountSync.get(session.user.id))?.snapshot?.version).toBe(1)
+    expect(await syncAccount(session)).toEqual({ syncedAt: time, uploaded: false })
+    expect(uploadAccountData).not.toHaveBeenCalled()
+  })
+
   it('rejects stale or cross-account restore previews without modifying local data', async () => {
     const base = await seed()
     const backup = await buildFullDataBackup()
@@ -203,7 +329,27 @@ describe('manual account sync', () => {
     old.close()
     await db.open()
     expect((await db.workoutPlans.get('legacy'))?.name).toBe('Existing plan')
-    expect(db.verno).toBe(19)
+    expect(db.verno).toBe(20)
     expect(await db.accountSync.count()).toBe(0)
+  })
+
+  it('preserves a version 19 pending upload during migration and establishes a snapshot after its retry', async () => {
+    const base = await seed()
+    vi.mocked(fetchAccountPlans).mockResolvedValue({ version: 0, syncedAt: null, baseline: null, plans: null, pending: false })
+    vi.mocked(uploadAccountData).mockRejectedValueOnce(new AccountApiError('NETWORK'))
+    await expect(syncAccount(session)).rejects.toThrow('NETWORK')
+    const pending = (await db.accountSync.get(session.user.id))!.pending!
+    await db.delete()
+    const old = new Dexie('trainre')
+    old.version(19).stores({ workoutPlans: 'id, name, updatedAt', planExercises: 'id, planId, [planId+order]', accountSync: 'id' })
+    await old.table('workoutPlans').bulkPut(pending.backup.tables.workoutPlans)
+    await old.table('planExercises').bulkPut(pending.backup.tables.planExercises)
+    await old.table('accountSync').put({ id: session.user.id, baseline: base, syncedAt: time, pending })
+    old.close()
+    await db.open()
+    expect((await db.accountSync.get(session.user.id))?.pending).toEqual(pending)
+    expect((await db.accountSync.get(session.user.id))?.snapshot).toBeNull()
+    await syncAccount(session)
+    expect((await db.accountSync.get(session.user.id))?.snapshot?.version).toBe(1)
   })
 })

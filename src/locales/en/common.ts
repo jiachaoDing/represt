@@ -6,6 +6,7 @@ const common = {
     signIn: 'Sign in', register: 'Register & sign in', working: 'Working…', haveAccount: 'Already registered? Sign in', needAccount: 'New account? Register',
     signedIn: 'Signed in. On a new device, restore cloud data first. Sync uploads data from this device.', signOut: 'Sign out',
     sync: 'Sync', syncing: 'Syncing…', retry: 'Retry sync', synced: 'Sync complete. Cloud plans were received and current data was uploaded.',
+    upToDate: 'Data is up to date. No upload needed.',
     lastSync: 'Last sync: {{time}}', neverSynced: 'Not synced yet', manualOnly: 'Sync uploads local data and receives cloud plans. On a new device, you can restore all cloud data instead.',
     restore: 'Restore all cloud data', restoreHint: 'For a new device: replace local plans, history and backed-up settings with cloud data. Records are not merged.',
     restoreTitle: 'Replace local data with cloud data?', restoreConfirm: 'Replace & restore', restored: 'Cloud data restored. Refreshing…',

@@ -6,6 +6,7 @@ const common = {
     signIn: '登录', register: '注册并登录', working: '处理中…', haveAccount: '已有账号，去登录', needAccount: '没有账号，去注册',
     signedIn: '登录成功。换设备可先从云端恢复全部数据；点击同步会上传当前设备数据。', signOut: '退出登录',
     sync: '同步', syncing: '正在同步…', retry: '重试同步', synced: '同步完成，云端计划已接收，当前数据已上传。',
+    upToDate: '数据已是最新，无需上传。',
     lastSync: '上次同步：{{time}}', neverSynced: '尚未同步', manualOnly: '点击同步会上传本机数据并接收云端计划；换设备时可选择从云端恢复全部数据。',
     restore: '从云端恢复全部数据', restoreHint: '适合换设备：使用云端数据覆盖本机计划、历史记录和备份中的设置，不合并两端记录。',
     restoreTitle: '用云端数据覆盖本机？', restoreConfirm: '覆盖并恢复', restored: '云端数据已恢复，正在刷新。',
