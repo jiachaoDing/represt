@@ -5,6 +5,8 @@ import type { MeasurementType } from '../../domain/exercise-catalog'
 import { getCompletedAtLabel } from '../../lib/session-display'
 import { useWeightUnitPreference } from '../../lib/weight-units'
 import type { SetRecord } from '../../models/types'
+import { RecordingModeButton } from './RecordingModeButton'
+import { LeftRightNumberInputs } from './LeftRightNumberInputs'
 
 type ExerciseRecordInlineCardProps = {
   isSubmitting: boolean
@@ -12,6 +14,11 @@ type ExerciseRecordInlineCardProps = {
   distanceInput: string
   durationInput: string
   measurementType: MeasurementType
+  onRecordingModeChange: (value: MeasurementType) => void
+  rightWeightInput: string
+  rightRepsInput: string
+  onRightWeightChange: (value: string) => void
+  onRightRepsChange: (value: string) => void
   repsInput: string
   weightInput: string
   onCancel: () => void
@@ -28,6 +35,11 @@ export function ExerciseRecordInlineCard({
   distanceInput,
   durationInput,
   measurementType,
+  onRecordingModeChange,
+  rightWeightInput,
+  rightRepsInput,
+  onRightWeightChange,
+  onRightRepsChange,
   repsInput,
   weightInput,
   onCancel,
@@ -41,7 +53,7 @@ export function ExerciseRecordInlineCard({
   const { unit: weightUnit } = useWeightUnitPreference()
   const weightUnitLabel = t(`common.weight.${weightUnit}`, { value: '' }).trim()
   const fields = [
-    measurementType === 'weightReps' || measurementType === 'weightDistance'
+    measurementType === 'weightReps' || measurementType === 'weightDistance' || measurementType === 'leftRightWeightReps'
       ? {
           inputMode: 'decimal' as const,
           label: `${t('exercise.weightKg')} (${weightUnitLabel})`,
@@ -49,9 +61,11 @@ export function ExerciseRecordInlineCard({
           onChange: onWeightChange,
           step: weightUnit === 'lb' ? '1' : '0.5',
           value: weightInput,
+          rightValue: measurementType === 'leftRightWeightReps' ? rightWeightInput : undefined,
+          onRightChange: onRightWeightChange,
         }
       : null,
-    measurementType === 'weightReps' || measurementType === 'reps'
+    measurementType === 'weightReps' || measurementType === 'reps' || measurementType === 'leftRightWeightReps' || measurementType === 'durationReps'
       ? {
           inputMode: 'numeric' as const,
           label: t('exercise.reps'),
@@ -59,9 +73,11 @@ export function ExerciseRecordInlineCard({
           onChange: onRepsChange,
           step: '1',
           value: repsInput,
+          rightValue: measurementType === 'leftRightWeightReps' ? rightRepsInput : undefined,
+          onRightChange: onRightRepsChange,
         }
       : null,
-    measurementType === 'duration'
+    measurementType === 'duration' || measurementType === 'durationReps'
       ? {
           inputMode: 'numeric' as const,
           label: t('exercise.durationSeconds'),
@@ -82,6 +98,7 @@ export function ExerciseRecordInlineCard({
         }
       : null,
   ].filter((field): field is NonNullable<typeof field> => field !== null)
+  if (measurementType === 'durationReps') fields.reverse()
 
   return (
     <section className="mx-auto max-h-[calc(100dvh_-_5rem)] w-full max-w-[22rem] overflow-y-auto rounded-[28px] bg-[var(--surface-container)] p-5 shadow-2xl">
@@ -117,10 +134,22 @@ export function ExerciseRecordInlineCard({
             </div>
           </div>
 
-          <div className={`grid gap-4 ${fields.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
-            {fields.map((field) => (
+          <div className={`relative grid gap-4 ${fields.length === 1 ? 'mx-auto w-[calc(50%_-_0.5rem)] grid-cols-1' : 'grid-cols-2'}`}>
+            <RecordingModeButton
+              value={measurementType}
+              disabled={isSubmitting}
+              className="absolute -top-2.5 left-1/2 -translate-x-1/2 -translate-y-1/2"
+              onChange={onRecordingModeChange}
+            />
+            {fields.map((field) => 'rightValue' in field && field.rightValue !== undefined ? (
+              <LeftRightNumberInputs
+                key={field.label} label={field.label} left={field.value} right={field.rightValue}
+                onLeftChange={field.onChange} onRightChange={field.onRightChange}
+                disabled={isSubmitting} inputMode={field.inputMode} step={field.step} variant="record"
+              />
+            ) : (
               <label key={field.label} className="block">
-              <span className="mb-1 ml-1 block text-xs font-medium text-[var(--on-surface-variant)]">
+              <span className={`mb-1 ml-1 block text-xs font-medium text-[var(--on-surface-variant)] ${fields.length === 1 ? 'text-center' : ''}`}>
                 {field.label}
               </span>
               <input
@@ -131,7 +160,7 @@ export function ExerciseRecordInlineCard({
                 value={field.value}
                 disabled={isSubmitting}
                 onChange={(event) => field.onChange(event.target.value)}
-                className="w-full rounded-none border-b border-[var(--on-surface)] bg-transparent px-1 py-3 text-base text-[var(--on-surface)] outline-none transition-all focus:border-b-2 focus:border-[var(--primary)] disabled:opacity-50"
+                className={`w-full rounded-none border-b border-[var(--on-surface)] bg-transparent px-1 py-3 text-base text-[var(--on-surface)] outline-none transition-all focus:border-b-2 focus:border-[var(--primary)] disabled:opacity-50 ${fields.length === 1 ? 'text-center' : ''}`}
               />
             </label>
             ))}

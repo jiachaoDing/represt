@@ -2,6 +2,7 @@ import type { PerformedExercise, SessionPlanItem } from '../models/types'
 import { deriveExerciseStatus } from '../lib/session-display'
 import { db } from './app-db'
 import { getExercisePersonalRecords } from './exercise-records'
+import { getMeasurementTypeForExercise, getSetRecordMeasurementType } from '../lib/set-record-measurement'
 import {
   attachDerivedSessionStatus,
   getLatestSetRecord,
@@ -62,10 +63,13 @@ export async function getScheduleExerciseDetail(planItemId: string) {
     return null
   }
 
-  const [latestSetRecord, personalRecords] = await Promise.all([
-    performedExercise ? getLatestSetRecord(performedExercise.id) : null,
-    getExercisePersonalRecords(planItem),
-  ])
+  const latestSetRecord = performedExercise ? await getLatestSetRecord(performedExercise.id) : null
+  const personalRecords = await getExercisePersonalRecords({
+    ...planItem,
+    measurementType: latestSetRecord
+      ? getSetRecordMeasurementType(latestSetRecord, getMeasurementTypeForExercise(planItem))
+      : getMeasurementTypeForExercise(planItem),
+  })
   const previousSetRecord =
     performedExercise && latestSetRecord
       ? await getPreviousSetRecord(performedExercise.id, latestSetRecord.setNumber)

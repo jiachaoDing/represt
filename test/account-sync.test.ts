@@ -329,7 +329,7 @@ describe('manual account sync', () => {
     old.close()
     await db.open()
     expect((await db.workoutPlans.get('legacy'))?.name).toBe('Existing plan')
-    expect(db.verno).toBe(20)
+    expect(db.verno).toBe(21)
     expect(await db.accountSync.count()).toBe(0)
   })
 

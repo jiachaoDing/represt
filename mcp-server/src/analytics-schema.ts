@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { dateKey, versionSchema } from './schemas.js'
 
-export const measurementSchema = z.enum(['weightReps', 'reps', 'duration', 'distance', 'weightDistance'])
+export const measurementSchema = z.enum(['weightReps', 'reps', 'duration', 'distance', 'weightDistance', 'leftRightWeightReps', 'durationReps'])
 export const analyticsInput = z.object({
   query: z.enum(['workout_summary', 'overview', 'history', 'exercise_progress', 'frequency', 'volume', 'muscle_distribution', 'personal_records', 'plateaus']),
   version: versionSchema.optional().describe('Omit on the first call to use the current snapshot. Reuse the returned version for pagination; restart on VERSION_CONFLICT.'),

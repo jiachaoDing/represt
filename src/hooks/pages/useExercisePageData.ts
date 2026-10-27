@@ -26,7 +26,8 @@ import {
   scheduleRestTimerNotification,
 } from '../../native/training-notifications'
 import { TRAINING_NOTIFICATION_EXERCISE_UPDATED_EVENT } from '../../native/notification-navigation'
-import { getMeasurementTypeForExercise } from '../../lib/set-record-measurement'
+import { getMeasurementTypeForExercise, getSetRecordMeasurementType } from '../../lib/set-record-measurement'
+import type { MeasurementType } from '../../domain/exercise-catalog'
 import { kgToDisplayWeightString } from '../../lib/weight-units'
 
 function syncLatestSetInputs(
@@ -35,11 +36,15 @@ function syncLatestSetInputs(
   setRepsInput: (value: string) => void,
   setDurationInput: (value: string) => void,
   setDistanceInput: (value: string) => void,
+  setRightWeightInput: (value: string) => void,
+  setRightRepsInput: (value: string) => void,
 ) {
   setWeightInput(kgToDisplayWeightString(detail?.latestSetRecord?.weightKg ?? null))
   setRepsInput(toOptionalNumberString(detail?.latestSetRecord?.reps ?? null))
   setDurationInput(toOptionalNumberString(detail?.latestSetRecord?.durationSeconds ?? null))
   setDistanceInput(toOptionalNumberString(detail?.latestSetRecord?.distanceMeters ?? null))
+  setRightWeightInput(kgToDisplayWeightString(detail?.latestSetRecord?.rightWeightKg ?? null))
+  setRightRepsInput(toOptionalNumberString(detail?.latestSetRecord?.rightReps ?? null))
 }
 
 async function syncRestTimerNotification(detail: ScheduleExerciseDetail | null) {
@@ -72,6 +77,9 @@ export function useExercisePageData(id: string) {
   const [repsInput, setRepsInput] = useState('')
   const [durationInput, setDurationInput] = useState('')
   const [distanceInput, setDistanceInput] = useState('')
+  const [rightWeightInput, setRightWeightInput] = useState('')
+  const [rightRepsInput, setRightRepsInput] = useState('')
+  const [recordModeOverride, setRecordModeOverride] = useState<{ recordId: string; type: MeasurementType } | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -90,7 +98,7 @@ export function useExercisePageData(id: string) {
         }
 
         setDetail(result)
-        syncLatestSetInputs(result, setWeightInput, setRepsInput, setDurationInput, setDistanceInput)
+        syncLatestSetInputs(result, setWeightInput, setRepsInput, setDurationInput, setDistanceInput, setRightWeightInput, setRightRepsInput)
       } catch (loadError) {
         if (isCancelled) {
           return
@@ -117,7 +125,7 @@ export function useExercisePageData(id: string) {
       setError(null)
       const result = await getScheduleExerciseDetail(id)
       setDetail(result)
-      syncLatestSetInputs(result, setWeightInput, setRepsInput, setDurationInput, setDistanceInput)
+      syncLatestSetInputs(result, setWeightInput, setRepsInput, setDurationInput, setDistanceInput, setRightWeightInput, setRightRepsInput)
     } catch (loadError) {
       console.error(loadError)
       setError(i18n.t('exercise.loadFailed'))
@@ -133,7 +141,7 @@ export function useExercisePageData(id: string) {
 
       void getScheduleExerciseDetail(id).then((nextDetail) => {
         setDetail(nextDetail)
-        syncLatestSetInputs(nextDetail, setWeightInput, setRepsInput, setDurationInput, setDistanceInput)
+        syncLatestSetInputs(nextDetail, setWeightInput, setRepsInput, setDurationInput, setDistanceInput, setRightWeightInput, setRightRepsInput)
       })
     }
 
@@ -180,7 +188,7 @@ export function useExercisePageData(id: string) {
       const nextDetail = await getScheduleExerciseDetail(detail.exercise.id)
 
       setDetail(nextDetail)
-      syncLatestSetInputs(nextDetail, setWeightInput, setRepsInput, setDurationInput, setDistanceInput)
+      syncLatestSetInputs(nextDetail, setWeightInput, setRepsInput, setDurationInput, setDistanceInput, setRightWeightInput, setRightRepsInput)
       await syncRestTimerNotification(nextDetail)
       didComplete = true
     })
@@ -203,15 +211,19 @@ export function useExercisePageData(id: string) {
 
     const didSave = await runMutation(async () => {
       await updateLatestSetRecordValues(detail.exercise.id, {
+        measurementType: recordModeOverride?.recordId === detail.latestSetRecord?.id ? recordModeOverride?.type : undefined,
         distanceMeters: parseOptionalDistanceMeters(distanceInput),
         durationSeconds: parseOptionalDurationSeconds(durationInput),
         weightKg: parseOptionalWeightKg(weightInput),
         reps: parseOptionalReps(repsInput),
+        rightWeightKg: parseOptionalWeightKg(rightWeightInput),
+        rightReps: parseOptionalReps(rightRepsInput),
       })
 
       const nextDetail = await getScheduleExerciseDetail(detail.exercise.id)
       setDetail(nextDetail)
-      syncLatestSetInputs(nextDetail, setWeightInput, setRepsInput, setDurationInput, setDistanceInput)
+      setRecordModeOverride(null)
+      syncLatestSetInputs(nextDetail, setWeightInput, setRepsInput, setDurationInput, setDistanceInput, setRightWeightInput, setRightRepsInput)
     })
 
     if (didSave) {
@@ -222,7 +234,7 @@ export function useExercisePageData(id: string) {
   }
 
   async function handleUsePreviousSetRecord() {
-    if (!detail?.latestSetRecord || !detail.previousSetRecord) {
+    if (!detail?.latestSetRecord || !detail.previousSetRecord || !canUsePreviousSetRecord) {
       return false
     }
 
@@ -233,11 +245,13 @@ export function useExercisePageData(id: string) {
         durationSeconds: previousSetRecord.durationSeconds,
         weightKg: previousSetRecord.weightKg,
         reps: previousSetRecord.reps,
+        rightWeightKg: previousSetRecord.rightWeightKg,
+        rightReps: previousSetRecord.rightReps,
       })
 
       const nextDetail = await getScheduleExerciseDetail(detail.exercise.id)
       setDetail(nextDetail)
-      syncLatestSetInputs(nextDetail, setWeightInput, setRepsInput, setDurationInput, setDistanceInput)
+      syncLatestSetInputs(nextDetail, setWeightInput, setRepsInput, setDurationInput, setDistanceInput, setRightWeightInput, setRightRepsInput)
     })
 
     if (didSave) {
@@ -259,7 +273,7 @@ export function useExercisePageData(id: string) {
       const nextDetail = await getScheduleExerciseDetail(detail.exercise.id)
 
       setDetail(nextDetail)
-      syncLatestSetInputs(nextDetail, setWeightInput, setRepsInput, setDurationInput, setDistanceInput)
+      syncLatestSetInputs(nextDetail, setWeightInput, setRepsInput, setDurationInput, setDistanceInput, setRightWeightInput, setRightRepsInput)
       await syncRestTimerNotification(nextDetail)
       didUndo = true
     })
@@ -287,7 +301,7 @@ export function useExercisePageData(id: string) {
       const nextDetail = await getScheduleExerciseDetail(detail.exercise.id)
 
       setDetail(nextDetail)
-      syncLatestSetInputs(nextDetail, setWeightInput, setRepsInput, setDurationInput, setDistanceInput)
+      syncLatestSetInputs(nextDetail, setWeightInput, setRepsInput, setDurationInput, setDistanceInput, setRightWeightInput, setRightRepsInput)
       await syncRestTimerNotification(nextDetail)
       didUndo = true
     })
@@ -327,7 +341,7 @@ export function useExercisePageData(id: string) {
       const nextDetail = await getScheduleExerciseDetail(detail.exercise.id)
 
       setDetail(nextDetail)
-      syncLatestSetInputs(nextDetail, setWeightInput, setRepsInput, setDurationInput, setDistanceInput)
+      syncLatestSetInputs(nextDetail, setWeightInput, setRepsInput, setDurationInput, setDistanceInput, setRightWeightInput, setRightRepsInput)
     })
 
     if (didAdd) {
@@ -347,7 +361,7 @@ export function useExercisePageData(id: string) {
       const nextDetail = await getScheduleExerciseDetail(detail.exercise.id)
 
       setDetail(nextDetail)
-      syncLatestSetInputs(nextDetail, setWeightInput, setRepsInput, setDurationInput, setDistanceInput)
+      syncLatestSetInputs(nextDetail, setWeightInput, setRepsInput, setDurationInput, setDistanceInput, setRightWeightInput, setRightRepsInput)
     })
 
     if (didRemove) {
@@ -357,9 +371,22 @@ export function useExercisePageData(id: string) {
     return didRemove
   }
 
+  function handleRecordingModeChange(next: MeasurementType) {
+    if (!detail?.latestSetRecord || isSubmitting) return
+    setRecordModeOverride({ recordId: detail.latestSetRecord.id, type: next })
+  }
+
   const latestSetRecord = detail?.latestSetRecord ?? null
   const previousSetRecord = detail?.previousSetRecord ?? null
   const measurementType = getMeasurementTypeForExercise(detail?.exercise ?? {})
+  const savedRecordMeasurementType = latestSetRecord
+    ? getSetRecordMeasurementType(latestSetRecord, measurementType)
+    : measurementType
+  const recordMeasurementType = recordModeOverride && recordModeOverride.recordId === latestSetRecord?.id
+    ? recordModeOverride.type : savedRecordMeasurementType
+  const canUsePreviousSetRecord = previousSetRecord !== null &&
+    recordMeasurementType === savedRecordMeasurementType &&
+    getSetRecordMeasurementType(previousSetRecord, measurementType) === recordMeasurementType
   const canCompleteSet =
     detail !== null && detail.exercise.completedSets < detail.exercise.targetSets && !isSubmitting
   const canRemoveTargetSet =
@@ -368,6 +395,11 @@ export function useExercisePageData(id: string) {
     !isSubmitting
   const canUndoLatestSet = latestSetRecord !== null && !isSubmitting
   const canUndoExercise = latestSetRecord !== null && !isSubmitting
+
+  function resetRecordForm() {
+    setRecordModeOverride(null)
+    syncLatestSetInputs(detail, setWeightInput, setRepsInput, setDurationInput, setDistanceInput, setRightWeightInput, setRightRepsInput)
+  }
 
   return {
     canCompleteSet,
@@ -386,6 +418,14 @@ export function useExercisePageData(id: string) {
     handleUndoLatestSet,
     handleUpdateLatestSetRecord,
     handleUsePreviousSetRecord,
+    handleRecordingModeChange,
+    canUsePreviousSetRecord,
+    recordMeasurementType,
+    resetRecordForm,
+    rightWeightInput,
+    rightRepsInput,
+    setRightWeightInput,
+    setRightRepsInput,
     isLoading,
     isSubmitting,
     latestSetRecord,

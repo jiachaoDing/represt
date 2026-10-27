@@ -1,12 +1,15 @@
-import type { MovementPattern, MuscleDistributionItem } from '../domain/exercise-catalog'
+import type { MeasurementType, MovementPattern, MuscleDistributionItem } from '../domain/exercise-catalog'
 
 export type PlanTransferExercise = {
   name: string
   catalogExerciseId?: string | null
+  measurementType?: MeasurementType | null
   targetSets: number
   restSeconds: number
   weightKg: number | null
   reps: number | null
+  rightWeightKg?: number | null
+  rightReps?: number | null
   durationSeconds: number | null
   distanceMeters: number | null
 }

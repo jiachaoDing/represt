@@ -1,9 +1,13 @@
 import type { PerformedExercise, SessionPlanItem, SetRecord } from '../models/types'
+import type { MeasurementType } from '../domain/exercise-catalog'
+import i18n from '../i18n'
 import { getRestEndsAt } from '../lib/rest-timer'
 import { getTodaySessionDateKey } from '../lib/session-date-key'
 import {
   buildSetRecordValuesForMeasurement,
   getMeasurementTypeForExercise,
+  getSetRecordMeasurementType,
+  type SetRecordValueInput,
 } from '../lib/set-record-measurement'
 import { db } from './app-db'
 import { getLatestSetRecord, getPerformedExerciseForPlanItem, nowIso } from './session-core'
@@ -23,6 +27,8 @@ function createPerformedExercise(planItem: SessionPlanItem, timestamp: string) {
     targetSets: planItem.targetSets,
     defaultWeightKg: planItem.defaultWeightKg ?? null,
     defaultReps: planItem.defaultReps ?? null,
+    defaultRightWeightKg: planItem.defaultRightWeightKg ?? null,
+    defaultRightReps: planItem.defaultRightReps ?? null,
     defaultDurationSeconds: planItem.defaultDurationSeconds ?? null,
     defaultDistanceMeters: planItem.defaultDistanceMeters ?? null,
     completedSets: 0,
@@ -77,6 +83,8 @@ export async function completePlanItemSet(planItemId: string): Promise<SetRecord
         reps: exercise.defaultReps ?? planExercise?.reps ?? null,
         durationSeconds: exercise.defaultDurationSeconds ?? planExercise?.durationSeconds ?? null,
         distanceMeters: exercise.defaultDistanceMeters ?? planExercise?.distanceMeters ?? null,
+        rightWeightKg: exercise.defaultRightWeightKg ?? planExercise?.rightWeightKg ?? null,
+        rightReps: exercise.defaultRightReps ?? planExercise?.rightReps ?? null,
       })
 
       const setRecord: SetRecord = {
@@ -85,6 +93,7 @@ export async function completePlanItemSet(planItemId: string): Promise<SetRecord
         performedExerciseId: exercise.id,
         setNumber: nextCompletedSets,
         completedAt,
+        measurementType,
         ...defaultValues,
       }
 
@@ -249,30 +258,45 @@ export async function decreaseSessionPlanItemTargetSets(planItemId: string) {
 
 export async function updateLatestSetRecordValues(
   planItemId: string,
-  input: {
-    weightKg?: number | null
-    reps?: number | null
-    durationSeconds?: number | null
-    distanceMeters?: number | null
-  },
+  input: SetRecordValueInput & { measurementType?: MeasurementType },
 ) {
-  const exercise = await getPerformedExerciseForPlanItem(planItemId)
-  if (!exercise) {
-    throw new Error('当前动作还没有组记录，无法补录。')
-  }
+  return db.transaction('rw', db.sessionPlanItems, db.performedExercises, db.setRecords, async () => {
+    const exercise = await getPerformedExerciseForPlanItem(planItemId)
+    if (!exercise) {
+      throw new Error('当前动作还没有组记录，无法补录。')
+    }
 
-  const latestSetRecord = await getLatestSetRecord(exercise.id)
-  if (!latestSetRecord) {
-    throw new Error('当前动作还没有组记录，无法补录。')
-  }
+    const latestSetRecord = await getLatestSetRecord(exercise.id)
+    if (!latestSetRecord) {
+      throw new Error('当前动作还没有组记录，无法补录。')
+    }
 
-  const measurementType = getMeasurementTypeForExercise(exercise)
-  const updates: Partial<SetRecord> = buildSetRecordValuesForMeasurement(measurementType, input)
+    const measurementType = input.measurementType ?? getSetRecordMeasurementType(latestSetRecord, getMeasurementTypeForExercise(exercise))
+    if (input.measurementType) await updatePlanItemRecordingMode(planItemId, measurementType)
+    const updates: Partial<SetRecord> = {
+      measurementType,
+      rightWeightKg: null,
+      rightReps: null,
+      ...buildSetRecordValuesForMeasurement(measurementType, input),
+    }
+    await db.setRecords.update(latestSetRecord.id, updates)
+    return { ...latestSetRecord, ...updates } satisfies SetRecord
+  })
+}
 
-  await db.setRecords.update(latestSetRecord.id, updates)
-
-  return {
-    ...latestSetRecord,
-    ...updates,
-  } satisfies SetRecord
+export async function updatePlanItemRecordingMode(planItemId: string, measurementType: MeasurementType) {
+  await db.transaction('rw', db.sessionPlanItems, db.performedExercises, db.setRecords, async () => {
+    const item = await db.sessionPlanItems.get(planItemId)
+    if (!item) throw new Error(i18n.t('exercise.notFoundTitle'))
+    const performed = await getPerformedExerciseForPlanItem(planItemId)
+    if (performed) {
+      // Also freeze records restored from backups created before per-set type snapshots.
+      const previousType = getMeasurementTypeForExercise(performed)
+      await db.setRecords.where('performedExerciseId').equals(performed.id).modify((record) => {
+        record.measurementType ??= previousType
+      })
+      await db.performedExercises.update(performed.id, { measurementType })
+    }
+    await db.sessionPlanItems.update(item.id, { measurementType })
+  })
 }

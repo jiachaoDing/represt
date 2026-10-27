@@ -1,8 +1,8 @@
 import { type Fact, type Session, prepareFacts } from './analytics-data.js'
-import { exerciseInfo, groupBy, totals } from './analytics-metrics.js'
+import { comparisonMeasurement, exerciseInfo, groupBy, totals } from './analytics-metrics.js'
 
 type Prepared = ReturnType<typeof prepareFacts>
-const seriesKey = (f: Fact) => `${f.exerciseKey}\0${f.measurementType}`
+const seriesKey = (f: Fact) => `${f.exerciseKey}\0${comparisonMeasurement(f.measurementType)}`
 const finite = (v: unknown) => typeof v === 'number' && Number.isFinite(v) && v >= 0 ? v : null
 const setDetails = (facts: Fact[]) => [...facts].sort((a, b) =>
   (finite(a.set.setNumber) ?? Infinity) - (finite(b.set.setNumber) ?? Infinity) ||

@@ -1,5 +1,7 @@
 import {
   movementPatterns,
+  measurementTypes,
+  type MeasurementType,
   muscleGroups,
   type MovementPattern,
   type MuscleDistributionItem,
@@ -92,10 +94,14 @@ function parseExercise(source: Record<string, unknown>): PlanTransferExercise | 
   return {
     name,
     catalogExerciseId: readString(source.catalogExerciseId) || null,
+    measurementType: measurementTypes.includes(source.measurementType as MeasurementType)
+      ? source.measurementType as MeasurementType : null,
     targetSets: parseRequiredInteger(source.targetSets, 3, 1),
     restSeconds: parseRequiredInteger(source.restSeconds, 90, 0),
     weightKg: parseOptionalNumber(source.weightKg),
     reps: parseOptionalNumber(source.reps),
+    rightWeightKg: parseOptionalNumber(source.rightWeightKg),
+    rightReps: parseOptionalNumber(source.rightReps),
     durationSeconds: parseOptionalNumber(source.durationSeconds),
     distanceMeters: parseOptionalNumber(source.distanceMeters),
   } satisfies PlanTransferExercise

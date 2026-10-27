@@ -2,6 +2,7 @@ import Dexie, { type EntityTable } from 'dexie'
 
 import { exercises, type MeasurementType } from '../domain/exercise-catalog'
 import { resolveCatalogExerciseId } from '../lib/exercise-name'
+import { getMeasurementTypeForExercise } from '../lib/set-record-measurement'
 import type {
   ExerciseProfile,
   PerformedExercise,
@@ -153,6 +154,13 @@ class RepRestDatabase extends Dexie {
     this.version(19).stores({ accountSync: 'id' })
     this.version(20).stores({ accountSync: 'id' })
       .upgrade((tx) => tx.table('accountSync').toCollection().modify({ snapshot: null }))
+    this.version(21).stores({}).upgrade(async (tx) => {
+      const performed = await tx.table<PerformedExercise>('performedExercises').toArray()
+      const types = new Map(performed.map((exercise) => [exercise.id, getMeasurementTypeForExercise(exercise)]))
+      await tx.table<SetRecord>('setRecords').toCollection().modify((record) => {
+        record.measurementType ??= types.get(record.performedExerciseId) ?? 'weightReps'
+      })
+    })
   }
 }
 

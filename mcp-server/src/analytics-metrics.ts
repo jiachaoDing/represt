@@ -43,7 +43,9 @@ export function bests(facts: Fact[]) {
   const best = new Map<Metric, { metric: Metric; unit: string; value: number; setRecordId: string;
     sessionId: string; sessionDateKey: string; completedAt: string }>()
   for (const fact of facts) for (const metric of Object.keys(fact.values) as Metric[]) {
-    const value = fact.values[metric]!
+    const reps = [fact.set.reps, fact.set.rightReps].filter((v): v is number => typeof v === 'number' && Number.isInteger(v) && v >= 0)
+    const value = metric === 'reps' && fact.measurementType === 'leftRightWeightReps'
+      ? reps.reduce((sum, count) => sum + count, 0) / reps.length : fact.values[metric]!
     const previous = best.get(metric)
     if (!previous || value > previous.value || (value === previous.value && Date.parse(fact.set.completedAt) > Date.parse(previous.completedAt))) {
       best.set(metric, { metric, unit: metricUnits[metric], value, setRecordId: fact.set.id,
@@ -55,7 +57,10 @@ export function bests(facts: Fact[]) {
 export const primaryMetric = (measurement: Measurement): Metric | null => ({
   weightReps: 'weightKg', reps: 'reps', duration: 'durationSeconds', distance: 'distanceMeters',
   weightDistance: 'loadDistanceKgMeters', unknown: null,
+  leftRightWeightReps: 'weightKg', durationReps: 'durationSeconds',
 })[measurement] as Metric | null
+
+export const comparisonMeasurement = (measurement: Measurement) => measurement === 'leftRightWeightReps' ? 'weightReps' : measurement
 
 export function exerciseInfo(facts: Fact[]) {
   const fact = facts[0]

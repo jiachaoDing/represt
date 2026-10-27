@@ -159,6 +159,8 @@ export function usePlansPageData(preferredSelectedPlanId?: string | null) {
         restSeconds: parseIntegerInput(draft.restSeconds),
         weightKg: parseOptionalWeightKg(draft.weightKg),
         reps: parseOptionalReps(draft.reps),
+        rightWeightKg: parseOptionalWeightKg(draft.rightWeightKg),
+        rightReps: parseOptionalReps(draft.rightReps),
         durationSeconds: parseOptionalDurationSeconds(draft.durationSeconds),
         distanceMeters: parseOptionalDistanceMeters(draft.distanceMeters),
       })
@@ -209,6 +211,8 @@ export function usePlansPageData(preferredSelectedPlanId?: string | null) {
         restSeconds: parseIntegerInput(draft.restSeconds),
         weightKg: parseOptionalWeightKg(draft.weightKg),
         reps: parseOptionalReps(draft.reps),
+        rightWeightKg: parseOptionalWeightKg(draft.rightWeightKg),
+        rightReps: parseOptionalReps(draft.rightReps),
         durationSeconds: parseOptionalDurationSeconds(draft.durationSeconds),
         distanceMeters: parseOptionalDistanceMeters(draft.distanceMeters),
       })

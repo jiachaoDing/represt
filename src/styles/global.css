@@ -71,6 +71,14 @@
   --plan-5-container: #FFE0E8;
   --on-plan-5-container: #3A1A24;
 
+  --recording-weightReps: var(--plan-1);
+  --recording-leftRightWeightReps: var(--plan-2);
+  --recording-reps: var(--plan-3);
+  --recording-durationReps: var(--plan-5);
+  --recording-duration: var(--tertiary);
+  --recording-distance: var(--plan-4);
+  --recording-weightDistance: var(--secondary);
+
   /* Training Heatmap */
   --heatmap-level-0: #E8E7E4;
   --heatmap-level-1: #D8FFE6;

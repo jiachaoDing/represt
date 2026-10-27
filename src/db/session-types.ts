@@ -71,6 +71,8 @@ export type SessionPlanItemInput = {
   targetSets?: number
   restSeconds?: number
   defaultReps?: number | null
+  defaultRightWeightKg?: number | null
+  defaultRightReps?: number | null
   defaultWeightKg?: number | null
   defaultDurationSeconds?: number | null
   defaultDistanceMeters?: number | null

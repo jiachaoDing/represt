@@ -190,6 +190,8 @@ export function ScheduleExerciseList({
       name: getDisplayExerciseName(t, exercise),
       weightKg: exercise.defaultWeightKg ?? null,
       reps: exercise.defaultReps ?? null,
+      rightWeightKg: exercise.defaultRightWeightKg ?? null,
+      rightReps: exercise.defaultRightReps ?? null,
       durationSeconds: exercise.defaultDurationSeconds ?? null,
       distanceMeters: exercise.defaultDistanceMeters ?? null,
     }))

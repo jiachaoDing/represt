@@ -10,6 +10,7 @@ const exerciseSchema = z.object({ id, sessionId: id, name: z.string(), catalogEx
   measurementType: z.unknown().optional(), planItemId: optionalText, sourcePlanSnapshot: z.unknown().optional() })
 const setSchema = z.object({ id, sessionId: id, performedExerciseId: id, completedAt: z.string().refine((s) => Number.isFinite(Date.parse(s))),
   setNumber: z.unknown().optional(),
+  measurementType: z.unknown().optional(), rightWeightKg: z.unknown().optional(), rightReps: z.unknown().optional(),
   weightKg: z.unknown().optional(), reps: z.unknown().optional(), durationSeconds: z.unknown().optional(), distanceMeters: z.unknown().optional() })
 const distributionSchema = z.array(z.object({ muscleGroupId: id, ratio: z.number().finite().positive().max(1) })).min(1)
 const historicalSchema = z.object({ measurementType: z.unknown().optional(), catalogExerciseId: z.unknown().optional() })
@@ -72,7 +73,7 @@ export function prepareFacts(snapshot: TrainingSnapshot) {
     const profile = profiles.get(exerciseKey)
     const entry = catalogById.get(catalogExerciseId ?? '')
     // Historical per-performance metadata wins over a subsequently edited profile.
-    const measurement = exercise.measurementType ?? (historical.success ? historical.data.measurementType : undefined)
+    const measurement = set.measurementType ?? exercise.measurementType ?? (historical.success ? historical.data.measurementType : undefined)
       ?? profile?.measurementType ?? entry?.measurementType
     const parsedMeasurement = measurementSchema.safeParse(measurement)
     const measurementType = parsedMeasurement.success ? parsedMeasurement.data : 'unknown'
@@ -85,7 +86,8 @@ export function prepareFacts(snapshot: TrainingSnapshot) {
       ? parsedDistribution.data : null
     if (!distribution) warn('UNKNOWN_MUSCLES', 'Unclassified sets are reported as unknown; missing/invalid distributions are not inferred.')
     const values: Fact['values'] = {}
-    const allowed = measurementType === 'weightReps' ? ['weightKg', 'reps'] : measurementType === 'weightDistance'
+    const allowed = measurementType === 'weightReps' || measurementType === 'leftRightWeightReps' ? ['weightKg', 'reps'] : measurementType === 'durationReps'
+      ? ['durationSeconds', 'reps'] : measurementType === 'weightDistance'
       ? ['weightKg', 'distanceMeters'] : measurementType === 'reps' ? ['reps'] : measurementType === 'duration'
         ? ['durationSeconds'] : measurementType === 'distance' ? ['distanceMeters'] : []
     for (const key of allowed as Array<'weightKg' | 'reps' | 'durationSeconds' | 'distanceMeters'>) {
@@ -93,9 +95,19 @@ export function prepareFacts(snapshot: TrainingSnapshot) {
       if (typeof value === 'number' && Number.isFinite(value) && value >= 0 && (key !== 'reps' || Number.isInteger(value))) values[key] = value
       else warn('MISSING_METRICS', 'Missing/invalid metric fields were omitted; planned defaults never fill actual values.')
     }
-    if (measurementType === 'weightReps' && values.weightKg !== undefined && values.reps !== undefined) {
+    if ((measurementType === 'weightReps' || measurementType === 'leftRightWeightReps') && values.weightKg !== undefined && values.reps !== undefined) {
       const product = values.weightKg * values.reps
       if (Number.isFinite(product)) values.weightRepsKg = product
+    }
+    if (measurementType === 'leftRightWeightReps') {
+      const rightWeight = typeof set.rightWeightKg === 'number' && Number.isFinite(set.rightWeightKg) && set.rightWeightKg >= 0 ? set.rightWeightKg : undefined
+      const rightReps = typeof set.rightReps === 'number' && Number.isInteger(set.rightReps) && set.rightReps >= 0 ? set.rightReps : undefined
+      if (rightWeight === undefined || rightReps === undefined) warn('MISSING_METRICS', 'Missing/invalid metric fields were omitted; planned defaults never fill actual values.')
+      if (rightWeight !== undefined) values.weightKg = (values.weightKg ?? 0) + rightWeight
+      if (rightReps !== undefined) values.reps = (values.reps ?? 0) + rightReps
+      if (rightWeight !== undefined && rightReps !== undefined && Number.isFinite(rightWeight * rightReps)) {
+        values.weightRepsKg = (values.weightRepsKg ?? 0) + rightWeight * rightReps
+      }
     }
     if (measurementType === 'weightDistance' && values.weightKg !== undefined && values.distanceMeters !== undefined) {
       const product = values.weightKg * values.distanceMeters

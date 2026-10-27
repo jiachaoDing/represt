@@ -21,6 +21,8 @@ export type PlanExerciseInput = {
   restSeconds: number
   weightKg?: number | null
   reps?: number | null
+  rightWeightKg?: number | null
+  rightReps?: number | null
   durationSeconds?: number | null
   distanceMeters?: number | null
 }
@@ -34,6 +36,8 @@ type SessionPlanPlanSource = Pick<
   | 'restSeconds'
   | 'defaultWeightKg'
   | 'defaultReps'
+  | 'defaultRightWeightKg'
+  | 'defaultRightReps'
   | 'defaultDurationSeconds'
   | 'defaultDistanceMeters'
   | 'order'
@@ -62,6 +66,8 @@ function normalizeExercise(input: Partial<PlanExerciseInput>) {
     durationSeconds: input.durationSeconds ?? null,
     reps: input.reps ?? null,
     weightKg: input.weightKg ?? null,
+    rightWeightKg: input.rightWeightKg ?? null,
+    rightReps: input.rightReps ?? null,
   })
 
   return {
@@ -94,6 +100,8 @@ function buildPlanExercisesFromSessionPlanItems(
       restSeconds: item.restSeconds,
       weightKg: item.defaultWeightKg ?? null,
       reps: item.defaultReps ?? null,
+      rightWeightKg: item.defaultRightWeightKg ?? null,
+      rightReps: item.defaultRightReps ?? null,
       durationSeconds: item.defaultDurationSeconds ?? null,
       distanceMeters: item.defaultDistanceMeters ?? null,
       order,
@@ -271,6 +279,8 @@ export async function copyPlanExerciseAfter(planId: string, exerciseId: string) 
       restSeconds: source.restSeconds,
       weightKg: source.weightKg ?? null,
       reps: source.reps ?? null,
+      rightWeightKg: source.rightWeightKg ?? null,
+      rightReps: source.rightReps ?? null,
       durationSeconds: source.durationSeconds ?? null,
       distanceMeters: source.distanceMeters ?? null,
       order: sourceIndex + 1,
@@ -319,6 +329,8 @@ export async function importPlanExercises(targetPlanId: string, sourceExerciseId
     restSeconds: exercise.restSeconds,
     weightKg: exercise.weightKg ?? null,
     reps: exercise.reps ?? null,
+    rightWeightKg: exercise.rightWeightKg ?? null,
+    rightReps: exercise.rightReps ?? null,
     durationSeconds: exercise.durationSeconds ?? null,
     distanceMeters: exercise.distanceMeters ?? null,
     order: nextOrder + index,

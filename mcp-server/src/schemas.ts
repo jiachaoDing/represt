@@ -11,9 +11,10 @@ export const dateKey = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine((s) => {
 const timestamp = z.string().refine((s) => Number.isFinite(Date.parse(s)), 'Use an ISO timestamp')
 export const exerciseFields = {
   name, catalogExerciseId: id.nullable(),
-  measurementType: z.enum(['weightReps', 'reps', 'duration', 'distance', 'weightDistance']),
+  measurementType: z.enum(['weightReps', 'reps', 'duration', 'distance', 'weightDistance', 'leftRightWeightReps', 'durationReps']),
   targetSets: z.number().int().positive(), restSeconds: nonnegative.int(),
   weightKg: nonnegative.nullable(), reps: nonnegative.int().nullable(),
+  rightWeightKg: nonnegative.nullable().optional(), rightReps: nonnegative.int().nullable().optional(),
   durationSeconds: nonnegative.nullable(), distanceMeters: nonnegative.nullable(),
 }
 export const exerciseSchema = z.object({ id, planId: id, ...exerciseFields, order: nonnegative.int() })

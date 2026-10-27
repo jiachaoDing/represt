@@ -3,6 +3,8 @@ import { ChevronDown, CopyPlus, Trash2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { ExerciseNameInput } from '../exercise/ExerciseNameInput'
+import { RecordingModeButton } from '../exercise/RecordingModeButton'
+import { LeftRightNumberInputs } from '../exercise/LeftRightNumberInputs'
 import { getMeasurementTypeForExercise } from '../../lib/set-record-measurement'
 import type { PlanExerciseDraft } from '../../lib/plan-editor'
 import { useWeightUnitPreference } from '../../lib/weight-units'
@@ -25,6 +27,7 @@ type PresetOption = {
 }
 
 type PresetNumberInputProps = {
+  centered?: boolean
   disabled: boolean
   inputMode: 'decimal' | 'numeric'
   label: string
@@ -96,6 +99,7 @@ function withCurrentOption(values: string[], value: string) {
 }
 
 function PresetNumberInput({
+  centered = false,
   disabled,
   inputMode,
   label,
@@ -129,7 +133,7 @@ function PresetNumberInput({
 
   return (
     <div ref={wrapperRef} className="relative block">
-      <span className="mb-1 ml-1 block text-xs font-medium text-[var(--on-surface-variant)]">
+      <span className={`mb-1 ml-1 block text-xs font-medium text-[var(--on-surface-variant)] ${centered ? 'text-center' : ''}`}>
         {label}
       </span>
       <div className="flex rounded-xl bg-[var(--surface-container)] ring-1 ring-transparent transition-all focus-within:ring-[var(--primary)]">
@@ -141,7 +145,7 @@ function PresetNumberInput({
           value={value}
           disabled={disabled}
           onChange={(event) => onChange(event.target.value)}
-          className="min-w-0 flex-1 bg-transparent px-4 py-3 text-base text-[var(--on-surface)] outline-none placeholder:text-[var(--on-surface-variant)] disabled:opacity-50"
+          className={`min-w-0 flex-1 bg-transparent py-3 text-base text-[var(--on-surface)] outline-none placeholder:text-[var(--on-surface-variant)] disabled:opacity-50 ${centered ? 'pl-11 pr-0 text-center' : 'px-4'}`}
           placeholder={placeholder}
         />
         <button
@@ -244,7 +248,7 @@ export function PlanExerciseInlineEditor({
     label: t('common.reps', { value }),
   }))
   const valueFields = [
-    measurementType === 'weightReps' || measurementType === 'weightDistance'
+    measurementType === 'weightReps' || measurementType === 'weightDistance' || measurementType === 'leftRightWeightReps'
       ? {
           inputMode: 'decimal' as const,
           label: `${t('plans.defaultWeight')} (${weightUnitLabel})`,
@@ -254,9 +258,11 @@ export function PlanExerciseInlineEditor({
           placeholder: t('plans.optional'),
           step: weightStep,
           value: draft.weightKg,
+          rightValue: measurementType === 'leftRightWeightReps' ? draft.rightWeightKg : undefined,
+          onRightChange: (value: string) => onDraftChange({ ...draft, rightWeightKg: value }),
         }
       : null,
-    measurementType === 'weightReps' || measurementType === 'reps'
+    measurementType === 'weightReps' || measurementType === 'reps' || measurementType === 'leftRightWeightReps' || measurementType === 'durationReps'
       ? {
           inputMode: 'numeric' as const,
           label: t('plans.defaultReps'),
@@ -266,9 +272,11 @@ export function PlanExerciseInlineEditor({
           placeholder: t('plans.optional'),
           step: '1',
           value: draft.reps,
+          rightValue: measurementType === 'leftRightWeightReps' ? draft.rightReps : undefined,
+          onRightChange: (value: string) => onDraftChange({ ...draft, rightReps: value }),
         }
       : null,
-    measurementType === 'duration'
+    measurementType === 'duration' || measurementType === 'durationReps'
       ? {
           inputMode: 'numeric' as const,
           label: t('plans.defaultDurationSeconds'),
@@ -289,6 +297,7 @@ export function PlanExerciseInlineEditor({
         }
       : null,
   ].filter((field): field is NonNullable<typeof field> => field !== null)
+  if (measurementType === 'durationReps') valueFields.reverse()
 
   useEffect(() => {
     const element = formRef.current
@@ -358,11 +367,24 @@ export function PlanExerciseInlineEditor({
           />
         </div>
 
-        <div className={`grid gap-3 ${valueFields.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+        <div className={`relative grid gap-3 ${valueFields.length === 1 ? 'mx-auto w-[calc(50%_-_0.375rem)] grid-cols-1' : 'grid-cols-2'}`}>
+          <RecordingModeButton
+            value={measurementType}
+            disabled={isSubmitting}
+            className="absolute -top-2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+            onChange={(next) => onDraftChange({ ...draft, measurementType: next })}
+          />
           {valueFields.map((field) =>
-            'options' in field ? (
+            'rightValue' in field && field.rightValue !== undefined ? (
+              <LeftRightNumberInputs
+                key={field.label} label={field.label} left={field.value} right={field.rightValue}
+                onLeftChange={field.onChange} onRightChange={field.onRightChange}
+                disabled={isSubmitting} inputMode={field.inputMode} step={field.step} variant="plan"
+              />
+            ) : 'options' in field ? (
               <PresetNumberInput
                 key={field.label}
+                centered={valueFields.length === 1}
                 disabled={isSubmitting}
                 inputMode={field.inputMode}
                 label={field.label}
@@ -375,7 +397,7 @@ export function PlanExerciseInlineEditor({
               />
             ) : (
               <label key={field.label} className="block">
-                <span className="mb-1 ml-1 block text-xs font-medium text-[var(--on-surface-variant)]">
+                <span className={`mb-1 ml-1 block text-xs font-medium text-[var(--on-surface-variant)] ${valueFields.length === 1 ? 'text-center' : ''}`}>
                   {field.label}
                 </span>
                 <input
@@ -386,7 +408,7 @@ export function PlanExerciseInlineEditor({
                   value={field.value}
                   disabled={isSubmitting}
                   onChange={(event) => field.onChange(event.target.value)}
-                  className="w-full rounded-xl bg-[var(--surface-container)] px-4 py-3 text-base text-[var(--on-surface)] outline-none ring-1 ring-transparent transition-all focus:ring-[var(--primary)]"
+                  className={`w-full rounded-xl bg-[var(--surface-container)] px-4 py-3 text-base text-[var(--on-surface)] outline-none ring-1 ring-transparent transition-all focus:ring-[var(--primary)] ${valueFields.length === 1 ? 'text-center' : ''}`}
                   placeholder={t('plans.optional')}
                 />
               </label>

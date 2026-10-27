@@ -38,6 +38,8 @@ export interface PlanExercise {
   restSeconds: number
   weightKg?: number | null
   reps?: number | null
+  rightWeightKg?: number | null
+  rightReps?: number | null
   durationSeconds?: number | null
   distanceMeters?: number | null
   order: number
@@ -60,6 +62,8 @@ export interface SessionPlanExerciseSnapshot {
   targetSets: number
   defaultWeightKg?: number | null
   defaultReps?: number | null
+  defaultRightWeightKg?: number | null
+  defaultRightReps?: number | null
   defaultDurationSeconds?: number | null
   defaultDistanceMeters?: number | null
   restSeconds: number
@@ -79,6 +83,8 @@ export interface SessionPlanItem {
   targetSets: number
   defaultWeightKg?: number | null
   defaultReps?: number | null
+  defaultRightWeightKg?: number | null
+  defaultRightReps?: number | null
   defaultDurationSeconds?: number | null
   defaultDistanceMeters?: number | null
   restSeconds: number
@@ -100,6 +106,8 @@ export interface PerformedExercise {
   targetSets: number
   defaultWeightKg?: number | null
   defaultReps?: number | null
+  defaultRightWeightKg?: number | null
+  defaultRightReps?: number | null
   defaultDurationSeconds?: number | null
   defaultDistanceMeters?: number | null
   completedSets: number
@@ -116,8 +124,11 @@ export interface SetRecord {
   performedExerciseId: string
   setNumber: number
   completedAt: string
+  measurementType?: MeasurementType | null
   weightKg: number | null
   reps: number | null
+  rightWeightKg?: number | null
+  rightReps?: number | null
   durationSeconds: number | null
   distanceMeters: number | null
 }

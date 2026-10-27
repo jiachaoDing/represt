@@ -51,10 +51,24 @@ it('normalizes custom exercise names and respects the measurement type', async (
   const custom = { ...exercise, catalogExerciseId: null, name: '  Custom   Press  ' }
   await addRecord('custom', { weightKg: 0, reps: 12 }, { catalogExerciseId: null, name: 'custom press' })
   expect(await getExercisePersonalRecords(custom)).toEqual({ weightKg: 0, reps: 12 })
-  expect(await getExercisePersonalRecords({ ...custom, measurementType: 'reps' })).toEqual({ weightKg: null, reps: 12 })
-  expect(await getExercisePersonalRecords({ ...custom, measurementType: 'weightDistance' })).toEqual({ weightKg: 0, reps: null })
+  expect(await getExercisePersonalRecords({ ...custom, measurementType: 'reps' })).toEqual({ weightKg: null, reps: null })
+  expect(await getExercisePersonalRecords({ ...custom, measurementType: 'weightDistance' })).toEqual({ weightKg: null, reps: null })
   expect(await getExercisePersonalRecords({ ...custom, measurementType: 'duration' })).toEqual({ weightKg: null, reps: null })
   expect(await getExercisePersonalRecords({ ...custom, name: 'Untrained exercise' })).toEqual({ weightKg: null, reps: null })
+})
+
+it('compares bilateral weight totals and mean reps against ordinary weight/reps records', async () => {
+  await addRecord('ordinary', { measurementType: 'weightReps', weightKg: 50, reps: 13 })
+  await addRecord('bilateral', {
+    measurementType: 'leftRightWeightReps', weightKg: 40, rightWeightKg: 20, reps: 10, rightReps: 14,
+    completedAt: '2026-10-27T11:00:00Z',
+  }, { measurementType: 'leftRightWeightReps' })
+  await addRecord('reps-only', { measurementType: 'reps', reps: 100 }, { measurementType: 'reps' })
+  expect(await getExercisePersonalRecords(exercise)).toEqual({ weightKg: 60, weightSides: [40, 20], reps: 13 })
+  expect(await getExercisePersonalRecords({ ...exercise, measurementType: 'leftRightWeightReps' })).toEqual({ weightKg: 60, weightSides: [40, 20], reps: 13 })
+  expect(await getExercisePersonalRecords({ ...exercise, measurementType: 'reps' })).toEqual({ weightKg: null, reps: 100 })
+  await db.setRecords.update('set-ordinary', { reps: 11 })
+  expect(await getExercisePersonalRecords(exercise)).toEqual({ weightKg: 60, weightSides: [40, 20], reps: 12, repsSides: [10, 14] })
 })
 
 it('refreshes the exercise page PR after records are added, corrected or undone', async () => {

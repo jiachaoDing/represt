@@ -2,7 +2,7 @@ import { ReprestApi, ToolError } from './api.js'
 import { analyticsInput, snapshotSchema, type AnalyticsInput, type TrainingSnapshot } from './analytics-schema.js'
 import { metricUnits, normalizeName, prepareFacts, type Fact } from './analytics-data.js'
 import { metricDelta, workoutSummaries } from './workout-summary.js'
-import { bests, bucketDate, dayMs, exerciseInfo, groupBy, nextBucket, progress, shiftDate, totals } from './analytics-metrics.js'
+import { bests, bucketDate, comparisonMeasurement, dayMs, exerciseInfo, groupBy, nextBucket, progress, shiftDate, totals } from './analytics-metrics.js'
 
 export async function queryTrainingAnalytics(api: ReprestApi, input: AnalyticsInput) {
   // One immutable backup avoids inter-table/page races and repeated R2 snapshot downloads.
@@ -39,7 +39,7 @@ export function aggregateTraining(snapshot: TrainingSnapshot, request: Analytics
   let items: Record<string, unknown>[] = []
   if (input.query === 'workout_summary') items = workoutSummaries(prepared, input.from, input.to, input.sessionId)
   // A measurement change splits a series instead of comparing incompatible values.
-  const byExercise = (records: Fact[]) => groupBy(records, (f) => `${f.exerciseKey}\0${f.measurementType}`)
+  const byExercise = (records: Fact[]) => groupBy(records, (f) => `${f.exerciseKey}\0${comparisonMeasurement(f.measurementType)}`)
   const period = (date: string) => {
     const end = shiftDate(nextBucket(date, input.bucket), -1)
     return { bucketStart: date, bucketEnd: end, from: date < input.from ? input.from : date,

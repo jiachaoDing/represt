@@ -37,7 +37,7 @@ export function formatMetricValue(kind: ExerciseRecordMetricKind, value: number,
 }
 
 export function formatTotalWork(detail: ExerciseRecordDetail, t: TFunction) {
-  if (detail.measurementType === 'duration') {
+  if (detail.measurementType === 'duration' || detail.measurementType === 'durationReps') {
     return formatDurationSeconds(detail.totalDurationSeconds, t)
   }
   if (detail.measurementType === 'distance') {

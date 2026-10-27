@@ -20,10 +20,13 @@ function toTransferPlan(plan: Awaited<ReturnType<typeof listPlansWithExercises>>
     exercises: plan.exercises.map((exercise) => ({
       name: exercise.name,
       catalogExerciseId: exercise.catalogExerciseId ?? null,
+      measurementType: exercise.measurementType ?? null,
       targetSets: exercise.targetSets,
       restSeconds: exercise.restSeconds,
       weightKg: exercise.weightKg ?? null,
       reps: exercise.reps ?? null,
+      rightWeightKg: exercise.rightWeightKg ?? null,
+      rightReps: exercise.rightReps ?? null,
       durationSeconds: exercise.durationSeconds ?? null,
       distanceMeters: exercise.distanceMeters ?? null,
     })),

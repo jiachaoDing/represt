@@ -3,8 +3,7 @@ import { useTranslation } from 'react-i18next'
 
 import { quickEaseTransition } from '../motion/motion-tokens'
 import { getExerciseHeroData, getExerciseHeroTone } from '../../lib/exercise-hero'
-import { getMeasurementTypeForExercise } from '../../lib/set-record-measurement'
-import { formatWeightKg } from '../../lib/weight-units'
+import { formatRepsValues, formatWeightValues, getMeasurementTypeForExercise, getSetRecordMeasurementType } from '../../lib/set-record-measurement'
 import type { ScheduleExerciseDetail } from '../../db/sessions'
 
 type ExerciseHeroProps = {
@@ -16,17 +15,20 @@ export function ExerciseHero({ detail, now }: ExerciseHeroProps) {
   const { t } = useTranslation()
   const reduceMotion = useReducedMotion()
   const hero = getExerciseHeroData(detail, now, t)
-  const measurementType = getMeasurementTypeForExercise(detail.exercise)
-  const { defaultWeightKg, defaultReps } = detail.exercise
-  const { weightKg: prWeightKg, reps: prReps } = detail.personalRecords
+  const measurementType = detail.latestSetRecord
+    ? getSetRecordMeasurementType(detail.latestSetRecord, getMeasurementTypeForExercise(detail.exercise))
+    : getMeasurementTypeForExercise(detail.exercise)
+  const bilateral = measurementType === 'leftRightWeightReps'
+  const { defaultWeightKg, defaultReps, defaultRightWeightKg, defaultRightReps } = detail.exercise
+  const { weightKg: prWeightKg, reps: prReps, weightSides, repsSides } = detail.personalRecords
   const showWeight =
-    (measurementType === 'weightReps' || measurementType === 'weightDistance') && defaultWeightKg != null
+    (measurementType === 'weightReps' || measurementType === 'weightDistance' || bilateral) && (defaultWeightKg != null || (bilateral && defaultRightWeightKg != null))
   const showReps =
-    (measurementType === 'weightReps' || measurementType === 'reps') && defaultReps != null
+    (measurementType === 'weightReps' || measurementType === 'reps' || measurementType === 'durationReps' || bilateral) && (defaultReps != null || (bilateral && defaultRightReps != null))
   const showPrWeight =
-    (measurementType === 'weightReps' || measurementType === 'weightDistance') && prWeightKg != null
+    (measurementType === 'weightReps' || measurementType === 'weightDistance' || bilateral) && prWeightKg != null
   const showPrReps =
-    (measurementType === 'weightReps' || measurementType === 'reps') && prReps != null
+    (measurementType === 'weightReps' || measurementType === 'reps' || measurementType === 'durationReps' || bilateral) && prReps != null
   const showPrSeparator = (showWeight || showReps) && (showPrWeight || showPrReps)
 
   if (!hero) {
@@ -88,7 +90,7 @@ export function ExerciseHero({ detail, now }: ExerciseHeroProps) {
                 <div className="min-w-0">
                   <dt className="flex items-end justify-center text-[12px] text-[var(--on-surface-variant)]">{t('plans.defaultWeight')}</dt>
                   <dd className="mt-1 text-[16px] font-medium tabular-nums text-[var(--on-surface)]">
-                    {formatWeightKg(defaultWeightKg, t)}
+                    {formatWeightValues(defaultWeightKg, bilateral ? defaultRightWeightKg : null, t)}
                   </dd>
                 </div>
               ) : null}
@@ -96,7 +98,7 @@ export function ExerciseHero({ detail, now }: ExerciseHeroProps) {
                 <div className="min-w-0">
                   <dt className="flex items-end justify-center text-[12px] text-[var(--on-surface-variant)]">{t('plans.defaultReps')}</dt>
                   <dd className="mt-1 text-[16px] font-medium tabular-nums text-[var(--on-surface)]">
-                    {t('common.reps', { value: defaultReps })}
+                    {formatRepsValues(defaultReps, bilateral ? defaultRightReps : null, t)}
                   </dd>
                 </div>
               ) : null}
@@ -109,7 +111,7 @@ export function ExerciseHero({ detail, now }: ExerciseHeroProps) {
                     {t('exercise.prWeight')}
                   </dt>
                   <dd className="mt-1 text-[16px] font-medium tabular-nums text-[var(--on-surface)]">
-                    {formatWeightKg(prWeightKg, t)}
+                    {formatWeightValues(weightSides?.[0] ?? prWeightKg, weightSides?.[1], t)}
                   </dd>
                 </div>
               ) : null}
@@ -122,7 +124,7 @@ export function ExerciseHero({ detail, now }: ExerciseHeroProps) {
                     {t('exercise.prReps')}
                   </dt>
                   <dd className="mt-1 text-[16px] font-medium tabular-nums text-[var(--on-surface)]">
-                    {t('common.reps', { value: prReps })}
+                    {formatRepsValues(repsSides?.[0] ?? prReps, repsSides?.[1], t)}
                   </dd>
                 </div>
               ) : null}

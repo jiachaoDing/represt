@@ -36,6 +36,7 @@ export {
   undoPlanItemExercise,
   undoLatestPlanItemSet,
   updateLatestSetRecordValues,
+  updatePlanItemRecordingMode,
 } from './session-records'
 export { getScheduleExerciseDetail } from './session-schedule'
 export {

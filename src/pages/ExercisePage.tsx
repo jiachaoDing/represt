@@ -97,6 +97,7 @@ export function ExercisePage() {
   const now = useNow(16)
   const {
     canCompleteSet,
+    canUsePreviousSetRecord,
     canRemoveTargetSet,
     canUndoExercise,
     canUndoLatestSet,
@@ -112,10 +113,17 @@ export function ExercisePage() {
     handleUndoLatestSet,
     handleUpdateLatestSetRecord,
     handleUsePreviousSetRecord,
+    handleRecordingModeChange,
     isLoading,
     isSubmitting,
     latestSetRecord,
     measurementType,
+    recordMeasurementType,
+    resetRecordForm,
+    rightWeightInput,
+    rightRepsInput,
+    setRightWeightInput,
+    setRightRepsInput,
     previousSetRecord,
     repsInput,
     setDistanceInput,
@@ -354,9 +362,9 @@ export function ExercisePage() {
               </AnimatePresence>
             </div>
 
-            <AnimatedDialog open={isRecordFormOpen} onClose={() => setIsRecordFormOpen(false)}>
+            <AnimatedDialog open={isRecordFormOpen} onClose={() => { resetRecordForm(); setIsRecordFormOpen(false) }}>
               <div className="relative mx-auto w-full max-w-[22rem] pt-9">
-                {previousSetRecord ? (
+                {previousSetRecord && canUsePreviousSetRecord ? (
                   <button
                     type="button"
                     disabled={isSubmitting}
@@ -372,10 +380,15 @@ export function ExercisePage() {
                   latestSetRecord={latestSetRecord}
                   distanceInput={distanceInput}
                   durationInput={durationInput}
-                  measurementType={measurementType}
+                  measurementType={recordMeasurementType}
+                  onRecordingModeChange={(next) => void handleRecordingModeChange(next)}
+                  rightWeightInput={rightWeightInput}
+                  rightRepsInput={rightRepsInput}
+                  onRightWeightChange={setRightWeightInput}
+                  onRightRepsChange={setRightRepsInput}
                   repsInput={repsInput}
                   weightInput={weightInput}
-                  onCancel={() => setIsRecordFormOpen(false)}
+                  onCancel={() => { resetRecordForm(); setIsRecordFormOpen(false) }}
                   onDistanceChange={setDistanceInput}
                   onDurationChange={setDurationInput}
                   onRepsChange={setRepsInput}

@@ -5,7 +5,7 @@ import {
   type MuscleGroup,
 } from '../domain/exercise-catalog'
 import { resolveCatalogExerciseId } from '../lib/exercise-name'
-import { getMeasurementTypeForExercise } from '../lib/set-record-measurement'
+import { areRecordingModesComparable, getMeasurementTypeForExercise, getSetRecordMeasurementType, getSetRecordStatistics } from '../lib/set-record-measurement'
 import { addDaysToSessionDateKey, parseSessionDateKey } from '../lib/session-date-key'
 import type { ExerciseProfile, PerformedExercise, SetRecord, WorkoutSession } from '../models/types'
 import { db } from './app-db'
@@ -223,33 +223,9 @@ function getExerciseMuscleDistribution(
 }
 
 function getMetricValues(setRecord: SetRecord, measurementType: MeasurementType) {
-  const values: { kind: SummaryMetricKind; value: number }[] = []
-
-  if ((measurementType === 'weightReps' || measurementType === 'weightDistance') && setRecord.weightKg !== null) {
-    values.push({ kind: 'highestWeight', value: setRecord.weightKg })
-  }
-
-  if ((measurementType === 'weightReps' || measurementType === 'reps') && setRecord.reps !== null) {
-    values.push({ kind: 'maxReps', value: setRecord.reps })
-  }
-
-  if (measurementType === 'duration' && setRecord.durationSeconds !== null) {
-    values.push({ kind: 'longestDuration', value: setRecord.durationSeconds })
-  }
-
-  if ((measurementType === 'distance' || measurementType === 'weightDistance') && setRecord.distanceMeters !== null) {
-    values.push({ kind: 'longestDistance', value: setRecord.distanceMeters })
-  }
-
-  if (measurementType === 'weightReps' && setRecord.weightKg !== null && setRecord.reps !== null) {
-    values.push({ kind: 'weightRepsVolume', value: setRecord.weightKg * setRecord.reps })
-  }
-
-  if (measurementType === 'weightDistance' && setRecord.weightKg !== null && setRecord.distanceMeters !== null) {
-    values.push({ kind: 'loadDistanceVolume', value: setRecord.weightKg * setRecord.distanceMeters })
-  }
-
-  return values
+  const stats = getSetRecordStatistics(setRecord, measurementType)
+  const kinds: SummaryMetricKind[] = ['highestWeight', 'maxReps', 'longestDuration', 'longestDistance', 'weightRepsVolume', 'loadDistanceVolume']
+  return kinds.flatMap((kind) => stats[kind] === null ? [] : [{ kind, value: stats[kind] }])
 }
 
 function metricPriority(kind: SummaryMetricKind) {
@@ -282,8 +258,9 @@ function buildHighlights(input: {
       continue
     }
 
-    const exerciseKey = getExerciseIdentity(exercise)
-    const measurementType = getExerciseMeasurementType(exercise)
+    const measurementType = getSetRecordMeasurementType(setRecord, getExerciseMeasurementType(exercise))
+    const comparisonType = measurementType === 'leftRightWeightReps' ? 'weightReps' : measurementType
+    const exerciseKey = `${getExerciseIdentity(exercise)}:${comparisonType}`
     const metricValues = getMetricValues(setRecord, measurementType)
     const bestValues = bestValuesByExercise.get(exerciseKey) ?? new Map<SummaryMetricKind, number>()
 
@@ -406,7 +383,7 @@ function pickTrendMetric(measurementType: MeasurementType): SummaryMetricKind {
   if (measurementType === 'reps') {
     return 'maxReps'
   }
-  if (measurementType === 'duration') {
+  if (measurementType === 'duration' || measurementType === 'durationReps') {
     return 'longestDuration'
   }
   if (measurementType === 'distance') {
@@ -454,11 +431,14 @@ function buildTopExerciseTrend(input: {
 
   const candidates = Array.from(groups.values())
     .map((group) => {
-      const measurementType = getExerciseMeasurementType(group.exercise)
+      const latest = [...group.records].sort((left, right) =>
+        right.completedAt.localeCompare(left.completedAt) || right.setNumber - left.setNumber)[0]
+      const measurementType = getSetRecordMeasurementType(latest, getExerciseMeasurementType(group.exercise))
       const metricKind = pickTrendMetric(measurementType)
       const pointsByBucket = new Map<string, { label: string; value: number }>()
 
       for (const record of group.records) {
+        if (!areRecordingModesComparable(getSetRecordMeasurementType(record, measurementType), measurementType)) continue
         const dateKey = input.sessionsById.get(record.sessionId)?.sessionDateKey
         const value = getMetricValues(record, measurementType).find((metric) => metric.kind === metricKind)?.value
         if (!dateKey || value === undefined) {
@@ -533,18 +513,11 @@ export async function getSummaryRangeAnalytics(dateKey: string, range: SummaryRa
     const measurementType = getExerciseMeasurementType(exercise)
     exerciseKeys.add(getExerciseIdentity(exercise))
 
-    if (measurementType === 'weightReps' && record.weightKg !== null && record.reps !== null) {
-      totalWeightRepsVolume += record.weightKg * record.reps
-    }
-    if ((measurementType === 'weightReps' || measurementType === 'reps') && record.reps !== null) {
-      totalReps += record.reps
-    }
-    if (measurementType === 'duration' && record.durationSeconds !== null) {
-      totalDurationSeconds += record.durationSeconds
-    }
-    if ((measurementType === 'distance' || measurementType === 'weightDistance') && record.distanceMeters !== null) {
-      totalDistanceMeters += record.distanceMeters
-    }
+    const stats = getSetRecordStatistics(record, measurementType)
+    totalWeightRepsVolume += stats.weightRepsVolume ?? 0
+    totalReps += stats.totalReps
+    totalDurationSeconds += stats.totalDurationSeconds
+    totalDistanceMeters += stats.totalDistanceMeters
   }
 
   for (const sessionRecords of recordsBySessionId.values()) {
