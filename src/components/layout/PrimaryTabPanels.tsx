@@ -14,6 +14,7 @@ import useEmblaCarousel from 'embla-carousel-react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { useLocation, useNavigate } from 'react-router-dom'
 
+import { preserveScrollPosition, type ScrollPosition } from '../../lib/scroll-position'
 import { usePrimaryTabSwipeLock } from './PrimaryTabSwipeContext'
 import { PrimaryTabSwipeProvider } from './PrimaryTabSwipeProvider'
 
@@ -39,6 +40,7 @@ const PRIMARY_TAB_CONTENT_TRANSITION = {
   ease: [0.22, 1, 0.36, 1],
 } as const
 const PRIMARY_TAB_SWIPE_LOCK_SELECTOR = '[data-primary-tab-swipe-lock="true"]'
+const scheduleScrollPosition: ScrollPosition = { top: 0 }
 
 function getPrimaryTabIndex(pathname: string) {
   return primaryTabs.findIndex((tab) => tab.pathname === pathname)
@@ -212,7 +214,12 @@ function PrimaryTabPanelsContent() {
           const isSelected = index === selectedIndex
 
           return (
-            <PrimaryTabPanel key={tab.pathname} isActive={isActive} isSelected={isSelected}>
+            <PrimaryTabPanel
+              key={tab.pathname}
+              isActive={isActive}
+              isSelected={isSelected}
+              scrollPosition={tab.pathname === '/' ? scheduleScrollPosition : undefined}
+            >
               {isNearby ? <Suspense fallback={null}>{tab.element}</Suspense> : null}
             </PrimaryTabPanel>
           )
@@ -226,9 +233,26 @@ function PrimaryTabPanel({
   children,
   isActive,
   isSelected,
-}: PropsWithChildren<{ isActive: boolean; isSelected: boolean }>) {
+  scrollPosition,
+}: PropsWithChildren<{
+  isActive: boolean
+  isSelected: boolean
+  scrollPosition?: ScrollPosition
+}>) {
+  const viewportRef = useRef<HTMLElement>(null)
+  const contentRef = useRef<HTMLDivElement>(null)
+
+  useLayoutEffect(() => {
+    if (!isActive || !scrollPosition || !viewportRef.current || !contentRef.current) {
+      return
+    }
+
+    return preserveScrollPosition(viewportRef.current, contentRef.current, scrollPosition)
+  }, [isActive, scrollPosition])
+
   return (
     <motion.section
+      ref={viewportRef}
       aria-hidden={!isActive}
       animate={
         isSelected
@@ -245,7 +269,9 @@ function PrimaryTabPanel({
       }}
       transition={PRIMARY_TAB_CONTENT_TRANSITION}
     >
-      {children}
+      <div ref={contentRef} className="min-h-full">
+        {children}
+      </div>
     </motion.section>
   )
 }
