@@ -6,6 +6,7 @@ import {
   type MuscleGroup,
 } from '../domain/exercise-catalog'
 import { findCatalogExerciseIdByExactName, resolveCatalogExerciseId } from '../lib/exercise-name'
+import { getMeasurementTypeForExercise } from '../lib/set-record-measurement'
 import type {
   ExerciseProfile,
   PerformedExercise,
@@ -29,6 +30,11 @@ export type ExerciseRecordMetric = {
   completedAt: string
   kind: ExerciseRecordMetricKind
   value: number
+}
+
+export type ExercisePersonalRecords = {
+  weightKg: number | null
+  reps: number | null
 }
 
 export type ExerciseRecordTrendPoint = {
@@ -222,6 +228,34 @@ function pickBestMetric(metrics: ExerciseRecordMetric[], kind: ExerciseRecordMet
       const valueDelta = right.value - left.value
       return valueDelta === 0 ? right.completedAt.localeCompare(left.completedAt) : valueDelta
     })[0] ?? null
+}
+
+export async function getExercisePersonalRecords(input: ExerciseSource): Promise<ExercisePersonalRecords> {
+  const measurementType = getMeasurementTypeForExercise(input)
+  const empty = { weightKg: null, reps: null }
+  if (measurementType === 'duration' || measurementType === 'distance') {
+    return empty
+  }
+
+  const profileId = getExerciseProfileId(input)
+  const matchingExercises = await db.performedExercises
+    .filter((exercise) => getExerciseProfileId(exercise) === profileId)
+    .toArray()
+  if (matchingExercises.length === 0) {
+    return empty
+  }
+
+  const records = await db.setRecords.where('performedExerciseId')
+    .anyOf(matchingExercises.map((exercise) => exercise.id)).toArray()
+  const sessions = await db.workoutSessions.bulkGet([...new Set(records.map((record) => record.sessionId))])
+  const sessionIds = new Set(sessions.flatMap((session) => session ? [session.id] : []))
+  const metrics = records.filter((record) => sessionIds.has(record.sessionId))
+    .flatMap((record) => getMetricValues(record, measurementType))
+
+  return {
+    weightKg: pickBestMetric(metrics, 'highestWeight')?.value ?? null,
+    reps: pickBestMetric(metrics, 'maxReps')?.value ?? null,
+  }
 }
 
 function buildSummary(group: ExerciseRecordGroup): ExerciseRecordSummary {

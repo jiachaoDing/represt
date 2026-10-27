@@ -11,7 +11,8 @@
     "build": "node scripts/package-plugin.mjs && tsc -p tsconfig.json",
     "start": "node --env-file-if-exists=.env dist/main.js",
     "test": "vitest run",
-    "test:integration": "tsx test/integration.ts"
+    "test:integration": "tsx test/integration.ts",
+    "test:performance": "tsx test/performance.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/node": "2.1.2",

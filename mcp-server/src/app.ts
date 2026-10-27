@@ -20,6 +20,7 @@ export function createApp(config: Config) {
   }
 
   async function route(request: Request): Promise<Response> {
+    const started = performance.now()
     const url = new URL(request.url)
     const origin = request.headers.get('Origin')
     if (origin && !config.allowedOrigins.includes(origin)) return Response.json({ error: 'origin_not_allowed' }, { status: 403 })
@@ -64,13 +65,23 @@ export function createApp(config: Config) {
     if (body?.method === 'tools/call' && body.params?.name === 'update_training_program' && !authInfo.scopes.includes('plans:write')) {
       return challenge(403, 'training:read plans:write')
     }
-    return protocol.fetch(request, { authInfo })
+    const authMs = performance.now() - started
+    const response = await protocol.fetch(request, { authInfo })
+    const headers = new Headers(response.headers)
+    headers.set('Server-Timing', `mcp_auth;dur=${authMs.toFixed(2)}`)
+    return new Response(response.body, { status: response.status, headers })
   }
 
   return {
     async fetch(request: Request) {
+      const started = performance.now()
       const response = await route(request)
       const headers = new Headers(response.headers)
+      const serverMs = performance.now() - started
+      headers.append('Server-Timing', `mcp_dispatch;dur=${serverMs.toFixed(2)}`)
+      headers.set('X-Request-Id', crypto.randomUUID())
+      console.log(JSON.stringify({ event: 'mcp_performance', requestId: headers.get('X-Request-Id'),
+        status: response.status, dispatchMs: serverMs }))
       headers.set('Cache-Control', 'no-store')
       headers.set('X-Content-Type-Options', 'nosniff')
       const origin = request.headers.get('Origin')
@@ -79,7 +90,7 @@ export function createApp(config: Config) {
         headers.set('Vary', 'Origin')
         headers.set('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
         headers.set('Access-Control-Allow-Headers', 'Authorization, Content-Type, Accept, MCP-Protocol-Version, MCP-Session-Id')
-        headers.set('Access-Control-Expose-Headers', 'WWW-Authenticate, MCP-Protocol-Version, MCP-Session-Id')
+        headers.set('Access-Control-Expose-Headers', 'WWW-Authenticate, MCP-Protocol-Version, MCP-Session-Id, Server-Timing, X-Request-Id')
       }
       return new Response(response.body, { status: response.status, headers })
     },

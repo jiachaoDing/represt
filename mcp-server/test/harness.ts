@@ -10,15 +10,15 @@ import { loadConfig } from '../src/config.js'
 type Database = { prepare(sql: string): { run(): Promise<unknown> } }
 type WorkerRuntime = { ready: Promise<URL>; getD1Database(name: string): Promise<Database>; dispose(): Promise<void> }
 
-export async function startHarness() {
-  const worker = resolve(process.env.REPREST_WORKER_DIR ?? '../../represt-worker')
+export async function startHarness(options: { workerDir?: string; appFactory?: typeof createApp } = {}) {
+  const worker = resolve(options.workerDir ?? process.env.REPREST_WORKER_DIR ?? '../../represt-worker')
   const require = createRequire(resolve(worker, 'package.json'))
   const { Miniflare, Log, LogLevel } = require('miniflare') as {
     Miniflare: new (options: Record<string, unknown>) => WorkerRuntime;
     Log: new (level: number) => unknown; LogLevel: { ERROR: number };
   }
   const bundleDir = resolve(worker, '.wrangler/mcp-integration-bundle')
-  execFileSync(process.execPath, [resolve(worker, 'node_modules/wrangler/bin/wrangler.js'), 'deploy', '--dry-run', '--outdir', bundleDir], {
+  execFileSync(process.execPath, [resolve(require.resolve('wrangler/package.json'), '../bin/wrangler.js'), 'deploy', '--dry-run', '--outdir', bundleDir], {
     cwd: worker, stdio: 'pipe', timeout: 60000,
   })
   let handler: ReturnType<typeof toNodeHandler> | undefined
@@ -47,7 +47,7 @@ export async function startHarness() {
         await db.prepare(statement).run()
       }
     }
-    const app = createApp(loadConfig({ MCP_PUBLIC_URL: mcpUrl, REPREST_API_BASE_URL: apiBase }))
+    const app = (options.appFactory ?? createApp)(loadConfig({ MCP_PUBLIC_URL: mcpUrl, REPREST_API_BASE_URL: apiBase }))
     handler = toNodeHandler(app, { maxRequestBodySize: 512 * 1024 })
     return { apiBase, mcpUrl, db, async close() {
       await app.close()

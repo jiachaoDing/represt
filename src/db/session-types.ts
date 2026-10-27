@@ -7,6 +7,7 @@ import type {
 } from '../models/types'
 import type { MeasurementType } from '../domain/exercise-catalog'
 import type { DerivedExerciseStatus } from '../lib/session-display'
+import type { ExercisePersonalRecords } from './exercise-records'
 
 export type WorkoutSessionWithStatus = WorkoutSession & {
   status: SessionStatus
@@ -29,6 +30,7 @@ export type ScheduleExerciseDetail = {
   exercise: ScheduleExercise
   latestSetRecord: SetRecord | null
   previousSetRecord: SetRecord | null
+  personalRecords: ExercisePersonalRecords
 }
 
 export type SessionSummaryExercise = PerformedExercise & {

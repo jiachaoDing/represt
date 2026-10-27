@@ -2,7 +2,7 @@
 
 独立 MCP 服务，使用官方 MCP TypeScript SDK v2，通过 Streamable HTTP 调用真实 Represt API，支持 Node.js 与 Cloudflare Worker。用户使用已有 Represt 账号完成 OAuth 授权，客户端保存和刷新凭证；服务不保存用户 refresh token。架构与工具契约见 [architecture.md](docs/architecture.md)，线上地址、三个客户端设置与验证范围见 [deployment.md](docs/deployment.md)。
 
-训练统计优先使用 `query_training_analytics`，支持概览、实际历史、动作趋势、频率、训练量、肌群分布、范围内个人纪录和停滞筛查；参数、指标与证据边界见 [analytics.md](docs/analytics.md)。原始表查询和计划编辑工具继续可用。
+训练分析直接使用 `query_training_analytics`：`workout_summary` 一次取得逐组明细、历史计划完成率与上次同类训练，`compare:previous_period` 同次提供前一等长范围对比。默认发现三个工具；原始表与指南工具保留调用兼容。参数和指标见 [analytics.md](docs/analytics.md)，性能测量见 [performance.md](docs/performance.md)。
 
 | 条件 | 要求 |
 | --- | --- |

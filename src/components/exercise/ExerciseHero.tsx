@@ -18,10 +18,16 @@ export function ExerciseHero({ detail, now }: ExerciseHeroProps) {
   const hero = getExerciseHeroData(detail, now, t)
   const measurementType = getMeasurementTypeForExercise(detail.exercise)
   const { defaultWeightKg, defaultReps } = detail.exercise
+  const { weightKg: prWeightKg, reps: prReps } = detail.personalRecords
   const showWeight =
     (measurementType === 'weightReps' || measurementType === 'weightDistance') && defaultWeightKg != null
   const showReps =
     (measurementType === 'weightReps' || measurementType === 'reps') && defaultReps != null
+  const showPrWeight =
+    (measurementType === 'weightReps' || measurementType === 'weightDistance') && prWeightKg != null
+  const showPrReps =
+    (measurementType === 'weightReps' || measurementType === 'reps') && prReps != null
+  const showPrSeparator = (showWeight || showReps) && (showPrWeight || showPrReps)
 
   if (!hero) {
     return null
@@ -37,6 +43,7 @@ export function ExerciseHero({ detail, now }: ExerciseHeroProps) {
     <section className="flex h-[19rem] shrink-0 items-center justify-center px-4 py-4 text-center">
       <AnimatePresence initial={false} mode="wait">
         <motion.div
+          className="w-full"
           key={heroTransitionKey}
           initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 12, scale: 0.98 }}
           animate={{ opacity: 1, y: 0, scale: 1, transition: quickEaseTransition }}
@@ -75,21 +82,47 @@ export function ExerciseHero({ detail, now }: ExerciseHeroProps) {
             <p className="mt-4 text-[16px] text-[var(--on-surface-variant)]">{hero.supporting}</p>
           ) : null}
 
-          {showWeight || showReps ? (
-            <dl className="mt-5 flex flex-wrap justify-center gap-x-8 gap-y-3">
+          {showWeight || showReps || showPrWeight || showPrReps ? (
+            <dl className="mx-auto mt-5 grid min-h-15 max-w-sm grid-flow-col auto-cols-fr items-end gap-x-3">
               {showWeight ? (
-                <div>
-                  <dt className="text-[12px] text-[var(--on-surface-variant)]">{t('plans.defaultWeight')}</dt>
+                <div className="min-w-0">
+                  <dt className="flex items-end justify-center text-[12px] text-[var(--on-surface-variant)]">{t('plans.defaultWeight')}</dt>
                   <dd className="mt-1 text-[16px] font-medium tabular-nums text-[var(--on-surface)]">
                     {formatWeightKg(defaultWeightKg, t)}
                   </dd>
                 </div>
               ) : null}
               {showReps ? (
-                <div>
-                  <dt className="text-[12px] text-[var(--on-surface-variant)]">{t('plans.defaultReps')}</dt>
+                <div className="min-w-0">
+                  <dt className="flex items-end justify-center text-[12px] text-[var(--on-surface-variant)]">{t('plans.defaultReps')}</dt>
                   <dd className="mt-1 text-[16px] font-medium tabular-nums text-[var(--on-surface)]">
                     {t('common.reps', { value: defaultReps })}
+                  </dd>
+                </div>
+              ) : null}
+              {showPrWeight ? (
+                <div className="relative min-w-0">
+                  <dt className="flex items-end justify-center text-[12px] text-[var(--on-surface-variant)]">
+                    {showPrSeparator ? (
+                      <span aria-hidden="true" className="absolute top-[3px] bottom-1 -left-1.5 w-px -translate-x-1/2 -skew-x-12 bg-[var(--outline-variant)]" />
+                    ) : null}
+                    {t('exercise.prWeight')}
+                  </dt>
+                  <dd className="mt-1 text-[16px] font-medium tabular-nums text-[var(--on-surface)]">
+                    {formatWeightKg(prWeightKg, t)}
+                  </dd>
+                </div>
+              ) : null}
+              {showPrReps ? (
+                <div className="relative min-w-0">
+                  <dt className="flex items-end justify-center text-[12px] text-[var(--on-surface-variant)]">
+                    {showPrSeparator && !showPrWeight ? (
+                      <span aria-hidden="true" className="absolute top-[3px] bottom-1 -left-1.5 w-px -translate-x-1/2 -skew-x-12 bg-[var(--outline-variant)]" />
+                    ) : null}
+                    {t('exercise.prReps')}
+                  </dt>
+                  <dd className="mt-1 text-[16px] font-medium tabular-nums text-[var(--on-surface)]">
+                    {t('common.reps', { value: prReps })}
                   </dd>
                 </div>
               ) : null}

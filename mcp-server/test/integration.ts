@@ -20,7 +20,7 @@ try {
   const { client, provider } = await connectUser(mcpUrl, apiBase, user)
   clients.push(client)
   const tools = await client.listTools()
-  assert.deepEqual(tools.tools.map((t) => t.name).sort(), ['get_training_guide', 'get_training_program', 'query_training_analytics', 'read_training_history', 'update_training_program'].sort())
+  assert.deepEqual(tools.tools.map((t) => t.name).sort(), ['get_training_program', 'query_training_analytics', 'update_training_program'].sort())
   assert(tools.tools.every((t) => t.inputSchema && t.outputSchema))
   const guide = await client.callTool({ name: 'get_training_guide', arguments: {} })
   assert(!guide.isError)
@@ -63,6 +63,18 @@ try {
     }
   }
   console.log('PASS all 8 aggregate queries through OAuth MCP; full 1005-set snapshot aggregated before result pagination')
+  const summary = await client.callTool({ name: 'query_training_analytics', arguments: {
+    query: 'workout_summary', from: '2026-10-20', to: '2026-10-20',
+  } })
+  assert(!summary.isError, JSON.stringify(summary.structuredContent))
+  const daily = analyticsOutput.parse(summary.structuredContent?.data)
+  assert.equal(daily.query, 'workout_summary')
+  if (daily.query === 'workout_summary') {
+    assert.equal(daily.items[0].exercises[0].sets.length, 1005)
+    assert.equal(daily.items[0].completion.rate, null)
+    assert.equal(daily.items[0].previous, null)
+  }
+  console.log('PASS single-call current-version workout summary; 1005 set details preserved without raw-table reads')
   const result = await client.callTool({ name: 'update_training_program', arguments: {
     expectedVersion: 1, confirmedByUser: true, userInstruction: 'Increase push weight to 65 kg and add a pull day after the rest day.',
     plans: [{ id: 'push', exercises: [{ id: 'push-exercise', weightKg: 65 }] }],

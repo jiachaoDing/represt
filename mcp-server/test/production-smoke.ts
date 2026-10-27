@@ -19,7 +19,7 @@ let connection: Awaited<ReturnType<typeof connectUser>> | undefined
 try {
   connection = await connectUser(mcpUrl, apiBase, user, 'training:read', provider)
   const tools = await connection.client.listTools()
-  assert.equal(tools.tools.length, 5)
+  assert.equal(tools.tools.length, 3)
   const result = await connection.client.callTool({ name: 'get_training_program', arguments: {} })
   assert(!result.isError)
   const state = result.structuredContent?.data as { version: number; plans: unknown }

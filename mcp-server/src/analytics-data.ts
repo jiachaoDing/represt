@@ -5,10 +5,11 @@ import { measurementSchema, type TrainingSnapshot } from './analytics-schema.js'
 
 const id = z.string().min(1)
 const optionalText = z.string().nullish()
-const sessionSchema = z.object({ id, sessionDateKey: dateKey, plannedPlanNameSnapshot: optionalText })
+const sessionSchema = z.object({ id, sessionDateKey: dateKey, plannedPlanId: optionalText, plannedPlanNameSnapshot: optionalText })
 const exerciseSchema = z.object({ id, sessionId: id, name: z.string(), catalogExerciseId: optionalText,
   measurementType: z.unknown().optional(), planItemId: optionalText, sourcePlanSnapshot: z.unknown().optional() })
 const setSchema = z.object({ id, sessionId: id, performedExerciseId: id, completedAt: z.string().refine((s) => Number.isFinite(Date.parse(s))),
+  setNumber: z.unknown().optional(),
   weightKg: z.unknown().optional(), reps: z.unknown().optional(), durationSeconds: z.unknown().optional(), distanceMeters: z.unknown().optional() })
 const distributionSchema = z.array(z.object({ muscleGroupId: id, ratio: z.number().finite().positive().max(1) })).min(1)
 const historicalSchema = z.object({ measurementType: z.unknown().optional(), catalogExerciseId: z.unknown().optional() })
@@ -52,7 +53,10 @@ export function prepareFacts(snapshot: TrainingSnapshot) {
   const exercises = parseRows(tables.performedExercises, exerciseSchema, 'performedExercises')
   const sets = parseRows(tables.setRecords, setSchema, 'setRecords')
   const profiles = parseRows(tables.exerciseProfiles, z.object({ id }).passthrough(), 'exerciseProfiles')
-  const plannedItems = parseRows(tables.sessionPlanItems, z.object({ id, sessionId: id, targetSets: z.number().int().nonnegative().optional() }), 'sessionPlanItems')
+  const plannedItems = parseRows(tables.sessionPlanItems, z.object({ id, sessionId: id,
+    name: optionalText, planExerciseId: optionalText, order: z.unknown().optional(),
+    targetSets: z.number().int().nonnegative().optional().catch(undefined), defaultWeightKg: z.unknown().optional(), defaultReps: z.unknown().optional(),
+    defaultDurationSeconds: z.unknown().optional(), defaultDistanceMeters: z.unknown().optional() }), 'sessionPlanItems')
   const facts: Fact[] = []
   for (const set of sets.values()) {
     const session = sessions.get(set.sessionId)

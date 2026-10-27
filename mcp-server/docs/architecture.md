@@ -50,13 +50,11 @@ sequenceDiagram
 
 | Tool | 输入 | 成功输出 `data` |
 | --- | --- | --- |
-| `get_training_guide` | 空对象 | 从真实 API 取得的数据关系、计划字段、单位、分析边界，附 MCP 工具映射和手动同步要求 |
 | `get_training_program` | 空对象 | `version`、`syncedAt`、`pending`、`plans: {plans, cycle}`；包括全部计划与动作 ID |
-| `query_training_analytics` | `query`、`version`、`from`、`to`；可选桶、动作/肌群/会话筛选及分页 | 服务端计算的摘要、指标、数据覆盖与警告；完整口径和八类查询见 [analytics.md](analytics.md) |
-| `read_training_history` | `table`、`version`；可选 `from`、`to`、`offset`、`limit` | `version`、`syncedAt`、`total`、`records`、`nextOffset`；持续翻页直到 `nextOffset=null` |
+| `query_training_analytics` | `query`、`from`、`to`；可选版本、对比、桶、筛选及分页 | 训练摘要含逐组明细、完成率和上次同类训练；统计和趋势共用此入口，见 [analytics.md](analytics.md) |
 | `update_training_program` | `expectedVersion`、`userInstruction`、`confirmedByUser`；可选计划补丁、删除 ID、完整循环补丁 | 回读的当前计划与版本，以及 `saved`、`verified` |
 
-精确输入和输出 JSON Schema 由 Zod 生成，通过 `tools/list` 提供，定义位于 `src/schemas.ts` 和 `src/analytics-schema.ts`；SDK 执行输入与输出校验。训练统计优先调用聚合工具，逐组明细和计划项对比才读取原始表。工具结果为 `{ok, data?, error?}`，失败同时标记 `isError=true`。
+默认 `tools/list` 仅展示上述三个工具。`get_training_guide` 和 `read_training_history` 保留注册与调用兼容；指南不再是分析前置调用。精确输入和输出 JSON Schema 由 Zod 生成，定义位于 `src/schemas.ts` 和 `src/analytics-schema.ts`；SDK 执行输入与输出校验。工具结果为 `{ok, data?, error?}`，失败同时标记 `isError=true`。性能日志和测量口径见 [performance.md](performance.md)。
 
 | 数据约定 | 规则 |
 | --- | --- |

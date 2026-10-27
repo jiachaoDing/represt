@@ -1,20 +1,24 @@
 import { ReprestApi, ToolError } from './api.js'
 import { analyticsInput, snapshotSchema, type AnalyticsInput, type TrainingSnapshot } from './analytics-schema.js'
-import { normalizeName, prepareFacts, type Fact } from './analytics-data.js'
+import { metricUnits, normalizeName, prepareFacts, type Fact } from './analytics-data.js'
+import { metricDelta, workoutSummaries } from './workout-summary.js'
 import { bests, bucketDate, dayMs, exerciseInfo, groupBy, nextBucket, progress, shiftDate, totals } from './analytics-metrics.js'
 
 export async function queryTrainingAnalytics(api: ReprestApi, input: AnalyticsInput) {
   // One immutable backup avoids inter-table/page races and repeated R2 snapshot downloads.
-  const snapshot = await api.request(`/api/account/data?version=${input.version}`, snapshotSchema)
-  if (snapshot.version !== input.version) throw new ToolError('VERSION_CONFLICT', 'Read the latest program version and restart the aggregate query.')
+  const query = new URLSearchParams({ view: 'training' })
+  if (input.version !== undefined) query.set('version', String(input.version))
+  const snapshot = await api.request(`/api/account/data?${query}`, snapshotSchema)
+  if (input.version !== undefined && snapshot.version !== input.version) throw new ToolError('VERSION_CONFLICT', 'Restart the aggregate query at offset 0 without version.')
   return aggregateTraining(snapshot, input)
 }
 
 export function aggregateTraining(snapshot: TrainingSnapshot, request: AnalyticsInput) {
   const input = analyticsInput.parse(request)
   if (!snapshot.syncedAt) throw new ToolError('SYNC_REQUIRED', 'No synchronized snapshot time exists. Ask the user to Sync in Represt.')
-  if (snapshot.version !== input.version) throw new ToolError('VERSION_CONFLICT', 'Restart at the current program version.')
-  const { facts, sessions, plannedItems, warnings, warn } = prepareFacts(snapshot)
+  if (input.version !== undefined && snapshot.version !== input.version) throw new ToolError('VERSION_CONFLICT', 'Restart at the current program version.')
+  const prepared = prepareFacts(snapshot)
+  const { facts, sessions, plannedItems, warnings, warn } = prepared
   warn('SYNC_SNAPSHOT_ONLY', 'Only the last manually synced snapshot is visible. Unrecorded or unsynced activity cannot be inferred.')
   const inRange = (date: string) => date >= input.from && date <= input.to
   const allDates = [...new Set(facts.map((f) => f.session.sessionDateKey))].sort()
@@ -33,6 +37,7 @@ export function aggregateTraining(snapshot: TrainingSnapshot, request: Analytics
   let status: 'ok' | 'no_matching_data' | 'insufficient_history' = matching.length ? 'ok' : 'no_matching_data'
   let summary: Record<string, unknown> = scope
   let items: Record<string, unknown>[] = []
+  if (input.query === 'workout_summary') items = workoutSummaries(prepared, input.from, input.to, input.sessionId)
   // A measurement change splits a series instead of comparing incompatible values.
   const byExercise = (records: Fact[]) => groupBy(records, (f) => `${f.exerciseKey}\0${f.measurementType}`)
   const period = (date: string) => {
@@ -127,12 +132,31 @@ export function aggregateTraining(snapshot: TrainingSnapshot, request: Analytics
       if (matching.length && !eligible) status = 'insufficient_history'
     }
   }
-  if (input.query !== 'history' && input.query !== 'frequency' && input.query !== 'muscle_distribution') {
+  if (input.query !== 'workout_summary' && input.query !== 'history' && input.query !== 'frequency' && input.query !== 'muscle_distribution') {
     items.sort((a, b) => String(a.bucketStart ?? a.date ?? '').localeCompare(String(b.bucketStart ?? b.date ?? '')) ||
       String(a.exerciseKey ?? '').localeCompare(String(b.exerciseKey ?? '')) || String(a.measurementType ?? '').localeCompare(String(b.measurementType ?? '')))
   }
   const total = items.length
+  let comparison
+  if (input.compare === 'previous_period') {
+    const span = (Date.parse(input.to) - Date.parse(input.from)) / dayMs + 1
+    const from = shiftDate(input.from, -span)
+    const to = shiftDate(input.from, -1)
+    // Apply the same exercise/muscle filters; sessionId only identifies the current session.
+    const identities = new Set(matching.map((f) => f.exerciseKey))
+    const previous = facts.filter((f) => f.session.sessionDateKey >= from && f.session.sessionDateKey <= to &&
+      (!input.exerciseKey || f.exerciseKey === input.exerciseKey) &&
+      (!input.exerciseName || identities.has(f.exerciseKey) || normalizeName(f.exercise.name) === normalizeName(input.exerciseName)) &&
+      (!input.muscleGroup || f.distribution?.some((d) => d.muscleGroupId === input.muscleGroup)))
+    const previousTotals = totals(previous)
+    comparison = { from, to, summary: { ...previousTotals,
+      sessions: new Set(previous.map((f) => f.session.id)).size, trainingDays: new Set(previous.map((f) => f.session.sessionDateKey)).size },
+      delta: metricDelta(totals(matching), previousTotals) }
+  }
   return { query: input.query, version: snapshot.version, syncedAt: snapshot.syncedAt,
+    ...(snapshot.snapshotVersion !== undefined ? { snapshotVersion: snapshot.snapshotVersion } : {}),
+    ...(snapshot.pending !== undefined ? { pending: snapshot.pending } : {}), units: metricUnits,
+    ...(comparison ? { comparison } : {}),
     schemaVersion: snapshot.backup.schemaVersion, exportedAt: snapshot.backup.exportedAt,
     range: { from: input.from, to: input.to, dateBasis: 'sessionDateKey' as const, weekStartsOn: 'Monday' as const },
     status, coverage: { firstTrainingDate: allDates[0] ?? null, lastTrainingDate: allDates.at(-1) ?? null,

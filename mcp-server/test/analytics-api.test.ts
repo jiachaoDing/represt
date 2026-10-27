@@ -7,7 +7,7 @@ it('reads one complete immutable snapshot at the requested version and returns n
   const fetcher = vi.fn<typeof fetch>(async () => Response.json(trainingFixture()))
   const result = await queryTrainingAnalytics(new ReprestApi('https://api.example', 'test-token', fetcher), query())
   expect(fetcher).toHaveBeenCalledTimes(1)
-  expect(fetcher.mock.calls[0][0]).toBe('https://api.example/api/account/data?version=7')
+  expect(fetcher.mock.calls[0][0]).toBe('https://api.example/api/account/data?view=training&version=7')
   expect(fetcher.mock.calls[0][1]).toMatchObject({ method: 'GET', redirect: 'manual', headers: { Authorization: 'Bearer test-token' } })
   expect(result.summary).toMatchObject({ completedSets: 9 })
   expect(result).not.toHaveProperty('backup')

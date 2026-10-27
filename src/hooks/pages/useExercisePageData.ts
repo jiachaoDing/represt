@@ -202,23 +202,16 @@ export function useExercisePageData(id: string) {
     }
 
     const didSave = await runMutation(async () => {
-      const latestSetRecord = await updateLatestSetRecordValues(detail.exercise.id, {
+      await updateLatestSetRecordValues(detail.exercise.id, {
         distanceMeters: parseOptionalDistanceMeters(distanceInput),
         durationSeconds: parseOptionalDurationSeconds(durationInput),
         weightKg: parseOptionalWeightKg(weightInput),
         reps: parseOptionalReps(repsInput),
       })
 
-      setDetail((current) => {
-        if (!current) {
-          return current
-        }
-
-        return {
-          ...current,
-          latestSetRecord,
-        }
-      })
+      const nextDetail = await getScheduleExerciseDetail(detail.exercise.id)
+      setDetail(nextDetail)
+      syncLatestSetInputs(nextDetail, setWeightInput, setRepsInput, setDurationInput, setDistanceInput)
     })
 
     if (didSave) {
@@ -235,17 +228,14 @@ export function useExercisePageData(id: string) {
 
     const previousSetRecord = detail.previousSetRecord
     const didSave = await runMutation(async () => {
-      const latestSetRecord = await updateLatestSetRecordValues(detail.exercise.id, {
+      await updateLatestSetRecordValues(detail.exercise.id, {
         distanceMeters: previousSetRecord.distanceMeters,
         durationSeconds: previousSetRecord.durationSeconds,
         weightKg: previousSetRecord.weightKg,
         reps: previousSetRecord.reps,
       })
 
-      const nextDetail = {
-        ...detail,
-        latestSetRecord,
-      }
+      const nextDetail = await getScheduleExerciseDetail(detail.exercise.id)
       setDetail(nextDetail)
       syncLatestSetInputs(nextDetail, setWeightInput, setRepsInput, setDurationInput, setDistanceInput)
     })

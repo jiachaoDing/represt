@@ -808,6 +808,8 @@ const common = {
     addTargetSet: 'Add one set',
     removeTargetSet: 'Remove one set',
     latestRecord: 'Previous set record',
+    prWeight: 'PR weight',
+    prReps: 'PR reps',
     openQuickTimer: 'Open quick timer',
     closeQuickTimer: 'Back to exercise',
     quickTimerTitle: 'Quick timer',

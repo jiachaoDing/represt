@@ -7,7 +7,7 @@ export class ToolError extends Error {
 }
 
 const guidance: Record<string, string> = {
-  VERSION_CONFLICT: 'Data changed. Read the latest program version and restart reads; review differences before another write.',
+  VERSION_CONFLICT: 'Data changed. Restart analytics at offset 0 without version, then pin the returned version. For raw reads or another write, read the latest program version and review differences.',
   NO_DATA: 'No synced history exists. Ask the user to Sync in the Represt application.',
   SYNC_REQUIRED: 'Ask the user to Sync in Represt before editing plans.',
   OAUTH_INVALID_TOKEN: 'Reconnect and authorize Represt again.',
@@ -18,6 +18,7 @@ export class ReprestApi {
   constructor(private baseUrl: string, private token: string, private fetcher: typeof fetch = fetch) {}
 
   async request<T>(path: string, schema: z.ZodType<T>, body?: unknown): Promise<T> {
+    const started = performance.now()
     let response: Response
     try {
       response = await this.fetcher(`${this.baseUrl}${path}`, {
@@ -31,6 +32,12 @@ export class ReprestApi {
         body === undefined, body === undefined ? undefined : { saved: null, verified: false })
     }
     const value: unknown = await response.json().catch(() => null)
+    const elapsedMs = performance.now() - started
+    const upstreamTiming = response.headers.get('Server-Timing') ?? ''
+    const serverMs = Number(/(?:^|,\s*)account;dur=([\d.]+)/.exec(upstreamTiming)?.[1])
+    console.log(JSON.stringify({ event: 'mcp_upstream_performance', path: path.split('?')[0], status: response.status,
+      requestId: response.headers.get('X-Request-Id'), elapsedMs, upstreamServerMs: Number.isFinite(serverMs) ? serverMs : null,
+      transportAndDecodeMs: Number.isFinite(serverMs) ? Math.max(0, elapsedMs - serverMs) : null }))
     if (!response.ok) {
       const code = z.object({ code: z.string() }).safeParse(value)
       const key = code.success ? code.data.code : 'UPSTREAM_ERROR'
