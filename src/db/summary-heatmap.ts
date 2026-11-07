@@ -57,7 +57,8 @@ function getHeatmapRange(selectedDateKey: string) {
   }
 }
 
-function getExerciseMergeKey(exercise: Pick<PerformedExercise, 'catalogExerciseId' | 'id' | 'name'>) {
+function getExerciseMergeKey(exercise: Pick<PerformedExercise, 'catalogExerciseId' | 'id' | 'name' | 'exerciseProfileId'>) {
+  if (exercise.exerciseProfileId) return exercise.exerciseProfileId
   const catalogExerciseId = resolveCatalogExerciseId(exercise)
   if (catalogExerciseId) {
     return `catalog:${catalogExerciseId}`

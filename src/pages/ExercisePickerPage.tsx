@@ -6,13 +6,13 @@ import { useTranslation } from 'react-i18next'
 import { PageHeader } from '../components/ui/PageHeader'
 import { BottomSheet } from '../components/ui/BottomSheet'
 import { ConfirmDialog } from '../components/ui/ConfirmDialog'
-import { muscleGroups, type MeasurementType, type MuscleGroup } from '../domain/exercise-catalog'
+import { muscleGroups, movementPatterns, type MeasurementType, type MuscleGroup } from '../domain/exercise-catalog'
+import generated from '../domain/exercise-catalog/generated.json'
 import { createPlanExercises, listPlansWithExercises } from '../db/plans'
 import { addTemporarySessionPlanItems, getOrCreateTodaySession, listExerciseModelOptions, type ExerciseModelOption } from '../db/sessions'
-import { findExerciseNameSuggestions } from '../lib/exercise-dictionary'
+import { searchExerciseDefinitions } from '../lib/exercise-search'
 import {
   getExerciseName,
-  getExerciseAliases,
   getMovementPatternName,
   getMuscleGroupName,
 } from '../lib/exercise-catalog-i18n'
@@ -23,6 +23,7 @@ type PickerTarget = 'today' | 'plan'
 type PickerCategory = MuscleGroup | 'all' | 'other'
 
 type SelectedExercise = {
+  loadMode?: import('../domain/exercise-catalog').LoadMode
   key: string
   name: string
   catalogExerciseId: string | null
@@ -63,10 +64,6 @@ function readCreatedExerciseProfileId(state: unknown) {
 
 function getPickerTarget(value: string | null): PickerTarget {
   return value === 'plan' ? 'plan' : 'today'
-}
-
-function normalizeKeyword(value: string) {
-  return value.normalize('NFKC').trim().toLowerCase()
 }
 
 function getModelDisplayName(t: ReturnType<typeof useTranslation>['t'], model: ExerciseModelOption) {
@@ -158,6 +155,7 @@ export function ExercisePickerPage() {
             name: getModelDisplayName(t, createdModel),
             catalogExerciseId: createdModel.catalogExerciseId,
             measurementType: createdModel.measurementType,
+            loadMode: createdModel.loadMode,
           },
         ]
       })
@@ -176,7 +174,6 @@ export function ExercisePickerPage() {
     exerciseListRef.current?.scrollTo({ top: 0 })
   }, [categoryId])
 
-  const normalizedKeyword = normalizeKeyword(keyword)
   const selectedModelIds = useMemo(
     () =>
       new Set(
@@ -185,36 +182,11 @@ export function ExercisePickerPage() {
       ),
     [selectedExercises],
   )
-  const matchedCatalogIds = useMemo(() => {
-    if (!normalizedKeyword) {
-      return null
-    }
-
-    return new Set(findExerciseNameSuggestions(keyword, t, exerciseModels.length).map((exercise) => exercise.id))
-  }, [exerciseModels.length, keyword, normalizedKeyword, t])
-  const filteredExerciseModels = useMemo(
-    () =>
-      exerciseModels.filter((model) => {
-        const displayName = getModelDisplayName(t, model)
-        const searchValues = [
-          displayName,
-          model.catalogExerciseId ? getExerciseName(t, model.catalogExerciseId) : '',
-          ...(model.catalogExerciseId ? getExerciseAliases(t, model.catalogExerciseId) : []),
-          getMovementPatternName(t, model.movementPattern),
-          model.categoryId === 'other'
-            ? t('summary.analytics.otherDistribution')
-            : getMuscleGroupName(t, model.categoryId),
-        ]
-        const matchesKeyword = normalizedKeyword
-          ? searchValues.some((value) => normalizeKeyword(value).includes(normalizedKeyword))
-            || (model.catalogExerciseId ? matchedCatalogIds?.has(model.catalogExerciseId) : false)
-          : true
-        const matchesCategory = Boolean(normalizedKeyword) || categoryId === 'all' || model.categoryId === categoryId
-
-        return matchesKeyword && matchesCategory
-      }),
-    [categoryId, exerciseModels, matchedCatalogIds, normalizedKeyword, t],
-  )
+  const [equipment, setEquipment] = useState('')
+  const [pattern, setPattern] = useState('')
+  const [mechanic, setMechanic] = useState('')
+  const filteredExerciseModels = useMemo(() => searchExerciseDefinitions(exerciseModels, keyword, t,
+    { category: categoryId, equipment, pattern, mechanic }), [exerciseModels, keyword, t, categoryId, equipment, pattern, mechanic])
   const customName = keyword.trim()
   const canCreateCustom = customName.length > 0 && filteredExerciseModels.length === 0
   const categoryItems = useMemo(
@@ -268,6 +240,7 @@ export function ExercisePickerPage() {
         name: getModelDisplayName(t, model),
         catalogExerciseId: model.catalogExerciseId,
         measurementType: model.measurementType,
+        loadMode: model.loadMode,
       },
     ])
   }
@@ -296,6 +269,8 @@ export function ExercisePickerPage() {
       setError(null)
       const inputs = selectedExercises.map((exercise) => ({
         name: exercise.name,
+        exerciseProfileId: exercise.key,
+        loadMode: exercise.loadMode,
         catalogExerciseId: exercise.catalogExerciseId,
         measurementType: exercise.measurementType,
       }))
@@ -379,6 +354,21 @@ export function ExercisePickerPage() {
           {error}
         </div>
       ) : null}
+
+      <div className="flex gap-2 overflow-x-auto px-3 pb-2 text-xs">
+        <select aria-label={t('catalog.primaryEquipment')} value={equipment} onChange={(event) => setEquipment(event.target.value)} className="max-w-36 rounded-lg bg-[var(--surface-container)] p-2">
+          <option value="">{t('catalog.allEquipment')}</option>
+          {[...new Set(exerciseModels.flatMap((model) => [model.primaryEquipment, ...model.setup ?? []]).filter(Boolean))].map((id) => <option key={id} value={id!}>{t(`catalog.equipment.${id}`, { defaultValue: (generated.equipmentNames as Record<string, string>)[id!] ?? id! })}</option>)}
+        </select>
+        <select aria-label={t('summary.exerciseRecords.movementPattern')} value={pattern} onChange={(event) => setPattern(event.target.value)} className="max-w-36 rounded-lg bg-[var(--surface-container)] p-2">
+          <option value="">{t('catalog.allPatterns')}</option>
+          {movementPatterns.filter((id) => exerciseModels.some((model) => model.movementPattern === id)).map((id) => <option key={id} value={id}>{getMovementPatternName(t, id)}</option>)}
+        </select>
+        <select aria-label={t('catalog.mechanic')} value={mechanic} onChange={(event) => setMechanic(event.target.value)} className="max-w-32 rounded-lg bg-[var(--surface-container)] p-2">
+          <option value="">{t('catalog.allMechanics')}</option>
+          {['compound', 'isolation'].map((id) => <option key={id} value={id}>{t(`catalog.${id}`)}</option>)}
+        </select>
+      </div>
 
       <div className="min-h-0 flex-1 overflow-hidden rounded-t-2xl border-t border-[var(--outline-variant)] bg-[var(--surface-container)]">
         <div className="flex h-full min-h-0">

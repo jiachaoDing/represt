@@ -1,6 +1,6 @@
 import type { TFunction } from 'i18next'
 
-import { exercises, type MeasurementType } from '../domain/exercise-catalog'
+import { exercises, type LoadMode, type MeasurementType } from '../domain/exercise-catalog'
 import { resolveCatalogExerciseId } from './exercise-name'
 import type { SetRecord } from '../models/types'
 import {
@@ -36,6 +36,10 @@ export function areRecordingModesComparable(first: MeasurementType, second: Meas
   const group = (type: MeasurementType) => type === 'leftRightWeightReps' ? 'weightReps' : type
   return group(first) === group(second)
 }
+export function areLoadModesComparable(first?: LoadMode | null, second?: LoadMode | null) {
+  const group = (mode?: LoadMode | null) => mode === 'assisted' || mode === 'variable' ? mode : 'resistance'
+  return group(first) === group(second)
+}
 
 export function formatWeightValues(left: number | null | undefined, right: number | null | undefined, t: TFunction) {
   if (left != null && right != null) {
@@ -63,6 +67,7 @@ export function getSetRecordEntries(record: SetRecord, fallback: MeasurementType
 }
 
 export function getSetRecordStatistics(record: SetRecord, fallback: MeasurementType) {
+  const positiveLoad = record.loadMode !== 'assisted' && record.loadMode !== 'variable'
   const entries = getSetRecordEntries(record, fallback)
   const bilateral = getSetRecordMeasurementType(record, fallback) === 'leftRightWeightReps'
   const max = (values: (number | null)[]) => {
@@ -70,11 +75,12 @@ export function getSetRecordStatistics(record: SetRecord, fallback: MeasurementT
     return present.length ? Math.max(...present) : null
   }
   const volume = (type: MeasurementType, field: 'reps' | 'distanceMeters') => {
+    if (!positiveLoad) return null
     const values = entries.flatMap((entry) => entry.measurementType === type && entry.weightKg !== null && entry[field] !== null
       ? [entry.weightKg * entry[field]!] : [])
     return values.length ? values.reduce((sum, value) => sum + value, 0) : null
   }
-  const weights = entries.flatMap((entry) => entry.weightKg === null ? [] : [entry.weightKg])
+  const weights = positiveLoad ? entries.flatMap((entry) => entry.weightKg === null ? [] : [entry.weightKg]) : []
   const reps = entries.flatMap((entry) => entry.reps === null ? [] : [entry.reps])
   return {
     highestWeight: bilateral && weights.length ? weights.reduce((sum, value) => sum + value, 0) : max(weights),
@@ -96,6 +102,7 @@ export function getMeasurementTypeForCatalogExercise(catalogExerciseId?: string 
 }
 
 export function getMeasurementTypeForExercise(input: {
+  exerciseProfileId?: string | null
   catalogExerciseId?: string | null
   measurementType?: MeasurementType | null
   name?: string | null

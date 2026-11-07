@@ -1,0 +1,6228 @@
+{
+  "version": "202610292120",
+  "sourceCommit": "5bf2da6f4e050732fed21a1f452bae51e173a261",
+  "sha256": "e518c2155cbd732ceed27afaf35fb3d8cd7462140d3fb6ed41b875a92a1b260a",
+  "metadata": {
+    "dip": {
+      "muscles": [
+        {
+          "id": "delt_anterior",
+          "role": "secondary"
+        },
+        {
+          "id": "pectoralis_major",
+          "role": "primary"
+        },
+        {
+          "id": "triceps_brachii",
+          "role": "primary"
+        }
+      ],
+      "primaryEquipment": "bodyweight",
+      "setup": [
+        "dip_bars"
+      ],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "vertical_push",
+      "loadMode": "bodyweight",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "194",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "BFad07",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/194.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "194_en",
+          "version": "202610292120",
+          "license": "CC0-1.0",
+          "author": "BFad07",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/194.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "frontSquat": {
+      "muscles": [
+        {
+          "id": "calves",
+          "role": "secondary"
+        },
+        {
+          "id": "erector_spinae",
+          "role": "secondary"
+        },
+        {
+          "id": "gluteus_maximus",
+          "role": "primary"
+        },
+        {
+          "id": "hamstring_complex",
+          "role": "secondary"
+        },
+        {
+          "id": "quadriceps",
+          "role": "primary"
+        },
+        {
+          "id": "rectus_abdominis",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "barbell",
+      "setup": [
+        "squat_rack"
+      ],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "squat",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "257",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "sistab2",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/257.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "257_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-3.0",
+          "author": "sistab2",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/257.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "barbellStepUp": {
+      "muscles": [
+        {
+          "id": "calves",
+          "role": "secondary"
+        },
+        {
+          "id": "gluteus_maximus",
+          "role": "primary"
+        },
+        {
+          "id": "hamstring_complex",
+          "role": "secondary"
+        },
+        {
+          "id": "quadriceps",
+          "role": "primary"
+        }
+      ],
+      "primaryEquipment": "barbell",
+      "setup": [
+        "plyo_box"
+      ],
+      "mechanic": "compound",
+      "laterality": "alternating",
+      "movementPattern": "lunge",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "722",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "jigglychipmunk",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/722.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "722_en",
+          "version": "202610292120",
+          "license": "CC0-1.0",
+          "author": "jigglychipmunk",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/722.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "barbellBenchPress": {
+      "muscles": [
+        {
+          "id": "delt_anterior",
+          "role": "secondary"
+        },
+        {
+          "id": "pectoralis_major",
+          "role": "primary"
+        },
+        {
+          "id": "triceps_brachii",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "barbell",
+      "setup": [
+        "flat_bench"
+      ],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "horizontal_push",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "73",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "sistab2",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/73.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "73_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-3.0",
+          "author": "sistab2",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/73.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "dumbbellBenchPress": {
+      "muscles": [
+        {
+          "id": "delt_anterior",
+          "role": "secondary"
+        },
+        {
+          "id": "pectoralis_major",
+          "role": "primary"
+        },
+        {
+          "id": "triceps_brachii",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "dumbbell",
+      "setup": [
+        "flat_bench"
+      ],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "horizontal_push",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "75",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/75.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "75_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-3.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/75.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "inclineBarbellBenchPress": {
+      "muscles": [
+        {
+          "id": "delt_anterior",
+          "role": "secondary"
+        },
+        {
+          "id": "pecs_clavicular",
+          "role": "primary"
+        },
+        {
+          "id": "triceps_brachii",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "barbell",
+      "setup": [
+        "incline_bench"
+      ],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "horizontal_push",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "538",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/538.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "538_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-3.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/538.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "inclineDumbbellBenchPress": {
+      "muscles": [
+        {
+          "id": "delt_anterior",
+          "role": "secondary"
+        },
+        {
+          "id": "pecs_clavicular",
+          "role": "primary"
+        },
+        {
+          "id": "triceps_brachii",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "dumbbell",
+      "setup": [
+        "incline_bench"
+      ],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "horizontal_push",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "537",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/537.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "537_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-3.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/537.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "declineBarbellBenchPress": {
+      "muscles": [
+        {
+          "id": "delt_anterior",
+          "role": "secondary"
+        },
+        {
+          "id": "pecs_sternocostal",
+          "role": "primary"
+        },
+        {
+          "id": "triceps_brachii",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "barbell",
+      "setup": [
+        "decline_bench"
+      ],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "horizontal_push",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "185",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/185.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "185_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-3.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/185.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "declineDumbbellBenchPress": {
+      "muscles": [
+        {
+          "id": "delt_anterior",
+          "role": "secondary"
+        },
+        {
+          "id": "pecs_sternocostal",
+          "role": "primary"
+        },
+        {
+          "id": "triceps_brachii",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "dumbbell",
+      "setup": [
+        "decline_bench"
+      ],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "horizontal_push",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "186",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/186.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "186_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-3.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/186.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "pecDeck": {
+      "muscles": [
+        {
+          "id": "delt_anterior",
+          "role": "secondary"
+        },
+        {
+          "id": "pectoralis_major",
+          "role": "primary"
+        }
+      ],
+      "primaryEquipment": "machine",
+      "setup": [],
+      "mechanic": "isolation",
+      "laterality": "bilateral",
+      "movementPattern": "horizontal_push",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "1904",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1904.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "1904_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/1904.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "cableFly": {
+      "muscles": [
+        {
+          "id": "delt_anterior",
+          "role": "secondary"
+        },
+        {
+          "id": "pectoralis_major",
+          "role": "primary"
+        }
+      ],
+      "primaryEquipment": "cable",
+      "setup": [
+        "cable_tower"
+      ],
+      "mechanic": "isolation",
+      "laterality": "bilateral",
+      "movementPattern": "horizontal_push",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "237",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/237.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "237_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-3.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/237.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "pushUp": {
+      "muscles": [
+        {
+          "id": "delt_anterior",
+          "role": "secondary"
+        },
+        {
+          "id": "pectoralis_major",
+          "role": "primary"
+        },
+        {
+          "id": "rectus_abdominis",
+          "role": "secondary"
+        },
+        {
+          "id": "triceps_brachii",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "bodyweight",
+      "setup": [],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "horizontal_push",
+      "loadMode": "bodyweight",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "1551",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "Settebello",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1551.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "1551_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "Settebello",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/1551.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "pullUp": {
+      "muscles": [
+        {
+          "id": "biceps_brachii",
+          "role": "secondary"
+        },
+        {
+          "id": "brachialis",
+          "role": "secondary"
+        },
+        {
+          "id": "latissimus_dorsi",
+          "role": "primary"
+        },
+        {
+          "id": "rhomboids",
+          "role": "secondary"
+        },
+        {
+          "id": "teres_major",
+          "role": "primary"
+        },
+        {
+          "id": "traps_lower",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "bodyweight",
+      "setup": [
+        "pullup_bar"
+      ],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "vertical_pull",
+      "loadMode": "bodyweight",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "475",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/475.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "475_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-3.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/475.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "wideGripPullUp": {
+      "muscles": [
+        {
+          "id": "biceps_brachii",
+          "role": "secondary"
+        },
+        {
+          "id": "latissimus_dorsi",
+          "role": "primary"
+        },
+        {
+          "id": "rhomboids",
+          "role": "secondary"
+        },
+        {
+          "id": "teres_major",
+          "role": "primary"
+        },
+        {
+          "id": "traps_lower",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "bodyweight",
+      "setup": [
+        "pullup_bar"
+      ],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "vertical_pull",
+      "loadMode": "bodyweight",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "1695",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "daiben",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1695.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "1695_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "daiben",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/1695.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "chinUp": {
+      "muscles": [
+        {
+          "id": "biceps_brachii",
+          "role": "primary"
+        },
+        {
+          "id": "brachialis",
+          "role": "secondary"
+        },
+        {
+          "id": "latissimus_dorsi",
+          "role": "primary"
+        },
+        {
+          "id": "rhomboids",
+          "role": "secondary"
+        },
+        {
+          "id": "teres_major",
+          "role": "secondary"
+        },
+        {
+          "id": "traps_lower",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "bodyweight",
+      "setup": [
+        "pullup_bar"
+      ],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "vertical_pull",
+      "loadMode": "bodyweight",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "152",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "BFad07",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/152.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "152_en",
+          "version": "202610292120",
+          "license": "CC0-1.0",
+          "author": "BFad07",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/152.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "latPulldown": {
+      "muscles": [
+        {
+          "id": "biceps_brachii",
+          "role": "secondary"
+        },
+        {
+          "id": "latissimus_dorsi",
+          "role": "primary"
+        },
+        {
+          "id": "rhomboids",
+          "role": "secondary"
+        },
+        {
+          "id": "teres_major",
+          "role": "primary"
+        },
+        {
+          "id": "traps_lower",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "cable",
+      "setup": [],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "vertical_pull",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "723",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "tuckerm",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/723.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "723_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-3.0",
+          "author": "tuckerm",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/723.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "closeGripLatPulldown": {
+      "muscles": [
+        {
+          "id": "biceps_brachii",
+          "role": "secondary"
+        },
+        {
+          "id": "brachialis",
+          "role": "secondary"
+        },
+        {
+          "id": "latissimus_dorsi",
+          "role": "primary"
+        },
+        {
+          "id": "rhomboids",
+          "role": "secondary"
+        },
+        {
+          "id": "teres_major",
+          "role": "primary"
+        },
+        {
+          "id": "traps_middle",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "cable",
+      "setup": [],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "vertical_pull",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "158",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "tuckerm",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/158.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "158_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-3.0",
+          "author": "tuckerm",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/158.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "barbellRow": {
+      "muscles": [
+        {
+          "id": "biceps_brachii",
+          "role": "secondary"
+        },
+        {
+          "id": "brachialis",
+          "role": "secondary"
+        },
+        {
+          "id": "delt_posterior",
+          "role": "secondary"
+        },
+        {
+          "id": "erector_spinae",
+          "role": "secondary"
+        },
+        {
+          "id": "latissimus_dorsi",
+          "role": "primary"
+        },
+        {
+          "id": "rhomboids",
+          "role": "primary"
+        },
+        {
+          "id": "traps_middle",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "barbell",
+      "setup": [],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "horizontal_pull",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "83",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/83.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "83_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-3.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/83.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "seatedRow": {
+      "muscles": [
+        {
+          "id": "biceps_brachii",
+          "role": "secondary"
+        },
+        {
+          "id": "brachialis",
+          "role": "secondary"
+        },
+        {
+          "id": "delt_posterior",
+          "role": "secondary"
+        },
+        {
+          "id": "latissimus_dorsi",
+          "role": "primary"
+        },
+        {
+          "id": "rhomboids",
+          "role": "primary"
+        },
+        {
+          "id": "traps_middle",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "cable",
+      "setup": [],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "horizontal_pull",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "1117",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "Franpol",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1117.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "1117_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "Franpol",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/1117.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "singleArmDumbbellRow": {
+      "muscles": [
+        {
+          "id": "biceps_brachii",
+          "role": "secondary"
+        },
+        {
+          "id": "brachialis",
+          "role": "secondary"
+        },
+        {
+          "id": "delt_posterior",
+          "role": "secondary"
+        },
+        {
+          "id": "latissimus_dorsi",
+          "role": "primary"
+        },
+        {
+          "id": "rhomboids",
+          "role": "primary"
+        },
+        {
+          "id": "traps_middle",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "dumbbell",
+      "setup": [
+        "flat_bench"
+      ],
+      "mechanic": "compound",
+      "laterality": "unilateral",
+      "movementPattern": "horizontal_pull",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "81",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "sebk",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/81.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "81_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "sebk",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/81.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "tBarRow": {
+      "muscles": [
+        {
+          "id": "biceps_brachii",
+          "role": "secondary"
+        },
+        {
+          "id": "delt_posterior",
+          "role": "secondary"
+        },
+        {
+          "id": "erector_spinae",
+          "role": "secondary"
+        },
+        {
+          "id": "latissimus_dorsi",
+          "role": "primary"
+        },
+        {
+          "id": "rhomboids",
+          "role": "primary"
+        },
+        {
+          "id": "traps_middle",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "barbell",
+      "setup": [],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "horizontal_pull",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "919",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "novadani",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/919.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "919_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "novadani",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/919.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "straightArmPulldown": {
+      "muscles": [
+        {
+          "id": "latissimus_dorsi",
+          "role": "primary"
+        },
+        {
+          "id": "pecs_sternocostal",
+          "role": "secondary"
+        },
+        {
+          "id": "teres_major",
+          "role": "primary"
+        },
+        {
+          "id": "triceps_long_head",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "cable",
+      "setup": [],
+      "mechanic": "isolation",
+      "laterality": "bilateral",
+      "movementPattern": "vertical_pull",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "1726",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "barry",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1726.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "1726_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "barry",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/1726.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "deadlift": {
+      "muscles": [
+        {
+          "id": "erector_spinae",
+          "role": "secondary"
+        },
+        {
+          "id": "forearms",
+          "role": "secondary"
+        },
+        {
+          "id": "gluteus_maximus",
+          "role": "primary"
+        },
+        {
+          "id": "hamstring_complex",
+          "role": "primary"
+        },
+        {
+          "id": "latissimus_dorsi",
+          "role": "secondary"
+        },
+        {
+          "id": "quadriceps",
+          "role": "secondary"
+        },
+        {
+          "id": "traps_upper",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "barbell",
+      "setup": [],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "hinge",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "184",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/184.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "184_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-3.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/184.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "romanianDeadlift": {
+      "muscles": [
+        {
+          "id": "erector_spinae",
+          "role": "secondary"
+        },
+        {
+          "id": "gluteus_maximus",
+          "role": "primary"
+        },
+        {
+          "id": "hamstring_complex",
+          "role": "primary"
+        },
+        {
+          "id": "trapezius",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "barbell",
+      "setup": [],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "hinge",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "507",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "pjwirth",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/507.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "507_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "pjwirth",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/507.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "sumoDeadlift": {
+      "muscles": [
+        {
+          "id": "erector_spinae",
+          "role": "secondary"
+        },
+        {
+          "id": "gluteus_maximus",
+          "role": "primary"
+        },
+        {
+          "id": "hamstring_complex",
+          "role": "primary"
+        },
+        {
+          "id": "hip_adductors",
+          "role": "secondary"
+        },
+        {
+          "id": "quadriceps",
+          "role": "primary"
+        }
+      ],
+      "primaryEquipment": "barbell",
+      "setup": [],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "hinge",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "630",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "magdy",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/630.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "630_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "magdy",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/630.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "barbellSquat": {
+      "muscles": [
+        {
+          "id": "calves",
+          "role": "secondary"
+        },
+        {
+          "id": "erector_spinae",
+          "role": "secondary"
+        },
+        {
+          "id": "gluteus_maximus",
+          "role": "primary"
+        },
+        {
+          "id": "hamstring_complex",
+          "role": "secondary"
+        },
+        {
+          "id": "quadriceps",
+          "role": "primary"
+        }
+      ],
+      "primaryEquipment": "barbell",
+      "setup": [
+        "squat_rack"
+      ],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "squat",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "1801",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "fabrice",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1801.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "1801_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "fabrice",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/1801.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "legPress": {
+      "muscles": [
+        {
+          "id": "calves",
+          "role": "secondary"
+        },
+        {
+          "id": "gluteus_maximus",
+          "role": "primary"
+        },
+        {
+          "id": "hamstring_complex",
+          "role": "secondary"
+        },
+        {
+          "id": "quadriceps",
+          "role": "primary"
+        }
+      ],
+      "primaryEquipment": "machine",
+      "setup": [],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "squat",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "371",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "BFad07",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/371.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "371_en",
+          "version": "202610292120",
+          "license": "CC0-1.0",
+          "author": "BFad07",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/371.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "legPressMachine": {
+      "muscles": [
+        {
+          "id": "calves",
+          "role": "secondary"
+        },
+        {
+          "id": "gluteus_maximus",
+          "role": "primary"
+        },
+        {
+          "id": "hamstring_complex",
+          "role": "secondary"
+        },
+        {
+          "id": "quadriceps",
+          "role": "primary"
+        }
+      ],
+      "primaryEquipment": "machine",
+      "setup": [],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "squat",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "371",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "BFad07",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/371.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "371_en",
+          "version": "202610292120",
+          "license": "CC0-1.0",
+          "author": "BFad07",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/371.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "hackSquat": {
+      "muscles": [
+        {
+          "id": "gastrocnemius",
+          "role": "secondary"
+        },
+        {
+          "id": "gluteus_maximus",
+          "role": "primary"
+        },
+        {
+          "id": "hamstring_complex",
+          "role": "secondary"
+        },
+        {
+          "id": "quadriceps",
+          "role": "primary"
+        }
+      ],
+      "primaryEquipment": "machine",
+      "setup": [],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "squat",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "1414",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "hpmbala",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1414.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "1414_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "hpmbala",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/1414.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "gluteBridge": {
+      "muscles": [
+        {
+          "id": "erector_spinae",
+          "role": "secondary"
+        },
+        {
+          "id": "gluteus_maximus",
+          "role": "primary"
+        },
+        {
+          "id": "hamstring_complex",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "bodyweight",
+      "setup": [
+        "mat"
+      ],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "hip_extension",
+      "loadMode": "bodyweight",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "265",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "tdprice12",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/265.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "265_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "tdprice12",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/265.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "barbellHipThrust": {
+      "muscles": [
+        {
+          "id": "gluteus_maximus",
+          "role": "primary"
+        },
+        {
+          "id": "hamstring_complex",
+          "role": "secondary"
+        },
+        {
+          "id": "quadriceps",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "barbell",
+      "setup": [
+        "flat_bench"
+      ],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "hip_extension",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "294",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "Bret Contreras",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/294.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "294_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "Bret Contreras",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/294.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "legExtension": {
+      "muscles": [
+        {
+          "id": "quadriceps",
+          "role": "primary"
+        }
+      ],
+      "primaryEquipment": "machine",
+      "setup": [],
+      "mechanic": "isolation",
+      "laterality": "bilateral",
+      "movementPattern": "knee_extension",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "369",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "BFad07",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/369.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "369_en",
+          "version": "202610292120",
+          "license": "CC0-1.0",
+          "author": "BFad07",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/369.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "legCurl": {
+      "muscles": [
+        {
+          "id": "calves",
+          "role": "secondary"
+        },
+        {
+          "id": "hamstring_complex",
+          "role": "primary"
+        }
+      ],
+      "primaryEquipment": "machine",
+      "setup": [],
+      "mechanic": "isolation",
+      "laterality": "bilateral",
+      "movementPattern": "knee_flexion",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "364",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "BFad07",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/364.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "364_en",
+          "version": "202610292120",
+          "license": "CC0-1.0",
+          "author": "BFad07",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/364.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "standingCalfRaise": {
+      "muscles": [
+        {
+          "id": "gastrocnemius",
+          "role": "primary"
+        },
+        {
+          "id": "soleus",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "machine",
+      "setup": [],
+      "mechanic": "isolation",
+      "laterality": "bilateral",
+      "movementPattern": "plantar_flexion",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "622",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/622.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "622_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-3.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/622.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "hipAbduction": {
+      "muscles": [
+        {
+          "id": "gluteus_maximus",
+          "role": "secondary"
+        },
+        {
+          "id": "gluteus_medius",
+          "role": "primary"
+        },
+        {
+          "id": "gluteus_minimus",
+          "role": "primary"
+        }
+      ],
+      "primaryEquipment": "machine",
+      "setup": [],
+      "mechanic": "isolation",
+      "laterality": "bilateral",
+      "movementPattern": "hip_abduction",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "1672",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "Iko",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1672.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "1672_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "Iko",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/1672.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "hipAdduction": {
+      "muscles": [
+        {
+          "id": "hip_adductors",
+          "role": "primary"
+        }
+      ],
+      "primaryEquipment": "machine",
+      "setup": [],
+      "mechanic": "isolation",
+      "laterality": "bilateral",
+      "movementPattern": "hip_adduction",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "12",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "flori",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/12.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "12_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-3.0",
+          "author": "flori",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/12.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "barbellOverheadPress": {
+      "muscles": [
+        {
+          "id": "delt_anterior",
+          "role": "primary"
+        },
+        {
+          "id": "delt_lateral",
+          "role": "secondary"
+        },
+        {
+          "id": "pecs_clavicular",
+          "role": "secondary"
+        },
+        {
+          "id": "traps_upper",
+          "role": "secondary"
+        },
+        {
+          "id": "triceps_brachii",
+          "role": "primary"
+        }
+      ],
+      "primaryEquipment": "barbell",
+      "setup": [
+        "squat_rack"
+      ],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "vertical_push",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "1893",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "nishant0712",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1893.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "1893_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "nishant0712",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/1893.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "dumbbellShoulderPress": {
+      "muscles": [
+        {
+          "id": "delt_anterior",
+          "role": "primary"
+        },
+        {
+          "id": "delt_lateral",
+          "role": "secondary"
+        },
+        {
+          "id": "traps_upper",
+          "role": "secondary"
+        },
+        {
+          "id": "triceps_brachii",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "dumbbell",
+      "setup": [
+        "incline_bench"
+      ],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "vertical_push",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "567",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/567.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "567_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-3.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/567.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "arnoldPress": {
+      "muscles": [
+        {
+          "id": "delt_anterior",
+          "role": "primary"
+        },
+        {
+          "id": "delt_lateral",
+          "role": "primary"
+        },
+        {
+          "id": "traps_upper",
+          "role": "secondary"
+        },
+        {
+          "id": "triceps_brachii",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "dumbbell",
+      "setup": [
+        "incline_bench"
+      ],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "vertical_push",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "20",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "trzr23",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/20.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "20_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-3.0",
+          "author": "trzr23",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/20.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "dumbbellLateralRaise": {
+      "muscles": [
+        {
+          "id": "delt_lateral",
+          "role": "primary"
+        },
+        {
+          "id": "rotator_cuff",
+          "role": "secondary"
+        },
+        {
+          "id": "traps_upper",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "dumbbell",
+      "setup": [],
+      "mechanic": "isolation",
+      "laterality": "bilateral",
+      "movementPattern": "shoulder_abduction",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "348",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/348.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "348_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-3.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/348.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "dumbbellFrontRaise": {
+      "muscles": [
+        {
+          "id": "delt_anterior",
+          "role": "primary"
+        },
+        {
+          "id": "delt_lateral",
+          "role": "secondary"
+        },
+        {
+          "id": "traps_upper",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "dumbbell",
+      "setup": [],
+      "mechanic": "isolation",
+      "laterality": "bilateral",
+      "movementPattern": "shoulder_flexion",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "1338",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "Anastasious",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1338.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "1338_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "Anastasious",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/1338.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "facePull": {
+      "muscles": [
+        {
+          "id": "biceps_brachii",
+          "role": "secondary"
+        },
+        {
+          "id": "delt_posterior",
+          "role": "primary"
+        },
+        {
+          "id": "rhomboids",
+          "role": "secondary"
+        },
+        {
+          "id": "rotator_cuff",
+          "role": "secondary"
+        },
+        {
+          "id": "traps_middle",
+          "role": "primary"
+        }
+      ],
+      "primaryEquipment": "cable",
+      "setup": [],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "horizontal_pull",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "222",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "abeworld",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/222.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "222_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "abeworld",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/222.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "reverseFly": {
+      "muscles": [
+        {
+          "id": "delt_posterior",
+          "role": "primary"
+        },
+        {
+          "id": "rhomboids",
+          "role": "secondary"
+        },
+        {
+          "id": "traps_middle",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "cable",
+      "setup": [],
+      "mechanic": "isolation",
+      "laterality": "bilateral",
+      "movementPattern": "horizontal_pull",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "1709",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "Croak6728",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1709.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "1709_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "Croak6728",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/1709.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "barbellCurl": {
+      "muscles": [
+        {
+          "id": "biceps_brachii",
+          "role": "primary"
+        },
+        {
+          "id": "brachialis",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "barbell",
+      "setup": [],
+      "mechanic": "isolation",
+      "laterality": "bilateral",
+      "movementPattern": "elbow_flexion",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "91",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/91.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "91_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-3.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/91.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "dumbbellCurl": {
+      "muscles": [
+        {
+          "id": "biceps_brachii",
+          "role": "primary"
+        },
+        {
+          "id": "brachialis",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "dumbbell",
+      "setup": [],
+      "mechanic": "isolation",
+      "laterality": "bilateral",
+      "movementPattern": "elbow_flexion",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "92",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/92.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "92_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-3.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/92.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "hammerCurl": {
+      "muscles": [
+        {
+          "id": "biceps_brachii",
+          "role": "secondary"
+        },
+        {
+          "id": "brachialis",
+          "role": "primary"
+        },
+        {
+          "id": "brachioradialis",
+          "role": "primary"
+        }
+      ],
+      "primaryEquipment": "dumbbell",
+      "setup": [],
+      "mechanic": "isolation",
+      "laterality": "bilateral",
+      "movementPattern": "elbow_flexion",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "272",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/272.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "272_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-3.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/272.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "preacherCurl": {
+      "muscles": [
+        {
+          "id": "biceps_short_head",
+          "role": "primary"
+        },
+        {
+          "id": "brachialis",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "ez_bar",
+      "setup": [
+        "preacher_bench"
+      ],
+      "mechanic": "isolation",
+      "laterality": "bilateral",
+      "movementPattern": "elbow_flexion",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "465",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "cgoob883",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/465.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "465_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-3.0",
+          "author": "cgoob883",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/465.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "concentrationCurl": {
+      "muscles": [
+        {
+          "id": "biceps_brachii",
+          "role": "primary"
+        },
+        {
+          "id": "brachialis",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "dumbbell",
+      "setup": [
+        "flat_bench"
+      ],
+      "mechanic": "isolation",
+      "laterality": "unilateral",
+      "movementPattern": "elbow_flexion",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "202",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "http://www.exrx.net/WeightExercises/Brachialis/DBC",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/202.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "202_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-3.0",
+          "author": "http://www.exrx.net/WeightExercises/Brachialis/DBC",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/202.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "tricepsPushdown": {
+      "muscles": [
+        {
+          "id": "triceps_brachii",
+          "role": "primary"
+        }
+      ],
+      "primaryEquipment": "cable",
+      "setup": [],
+      "mechanic": "isolation",
+      "laterality": "bilateral",
+      "movementPattern": "elbow_extension",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "1185",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "anto.kreegyr",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1185.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "1185_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "anto.kreegyr",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/1185.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "closeGripBenchPress": {
+      "muscles": [
+        {
+          "id": "delt_anterior",
+          "role": "secondary"
+        },
+        {
+          "id": "pectoralis_major",
+          "role": "secondary"
+        },
+        {
+          "id": "triceps_brachii",
+          "role": "primary"
+        }
+      ],
+      "primaryEquipment": "barbell",
+      "setup": [
+        "flat_bench"
+      ],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "horizontal_push",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "76",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/76.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "76_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-3.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/76.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "overheadTricepsExtension": {
+      "muscles": [
+        {
+          "id": "triceps_long_head",
+          "role": "primary"
+        }
+      ],
+      "primaryEquipment": "dumbbell",
+      "setup": [],
+      "mechanic": "isolation",
+      "laterality": "bilateral",
+      "movementPattern": "elbow_extension",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "1336",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "Anastasious",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1336.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "1336_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "Anastasious",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/1336.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "tricepsRopeExtension": {
+      "muscles": [
+        {
+          "id": "triceps_brachii",
+          "role": "primary"
+        }
+      ],
+      "primaryEquipment": "cable",
+      "setup": [],
+      "mechanic": "isolation",
+      "laterality": "bilateral",
+      "movementPattern": "elbow_extension",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "659",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/659.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "659_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-3.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/659.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "crunch": {
+      "muscles": [
+        {
+          "id": "obliques",
+          "role": "secondary"
+        },
+        {
+          "id": "rectus_abdominis",
+          "role": "primary"
+        }
+      ],
+      "primaryEquipment": "bodyweight",
+      "setup": [
+        "mat"
+      ],
+      "mechanic": "isolation",
+      "laterality": "bilateral",
+      "movementPattern": "spinal_flexion",
+      "loadMode": "bodyweight",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "167",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/167.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "167_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-3.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/167.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "plank": {
+      "muscles": [
+        {
+          "id": "deltoid",
+          "role": "secondary"
+        },
+        {
+          "id": "gluteus_maximus",
+          "role": "secondary"
+        },
+        {
+          "id": "obliques",
+          "role": "secondary"
+        },
+        {
+          "id": "rectus_abdominis",
+          "role": "primary"
+        },
+        {
+          "id": "transversus_abdominis",
+          "role": "primary"
+        }
+      ],
+      "primaryEquipment": "bodyweight",
+      "setup": [
+        "mat"
+      ],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "anti_extension",
+      "loadMode": "bodyweight",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "458",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "YYCfit / BFad07",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/458.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "458_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-3.0",
+          "author": "YYCfit / BFad07",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/458.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "hangingLegRaise": {
+      "muscles": [
+        {
+          "id": "forearms",
+          "role": "secondary"
+        },
+        {
+          "id": "hip_flexors",
+          "role": "primary"
+        },
+        {
+          "id": "obliques",
+          "role": "secondary"
+        },
+        {
+          "id": "rectus_abdominis",
+          "role": "primary"
+        }
+      ],
+      "primaryEquipment": "bodyweight",
+      "setup": [
+        "pullup_bar"
+      ],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "spinal_flexion",
+      "loadMode": "bodyweight",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "283",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "robhoyt",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/283.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "283_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-3.0",
+          "author": "robhoyt",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/283.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "cableCrunch": {
+      "muscles": [
+        {
+          "id": "obliques",
+          "role": "secondary"
+        },
+        {
+          "id": "rectus_abdominis",
+          "role": "primary"
+        }
+      ],
+      "primaryEquipment": "cable",
+      "setup": [
+        "cable_tower",
+        "mat"
+      ],
+      "mechanic": "isolation",
+      "laterality": "bilateral",
+      "movementPattern": "spinal_flexion",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "173",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/173.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "173_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-3.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/173.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "deadBug": {
+      "muscles": [
+        {
+          "id": "hip_flexors",
+          "role": "secondary"
+        },
+        {
+          "id": "obliques",
+          "role": "secondary"
+        },
+        {
+          "id": "rectus_abdominis",
+          "role": "primary"
+        },
+        {
+          "id": "transversus_abdominis",
+          "role": "primary"
+        }
+      ],
+      "primaryEquipment": "bodyweight",
+      "setup": [
+        "mat"
+      ],
+      "mechanic": "compound",
+      "laterality": "alternating",
+      "movementPattern": "anti_extension",
+      "loadMode": "bodyweight",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "2505",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "Vasco Custom",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/2505.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "2505_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/2505.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "birdDog": {
+      "muscles": [
+        {
+          "id": "deltoid",
+          "role": "secondary"
+        },
+        {
+          "id": "erector_spinae",
+          "role": "primary"
+        },
+        {
+          "id": "gluteus_maximus",
+          "role": "primary"
+        },
+        {
+          "id": "obliques",
+          "role": "secondary"
+        },
+        {
+          "id": "rectus_abdominis",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "bodyweight",
+      "setup": [
+        "mat"
+      ],
+      "mechanic": "compound",
+      "laterality": "alternating",
+      "movementPattern": "anti_rotation",
+      "loadMode": "bodyweight",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "1572",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "Settebello",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1572.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "1572_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "Settebello",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/1572.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "abCrunchMachine": {
+      "muscles": [
+        {
+          "id": "obliques",
+          "role": "secondary"
+        },
+        {
+          "id": "rectus_abdominis",
+          "role": "primary"
+        }
+      ],
+      "primaryEquipment": "machine",
+      "setup": [],
+      "mechanic": "isolation",
+      "laterality": "bilateral",
+      "movementPattern": "spinal_flexion",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "172",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/172.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "172_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-3.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/172.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "machineChestPress": {
+      "muscles": [
+        {
+          "id": "delt_anterior",
+          "role": "secondary"
+        },
+        {
+          "id": "pectoralis_major",
+          "role": "primary"
+        },
+        {
+          "id": "triceps_brachii",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "machine",
+      "setup": [],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "horizontal_push",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "1094",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "colundrum",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1094.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "1094_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "colundrum",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/1094.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "inclineDumbbellFly": {
+      "muscles": [
+        {
+          "id": "delt_anterior",
+          "role": "secondary"
+        },
+        {
+          "id": "pecs_clavicular",
+          "role": "primary"
+        }
+      ],
+      "primaryEquipment": "dumbbell",
+      "setup": [
+        "incline_bench"
+      ],
+      "mechanic": "isolation",
+      "laterality": "bilateral",
+      "movementPattern": "horizontal_push",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "308",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "tuckerm",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/308.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "308_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-3.0",
+          "author": "tuckerm",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/308.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "invertedRow": {
+      "muscles": [
+        {
+          "id": "biceps_brachii",
+          "role": "secondary"
+        },
+        {
+          "id": "delt_posterior",
+          "role": "secondary"
+        },
+        {
+          "id": "latissimus_dorsi",
+          "role": "primary"
+        },
+        {
+          "id": "rhomboids",
+          "role": "secondary"
+        },
+        {
+          "id": "trapezius",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "bodyweight",
+      "setup": [
+        "pullup_bar"
+      ],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "horizontal_pull",
+      "loadMode": "bodyweight",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "1198",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "Gavru",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1198.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "1198_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "Gavru",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/1198.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "reverseGripBarbellRow": {
+      "muscles": [
+        {
+          "id": "biceps_brachii",
+          "role": "primary"
+        },
+        {
+          "id": "brachialis",
+          "role": "secondary"
+        },
+        {
+          "id": "erector_spinae",
+          "role": "secondary"
+        },
+        {
+          "id": "latissimus_dorsi",
+          "role": "primary"
+        },
+        {
+          "id": "rhomboids",
+          "role": "secondary"
+        },
+        {
+          "id": "traps_middle",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "barbell",
+      "setup": [],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "horizontal_pull",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "84",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/84.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "84_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-3.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/84.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "gobletSquat": {
+      "muscles": [
+        {
+          "id": "calves",
+          "role": "secondary"
+        },
+        {
+          "id": "gluteus_maximus",
+          "role": "primary"
+        },
+        {
+          "id": "hamstring_complex",
+          "role": "secondary"
+        },
+        {
+          "id": "quadriceps",
+          "role": "primary"
+        },
+        {
+          "id": "rectus_abdominis",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "dumbbell",
+      "setup": [],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "squat",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "203",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "ataraxie67",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/203.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "203_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "ataraxie67",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/203.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "smithMachineSquat": {
+      "muscles": [
+        {
+          "id": "gastrocnemius",
+          "role": "secondary"
+        },
+        {
+          "id": "gluteus_maximus",
+          "role": "primary"
+        },
+        {
+          "id": "hamstring_complex",
+          "role": "secondary"
+        },
+        {
+          "id": "quadriceps",
+          "role": "primary"
+        }
+      ],
+      "primaryEquipment": "smith_machine",
+      "setup": [],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "squat",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "1747",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "Tierrasverdes",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1747.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "1747_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "Tierrasverdes",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/1747.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "boxSquat": {
+      "muscles": [
+        {
+          "id": "calves",
+          "role": "secondary"
+        },
+        {
+          "id": "erector_spinae",
+          "role": "secondary"
+        },
+        {
+          "id": "gluteus_maximus",
+          "role": "primary"
+        },
+        {
+          "id": "hamstring_complex",
+          "role": "secondary"
+        },
+        {
+          "id": "quadriceps",
+          "role": "primary"
+        },
+        {
+          "id": "rectus_abdominis",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "barbell",
+      "setup": [
+        "plyo_box",
+        "squat_rack"
+      ],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "squat",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "977",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "clafal",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/977.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "977_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "clafal",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/977.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "gluteKickback": {
+      "muscles": [
+        {
+          "id": "gluteus_maximus",
+          "role": "primary"
+        },
+        {
+          "id": "hamstring_complex",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "bodyweight",
+      "setup": [
+        "mat"
+      ],
+      "mechanic": "isolation",
+      "laterality": "unilateral",
+      "movementPattern": "hip_extension",
+      "loadMode": "bodyweight",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "990",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/990.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "990_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/990.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "seatedLegCurl": {
+      "muscles": [
+        {
+          "id": "calves",
+          "role": "secondary"
+        },
+        {
+          "id": "hamstring_complex",
+          "role": "primary"
+        }
+      ],
+      "primaryEquipment": "machine",
+      "setup": [],
+      "mechanic": "isolation",
+      "laterality": "bilateral",
+      "movementPattern": "knee_flexion",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "2495",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "Me",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/2495.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "2495_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "Me",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/2495.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "machineShoulderPress": {
+      "muscles": [
+        {
+          "id": "delt_anterior",
+          "role": "primary"
+        },
+        {
+          "id": "delt_lateral",
+          "role": "secondary"
+        },
+        {
+          "id": "traps_upper",
+          "role": "secondary"
+        },
+        {
+          "id": "triceps_brachii",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "machine",
+      "setup": [],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "vertical_push",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "543",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/543.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "543_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-3.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/543.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "cableInternalRotation": {
+      "muscles": [
+        {
+          "id": "delt_anterior",
+          "role": "secondary"
+        },
+        {
+          "id": "pectoralis_major",
+          "role": "secondary"
+        },
+        {
+          "id": "rotator_cuff",
+          "role": "primary"
+        }
+      ],
+      "primaryEquipment": "cable",
+      "setup": [],
+      "mechanic": "isolation",
+      "laterality": "unilateral",
+      "movementPattern": "rotation",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "1728",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "barry",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1728.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "1728_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "barry",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/1728.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "ezBarCurl": {
+      "muscles": [
+        {
+          "id": "biceps_brachii",
+          "role": "primary"
+        },
+        {
+          "id": "brachialis",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "ez_bar",
+      "setup": [],
+      "mechanic": "isolation",
+      "laterality": "bilateral",
+      "movementPattern": "elbow_flexion",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "94",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/94.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "94_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-3.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/94.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "inclineDumbbellCurl": {
+      "muscles": [
+        {
+          "id": "biceps_long_head",
+          "role": "primary"
+        },
+        {
+          "id": "brachialis",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "dumbbell",
+      "setup": [
+        "incline_bench"
+      ],
+      "mechanic": "isolation",
+      "laterality": "bilateral",
+      "movementPattern": "elbow_flexion",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "204",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "ExRx",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/204.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "204_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "ExRx",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/204.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "abRollout": {
+      "muscles": [
+        {
+          "id": "deltoid",
+          "role": "secondary"
+        },
+        {
+          "id": "latissimus_dorsi",
+          "role": "secondary"
+        },
+        {
+          "id": "obliques",
+          "role": "secondary"
+        },
+        {
+          "id": "rectus_abdominis",
+          "role": "primary"
+        },
+        {
+          "id": "transversus_abdominis",
+          "role": "primary"
+        }
+      ],
+      "primaryEquipment": "bodyweight",
+      "setup": [
+        "ab_wheel",
+        "mat"
+      ],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "anti_extension",
+      "loadMode": "bodyweight",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "1573",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "lhegedus",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1573.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "1573_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "lhegedus",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/1573.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "sidePlank": {
+      "muscles": [
+        {
+          "id": "gluteus_medius",
+          "role": "secondary"
+        },
+        {
+          "id": "obliques",
+          "role": "primary"
+        },
+        {
+          "id": "quadratus_lumborum",
+          "role": "primary"
+        },
+        {
+          "id": "rectus_abdominis",
+          "role": "secondary"
+        },
+        {
+          "id": "transversus_abdominis",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "bodyweight",
+      "setup": [
+        "mat"
+      ],
+      "mechanic": "compound",
+      "laterality": "unilateral",
+      "movementPattern": "anti_lateral_flexion",
+      "loadMode": "bodyweight",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "580",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "http://www.bodybuilding.com/",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/580.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "580_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "http://www.bodybuilding.com/",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/580.yaml",
+          "modified": true
+        }
+      ]
+    },
+    "weightedPushUp": {
+      "primaryEquipment": "bodyweight",
+      "setup": [],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "horizontal_push",
+      "loadMode": "bodyweight"
+    },
+    "squat": {
+      "primaryEquipment": "bodyweight",
+      "setup": [],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "squat",
+      "loadMode": "bodyweight"
+    },
+    "lunge": {
+      "primaryEquipment": "barbell",
+      "setup": [],
+      "mechanic": "compound",
+      "laterality": "unilateral",
+      "movementPattern": "lunge",
+      "loadMode": "external"
+    },
+    "bulgarianSplitSquat": {
+      "primaryEquipment": "dumbbell",
+      "setup": [
+        "flat_bench"
+      ],
+      "mechanic": "compound",
+      "laterality": "unilateral",
+      "movementPattern": "lunge",
+      "loadMode": "external"
+    },
+    "walkingLunge": {
+      "primaryEquipment": "dumbbell",
+      "setup": [],
+      "mechanic": "compound",
+      "laterality": "alternating",
+      "movementPattern": "lunge",
+      "loadMode": "external"
+    },
+    "seatedCalfRaise": {
+      "primaryEquipment": "machine",
+      "setup": [],
+      "mechanic": "isolation",
+      "laterality": "bilateral",
+      "movementPattern": "plantar_flexion",
+      "loadMode": "external"
+    },
+    "shrug": {
+      "primaryEquipment": null,
+      "setup": [],
+      "mechanic": "isolation",
+      "laterality": "bilateral",
+      "movementPattern": "scapular_elevation",
+      "loadMode": "external"
+    },
+    "skullCrusher": {
+      "primaryEquipment": "barbell",
+      "setup": [
+        "flat_bench"
+      ],
+      "mechanic": "isolation",
+      "laterality": "bilateral",
+      "movementPattern": "elbow_extension",
+      "loadMode": "external"
+    },
+    "russianTwist": {
+      "primaryEquipment": null,
+      "setup": [],
+      "mechanic": "compound",
+      "laterality": "alternating",
+      "movementPattern": "rotation",
+      "loadMode": "external"
+    },
+    "sitUp": {
+      "primaryEquipment": "bodyweight",
+      "setup": [
+        "mat"
+      ],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "spinal_flexion",
+      "loadMode": "bodyweight"
+    },
+    "dumbbellFly": {
+      "primaryEquipment": "dumbbell",
+      "setup": [
+        "flat_bench"
+      ],
+      "mechanic": "isolation",
+      "laterality": "bilateral",
+      "movementPattern": "horizontal_push",
+      "loadMode": "external"
+    },
+    "smithMachineBenchPress": {
+      "primaryEquipment": "smith_machine",
+      "setup": [
+        "flat_bench"
+      ],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "horizontal_push",
+      "loadMode": "external"
+    },
+    "dumbbellStepUp": {
+      "primaryEquipment": "dumbbell",
+      "setup": [
+        "plyo_box"
+      ],
+      "mechanic": "compound",
+      "laterality": "unilateral",
+      "movementPattern": "lunge",
+      "loadMode": "external"
+    },
+    "uprightBarbellRow": {
+      "primaryEquipment": "barbell",
+      "setup": [],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "shoulder_abduction",
+      "loadMode": "external"
+    },
+    "cableOverheadTricepsExtension": {
+      "primaryEquipment": "cable",
+      "setup": [],
+      "mechanic": "isolation",
+      "laterality": "bilateral",
+      "movementPattern": "elbow_extension",
+      "loadMode": "external"
+    },
+    "cableHammerCurl": {
+      "primaryEquipment": "cable",
+      "setup": [],
+      "mechanic": "isolation",
+      "laterality": "bilateral",
+      "movementPattern": "elbow_flexion",
+      "loadMode": "external"
+    },
+    "highCableCurl": {
+      "primaryEquipment": "cable",
+      "setup": [],
+      "mechanic": "isolation",
+      "laterality": "bilateral",
+      "movementPattern": "elbow_flexion",
+      "loadMode": "external"
+    },
+    "obliqueCrunch": {
+      "primaryEquipment": "bodyweight",
+      "setup": [
+        "mat"
+      ],
+      "mechanic": "isolation",
+      "laterality": "unilateral",
+      "movementPattern": "spinal_flexion",
+      "loadMode": "bodyweight"
+    },
+    "exerciseBallCrunch": {
+      "primaryEquipment": "bodyweight",
+      "setup": [
+        "swiss_ball"
+      ],
+      "mechanic": "isolation",
+      "laterality": "bilateral",
+      "movementPattern": "spinal_flexion",
+      "loadMode": "bodyweight"
+    }
+  },
+  "additions": [
+    {
+      "id": "oedb:48",
+      "slug": "oedb-barbell-reverse-wrist-curl",
+      "muscles": [
+        {
+          "id": "brachioradialis",
+          "role": "secondary"
+        },
+        {
+          "id": "wrist_extensors",
+          "role": "primary"
+        },
+        {
+          "id": "wrist_flexors",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "barbell",
+      "setup": [
+        "flat_bench"
+      ],
+      "mechanic": "isolation",
+      "laterality": "bilateral",
+      "movementPattern": "wrist_extension",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "48",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "burenl",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/48.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "48_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "burenl",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/48.yaml",
+          "modified": true
+        }
+      ],
+      "measurementType": "weightReps",
+      "sourceUrls": [
+        "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/48.yaml"
+      ],
+      "muscleDistribution": [
+        {
+          "muscleGroupId": "arms",
+          "ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "oedb:51",
+      "slug": "oedb-barbell-wrist-curl",
+      "muscles": [
+        {
+          "id": "wrist_extensors",
+          "role": "secondary"
+        },
+        {
+          "id": "wrist_flexors",
+          "role": "primary"
+        }
+      ],
+      "primaryEquipment": "barbell",
+      "setup": [
+        "flat_bench"
+      ],
+      "mechanic": "isolation",
+      "laterality": "bilateral",
+      "movementPattern": "wrist_flexion",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "51",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "burenl",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/51.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "51_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "burenl",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/51.yaml",
+          "modified": true
+        }
+      ],
+      "measurementType": "weightReps",
+      "sourceUrls": [
+        "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/51.yaml"
+      ],
+      "muscleDistribution": [
+        {
+          "muscleGroupId": "arms",
+          "ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "oedb:142",
+      "slug": "oedb-cable-external-rotation",
+      "muscles": [
+        {
+          "id": "delt_posterior",
+          "role": "secondary"
+        },
+        {
+          "id": "rotator_cuff",
+          "role": "primary"
+        }
+      ],
+      "primaryEquipment": "cable",
+      "setup": [],
+      "mechanic": "isolation",
+      "laterality": "unilateral",
+      "movementPattern": "rotation",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "142",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "lauroernesto",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/142.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "142_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-3.0",
+          "author": "lauroernesto",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/142.yaml",
+          "modified": true
+        }
+      ],
+      "measurementType": "weightReps",
+      "sourceUrls": [
+        "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/142.yaml"
+      ],
+      "muscleDistribution": [
+        {
+          "muscleGroupId": "shoulders",
+          "ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "oedb:386",
+      "slug": "oedb-diamond-push-ups",
+      "muscles": [
+        {
+          "id": "delt_anterior",
+          "role": "secondary"
+        },
+        {
+          "id": "pectoralis_major",
+          "role": "primary"
+        },
+        {
+          "id": "rectus_abdominis",
+          "role": "secondary"
+        },
+        {
+          "id": "triceps_brachii",
+          "role": "primary"
+        }
+      ],
+      "primaryEquipment": "bodyweight",
+      "setup": [],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "horizontal_push",
+      "loadMode": "bodyweight",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "386",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "notdefine",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/386.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "386_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "notdefine",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/386.yaml",
+          "modified": true
+        }
+      ],
+      "measurementType": "reps",
+      "sourceUrls": [
+        "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/386.yaml"
+      ],
+      "muscleDistribution": [
+        {
+          "muscleGroupId": "chest",
+          "ratio": 0.5
+        },
+        {
+          "muscleGroupId": "arms",
+          "ratio": 0.5
+        }
+      ]
+    },
+    {
+      "id": "oedb:454",
+      "slug": "oedb-pike-push-ups",
+      "muscles": [
+        {
+          "id": "deltoid",
+          "role": "primary"
+        },
+        {
+          "id": "pecs_clavicular",
+          "role": "secondary"
+        },
+        {
+          "id": "trapezius",
+          "role": "secondary"
+        },
+        {
+          "id": "triceps_brachii",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "bodyweight",
+      "setup": [],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "vertical_push",
+      "loadMode": "bodyweight",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "454",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "Nash",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/454.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "454_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "Nash",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/454.yaml",
+          "modified": true
+        }
+      ],
+      "measurementType": "reps",
+      "sourceUrls": [
+        "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/454.yaml"
+      ],
+      "muscleDistribution": [
+        {
+          "muscleGroupId": "shoulders",
+          "ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "oedb:456",
+      "slug": "oedb-pistol-squat",
+      "muscles": [
+        {
+          "id": "calves",
+          "role": "secondary"
+        },
+        {
+          "id": "gluteus_maximus",
+          "role": "primary"
+        },
+        {
+          "id": "hamstring_complex",
+          "role": "secondary"
+        },
+        {
+          "id": "hip_flexors",
+          "role": "secondary"
+        },
+        {
+          "id": "quadriceps",
+          "role": "primary"
+        },
+        {
+          "id": "rectus_abdominis",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "bodyweight",
+      "setup": [],
+      "mechanic": "compound",
+      "laterality": "unilateral",
+      "movementPattern": "squat",
+      "loadMode": "bodyweight",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "456",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "minifigmaster125",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/456.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "456_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-3.0",
+          "author": "minifigmaster125",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/456.yaml",
+          "modified": true
+        }
+      ],
+      "measurementType": "reps",
+      "sourceUrls": [
+        "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/456.yaml"
+      ],
+      "muscleDistribution": [
+        {
+          "muscleGroupId": "legs",
+          "ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "oedb:477",
+      "slug": "oedb-pull-ups-on-machine",
+      "muscles": [
+        {
+          "id": "biceps_brachii",
+          "role": "secondary"
+        },
+        {
+          "id": "brachialis",
+          "role": "secondary"
+        },
+        {
+          "id": "latissimus_dorsi",
+          "role": "primary"
+        },
+        {
+          "id": "rhomboids",
+          "role": "secondary"
+        },
+        {
+          "id": "teres_major",
+          "role": "primary"
+        },
+        {
+          "id": "traps_lower",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "machine",
+      "setup": [],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "vertical_pull",
+      "loadMode": "assisted",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "477",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/477.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "477_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-3.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/477.yaml",
+          "modified": true
+        }
+      ],
+      "measurementType": "weightReps",
+      "sourceUrls": [
+        "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/477.yaml"
+      ],
+      "muscleDistribution": [
+        {
+          "muscleGroupId": "back",
+          "ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "oedb:493",
+      "slug": "oedb-reverse-bar-curl",
+      "muscles": [
+        {
+          "id": "biceps_brachii",
+          "role": "secondary"
+        },
+        {
+          "id": "brachialis",
+          "role": "primary"
+        },
+        {
+          "id": "brachioradialis",
+          "role": "primary"
+        }
+      ],
+      "primaryEquipment": "ez_bar",
+      "setup": [],
+      "mechanic": "isolation",
+      "laterality": "bilateral",
+      "movementPattern": "elbow_flexion",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "493",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "tuckerm",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/493.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "493_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-3.0",
+          "author": "tuckerm",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/493.yaml",
+          "modified": true
+        }
+      ],
+      "measurementType": "weightReps",
+      "sourceUrls": [
+        "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/493.yaml"
+      ],
+      "muscleDistribution": [
+        {
+          "muscleGroupId": "arms",
+          "ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "oedb:510",
+      "slug": "oedb-rowing-lying-on-bench",
+      "muscles": [
+        {
+          "id": "biceps_brachii",
+          "role": "secondary"
+        },
+        {
+          "id": "brachialis",
+          "role": "secondary"
+        },
+        {
+          "id": "delt_posterior",
+          "role": "secondary"
+        },
+        {
+          "id": "latissimus_dorsi",
+          "role": "primary"
+        },
+        {
+          "id": "rhomboids",
+          "role": "primary"
+        },
+        {
+          "id": "teres_major",
+          "role": "secondary"
+        },
+        {
+          "id": "trapezius",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "barbell",
+      "setup": [
+        "flat_bench"
+      ],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "horizontal_pull",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "510",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/510.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "510_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-3.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/510.yaml",
+          "modified": true
+        }
+      ],
+      "measurementType": "weightReps",
+      "sourceUrls": [
+        "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/510.yaml"
+      ],
+      "muscleDistribution": [
+        {
+          "muscleGroupId": "back",
+          "ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "oedb:571",
+      "slug": "oedb-shrugs-barbells",
+      "muscles": [
+        {
+          "id": "forearms",
+          "role": "secondary"
+        },
+        {
+          "id": "rhomboids",
+          "role": "secondary"
+        },
+        {
+          "id": "traps_upper",
+          "role": "primary"
+        }
+      ],
+      "primaryEquipment": "barbell",
+      "setup": [],
+      "mechanic": "isolation",
+      "laterality": "bilateral",
+      "movementPattern": "scapular_elevation",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "571",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/571.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "571_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-3.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/571.yaml",
+          "modified": true
+        }
+      ],
+      "measurementType": "weightReps",
+      "sourceUrls": [
+        "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/571.yaml"
+      ],
+      "muscleDistribution": [
+        {
+          "muscleGroupId": "back",
+          "ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "oedb:572",
+      "slug": "oedb-shrugs-dumbbells",
+      "muscles": [
+        {
+          "id": "forearms",
+          "role": "secondary"
+        },
+        {
+          "id": "rhomboids",
+          "role": "secondary"
+        },
+        {
+          "id": "traps_upper",
+          "role": "primary"
+        }
+      ],
+      "primaryEquipment": "dumbbell",
+      "setup": [],
+      "mechanic": "isolation",
+      "laterality": "bilateral",
+      "movementPattern": "scapular_elevation",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "572",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/572.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "572_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-3.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/572.yaml",
+          "modified": true
+        }
+      ],
+      "measurementType": "weightReps",
+      "sourceUrls": [
+        "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/572.yaml"
+      ],
+      "muscleDistribution": [
+        {
+          "muscleGroupId": "back",
+          "ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "oedb:822",
+      "slug": "oedb-cable-rear-delt-fly",
+      "muscles": [
+        {
+          "id": "delt_posterior",
+          "role": "primary"
+        },
+        {
+          "id": "rhomboids",
+          "role": "secondary"
+        },
+        {
+          "id": "traps_middle",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "cable",
+      "setup": [],
+      "mechanic": "isolation",
+      "laterality": "bilateral",
+      "movementPattern": "horizontal_pull",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "822",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "cshep442",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/822.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "822_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "cshep442",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/822.yaml",
+          "modified": true
+        }
+      ],
+      "measurementType": "weightReps",
+      "sourceUrls": [
+        "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/822.yaml"
+      ],
+      "muscleDistribution": [
+        {
+          "muscleGroupId": "shoulders",
+          "ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "oedb:918",
+      "slug": "oedb-seated-dumbbell-side-lateral",
+      "muscles": [
+        {
+          "id": "delt_lateral",
+          "role": "primary"
+        },
+        {
+          "id": "rotator_cuff",
+          "role": "secondary"
+        },
+        {
+          "id": "traps_upper",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "dumbbell",
+      "setup": [
+        "flat_bench"
+      ],
+      "mechanic": "isolation",
+      "laterality": "bilateral",
+      "movementPattern": "shoulder_abduction",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "918",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "novadani",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/918.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "918_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "novadani",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/918.yaml",
+          "modified": true
+        }
+      ],
+      "measurementType": "weightReps",
+      "sourceUrls": [
+        "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/918.yaml"
+      ],
+      "muscleDistribution": [
+        {
+          "muscleGroupId": "shoulders",
+          "ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "oedb:999",
+      "slug": "oedb-reverse-lunges",
+      "muscles": [
+        {
+          "id": "gluteus_maximus",
+          "role": "primary"
+        },
+        {
+          "id": "hamstring_complex",
+          "role": "secondary"
+        },
+        {
+          "id": "quadriceps",
+          "role": "primary"
+        }
+      ],
+      "primaryEquipment": "bodyweight",
+      "setup": [],
+      "mechanic": "compound",
+      "laterality": "alternating",
+      "movementPattern": "lunge",
+      "loadMode": "bodyweight",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "999",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/999.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "999_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/999.yaml",
+          "modified": true
+        }
+      ],
+      "measurementType": "reps",
+      "sourceUrls": [
+        "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/999.yaml"
+      ],
+      "muscleDistribution": [
+        {
+          "muscleGroupId": "legs",
+          "ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "oedb:1088",
+      "slug": "oedb-dumbbell-sumo-deadlift",
+      "muscles": [
+        {
+          "id": "erector_spinae",
+          "role": "secondary"
+        },
+        {
+          "id": "gluteus_maximus",
+          "role": "primary"
+        },
+        {
+          "id": "hamstring_complex",
+          "role": "primary"
+        },
+        {
+          "id": "hip_adductors",
+          "role": "secondary"
+        },
+        {
+          "id": "quadriceps",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "dumbbell",
+      "setup": [],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "hinge",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "1088",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "philip",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1088.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "1088_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "philip",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/1088.yaml",
+          "modified": true
+        }
+      ],
+      "measurementType": "weightReps",
+      "sourceUrls": [
+        "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1088.yaml"
+      ],
+      "muscleDistribution": [
+        {
+          "muscleGroupId": "legs",
+          "ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "oedb:1143",
+      "slug": "oedb-back-extension",
+      "muscles": [
+        {
+          "id": "erector_spinae",
+          "role": "primary"
+        },
+        {
+          "id": "gluteus_maximus",
+          "role": "secondary"
+        },
+        {
+          "id": "hamstring_complex",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "machine",
+      "setup": [],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "spinal_extension",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "1143",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "Franpol",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1143.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "1143_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "Franpol",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/1143.yaml",
+          "modified": true
+        }
+      ],
+      "measurementType": "weightReps",
+      "sourceUrls": [
+        "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1143.yaml"
+      ],
+      "muscleDistribution": [
+        {
+          "muscleGroupId": "back",
+          "ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "oedb:1194",
+      "slug": "oedb-pallof-press",
+      "muscles": [
+        {
+          "id": "deltoid",
+          "role": "secondary"
+        },
+        {
+          "id": "gluteus_medius",
+          "role": "secondary"
+        },
+        {
+          "id": "obliques",
+          "role": "primary"
+        },
+        {
+          "id": "rectus_abdominis",
+          "role": "secondary"
+        },
+        {
+          "id": "transversus_abdominis",
+          "role": "primary"
+        }
+      ],
+      "primaryEquipment": "cable",
+      "setup": [
+        "cable_tower"
+      ],
+      "mechanic": "compound",
+      "laterality": "unilateral",
+      "movementPattern": "anti_rotation",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "1194",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "prevail90",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1194.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "1194_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "prevail90",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/1194.yaml",
+          "modified": true
+        }
+      ],
+      "measurementType": "weightReps",
+      "sourceUrls": [
+        "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1194.yaml"
+      ],
+      "muscleDistribution": [
+        {
+          "muscleGroupId": "core",
+          "ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "oedb:1234",
+      "slug": "oedb-dumbbell-single-leg-hip-thrust",
+      "muscles": [
+        {
+          "id": "gluteus_maximus",
+          "role": "primary"
+        },
+        {
+          "id": "hamstring_complex",
+          "role": "secondary"
+        },
+        {
+          "id": "quadriceps",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "dumbbell",
+      "setup": [
+        "flat_bench"
+      ],
+      "mechanic": "compound",
+      "laterality": "unilateral",
+      "movementPattern": "hip_extension",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "1234",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "carlos3c",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1234.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "1234_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "carlos3c",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/1234.yaml",
+          "modified": true
+        }
+      ],
+      "measurementType": "weightReps",
+      "sourceUrls": [
+        "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1234.yaml"
+      ],
+      "muscleDistribution": [
+        {
+          "muscleGroupId": "legs",
+          "ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "oedb:1283",
+      "slug": "oedb-incline-chest-supported-dumbbell-row",
+      "muscles": [
+        {
+          "id": "biceps_brachii",
+          "role": "secondary"
+        },
+        {
+          "id": "brachialis",
+          "role": "secondary"
+        },
+        {
+          "id": "delt_posterior",
+          "role": "secondary"
+        },
+        {
+          "id": "latissimus_dorsi",
+          "role": "primary"
+        },
+        {
+          "id": "rhomboids",
+          "role": "primary"
+        },
+        {
+          "id": "traps_middle",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "dumbbell",
+      "setup": [
+        "incline_bench"
+      ],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "horizontal_pull",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "1283",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "carlos3c",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1283.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "1283_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "carlos3c",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/1283.yaml",
+          "modified": true
+        }
+      ],
+      "measurementType": "weightReps",
+      "sourceUrls": [
+        "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1283.yaml"
+      ],
+      "muscleDistribution": [
+        {
+          "muscleGroupId": "back",
+          "ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "oedb:1294",
+      "slug": "oedb-single-leg-hamstring-curl",
+      "muscles": [
+        {
+          "id": "gastrocnemius",
+          "role": "secondary"
+        },
+        {
+          "id": "gluteus_maximus",
+          "role": "secondary"
+        },
+        {
+          "id": "hamstring_complex",
+          "role": "primary"
+        }
+      ],
+      "primaryEquipment": "bodyweight",
+      "setup": [
+        "mat"
+      ],
+      "mechanic": "isolation",
+      "laterality": "unilateral",
+      "movementPattern": "knee_flexion",
+      "loadMode": "bodyweight",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "1294",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "clafal",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1294.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "1294_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "clafal",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/1294.yaml",
+          "modified": true
+        }
+      ],
+      "measurementType": "reps",
+      "sourceUrls": [
+        "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1294.yaml"
+      ],
+      "muscleDistribution": [
+        {
+          "muscleGroupId": "legs",
+          "ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "oedb:1348",
+      "slug": "oedb-lower-back-extensions",
+      "muscles": [
+        {
+          "id": "erector_spinae",
+          "role": "primary"
+        },
+        {
+          "id": "gluteus_maximus",
+          "role": "primary"
+        },
+        {
+          "id": "hamstring_complex",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "bodyweight",
+      "setup": [
+        "mat"
+      ],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "spinal_extension",
+      "loadMode": "bodyweight",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "1348",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "Anastasious",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1348.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "1348_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "Anastasious",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/1348.yaml",
+          "modified": true
+        }
+      ],
+      "measurementType": "reps",
+      "sourceUrls": [
+        "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1348.yaml"
+      ],
+      "muscleDistribution": [
+        {
+          "muscleGroupId": "back",
+          "ratio": 0.5
+        },
+        {
+          "muscleGroupId": "legs",
+          "ratio": 0.5
+        }
+      ]
+    },
+    {
+      "id": "oedb:1372",
+      "slug": "oedb-triceps-dips-assisted",
+      "muscles": [
+        {
+          "id": "deltoid",
+          "role": "secondary"
+        },
+        {
+          "id": "pectoralis_major",
+          "role": "secondary"
+        },
+        {
+          "id": "triceps_brachii",
+          "role": "primary"
+        }
+      ],
+      "primaryEquipment": "machine",
+      "setup": [],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "vertical_push",
+      "loadMode": "assisted",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "1372",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "matpn",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1372.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "1372_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "matpn",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/1372.yaml",
+          "modified": true
+        }
+      ],
+      "measurementType": "weightReps",
+      "sourceUrls": [
+        "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1372.yaml"
+      ],
+      "muscleDistribution": [
+        {
+          "muscleGroupId": "arms",
+          "ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "oedb:1378",
+      "slug": "oedb-cable-lateral-raises-single-arm",
+      "muscles": [
+        {
+          "id": "delt_lateral",
+          "role": "primary"
+        },
+        {
+          "id": "rotator_cuff",
+          "role": "secondary"
+        },
+        {
+          "id": "traps_upper",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "cable",
+      "setup": [],
+      "mechanic": "isolation",
+      "laterality": "unilateral",
+      "movementPattern": "shoulder_abduction",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "1378",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "carlos3c",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1378.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "1378_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "carlos3c",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/1378.yaml",
+          "modified": true
+        }
+      ],
+      "measurementType": "weightReps",
+      "sourceUrls": [
+        "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1378.yaml"
+      ],
+      "muscleDistribution": [
+        {
+          "muscleGroupId": "shoulders",
+          "ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "oedb:1612",
+      "slug": "oedb-kettlebell-sumo-deadlift",
+      "muscles": [
+        {
+          "id": "erector_spinae",
+          "role": "secondary"
+        },
+        {
+          "id": "forearms",
+          "role": "secondary"
+        },
+        {
+          "id": "gluteus_maximus",
+          "role": "primary"
+        },
+        {
+          "id": "hamstring_complex",
+          "role": "secondary"
+        },
+        {
+          "id": "hip_adductors",
+          "role": "primary"
+        },
+        {
+          "id": "quadriceps",
+          "role": "secondary"
+        },
+        {
+          "id": "trapezius",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "kettlebell",
+      "setup": [],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "hinge",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "1612",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "Tierrasverdes",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1612.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "1612_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "Tierrasverdes",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/1612.yaml",
+          "modified": true
+        }
+      ],
+      "measurementType": "weightReps",
+      "sourceUrls": [
+        "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1612.yaml"
+      ],
+      "muscleDistribution": [
+        {
+          "muscleGroupId": "legs",
+          "ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "oedb:1620",
+      "slug": "oedb-seated-dumbbell-calf-raise",
+      "muscles": [
+        {
+          "id": "gastrocnemius",
+          "role": "secondary"
+        },
+        {
+          "id": "soleus",
+          "role": "primary"
+        }
+      ],
+      "primaryEquipment": "dumbbell",
+      "setup": [
+        "flat_bench"
+      ],
+      "mechanic": "isolation",
+      "laterality": "bilateral",
+      "movementPattern": "plantar_flexion",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "1620",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "AlucardEvil40",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1620.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "1620_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "AlucardEvil40",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/1620.yaml",
+          "modified": true
+        }
+      ],
+      "measurementType": "weightReps",
+      "sourceUrls": [
+        "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1620.yaml"
+      ],
+      "muscleDistribution": [
+        {
+          "muscleGroupId": "legs",
+          "ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "oedb:1642",
+      "slug": "oedb-dumbbell-hip-thrust",
+      "muscles": [
+        {
+          "id": "gluteus_maximus",
+          "role": "primary"
+        },
+        {
+          "id": "hamstring_complex",
+          "role": "secondary"
+        },
+        {
+          "id": "quadriceps",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "dumbbell",
+      "setup": [
+        "flat_bench"
+      ],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "hip_extension",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "1642",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "AlucardEvil40",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1642.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "1642_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "AlucardEvil40",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/1642.yaml",
+          "modified": true
+        }
+      ],
+      "measurementType": "weightReps",
+      "sourceUrls": [
+        "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1642.yaml"
+      ],
+      "muscleDistribution": [
+        {
+          "muscleGroupId": "legs",
+          "ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "oedb:1652",
+      "slug": "oedb-dumbbell-romanian-deadlift",
+      "muscles": [
+        {
+          "id": "erector_spinae",
+          "role": "secondary"
+        },
+        {
+          "id": "gluteus_maximus",
+          "role": "primary"
+        },
+        {
+          "id": "hamstring_complex",
+          "role": "primary"
+        }
+      ],
+      "primaryEquipment": "dumbbell",
+      "setup": [],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "hinge",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "1652",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "AlucardEvil40",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1652.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "1652_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "AlucardEvil40",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/1652.yaml",
+          "modified": true
+        }
+      ],
+      "measurementType": "weightReps",
+      "sourceUrls": [
+        "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1652.yaml"
+      ],
+      "muscleDistribution": [
+        {
+          "muscleGroupId": "legs",
+          "ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "oedb:1696",
+      "slug": "oedb-pull-ups-neutral-grip",
+      "muscles": [
+        {
+          "id": "biceps_brachii",
+          "role": "secondary"
+        },
+        {
+          "id": "brachialis",
+          "role": "secondary"
+        },
+        {
+          "id": "latissimus_dorsi",
+          "role": "primary"
+        },
+        {
+          "id": "rhomboids",
+          "role": "secondary"
+        },
+        {
+          "id": "teres_major",
+          "role": "primary"
+        },
+        {
+          "id": "traps_lower",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "bodyweight",
+      "setup": [
+        "pullup_bar"
+      ],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "vertical_pull",
+      "loadMode": "bodyweight",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "1696",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "daiben",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1696.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "1696_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "daiben",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/1696.yaml",
+          "modified": true
+        }
+      ],
+      "measurementType": "reps",
+      "sourceUrls": [
+        "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1696.yaml"
+      ],
+      "muscleDistribution": [
+        {
+          "muscleGroupId": "back",
+          "ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "oedb:1725",
+      "slug": "oedb-seated-row-machine",
+      "muscles": [
+        {
+          "id": "biceps_brachii",
+          "role": "secondary"
+        },
+        {
+          "id": "delt_posterior",
+          "role": "secondary"
+        },
+        {
+          "id": "latissimus_dorsi",
+          "role": "primary"
+        },
+        {
+          "id": "rhomboids",
+          "role": "primary"
+        },
+        {
+          "id": "traps_middle",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "machine",
+      "setup": [],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "horizontal_pull",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "1725",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "barry",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1725.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "1725_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "barry",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/1725.yaml",
+          "modified": true
+        }
+      ],
+      "measurementType": "weightReps",
+      "sourceUrls": [
+        "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1725.yaml"
+      ],
+      "muscleDistribution": [
+        {
+          "muscleGroupId": "back",
+          "ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "oedb:1732",
+      "slug": "oedb-face-pulls-with-yellow-green-band",
+      "muscles": [
+        {
+          "id": "biceps_brachii",
+          "role": "secondary"
+        },
+        {
+          "id": "delt_posterior",
+          "role": "primary"
+        },
+        {
+          "id": "rhomboids",
+          "role": "secondary"
+        },
+        {
+          "id": "rotator_cuff",
+          "role": "secondary"
+        },
+        {
+          "id": "traps_middle",
+          "role": "primary"
+        }
+      ],
+      "primaryEquipment": "resistance_band",
+      "setup": [],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "horizontal_pull",
+      "loadMode": "variable",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "1732",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "54str",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1732.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "1732_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "54str",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/1732.yaml",
+          "modified": true
+        }
+      ],
+      "measurementType": "reps",
+      "sourceUrls": [
+        "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1732.yaml"
+      ],
+      "muscleDistribution": [
+        {
+          "muscleGroupId": "shoulders",
+          "ratio": 0.5
+        },
+        {
+          "muscleGroupId": "back",
+          "ratio": 0.5
+        }
+      ]
+    },
+    {
+      "id": "oedb:1830",
+      "slug": "oedb-barbell-step-back-lunge",
+      "muscles": [
+        {
+          "id": "calves",
+          "role": "secondary"
+        },
+        {
+          "id": "gluteus_maximus",
+          "role": "primary"
+        },
+        {
+          "id": "hamstring_complex",
+          "role": "secondary"
+        },
+        {
+          "id": "quadriceps",
+          "role": "primary"
+        }
+      ],
+      "primaryEquipment": "barbell",
+      "setup": [],
+      "mechanic": "compound",
+      "laterality": "alternating",
+      "movementPattern": "lunge",
+      "loadMode": "external",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "1830",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1830.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "1830_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/1830.yaml",
+          "modified": true
+        }
+      ],
+      "measurementType": "weightReps",
+      "sourceUrls": [
+        "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1830.yaml"
+      ],
+      "muscleDistribution": [
+        {
+          "muscleGroupId": "legs",
+          "ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "oedb:1929",
+      "slug": "oedb-assisted-pull-up",
+      "muscles": [
+        {
+          "id": "biceps_brachii",
+          "role": "secondary"
+        },
+        {
+          "id": "brachialis",
+          "role": "secondary"
+        },
+        {
+          "id": "latissimus_dorsi",
+          "role": "primary"
+        },
+        {
+          "id": "rhomboids",
+          "role": "secondary"
+        },
+        {
+          "id": "teres_major",
+          "role": "primary"
+        },
+        {
+          "id": "traps_lower",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "resistance_band",
+      "setup": [
+        "pullup_bar"
+      ],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "vertical_pull",
+      "loadMode": "assisted",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "1929",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "amaesc",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1929.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "1929_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "amaesc",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/1929.yaml",
+          "modified": true
+        }
+      ],
+      "measurementType": "weightReps",
+      "sourceUrls": [
+        "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/1929.yaml"
+      ],
+      "muscleDistribution": [
+        {
+          "muscleGroupId": "back",
+          "ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "oedb:475:weighted",
+      "slug": "oedb-pull-ups-weighted",
+      "muscles": [
+        {
+          "id": "biceps_brachii",
+          "role": "secondary"
+        },
+        {
+          "id": "brachialis",
+          "role": "secondary"
+        },
+        {
+          "id": "latissimus_dorsi",
+          "role": "primary"
+        },
+        {
+          "id": "rhomboids",
+          "role": "secondary"
+        },
+        {
+          "id": "teres_major",
+          "role": "primary"
+        },
+        {
+          "id": "traps_lower",
+          "role": "secondary"
+        }
+      ],
+      "primaryEquipment": "bodyweight",
+      "setup": [
+        "pullup_bar"
+      ],
+      "mechanic": "compound",
+      "laterality": "bilateral",
+      "movementPattern": "vertical_pull",
+      "loadMode": "bodyweight",
+      "provenance": [
+        {
+          "source": "OpenExerciseDB",
+          "sourceId": "475",
+          "version": "202610292120",
+          "license": "CC-BY-SA-4.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/475.yaml",
+          "modified": true
+        },
+        {
+          "source": "OpenExerciseDB / wger text",
+          "sourceId": "475_en",
+          "version": "202610292120",
+          "license": "CC-BY-SA-3.0",
+          "author": "wger.de",
+          "url": "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/i18n/en/475.yaml",
+          "modified": true
+        }
+      ],
+      "measurementType": "weightReps",
+      "sourceUrls": [
+        "https://github.com/rfivesix/OpenExerciseDB/blob/5bf2da6f4e050732fed21a1f452bae51e173a261/data/exercises/475.yaml"
+      ],
+      "muscleDistribution": [
+        {
+          "muscleGroupId": "back",
+          "ratio": 1
+        }
+      ]
+    }
+  ],
+  "aliases": {
+    "dip": [
+      "Weighted Dips"
+    ],
+    "frontSquat": [],
+    "barbellStepUp": [
+      "Weighted Step-ups"
+    ],
+    "barbellBenchPress": [],
+    "dumbbellBenchPress": [
+      "Benchpress Dumbbells"
+    ],
+    "inclineBarbellBenchPress": [],
+    "inclineDumbbellBenchPress": [
+      "Incline Dumbbell Press",
+      "Incline Dumbbell Bench Press"
+    ],
+    "declineBarbellBenchPress": [],
+    "declineDumbbellBenchPress": [],
+    "pecDeck": [],
+    "cableFly": [],
+    "pushUp": [
+      "Push-ups",
+      "Pushup"
+    ],
+    "pullUp": [],
+    "wideGripPullUp": [],
+    "chinUp": [],
+    "latPulldown": [
+      "Lat Pulldown (Wide Grip)"
+    ],
+    "closeGripLatPulldown": [],
+    "barbellRow": [],
+    "seatedRow": [],
+    "singleArmDumbbellRow": [
+      "One Arm DB Rows",
+      "Bent Over Dumbbell Rows"
+    ],
+    "tBarRow": [
+      "T-Bar row"
+    ],
+    "straightArmPulldown": [],
+    "deadlift": [
+      "Deadlifts",
+      "Deadlift",
+      "Barbell Deadlift"
+    ],
+    "romanianDeadlift": [
+      "RDL",
+      "Stiff Leg Deadlift"
+    ],
+    "sumoDeadlift": [],
+    "barbellSquat": [
+      "Barbell Full Squat",
+      "Deep Barbell Squat",
+      "ATG Squat",
+      "Full Depth Squat"
+    ],
+    "legPress": [],
+    "legPressMachine": [],
+    "hackSquat": [
+      "Hack Squats"
+    ],
+    "gluteBridge": [],
+    "barbellHipThrust": [],
+    "legExtension": [],
+    "legCurl": [],
+    "standingCalfRaise": [],
+    "hipAbduction": [],
+    "hipAdduction": [],
+    "barbellOverheadPress": [
+      "Military Press"
+    ],
+    "dumbbellShoulderPress": [
+      "OHP Dumbbells",
+      "Overhead press Dumbbells",
+      "Military Press with Dumbbells",
+      "Shoulder Press, Dumbbells"
+    ],
+    "arnoldPress": [
+      "Schwarzenegger Press",
+      "Palm-to-Palm Overhead Press",
+      "Rotational Dumbbell Press",
+      "Dumbbell Corkscrew Press"
+    ],
+    "dumbbellLateralRaise": [
+      "Shoulder fly",
+      "Side raises"
+    ],
+    "dumbbellFrontRaise": [
+      "Shoulder Raise (Dumbbell)"
+    ],
+    "facePull": [
+      "Face pull"
+    ],
+    "reverseFly": [],
+    "barbellCurl": [
+      "Biceps Curls With Barbell"
+    ],
+    "dumbbellCurl": [
+      "Biceps Curls With Dumbbell"
+    ],
+    "hammerCurl": [],
+    "preacherCurl": [
+      "Preacher Curls"
+    ],
+    "concentrationCurl": [],
+    "tricepsPushdown": [
+      "Cable triceps pushdown",
+      "Cable pushdown"
+    ],
+    "closeGripBenchPress": [
+      "Close-Grip Bench Press"
+    ],
+    "overheadTricepsExtension": [
+      "Triceps Overhead (Dumbbell)"
+    ],
+    "tricepsRopeExtension": [],
+    "crunch": [],
+    "plank": [],
+    "hangingLegRaise": [],
+    "cableCrunch": [],
+    "deadBug": [
+      "Dead Bug (Core L1)",
+      "Dead Bug Exercise",
+      "Deadbug Core"
+    ],
+    "birdDog": [
+      "Birddog",
+      "Quadruped Bird Dog"
+    ],
+    "abCrunchMachine": [],
+    "machineChestPress": [
+      "Seated Bench Press"
+    ],
+    "inclineDumbbellFly": [],
+    "invertedRow": [
+      "horizontal pull-ups",
+      "bodyweight row",
+      "Australian pull-up"
+    ],
+    "reverseGripBarbellRow": [
+      "Bent Over Rowing Reverse",
+      "Underhand Barbell Row"
+    ],
+    "gobletSquat": [],
+    "smithMachineSquat": [
+      "Smith Machine Squats",
+      "Smith Squat"
+    ],
+    "boxSquat": [
+      "Box squat"
+    ],
+    "gluteKickback": [
+      "Kneeling kickbacks",
+      "Donkey Kicks",
+      "Glute Kickbacks"
+    ],
+    "seatedLegCurl": [
+      "Setead leg curl",
+      "Machine Leg Flexion",
+      "Seated Leg Curl",
+      "Machine Hamstring Curl"
+    ],
+    "machineShoulderPress": [
+      "Shoulder Press, on Machine"
+    ],
+    "cableInternalRotation": [],
+    "ezBarCurl": [
+      "Biceps Curls With SZ-bar"
+    ],
+    "inclineDumbbellCurl": [],
+    "abRollout": [
+      "Ab Roller Rollout",
+      "Ab wheel"
+    ],
+    "sidePlank": [
+      "Side Bridge",
+      "Lateral Plank"
+    ],
+    "oedb:48": [],
+    "oedb:51": [
+      "Forearm Curls"
+    ],
+    "oedb:142": [],
+    "oedb:386": [
+      "Diamond push ups"
+    ],
+    "oedb:454": [],
+    "oedb:456": [],
+    "oedb:477": [
+      "Pull Ups on Machine"
+    ],
+    "oedb:493": [
+      "Reverse Bar Curl"
+    ],
+    "oedb:510": [
+      "Rowing, Lying on Bench",
+      "Chest-Supported Dumbbell Row on Bench",
+      "Barbell Seal Row",
+      "Seal Row",
+      "Lying Barbell Bench Row"
+    ],
+    "oedb:571": [
+      "Shrugs, Barbells"
+    ],
+    "oedb:572": [
+      "Shrugs, Dumbbells"
+    ],
+    "oedb:822": [],
+    "oedb:918": [
+      "Seated Dumbbell Side Lateral"
+    ],
+    "oedb:999": [
+      "Reverse lunges",
+      "Backward Lunge"
+    ],
+    "oedb:1088": [
+      "Dumbbell sumo deadlift"
+    ],
+    "oedb:1143": [
+      "Back extensión"
+    ],
+    "oedb:1194": [
+      "Pallof Press",
+      "Anti-rotation press"
+    ],
+    "oedb:1234": [
+      "Dumbbell Single-leg Hip Thrust",
+      "Single leg hip thrust with dumbbell"
+    ],
+    "oedb:1283": [],
+    "oedb:1294": [
+      "Single-leg hamstring curl"
+    ],
+    "oedb:1348": [],
+    "oedb:1372": [
+      "Triceps Dips (Assisted)"
+    ],
+    "oedb:1378": [
+      "Cable Lateral Raises (Single Arm)"
+    ],
+    "oedb:1612": [
+      "kettlebell sumo deadlift"
+    ],
+    "oedb:1620": [],
+    "oedb:1642": [],
+    "oedb:1652": [],
+    "oedb:1696": [],
+    "oedb:1725": [],
+    "oedb:1732": [
+      "Face pulls with yellow/green band"
+    ],
+    "oedb:1830": [
+      "Barbell Step Back Lunge",
+      "Barbell Reverse Lunge",
+      "Reverse Lunges with Barbell"
+    ],
+    "oedb:1929": [
+      "Assisted Pull-Up",
+      "Straight Arm Band Pull Down",
+      "Banded Lat Pulldown Straight Arm",
+      "Resistance Band Straight Arm Pulldown"
+    ],
+    "oedb:475:weighted": []
+  },
+  "muscles": [
+    {
+      "id": "chest",
+      "parentId": null,
+      "group": "chest",
+      "name": "Chest"
+    },
+    {
+      "id": "back",
+      "parentId": null,
+      "group": "back",
+      "name": "Back"
+    },
+    {
+      "id": "lower_back",
+      "parentId": null,
+      "group": "back",
+      "name": "Lower back"
+    },
+    {
+      "id": "shoulders",
+      "parentId": null,
+      "group": "shoulders",
+      "name": "Shoulders"
+    },
+    {
+      "id": "biceps",
+      "parentId": null,
+      "group": "arms",
+      "name": "Biceps"
+    },
+    {
+      "id": "triceps",
+      "parentId": null,
+      "group": "arms",
+      "name": "Triceps"
+    },
+    {
+      "id": "forearms",
+      "parentId": null,
+      "group": "arms",
+      "name": "Forearms"
+    },
+    {
+      "id": "abs",
+      "parentId": null,
+      "group": "core",
+      "name": "Core"
+    },
+    {
+      "id": "glutes",
+      "parentId": null,
+      "group": "legs",
+      "name": "Glutes"
+    },
+    {
+      "id": "quads",
+      "parentId": null,
+      "group": "legs",
+      "name": "Quadriceps"
+    },
+    {
+      "id": "hamstrings",
+      "parentId": null,
+      "group": "legs",
+      "name": "Hamstrings"
+    },
+    {
+      "id": "adductors",
+      "parentId": null,
+      "group": "legs",
+      "name": "Adductors"
+    },
+    {
+      "id": "calves",
+      "parentId": null,
+      "group": "legs",
+      "name": "Calves"
+    },
+    {
+      "id": "neck",
+      "parentId": null,
+      "group": "other",
+      "name": "Neck"
+    },
+    {
+      "id": "pectoralis_major",
+      "parentId": "chest",
+      "group": "chest",
+      "name": "Pectoralis major"
+    },
+    {
+      "id": "pecs_clavicular",
+      "parentId": "pectoralis_major",
+      "group": "chest",
+      "name": "Upper chest (clavicular)"
+    },
+    {
+      "id": "pecs_sternocostal",
+      "parentId": "pectoralis_major",
+      "group": "chest",
+      "name": "Mid/lower chest (sternocostal)"
+    },
+    {
+      "id": "pectoralis_minor",
+      "parentId": "chest",
+      "group": "chest",
+      "name": "Pectoralis minor"
+    },
+    {
+      "id": "serratus_anterior",
+      "parentId": "chest",
+      "group": "chest",
+      "name": "Serratus anterior"
+    },
+    {
+      "id": "latissimus_dorsi",
+      "parentId": "back",
+      "group": "back",
+      "name": "Latissimus dorsi"
+    },
+    {
+      "id": "trapezius",
+      "parentId": "back",
+      "group": "back",
+      "name": "Trapezius"
+    },
+    {
+      "id": "traps_upper",
+      "parentId": "trapezius",
+      "group": "back",
+      "name": "Upper traps"
+    },
+    {
+      "id": "traps_middle",
+      "parentId": "trapezius",
+      "group": "back",
+      "name": "Middle traps"
+    },
+    {
+      "id": "traps_lower",
+      "parentId": "trapezius",
+      "group": "back",
+      "name": "Lower traps"
+    },
+    {
+      "id": "rhomboids",
+      "parentId": "back",
+      "group": "back",
+      "name": "Rhomboids"
+    },
+    {
+      "id": "teres_major",
+      "parentId": "back",
+      "group": "back",
+      "name": "Teres major"
+    },
+    {
+      "id": "erector_spinae",
+      "parentId": "lower_back",
+      "group": "back",
+      "name": "Erector spinae"
+    },
+    {
+      "id": "quadratus_lumborum",
+      "parentId": "lower_back",
+      "group": "back",
+      "name": "Quadratus lumborum"
+    },
+    {
+      "id": "deltoid",
+      "parentId": "shoulders",
+      "group": "shoulders",
+      "name": "Deltoid"
+    },
+    {
+      "id": "delt_anterior",
+      "parentId": "deltoid",
+      "group": "shoulders",
+      "name": "Front delt"
+    },
+    {
+      "id": "delt_lateral",
+      "parentId": "deltoid",
+      "group": "shoulders",
+      "name": "Side delt"
+    },
+    {
+      "id": "delt_posterior",
+      "parentId": "deltoid",
+      "group": "shoulders",
+      "name": "Rear delt"
+    },
+    {
+      "id": "rotator_cuff",
+      "parentId": "shoulders",
+      "group": "shoulders",
+      "name": "Rotator cuff"
+    },
+    {
+      "id": "biceps_brachii",
+      "parentId": "biceps",
+      "group": "arms",
+      "name": "Biceps brachii"
+    },
+    {
+      "id": "biceps_long_head",
+      "parentId": "biceps_brachii",
+      "group": "arms",
+      "name": "Biceps long head"
+    },
+    {
+      "id": "biceps_short_head",
+      "parentId": "biceps_brachii",
+      "group": "arms",
+      "name": "Biceps short head"
+    },
+    {
+      "id": "brachialis",
+      "parentId": "biceps",
+      "group": "arms",
+      "name": "Brachialis"
+    },
+    {
+      "id": "triceps_brachii",
+      "parentId": "triceps",
+      "group": "arms",
+      "name": "Triceps brachii"
+    },
+    {
+      "id": "triceps_long_head",
+      "parentId": "triceps_brachii",
+      "group": "arms",
+      "name": "Triceps long head"
+    },
+    {
+      "id": "triceps_lateral_head",
+      "parentId": "triceps_brachii",
+      "group": "arms",
+      "name": "Triceps lateral head"
+    },
+    {
+      "id": "triceps_medial_head",
+      "parentId": "triceps_brachii",
+      "group": "arms",
+      "name": "Triceps medial head"
+    },
+    {
+      "id": "brachioradialis",
+      "parentId": "forearms",
+      "group": "arms",
+      "name": "Brachioradialis"
+    },
+    {
+      "id": "wrist_flexors",
+      "parentId": "forearms",
+      "group": "arms",
+      "name": "Wrist flexors"
+    },
+    {
+      "id": "wrist_extensors",
+      "parentId": "forearms",
+      "group": "arms",
+      "name": "Wrist extensors"
+    },
+    {
+      "id": "rectus_abdominis",
+      "parentId": "abs",
+      "group": "core",
+      "name": "Rectus abdominis"
+    },
+    {
+      "id": "obliques",
+      "parentId": "abs",
+      "group": "core",
+      "name": "Obliques"
+    },
+    {
+      "id": "obliques_external",
+      "parentId": "obliques",
+      "group": "core",
+      "name": "External obliques"
+    },
+    {
+      "id": "obliques_internal",
+      "parentId": "obliques",
+      "group": "core",
+      "name": "Internal obliques"
+    },
+    {
+      "id": "transversus_abdominis",
+      "parentId": "abs",
+      "group": "core",
+      "name": "Transversus abdominis"
+    },
+    {
+      "id": "diaphragm",
+      "parentId": "abs",
+      "group": "core",
+      "name": "Diaphragm"
+    },
+    {
+      "id": "hip_flexors",
+      "parentId": "abs",
+      "group": "core",
+      "name": "Hip flexors (iliopsoas)"
+    },
+    {
+      "id": "gluteus_maximus",
+      "parentId": "glutes",
+      "group": "legs",
+      "name": "Gluteus maximus"
+    },
+    {
+      "id": "gluteus_medius",
+      "parentId": "glutes",
+      "group": "legs",
+      "name": "Gluteus medius"
+    },
+    {
+      "id": "gluteus_minimus",
+      "parentId": "glutes",
+      "group": "legs",
+      "name": "Gluteus minimus"
+    },
+    {
+      "id": "quadriceps",
+      "parentId": "quads",
+      "group": "legs",
+      "name": "Quadriceps"
+    },
+    {
+      "id": "rectus_femoris",
+      "parentId": "quadriceps",
+      "group": "legs",
+      "name": "Rectus femoris"
+    },
+    {
+      "id": "vastus_lateralis",
+      "parentId": "quadriceps",
+      "group": "legs",
+      "name": "Vastus lateralis"
+    },
+    {
+      "id": "vastus_medialis",
+      "parentId": "quadriceps",
+      "group": "legs",
+      "name": "Vastus medialis"
+    },
+    {
+      "id": "vastus_intermedius",
+      "parentId": "quadriceps",
+      "group": "legs",
+      "name": "Vastus intermedius"
+    },
+    {
+      "id": "hamstring_complex",
+      "parentId": "hamstrings",
+      "group": "legs",
+      "name": "Hamstrings"
+    },
+    {
+      "id": "biceps_femoris",
+      "parentId": "hamstring_complex",
+      "group": "legs",
+      "name": "Biceps femoris"
+    },
+    {
+      "id": "semitendinosus",
+      "parentId": "hamstring_complex",
+      "group": "legs",
+      "name": "Semitendinosus"
+    },
+    {
+      "id": "semimembranosus",
+      "parentId": "hamstring_complex",
+      "group": "legs",
+      "name": "Semimembranosus"
+    },
+    {
+      "id": "hip_adductors",
+      "parentId": "adductors",
+      "group": "legs",
+      "name": "Hip adductors"
+    },
+    {
+      "id": "gastrocnemius",
+      "parentId": "calves",
+      "group": "legs",
+      "name": "Gastrocnemius"
+    },
+    {
+      "id": "soleus",
+      "parentId": "calves",
+      "group": "legs",
+      "name": "Soleus"
+    },
+    {
+      "id": "tibialis_anterior",
+      "parentId": "calves",
+      "group": "legs",
+      "name": "Tibialis anterior"
+    },
+    {
+      "id": "neck_flexors",
+      "parentId": "neck",
+      "group": "other",
+      "name": "Neck flexors"
+    },
+    {
+      "id": "neck_extensors",
+      "parentId": "neck",
+      "group": "other",
+      "name": "Neck extensors"
+    }
+  ],
+  "equipmentNames": {
+    "bodyweight": "Bodyweight",
+    "barbell": "Barbell",
+    "ez_bar": "EZ bar",
+    "trap_bar": "Trap bar / Hex bar",
+    "dumbbell": "Dumbbell",
+    "kettlebell": "Kettlebell",
+    "machine": "Machine",
+    "smith_machine": "Smith machine",
+    "cable": "Cable",
+    "resistance_band": "Resistance band",
+    "suspension_trainer": "Suspension trainer",
+    "weight_plate": "Weight plate",
+    "medicine_ball": "Medicine ball",
+    "sandbag": "Sandbag",
+    "sled": "Sled / Prowler",
+    "cardio_machine": "Cardio machine",
+    "jump_rope": "Jump rope",
+    "other": "Other",
+    "flat_bench": "Flat bench",
+    "incline_bench": "Incline bench",
+    "decline_bench": "Decline bench",
+    "preacher_bench": "Preacher bench",
+    "roman_chair": "Roman chair / back extension",
+    "squat_rack": "Squat rack",
+    "power_rack": "Power rack",
+    "pullup_bar": "Pull-up bar",
+    "dip_bars": "Dip bars",
+    "cable_tower": "Cable tower",
+    "swiss_ball": "Swiss ball",
+    "plyo_box": "Plyo box / step",
+    "mat": "Mat",
+    "ab_wheel": "Ab wheel",
+    "parallettes": "Parallettes",
+    "landmine": "Landmine",
+    "ankle_straps": "Ankle straps",
+    "wall": "Wall",
+    "chair": "Chair / elevated surface",
+    "foam_roller": "Foam roller",
+    "lacrosse_ball": "Lacrosse ball / massage ball",
+    "punching_bag": "Punching bag / heavy bag",
+    "battle_ropes": "Battle ropes",
+    "sliders": "Sliders / gliding discs"
+  }
+}

@@ -1,6 +1,6 @@
-import type { MeasurementType, MovementPattern, MuscleDistributionItem } from '../domain/exercise-catalog'
+import type { ExerciseMetadata, MeasurementType, MovementPattern, MuscleDistributionItem } from '../domain/exercise-catalog'
 
-export type PlanTransferExercise = {
+export type PlanTransferExercise = import('../models/types').ExerciseReference & {
   name: string
   catalogExerciseId?: string | null
   measurementType?: MeasurementType | null
@@ -19,7 +19,12 @@ export type PlanTransferPlan = {
   exercises: PlanTransferExercise[]
 }
 
-export type PlanTransferExerciseModel = {
+export type PlanTransferExerciseModel = ExerciseMetadata & {
+  profileId?: string
+  measurementType?: MeasurementType | null
+  aliases?: string[]
+  notes?: string
+  copiedFromProfileId?: string | null
   name: string
   catalogExerciseId?: string | null
   movementPattern: MovementPattern
@@ -27,6 +32,7 @@ export type PlanTransferExerciseModel = {
 }
 
 export type PlanTransferData = {
+  formatVersion?: 1 | 2
   plans: PlanTransferPlan[]
   cycle: Array<number | null>
   exerciseModels: PlanTransferExerciseModel[]

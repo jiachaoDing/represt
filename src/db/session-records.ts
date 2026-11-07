@@ -22,6 +22,8 @@ function createPerformedExercise(planItem: SessionPlanItem, timestamp: string) {
     sourcePlanSnapshot: planItem.sourcePlanSnapshot ?? null,
     origin: planItem.origin ?? 'manual',
     name: planItem.name,
+    exerciseProfileId: planItem.exerciseProfileId,
+    loadMode: planItem.loadMode,
     catalogExerciseId: planItem.catalogExerciseId ?? null,
     measurementType: planItem.measurementType ?? null,
     targetSets: planItem.targetSets,
@@ -88,6 +90,8 @@ export async function completePlanItemSet(planItemId: string): Promise<SetRecord
       })
 
       const setRecord: SetRecord = {
+        exerciseProfileId: exercise.exerciseProfileId,
+        loadMode: exercise.loadMode,
         id: crypto.randomUUID(),
         sessionId: exercise.sessionId,
         performedExerciseId: exercise.id,

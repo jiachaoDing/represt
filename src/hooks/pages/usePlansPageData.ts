@@ -154,6 +154,8 @@ export function usePlansPageData(preferredSelectedPlanId?: string | null) {
       const exercise = await createPlanExercise(planId, {
         name: draft.name || t('common.unnamedExercise'),
         catalogExerciseId: draft.catalogExerciseId,
+        exerciseProfileId: draft.exerciseProfileId,
+        loadMode: draft.loadMode,
         measurementType: draft.measurementType,
         targetSets: parseIntegerInput(draft.targetSets),
         restSeconds: parseIntegerInput(draft.restSeconds),
@@ -206,6 +208,8 @@ export function usePlansPageData(preferredSelectedPlanId?: string | null) {
       await updatePlanExercise(exerciseId, {
         name: draft.name || t('common.unnamedExercise'),
         catalogExerciseId: draft.catalogExerciseId,
+        exerciseProfileId: draft.exerciseProfileId,
+        loadMode: draft.loadMode,
         measurementType: draft.measurementType,
         targetSets: parseIntegerInput(draft.targetSets),
         restSeconds: parseIntegerInput(draft.restSeconds),

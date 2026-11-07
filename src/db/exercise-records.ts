@@ -5,8 +5,10 @@ import {
   type MovementPattern,
   type MuscleGroup,
 } from '../domain/exercise-catalog'
-import { findCatalogExerciseIdByExactName, resolveCatalogExerciseId } from '../lib/exercise-name'
-import { areRecordingModesComparable, getMeasurementTypeForExercise, getSetRecordMeasurementType, getSetRecordStatistics } from '../lib/set-record-measurement'
+import { resolveCatalogExerciseId } from '../lib/exercise-name'
+import { listExerciseDefinitions, resetLegacyExerciseOverride, setExerciseHidden, type ExerciseDefinition } from './exercise-models'
+import type { ExerciseMetadata } from '../domain/exercise-catalog'
+import { areLoadModesComparable, areRecordingModesComparable, getMeasurementTypeForExercise, getSetRecordMeasurementType, getSetRecordStatistics } from '../lib/set-record-measurement'
 import type {
   ExerciseProfile,
   PerformedExercise,
@@ -100,7 +102,7 @@ export type SaveExerciseModelResult =
   | { status: 'saved'; profileId: string }
   | { status: 'empty' | 'exists' | 'notFound' }
 
-export type ExerciseModelForm = {
+export type ExerciseModelForm = ExerciseMetadata & {
   catalogExerciseId: string | null
   muscleDistribution: MuscleDistributionItem[]
   movementPattern: MovementPattern
@@ -108,9 +110,12 @@ export type ExerciseModelForm = {
   name: string
   profileId: string | null
   source?: 'custom'
+  readOnly?: boolean
+  aliases?: string[]
+  notes?: string
 }
 
-export type ExerciseModelOption = {
+export type ExerciseModelOption = ExerciseDefinition & {
   catalogExerciseId: string | null
   muscleDistribution: MuscleDistributionItem[]
   movementPattern: MovementPattern
@@ -122,7 +127,7 @@ export type ExerciseModelOption = {
 
 type ExerciseSource = Pick<
   PlanExercise | SessionPlanItem | PerformedExercise,
-  'catalogExerciseId' | 'id' | 'measurementType' | 'name'
+  'catalogExerciseId' | 'id' | 'measurementType' | 'name' | 'exerciseProfileId' | 'loadMode'
 >
 
 type ExerciseRecordGroup = {
@@ -140,7 +145,6 @@ type ExerciseRecordGroup = {
 }
 
 const catalogExercisesById = new Map(exercises.map((exercise) => [exercise.id, exercise]))
-const catalogProfileIds = new Set(exercises.map((exercise) => `catalog:${exercise.id}`))
 const fallbackMovementPattern: MovementPattern = 'fullBody'
 const fallbackMeasurementType: MeasurementType = 'weightReps'
 
@@ -148,7 +152,8 @@ export function normalizeExerciseRecordName(name: string) {
   return name.normalize('NFKC').trim().toLowerCase().replace(/\s+/g, ' ')
 }
 
-export function getExerciseProfileId(input: { catalogExerciseId?: string | null; id?: string; name?: string | null }) {
+export function getExerciseProfileId(input: { exerciseProfileId?: string | null; catalogExerciseId?: string | null; id?: string; name?: string | null }) {
+  if (input.exerciseProfileId) return input.exerciseProfileId
   const catalogExerciseId = resolveCatalogExerciseId(input)
   if (catalogExerciseId) {
     return `catalog:${catalogExerciseId}`
@@ -234,6 +239,7 @@ export async function getExercisePersonalRecords(input: ExerciseSource): Promise
   const sessions = await db.workoutSessions.bulkGet([...new Set(records.map((record) => record.sessionId))])
   const sessionIds = new Set(sessions.flatMap((session) => session ? [session.id] : []))
   const candidates = records.filter((record) => sessionIds.has(record.sessionId) &&
+    areLoadModesComparable(record.loadMode, input.loadMode) &&
     areRecordingModesComparable(getSetRecordMeasurementType(record, types.get(record.performedExerciseId)!), measurementType))
     .map((record) => ({ record, stats: getSetRecordStatistics(record, types.get(record.performedExerciseId)!) }))
   const best = (kind: 'highestWeight' | 'maxReps') => candidates
@@ -259,10 +265,10 @@ function buildSummary(group: ExerciseRecordGroup): ExerciseRecordSummary {
   const latest = [...group.records].sort((left, right) =>
     right.setRecord.completedAt.localeCompare(left.setRecord.completedAt) || right.setRecord.setNumber - left.setRecord.setNumber)[0]
   const measurementType = latest ? getSetRecordMeasurementType(latest.setRecord, group.measurementType) : group.measurementType
-  const metrics = group.records.filter((record) => areRecordingModesComparable(
+  const metrics = group.records.filter((record) => areLoadModesComparable(record.setRecord.loadMode, latest?.setRecord.loadMode) && areRecordingModesComparable(
     getSetRecordMeasurementType(record.setRecord, group.measurementType), measurementType,
   )).flatMap((record) => getMetricValues(record.setRecord, measurementType))
-  const primaryKind = pickPrimaryMetricKind(measurementType)
+  const primaryKind = latest?.setRecord.loadMode === 'assisted' || latest?.setRecord.loadMode === 'variable' ? 'maxReps' : pickPrimaryMetricKind(measurementType)
   const primaryMetric = pickBestMetric(metrics, primaryKind)
   const secondaryMetrics = Array.from(new Set(metrics.map((metric) => metric.kind)))
     .filter((kind) => kind !== primaryKind)
@@ -319,11 +325,12 @@ function addSource(groups: Map<string, ExerciseRecordGroup>, source: ExerciseSou
 }
 
 function addCustomProfile(groups: Map<string, ExerciseRecordGroup>, profile: ExerciseProfile) {
-  if (profile.source !== 'custom' || profile.deletedAt) {
+  if (profile.source !== 'custom') {
     return
   }
 
   addSource(groups, {
+    exerciseProfileId: profile.id,
     catalogExerciseId: profile.catalogExerciseId ?? null,
     id: profile.id,
     name: profile.name,
@@ -340,7 +347,7 @@ function applyProfileOverrides(groups: Map<string, ExerciseRecordGroup>, profile
 
     group.deletedAt = profile.deletedAt ?? null
     group.measurementType = profile.measurementType ?? group.measurementType
-    if (profile.name.trim()) {
+    if (profile.name.trim() && !profile.preferencesOnly) {
       group.name = profile.name.trim()
       group.displayNameOverride = profile.name.trim()
     }
@@ -411,11 +418,11 @@ async function buildExerciseRecordGroups() {
   return groups
 }
 
-export async function listExerciseRecordSummaries() {
+export async function listExerciseRecordSummaries(includeHidden = false) {
   const groups = await buildExerciseRecordGroups()
   return Array.from(groups.values())
     .map(buildSummary)
-    .filter((summary) => summary.completedSets > 0 || !groups.get(summary.profileId)?.deletedAt)
+    .filter((summary) => includeHidden || summary.completedSets > 0 || !groups.get(summary.profileId)?.deletedAt)
 }
 
 function getDefaultMuscleDistribution(catalogExerciseId: string | null) {
@@ -434,14 +441,6 @@ function getDefaultMovementPattern(catalogExerciseId: string | null): MovementPa
   return catalogExercisesById.get(catalogExerciseId)?.movementPattern ?? fallbackMovementPattern
 }
 
-function getTopMuscleCategory(distribution: MuscleDistributionItem[]): MuscleGroup | 'other' {
-  const topItem = distribution
-    .filter((item) => item.ratio > 0)
-    .sort((left, right) => right.ratio - left.ratio)[0]
-
-  return topItem?.muscleGroupId ?? 'other'
-}
-
 function getCatalogExerciseIdFromProfileId(profileId: string) {
   return profileId.startsWith('catalog:') ? profileId.slice('catalog:'.length) : null
 }
@@ -451,55 +450,16 @@ export async function getExerciseProfile(profileId: string) {
 }
 
 export async function listExerciseModelOptions(): Promise<ExerciseModelOption[]> {
-  const profiles = await db.exerciseProfiles.toArray()
-  const profilesById = new Map(profiles.map((profile) => [profile.id, profile]))
-  const options: ExerciseModelOption[] = []
-
-  for (const exercise of exercises) {
-    const profileId = `catalog:${exercise.id}`
-    const profile = profilesById.get(profileId)
-    if (profile?.deletedAt) {
-      continue
-    }
-
-    const muscleDistribution = profile?.muscleDistribution ?? exercise.muscleDistribution
-    options.push({
-      catalogExerciseId: exercise.id,
-      categoryId: getTopMuscleCategory(muscleDistribution),
-      muscleDistribution,
-      movementPattern: profile?.movementPattern ?? exercise.movementPattern,
-      measurementType: profile?.measurementType ?? exercise.measurementType,
-      name: profile?.name.trim() ?? '',
-      profileId,
-    })
-  }
-
-  for (const profile of profiles) {
-    if (profile.source !== 'custom' || profile.deletedAt) {
-      continue
-    }
-
-    const muscleDistribution = profile.muscleDistribution ?? []
-    options.push({
-      catalogExerciseId: null,
-      categoryId: getTopMuscleCategory(muscleDistribution),
-      muscleDistribution,
-      movementPattern: profile.movementPattern ?? fallbackMovementPattern,
-      measurementType: profile.measurementType ?? fallbackMeasurementType,
-      name: profile.name,
-      profileId: profile.id,
-    })
-  }
-
-  return options
+  return listExerciseDefinitions()
 }
+
 
 export async function getExerciseModelForm(profileId: string | null): Promise<ExerciseModelForm | null> {
   if (!profileId) {
     return {
       catalogExerciseId: null,
       muscleDistribution: [],
-      movementPattern: fallbackMovementPattern,
+      movementPattern: 'unspecified',
       measurementType: fallbackMeasurementType,
       name: '',
       profileId: null,
@@ -515,6 +475,8 @@ export async function getExerciseModelForm(profileId: string | null): Promise<Ex
     }
 
     return {
+      ...catalogExercisesById.get(catalogExerciseId),
+      readOnly: true,
       catalogExerciseId,
       muscleDistribution: profile?.muscleDistribution ?? getDefaultMuscleDistribution(catalogExerciseId),
       movementPattern: profile?.movementPattern ?? getDefaultMovementPattern(catalogExerciseId),
@@ -530,6 +492,7 @@ export async function getExerciseModelForm(profileId: string | null): Promise<Ex
   }
 
   return {
+    ...profile,
     catalogExerciseId: profile.catalogExerciseId ?? null,
     muscleDistribution: profile.muscleDistribution ?? [],
     movementPattern: profile.movementPattern ?? getDefaultMovementPattern(profile.catalogExerciseId ?? null),
@@ -540,29 +503,6 @@ export async function getExerciseModelForm(profileId: string | null): Promise<Ex
   }
 }
 
-async function hasExerciseModelNameConflict(name: string, currentProfileId: string | null) {
-  const normalizedName = normalizeExerciseRecordName(name)
-  const matchedCatalogExerciseId = findCatalogExerciseIdByExactName(name)
-  if (matchedCatalogExerciseId && currentProfileId !== `catalog:${matchedCatalogExerciseId}`) {
-    return true
-  }
-
-  const profiles = await db.exerciseProfiles.toArray()
-  if (profiles.some((profile) =>
-    !profile.deletedAt
-    && profile.id !== currentProfileId
-    && normalizeExerciseRecordName(profile.name) === normalizedName
-  )) {
-    return true
-  }
-
-  const groups = await buildExerciseRecordGroups()
-  return Array.from(groups.values()).some((group) =>
-    group.profileId !== currentProfileId
-    && !group.deletedAt
-    && normalizeExerciseRecordName(group.name) === normalizedName
-  )
-}
 
 export async function saveExerciseModel(input: {
   catalogExerciseId: string | null
@@ -571,6 +511,9 @@ export async function saveExerciseModel(input: {
   measurementType: MeasurementType
   name: string
   profileId: string | null
+  metadata?: ExerciseMetadata
+  aliases?: string[]
+  notes?: string
 }): Promise<SaveExerciseModelResult> {
   const trimmedName = input.name.trim()
   if (!trimmedName) {
@@ -578,70 +521,37 @@ export async function saveExerciseModel(input: {
   }
 
   const currentProfileId = input.profileId
-  const isCatalogProfile = currentProfileId ? catalogProfileIds.has(currentProfileId) : false
-  const profileId: string = isCatalogProfile && currentProfileId
-    ? currentProfileId
-    : getExerciseProfileId({ name: trimmedName })
-
-  if (await hasExerciseModelNameConflict(trimmedName, currentProfileId)) {
-    return { status: 'exists' }
-  }
+  if (currentProfileId?.startsWith('catalog:')) return { status: 'notFound' }
+  const profileId = currentProfileId ?? `custom:${crypto.randomUUID()}`
 
   const current = currentProfileId ? await getExerciseProfile(currentProfileId) : null
-  if (currentProfileId && !isCatalogProfile && !current) {
+  if (currentProfileId && !current) {
     return { status: 'notFound' }
   }
 
   const timestamp = nowIso()
   const profile: ExerciseProfile = {
-    catalogExerciseId: isCatalogProfile ? input.catalogExerciseId : null,
+    ...current,
+    ...input.metadata,
+    aliases: input.aliases ?? current?.aliases ?? [],
+    notes: input.notes ?? current?.notes ?? '',
+    catalogExerciseId: null,
     id: profileId,
     muscleDistribution: input.muscleDistribution,
     movementPattern: input.movementPattern,
     measurementType: input.measurementType,
     name: trimmedName,
-    source: isCatalogProfile ? undefined : 'custom',
+    source: 'custom',
     updatedAt: timestamp,
   }
 
   await db.exerciseProfiles.put(profile)
-  if (currentProfileId && currentProfileId !== profileId && current) {
-    await db.exerciseProfiles.update(currentProfileId, {
-      deletedAt: timestamp,
-      updatedAt: timestamp,
-    })
-  }
 
   return { status: 'saved', profileId }
 }
 
 export async function softDeleteExerciseModel(profileId: string) {
-  const timestamp = nowIso()
-  const current = await getExerciseProfile(profileId)
-  if (current) {
-    await db.exerciseProfiles.update(profileId, {
-      deletedAt: timestamp,
-      updatedAt: timestamp,
-    })
-    return
-  }
-
-  const catalogExerciseId = getCatalogExerciseIdFromProfileId(profileId)
-  if (!catalogExerciseId || !catalogExercisesById.has(catalogExerciseId)) {
-    return
-  }
-
-  const profile: ExerciseProfile = {
-    catalogExerciseId,
-    deletedAt: timestamp,
-    id: profileId,
-    muscleDistribution: getDefaultMuscleDistribution(catalogExerciseId),
-    movementPattern: getDefaultMovementPattern(catalogExerciseId),
-    measurementType: getDefaultMeasurementType(catalogExerciseId),
-    name: catalogExerciseId,
-    updatedAt: timestamp,
-  }
-  await db.exerciseProfiles.put(profile)
+  await setExerciseHidden(profileId, true)
 }
 
 export async function createCustomExerciseProfile(name: string): Promise<CreateCustomExerciseProfileResult> {
@@ -650,12 +560,7 @@ export async function createCustomExerciseProfile(name: string): Promise<CreateC
     return 'empty'
   }
 
-  const profileId = getExerciseProfileId({ name: trimmedName })
-  const groups = await buildExerciseRecordGroups()
-  if (groups.has(profileId)) {
-    return 'exists'
-  }
-
+  const profileId = `custom:${crypto.randomUUID()}`
   const timestamp = nowIso()
   const profile: ExerciseProfile = {
     catalogExerciseId: null,
@@ -673,6 +578,7 @@ export async function createCustomExerciseProfile(name: string): Promise<CreateC
 }
 
 export async function getEffectiveExerciseMuscleDistribution(input: {
+  exerciseProfileId?: string | null
   catalogExerciseId?: string | null
   name?: string | null
 }) {
@@ -680,7 +586,7 @@ export async function getEffectiveExerciseMuscleDistribution(input: {
   const profileId = getExerciseProfileId(input)
   const profile = await getExerciseProfile(profileId)
 
-  return profile?.muscleDistribution ?? getDefaultMuscleDistribution(catalogExerciseId)
+  return profile && !profile.preferencesOnly ? profile.muscleDistribution : getDefaultMuscleDistribution(catalogExerciseId)
 }
 
 export async function saveExerciseProfileMuscleDistribution(input: {
@@ -689,8 +595,10 @@ export async function saveExerciseProfileMuscleDistribution(input: {
   name: string
   profileId: string
 }) {
+  if (input.profileId.startsWith('catalog:')) return
   const current = await getExerciseProfile(input.profileId)
   const profile: ExerciseProfile = {
+    ...current,
     catalogExerciseId: input.catalogExerciseId,
     deletedAt: current?.deletedAt,
     id: input.profileId,
@@ -715,7 +623,7 @@ export async function resetExerciseProfileMuscleDistribution(profileId: string) 
     return
   }
 
-  await db.exerciseProfiles.delete(profileId)
+  await resetLegacyExerciseOverride(profileId)
 }
 
 function getTrendMetricValue(setRecord: SetRecord, measurementType: MeasurementType, kind: ExerciseRecordMetricKind) {
@@ -735,13 +643,15 @@ function makeTrendPoints(valuesByDate: Map<string, number>) {
 }
 
 function buildTrendSeries(group: ExerciseRecordGroup, measurementType: MeasurementType) {
-  const primaryKind = pickPrimaryMetricKind(measurementType)
+  const latest = [...group.records].sort((a, b) => b.setRecord.completedAt.localeCompare(a.setRecord.completedAt) || b.setRecord.setNumber - a.setRecord.setNumber)[0]
+  const primaryKind = latest?.setRecord.loadMode === 'assisted' || latest?.setRecord.loadMode === 'variable' ? 'maxReps' : pickPrimaryMetricKind(measurementType)
   const volumeKind = pickVolumeMetricKind(measurementType)
   const dailyBestByDate = new Map<string, number>()
   const volumeByDate = new Map<string, number>()
   const frequencyByDate = new Map<string, number>()
 
   for (const record of group.records) {
+    if (!areLoadModesComparable(record.setRecord.loadMode, latest?.setRecord.loadMode)) continue
     const dateKey = record.session.sessionDateKey
     const value = getTrendMetricValue(record.setRecord, measurementType, primaryKind)
     if (value !== undefined) {
@@ -806,7 +716,8 @@ export async function getExerciseRecordDetail(profileId: string) {
   }
 
   const summary = buildSummary(group)
-  const profile = await getExerciseProfile(profileId)
+  const storedProfile = await getExerciseProfile(profileId)
+  const profile = storedProfile?.preferencesOnly ? undefined : storedProfile
   const defaultMuscleDistribution = getDefaultMuscleDistribution(summary.catalogExerciseId)
   let totalDistanceMeters = 0
   let totalDurationSeconds = 0

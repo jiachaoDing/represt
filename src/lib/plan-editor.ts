@@ -1,7 +1,7 @@
 import type { MeasurementType } from '../domain/exercise-catalog'
 import { kgToDisplayWeightString } from './weight-units'
 
-export type PlanExerciseDraft = {
+export type PlanExerciseDraft = import('../models/types').ExerciseReference & {
   name: string
   catalogExerciseId: string | null
   measurementType: MeasurementType | null
@@ -30,6 +30,8 @@ export const emptyPlanExerciseDraft: PlanExerciseDraft = {
 }
 
 export function toPlanExerciseDraft(input?: {
+  exerciseProfileId?: string | null
+  loadMode?: import('../domain/exercise-catalog').LoadMode | null
   name: string
   catalogExerciseId?: string | null
   measurementType?: MeasurementType | null
@@ -48,6 +50,8 @@ export function toPlanExerciseDraft(input?: {
 
   return {
     name: input.name,
+    exerciseProfileId: input.exerciseProfileId,
+    loadMode: input.loadMode,
     catalogExerciseId: input.catalogExerciseId ?? null,
     measurementType: input.measurementType ?? null,
     targetSets: String(input.targetSets),

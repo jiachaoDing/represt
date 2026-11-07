@@ -2,7 +2,14 @@ import type {
   MeasurementType,
   MovementPattern,
   MuscleDistributionItem,
+  ExerciseMetadata,
+  LoadMode,
 } from '../domain/exercise-catalog'
+
+export interface ExerciseReference {
+  exerciseProfileId?: string | null
+  loadMode?: LoadMode | null
+}
 
 export type SessionStatus = 'pending' | 'active' | 'completed'
 
@@ -28,7 +35,7 @@ export interface TrainingCycle {
   updatedAt: string
 }
 
-export interface PlanExercise {
+export interface PlanExercise extends ExerciseReference {
   id: string
   planId: string
   name: string
@@ -55,7 +62,7 @@ export interface WorkoutSession {
   lastSyncedPlanUpdatedAt?: string | null
 }
 
-export interface SessionPlanExerciseSnapshot {
+export interface SessionPlanExerciseSnapshot extends ExerciseReference {
   name: string
   catalogExerciseId?: string | null
   measurementType?: MeasurementType | null
@@ -70,7 +77,7 @@ export interface SessionPlanExerciseSnapshot {
   order: number
 }
 
-export interface SessionPlanItem {
+export interface SessionPlanItem extends ExerciseReference {
   id: string
   sessionId: string
   planExerciseId: string | null
@@ -92,7 +99,7 @@ export interface SessionPlanItem {
   createdAt: string
 }
 
-export interface PerformedExercise {
+export interface PerformedExercise extends ExerciseReference {
   id: string
   sessionId: string
   planItemId: string | null
@@ -118,7 +125,7 @@ export interface PerformedExercise {
   restEndsAt: string | null
 }
 
-export interface SetRecord {
+export interface SetRecord extends ExerciseReference {
   id: string
   sessionId: string
   performedExerciseId: string
@@ -133,7 +140,7 @@ export interface SetRecord {
   distanceMeters: number | null
 }
 
-export interface ExerciseProfile {
+export interface ExerciseProfile extends ExerciseMetadata {
   id: string
   catalogExerciseId?: string | null
   deletedAt?: string | null
@@ -142,6 +149,12 @@ export interface ExerciseProfile {
   movementPattern?: MovementPattern | null
   muscleDistribution: MuscleDistributionItem[]
   source?: 'custom'
+  aliases?: string[]
+  notes?: string
+  copiedFromProfileId?: string | null
+  importSignature?: string
+  legacyOverride?: boolean
+  preferencesOnly?: boolean
   updatedAt: string
 }
 

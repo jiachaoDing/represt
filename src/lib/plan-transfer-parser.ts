@@ -7,6 +7,7 @@ import {
   type MuscleDistributionItem,
   type MuscleGroup,
 } from '../domain/exercise-catalog'
+import { parseExerciseMetadata } from '../domain/exercise-catalog/validation'
 import type {
   PlanTransferExercise,
   PlanTransferExerciseModel,
@@ -93,6 +94,8 @@ function parseExercise(source: Record<string, unknown>): PlanTransferExercise | 
 
   return {
     name,
+    exerciseProfileId: readString(source.exerciseProfileId) || null,
+    loadMode: parseExerciseMetadata(source).loadMode,
     catalogExerciseId: readString(source.catalogExerciseId) || null,
     measurementType: measurementTypes.includes(source.measurementType as MeasurementType)
       ? source.measurementType as MeasurementType : null,
@@ -137,6 +140,12 @@ function parseExerciseModel(source: Record<string, unknown>): PlanTransferExerci
   }
 
   return {
+    ...parseExerciseMetadata(source),
+    profileId: readString(source.profileId) || undefined,
+    measurementType: measurementTypes.includes(source.measurementType as MeasurementType) ? source.measurementType as MeasurementType : null,
+    aliases: Array.isArray(source.aliases) ? source.aliases.filter((item): item is string => typeof item === 'string') : [],
+    notes: readString(source.notes),
+    copiedFromProfileId: readString(source.copiedFromProfileId) || null,
     name,
     catalogExerciseId: readString(source.catalogExerciseId) || null,
     movementPattern,
@@ -209,6 +218,7 @@ export function parsePlanTransferJson(input: string, defaultPlanName: string): P
   }
 
   const source = parsed as Record<string, unknown>
+  if (source.formatVersion !== undefined && source.formatVersion !== 1 && source.formatVersion !== 2) return { ok: false, error: 'invalidShape' }
   const plansValue = source.plans
   const hasPlansArray = Array.isArray(plansValue)
   if (!hasPlansArray && !Array.isArray(source.exercises)) {
@@ -236,6 +246,7 @@ export function parsePlanTransferJson(input: string, defaultPlanName: string): P
   return {
     ok: true,
     data: {
+      formatVersion: source.formatVersion === 2 ? 2 : 1,
       plans,
       cycle: parseCycle(source.cycle, plans.length),
       exerciseModels,

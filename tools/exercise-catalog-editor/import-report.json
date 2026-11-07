@@ -1,0 +1,209 @@
+{
+  "version": "202610292120",
+  "added": [
+    "oedb:48",
+    "oedb:51",
+    "oedb:142",
+    "oedb:386",
+    "oedb:454",
+    "oedb:456",
+    "oedb:477",
+    "oedb:493",
+    "oedb:510",
+    "oedb:571",
+    "oedb:572",
+    "oedb:822",
+    "oedb:918",
+    "oedb:999",
+    "oedb:1088",
+    "oedb:1143",
+    "oedb:1194",
+    "oedb:1234",
+    "oedb:1283",
+    "oedb:1294",
+    "oedb:1348",
+    "oedb:1372",
+    "oedb:1378",
+    "oedb:1612",
+    "oedb:1620",
+    "oedb:1642",
+    "oedb:1652",
+    "oedb:1696",
+    "oedb:1725",
+    "oedb:1732",
+    "oedb:1830",
+    "oedb:1929",
+    "oedb:475:weighted"
+  ],
+  "unsupported": [
+    {
+      "id": "31",
+      "reason": "time_weight"
+    },
+    {
+      "id": "57",
+      "reason": "distance_time"
+    },
+    {
+      "id": "177",
+      "reason": "distance_time"
+    },
+    {
+      "id": "284",
+      "reason": "time_weight"
+    },
+    {
+      "id": "319",
+      "reason": "distance_time"
+    },
+    {
+      "id": "527",
+      "reason": "distance_time"
+    },
+    {
+      "id": "530",
+      "reason": "distance_time"
+    },
+    {
+      "id": "624",
+      "reason": "distance_time"
+    },
+    {
+      "id": "908",
+      "reason": "distance_time"
+    },
+    {
+      "id": "961",
+      "reason": "distance_time"
+    },
+    {
+      "id": "962",
+      "reason": "distance_time"
+    },
+    {
+      "id": "1093",
+      "reason": "distance_time"
+    },
+    {
+      "id": "1099",
+      "reason": "time_weight"
+    },
+    {
+      "id": "1104",
+      "reason": "distance_time"
+    },
+    {
+      "id": "1116",
+      "reason": "distance_time"
+    },
+    {
+      "id": "1204",
+      "reason": "distance_time"
+    },
+    {
+      "id": "1376",
+      "reason": "distance_time"
+    },
+    {
+      "id": "1430",
+      "reason": "time_weight"
+    },
+    {
+      "id": "1523",
+      "reason": "distance_time"
+    },
+    {
+      "id": "1526",
+      "reason": "distance_time"
+    },
+    {
+      "id": "1574",
+      "reason": "distance_time"
+    },
+    {
+      "id": "1615",
+      "reason": "distance_time"
+    },
+    {
+      "id": "1618",
+      "reason": "distance_time"
+    },
+    {
+      "id": "1693",
+      "reason": "time_weight"
+    },
+    {
+      "id": "1776",
+      "reason": "distance_time"
+    },
+    {
+      "id": "2480",
+      "reason": "distance_time"
+    },
+    {
+      "id": "2481",
+      "reason": "distance_time"
+    },
+    {
+      "id": "2484",
+      "reason": "distance_time"
+    },
+    {
+      "id": "2485",
+      "reason": "distance_time"
+    },
+    {
+      "id": "2487",
+      "reason": "distance_time"
+    },
+    {
+      "id": "2536",
+      "reason": "time_weight"
+    },
+    {
+      "id": "2537",
+      "reason": "time_weight"
+    },
+    {
+      "id": "2538",
+      "reason": "time_weight"
+    },
+    {
+      "id": "2539",
+      "reason": "time_weight"
+    },
+    {
+      "id": "2540",
+      "reason": "time_weight"
+    },
+    {
+      "id": "2541",
+      "reason": "time_weight"
+    }
+  ],
+  "pending": [],
+  "unmappedLegacy": [
+    "weightedPushUp",
+    "squat",
+    "lunge",
+    "bulgarianSplitSquat",
+    "walkingLunge",
+    "seatedCalfRaise",
+    "shrug",
+    "skullCrusher",
+    "russianTwist",
+    "sitUp",
+    "dumbbellFly",
+    "smithMachineBenchPress",
+    "dumbbellStepUp",
+    "uprightBarbellRow",
+    "cableOverheadTricepsExtension",
+    "cableHammerCurl",
+    "highCableCurl",
+    "obliqueCrunch",
+    "exerciseBallCrunch"
+  ],
+  "duplicateCandidates": [
+    "legPress / legPressMachine"
+  ]
+}

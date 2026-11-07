@@ -1,6 +1,7 @@
 import isDeepStrictEqual from 'fast-deep-equal'
 import { ReprestApi, ToolError } from './api.js'
-import { programSchema, type Program, type ProgramUpdate } from './schemas.js'
+import { exerciseFields, programSchema, type Program, type ProgramUpdate } from './schemas.js'
+import catalog from './catalog.json' with { type: 'json' }
 
 function invalid(message: string): never { throw new ToolError('INVALID_CHANGE', message) }
 function unique(ids: string[], kind: string) {
@@ -36,14 +37,26 @@ export function mergeProgram(current: Program, update: ProgramUpdate): Program {
     for (const patch of change.exercises ?? []) {
       const exercise = patch.id ? plan.exercises.find((e) => e.id === patch.id) : undefined
       if (patch.id && !exercise) invalid(`Exercise ${patch.id} does not belong to plan ${plan.id}.`)
-      if (exercise) Object.assign(exercise, patch)
+      if (exercise) {
+        Object.assign(exercise, patch)
+        if (patch.catalogExerciseId !== undefined || patch.exerciseProfileId !== undefined) {
+          exercise.exerciseProfileId = patch.exerciseProfileId ?? (patch.catalogExerciseId ? `catalog:${patch.catalogExerciseId}` : `custom:${crypto.randomUUID()}`)
+          exercise.catalogExerciseId = exercise.exerciseProfileId.startsWith('catalog:') ? exercise.exerciseProfileId.slice(8) : null
+          const entry = catalog.find((item) => item.id === exercise.catalogExerciseId)
+          exercise.loadMode = patch.loadMode ?? exerciseFields.loadMode.parse(entry?.loadMode) ?? 'external'
+          exercise.measurementType = patch.measurementType ?? exerciseFields.measurementType.parse(entry?.measurementType ?? exercise.measurementType)
+        }
+      }
       else {
         if (!patch.name || patch.targetSets === undefined || patch.restSeconds === undefined) {
           invalid('A new exercise requires name, targetSets and restSeconds.')
         }
+        const entry = catalog.find((item) => item.id === patch.catalogExerciseId)
         plan.exercises.push({
-          catalogExerciseId: null, measurementType: 'weightReps', weightKg: null, reps: null,
+          catalogExerciseId: null, measurementType: entry?.measurementType as Program['plans'][number]['exercises'][number]['measurementType'] ?? 'weightReps', weightKg: null, reps: null,
           durationSeconds: null, distanceMeters: null, ...patch,
+          exerciseProfileId: patch.exerciseProfileId ?? (patch.catalogExerciseId ? `catalog:${patch.catalogExerciseId}` : `custom:${crypto.randomUUID()}`),
+          loadMode: patch.loadMode ?? exerciseFields.loadMode.parse(entry?.loadMode) ?? 'external',
           id: crypto.randomUUID(), planId: plan.id, name: patch.name,
           targetSets: patch.targetSets, restSeconds: patch.restSeconds, order: plan.exercises.length,
         })

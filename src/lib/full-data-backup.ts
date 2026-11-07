@@ -1,8 +1,10 @@
 import { db } from '../db/app-db'
 import type { AccountSyncState } from './account-types'
+import { normalizeExerciseTables, type ExerciseTables } from '../db/exercise-identity'
+import generated from '../domain/exercise-catalog/generated.json'
 
 const BACKUP_APP_ID = 'represt'
-const FULL_DATA_BACKUP_SCHEMA_VERSION = 1
+const FULL_DATA_BACKUP_SCHEMA_VERSION = 2
 
 export const backupTableNames = [
   'trainingCycles',
@@ -43,7 +45,8 @@ export type FullDataBackup = {
   app: typeof BACKUP_APP_ID
   exportedAt: string
   localStorage: Record<string, string>
-  schemaVersion: typeof FULL_DATA_BACKUP_SCHEMA_VERSION
+  schemaVersion: 1 | 2
+  catalogVersion?: string
   tables: FullDataBackupTables
 }
 
@@ -124,6 +127,7 @@ export async function buildFullDataBackup(): Promise<FullDataBackup> {
     exportedAt: new Date().toISOString(),
     localStorage: readRestorableLocalStorage(),
     schemaVersion: FULL_DATA_BACKUP_SCHEMA_VERSION,
+    catalogVersion: generated.version,
     tables,
   }
 }
@@ -161,7 +165,7 @@ export function parseFullDataBackupJson(text: string): FullDataBackupParseResult
     return { ok: false, error: 'invalidShape' }
   }
 
-  if (parsed.schemaVersion !== FULL_DATA_BACKUP_SCHEMA_VERSION) {
+  if (parsed.schemaVersion !== 1 && parsed.schemaVersion !== FULL_DATA_BACKUP_SCHEMA_VERSION) {
     return { ok: false, error: 'unsupportedVersion' }
   }
 
@@ -196,13 +200,15 @@ export function parseFullDataBackupJson(text: string): FullDataBackupParseResult
       app: BACKUP_APP_ID,
       exportedAt: parsed.exportedAt,
       localStorage,
-      schemaVersion: FULL_DATA_BACKUP_SCHEMA_VERSION,
+      schemaVersion: parsed.schemaVersion,
+      ...(typeof parsed.catalogVersion === 'string' ? { catalogVersion: parsed.catalogVersion } : {}),
       tables,
     },
   }
 }
 
 export async function restoreFullDataBackup(backup: FullDataBackup, syncState?: AccountSyncState) {
+  const normalized = normalizeExerciseTables(backup.tables as unknown as ExerciseTables) as unknown as FullDataBackupTables
   const tables = [...backupTableNames.map((tableName) => db.table(tableName)), db.accountSync]
 
   await db.transaction('rw', tables, async () => {
@@ -212,7 +218,7 @@ export async function restoreFullDataBackup(backup: FullDataBackup, syncState?: 
     }
 
     for (const tableName of backupTableNames) {
-      const records = backup.tables[tableName]
+      const records = normalized[tableName]
       if (records.length > 0) {
         await db.table(tableName).bulkPut(records)
       }

@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import vm from 'node:vm'
+import { createRequire } from 'node:module'
 import ts from 'typescript'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -17,7 +18,7 @@ function loadTsModule(relativePath) {
     },
   })
   const module = { exports: {} }
-  vm.runInNewContext(transpiled.outputText, { exports: module.exports, module }, { filename: filePath })
+  vm.runInNewContext(transpiled.outputText, { exports: module.exports, module, require: createRequire(filePath) }, { filename: filePath })
   return module.exports
 }
 
@@ -90,6 +91,14 @@ const enExercises = loadTsModule('src/locales/en/exercises.ts').default
 const zhCNExercises = loadTsModule('src/locales/zh-CN/exercises.ts').default
 const enMuscles = loadTsModule('src/locales/en/muscles.ts').default
 const zhCNMuscles = loadTsModule('src/locales/zh-CN/muscles.ts').default
+for (const [resource, language] of [[enExercises, 'en'], [zhCNExercises, 'zh-CN']]) {
+  const labels = loadTsModule(`src/locales/${language}/catalog.ts`).default.patterns
+  for (const [id, label] of Object.entries(labels)) {
+    resource.movementPatterns.names[id] = label
+    resource.movementPatterns.descriptions[id] = label
+    resource.movementPatterns.aliases[id] = []
+  }
+}
 
 const errors = []
 const muscleGroupIds = muscleGroups

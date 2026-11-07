@@ -1,5 +1,7 @@
+import generatedNames from '../../domain/exercise-catalog/names.json'
 const exercises = {
   names: {
+    ...generatedNames['zh-CN'],
     barbellBenchPress: '杠铃卧推',
     dumbbellBenchPress: '哑铃卧推',
     inclineBarbellBenchPress: '上斜杠铃卧推',
@@ -12,7 +14,7 @@ const exercises = {
     pushUp: '俯卧撑',
     weightedPushUp: '负重俯卧撑',
     pullUp: '引体向上',
-    wideGripPullUp: '高位引体向上',
+    wideGripPullUp: '宽握引体向上',
     chinUp: '反手引体向上',
     latPulldown: '高位下拉',
     closeGripLatPulldown: '窄握高位下拉',

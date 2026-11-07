@@ -1,0 +1,644 @@
+{
+  "dip": {
+    "description": "A dip is an upper-body strength exercise. Narrow, shoulder-width dips primarily train the triceps, with major synergists being the anterior deltoid, the pectoralis muscles (sternal, clavicular, and minor), and the rhomboid muscles of the back (in that order). Wide arm training places additional emphasis on the pectoral muscles, similar in respect to the way a wide grip bench press would focus more on the pectorals and less on the triceps.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "frontSquat": {
+    "description": "This variation of the squat trains the hamstrings and gluteus maximus. It also works the back extensors and abductors.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "barbellStepUp": {
+    "description": "- Place a barbell across your upper back (or hold a dumbbell in each hand) and stand upright facing a sturdy box or bench.\n- Step firmly onto the platform with one foot, ensuring your entire foot is supported.\n- Drive through your front heel to extend your hip and knee, stepping up onto the box until standing fully upright.\n- Step back down with control under full eccentric tension before repeating or alternating legs.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "barbellBenchPress": {
+    "description": "Lay down on a bench, the bar should be directly above your eyes, the knees are somewhat angled and the feet are firmly on the floor. Concentrate, breath deeply and grab the bar more than shoulder wide. Bring it slowly down till it briefly touches your chest at the height of your nipples. Push the bar up.\nIf you train with a high weight it is advisable to have a spotter that can help you up if you can't lift the weight on your own.\nWith the width of the grip you can also control which part of the chest is trained more:\n\nwide grip: outer chest muscles\nnarrow grip: inner chest muscles and triceps",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "dumbbellBenchPress": {
+    "description": "Setup and Starting Position: Sit at the end of a flat bench with a dumbbell resting vertically against each thigh. Carefully lean back while driving the dumbbells toward your chest with your knees.\n\n\nThe “Leg Drive” and Posture: Plant your feet firmly on the floor. Retract your shoulder blades (press them together against the bench) and maintain a slight natural lumbar curve.\n\n\nStarting Position: Push the dumbbells toward the ceiling. Your wrists should be aligned with your elbows. Rotate the dumbbells slightly inward (about 45 degrees) so that your elbows do not splay out too far to the sides, thereby protecting your shoulders.\n\n\nEccentric Phase (Lowering): Lower the dumbbells in a controlled manner toward the sides of your chest. Your elbows should lower at an angle of about 45–60 degrees relative to your body. Feel the stretch in the lower part of your chest.\n\n\nConcentric Phase (Lift): Push the weight upward in a slight arc (toward the center), without letting the dumbbells collide at the top or fully locking out your elbows to maintain muscle tension. Exhale as you lift.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "inclineBarbellBenchPress": {
+    "description": "Sit on the incline bench with your feet firmly on the floor for stability and your head resting on the bench. Unrack the barbell slightly wider than shoulder-width and press it upward. Lower the barbell until it briefly touches your chest, then press the weight back up. Perform slowly (tempo: 4010).",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "inclineDumbbellBenchPress": {
+    "description": "This is a variation of the flat bench press designed to emphasize the clavicular head of the pectoralis major (the upper portion). By tilting the torso, the angle of the push changes, shifting more tension to the upper chest and shoulders, which helps achieve a more aesthetic, balanced, and three-dimensional development of the torso.\n\n\nBench Adjustment and Preparation: Set the bench to an incline of between 30 and 45 degrees (an incline greater than 45° will place too much strain on the shoulders and reduce the stimulus to the chest). Sit down with a dumbbell on each thigh.\n\n\nStarting position: Lean back, resting your back against the bench, while using your knees one after the other to push the dumbbells upward to shoulder height.\n\n\nAnatomical Stabilization: Plant your feet firmly on the floor. Retract your scapulas (bring your shoulder blades together and press them into the bench) to protect your shoulders and stabilize the load.\n\n\nEccentric Phase (Lowering): Lower the dumbbells slowly and in a controlled manner toward the upper part of your chest. Your elbows should not splay out to the sides (90°); maintain a safe angle of about 45 to 60 degrees relative to your torso.\n\n\nConcentric Phase (Lift): Push the dumbbells vertically upward as you exhale. Follow a slightly converging path (without letting them touch at the top). Stop the movement just before locking out your elbows to maintain muscle tension in the upper pectoral.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "declineBarbellBenchPress": {
+    "description": "Lay down on a decline bench, the bar should be directly above your eyes, the knees are somewhat angled and the feet are firmly on the floor. Concentrate, breath deeply and grab the bar more than shoulder wide. Bring it slowly down till it briefly touches your chest at the height of your nipples. Push the bar up.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "declineDumbbellBenchPress": {
+    "description": "Take two dumbbells and sit on a decline bench, the feet are firmly on the floor, the head is resting the bench. Hold the weights next to the chest, at the height of your nipples and press them up till the arms are stretched. Let the weight slowly and controlled down.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "pecDeck": {
+    "description": "Starting Position: Sit with your back and head firmly pressed against the backrest of the pec deck machine. Adjust the seat height so that the arm pads or handles are aligned with your mid-chest.\nExecution: Grip the handles or place your forearms on the pads with a slight bend in your elbows. Bring your arms together in front of your chest in a smooth arc, squeezing your pectorals at peak contraction for 1–2 seconds.\nTips: Control the weight on the eccentric return, feeling a gentle stretch in your chest without letting your elbows travel excessively behind your shoulders.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "cableFly": {
+    "description": "cable machine, two steps forward, straight back",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "pushUp": {
+    "description": "The push-up is a fundamental bodyweight exercise that targets the chest, arms, and shoulders while engaging the core for stability. It requires no equipment and is excellent for building upper body strength.\nInstructions:\n\nStart in a plank position with hands placed slightly wider than shoulder-width, feet together, and body in a straight line from head to heels.\nEngage your core and lower your body by bending your elbows, keeping them close to your body or flared slightly outward.\nLower until your chest nearly touches the ground while maintaining a neutral spine.\nPush through your palms to return to the starting position, fully extending your arms.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "pullUp": {
+    "description": "Grab the pull up bar with a wide grip, the body is hanging freely. Keep your chest out and pull yourself up till your chin reaches the bar or it touches your neck, if you want to pull behind you. Go with a slow and controlled movement down, always keeping the chest out.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "wideGripPullUp": {
+    "description": "Execution\n\nPulling phase (concentric):\n\nDrive your elbows down and slightly back, pulling your chest toward the bar.\nFocus on leading with your chest, not your chin.\nKeep your shoulders depressed (avoid shrugging).\n\nTop position:\n\nChin should clear the bar (or at least reach bar level).\nPause for a brief squeeze in your lats.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "chinUp": {
+    "description": "The chin-up (also known as a chin or chinup) is a strength training exercise. People frequently do this exercise with the intention of strengthening muscles such as the latissimus dorsi and biceps, which extend the shoulder and flex the elbow, respectively. In this maneuver, the palms are faced towards the body. It is a form of pull-up in which the range of motion is established in relation to a person's chin.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "latPulldown": {
+    "description": "- Sit down at the lat pulldown station and secure your thighs firmly under the padded rollers.\n- Grasp the wide bar with an overhand (pronated) grip wider than shoulder width.\n- Pull the bar smoothly down to your upper chest by driving your elbows down and back while keeping your chest lifted.\n- Squeeze your shoulder blades together at the bottom, then slowly extend your arms back to the starting position under full control.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "closeGripLatPulldown": {
+    "description": "Grip the pull-down bar with your hands closer than shoulder width apart, with your palms facing away from you. Lean back slightly. Pull the bar down towards your chest, keeping your elbows close to your sides as you come down. Pull your shoulders back at the end of the motion.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "barbellRow": {
+    "description": "Holding a barbell with a pronated grip (palms facing down), bend your knees slightly and bring your torso forward, by bending at the waist, while keeping the back straight until it is almost parallel to the floor. Tip: Make sure that you keep the head up. The barbell should hang directly in front of you as your arms hang perpendicular to the floor and your torso. This is your starting position.\nNow, while keeping the torso stationary, breathe out and lift the barbell to you. Keep the elbows close to the body and only use the forearms to hold the weight. At the top contracted position, squeeze the back muscles and hold for a brief pause.\nThen inhale and slowly lower the barbell back to the starting position.\nRepeat for the recommended amount of repetitions.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "seatedRow": {
+    "description": "Starting position:\nSit at the seated cable row station and place your feet firmly on the footplates with knees softly bent. Hinge forward with a flat back to grip the handle (such as a close-grip V-bar), then push back until your torso is upright at 90 degrees with shoulders depressed and retracted.\n\nExecution:\n1. Pull the handle smoothly toward your abdomen/lower ribs, keeping your elbows tucked close to your torso.\n2. Squeeze your shoulder blades together firmly at the end of the pull, contracting your lats and rhomboids.\n3. Keep your torso stationary without excessive swinging or leaning back.\n4. Slowly extend your arms and let your shoulder blades glide forward under control to feel a full stretch before the next rep.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "singleArmDumbbellRow": {
+    "description": "Place one knee on a flat bench and brace yourself with the hand on the same side. Hold a dumbbell in the free hand, pull it close to your body, lower it under control, then repeat on the other side.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "tBarRow": {
+    "description": "Starting Position: Straddle the T-bar or landmine bar with feet shoulder-width apart. Hinge forward at the hips at roughly a 45-degree angle with a flat back and slightly bent knees. Grasp the V-grip handles with arms fully extended.\nExecution: Pull the weight smoothly toward your upper abdomen, driving your elbows back and squeezing your shoulder blades together at the top of the movement.\nReturn: Lower the weight under control until your arms are extended, keeping your spine in a neutral position throughout.\nCues: Keep your chest lifted and avoid using excessive momentum or rounding your lower back.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "straightArmPulldown": {
+    "description": "Keep arms straight but not locked, pulling with your lats, not your shoulders.\nDon’t let your shoulders shrug up during the movement.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "deadlift": {
+    "description": "Starting position:\nStand with your feet hip-width apart, with the barbell positioned over the middle of your feet (about 1 inch from your shins). Hinge at your hips and bend your knees until you can grasp the bar just outside your legs using an overhand or mixed grip. Keep your back flat, chest up, and shoulders slightly ahead of the bar.\n\nExecution:\n1. Take a deep breath into your belly and brace your core. Push the floor away through your mid-foot and heels, extending your knees and hips simultaneously.\n2. Keep the barbell in close contact with your shins and thighs as it rises.\n3. Lock out by standing tall and squeezing your glutes, keeping a neutral spine without leaning back or hyperextending your lower back.\n4. Return the barbell to the floor in a controlled manner by hinging at the hips first, then bending the knees once the bar clears them.\n\nNotes:\nNever round your spine under load. Keep your lats engaged to keep the bar close to your body throughout the lift.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "romanianDeadlift": {
+    "description": "Starting Position: Stand tall with feet hip-width apart, holding a barbell with a shoulder-width overhand grip in front of your thighs. Keep your shoulders back and down with a tight core.\nExecution: Push your hips backward and hinge forward at the hips, maintaining a flat back and a slight, fixed bend in your knees. Lower the barbell close along your thighs and shins until you feel a deep stretch in your hamstrings.\nReturn: Drive your hips forward to return to the fully upright position, contracting your glutes and hamstrings powerfully at the top.\nCues: Keep the bar close to your body at all times and avoid rounding your spine. The movement is a pure hip hinge, not a squat.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "sumoDeadlift": {
+    "description": "Begin with a bar loaded on the ground. Approach the bar so that the bar intersects the middle of the feet. The feet should be set very wide, near the collars. Bend at the hips to grip the bar. The arms should be directly below the shoulders, inside the legs, and you can use a pronated grip, a mixed grip, or hook grip. Relax the shoulders, which in effect lengthens your arms.\nTake a breath, and then lower your hips, looking forward with your head with your chest up. Drive through the floor, spreading your feet apart, with your weight on the back half of your feet. Extend through the hips and knees.\nAs the bar passes through the knees, lean back and drive the hips into the bar, pulling your shoulder blades together.\nReturn the weight to the ground by bending at the hips and controlling the weight on the way down.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "barbellSquat": {
+    "description": "Starting Position:\nUnrack a barbell from a squat rack across your upper trapezius (high-bar position). Take two steps back into a shoulder-width or slightly wider stance with toes angled outward 15 to 30 degrees. Inhale deeply into your belly to brace your intra-abdominal pressure, keeping your chest tall.\n\nExecution:\n1. Break at your hips and knees simultaneously, driving your knees outward in line with your toes.\n2. Descend smoothly past parallel into full squat depth, keeping your torso upright and heels firmly anchored.\n3. Pause briefly without bouncing out of the hole, then drive forcefully through your whole foot to return to a standing lockout.\n4. Exhale at the top and reset your brace before the next repetition.\n\nCues:\nFull depth maximizes quadriceps, adductor, and gluteus maximus recruitment; descend only as deep as you can maintain a neutral spine without excessive pelvic tuck (butt wink).",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "legPress": {
+    "description": "The leg press is a weight training exercise in which the individual pushes a weight or resistance away from them using their legs.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "legPressMachine": {
+    "description": "The leg press is a weight training exercise in which the individual pushes a weight or resistance away from them using their legs.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "hackSquat": {
+    "description": "Starting position:\nPosition yourself in the hack squat machine with your back and head flat against the backrest and your shoulders tucked under the shoulder pads. Place your feet shoulder-width apart in the center or upper half of the footplate. Disengage the safety handles.\n\nMovement:\nLower the sled under control by bending your knees until your thighs are at least parallel to the footplate (or deeper according to your mobility). Press forcefully through your midfoot and heels to drive the sled back up to the starting position without violently locking out your knees.\n\nNotes:\nKeep your lower back firmly supported against the backrest throughout the entire movement. Do not allow your heels to rise off the footplate.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "gluteBridge": {
+    "description": "Lie on you back with your hips and knees flexed, feet on the ground. From this position, raise your butt off of the ground to a height where your body makes a straight line from your knees to your shoulders. To make the exercise more intense, you can add weight by letting a barbell rest on your hips as you complete the motion, or you can put your feet on a slightly higher surface such as a step or a bench.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "barbellHipThrust": {
+    "description": "The bar should go directly on your upper thigh, directly below your crotch. Your feet should be directly under your knees. Push your hips up so that you form a straight line from your knees to your shoulders. Use a pad for comfort.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "legExtension": {
+    "description": "The leg extension is a resistance weight training exercise that targets the quadriceps muscle in the legs. The exercise is done using a machine called the Leg Extension Machine. There are various manufacturers of these machines and each one is slightly different. Most gym and weight rooms will have the machine in their facility. The leg extension is an isolated exercise targeting one specific muscle group, the quadriceps. It should not be considered as a total leg workout, such as the squat or deadlift. The exercise consists of bending the leg at the knee and extending the legs, then lowering them back to the original position.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "legCurl": {
+    "description": "The leg curl, also known as the hamstring curl, is an isolation exercise that targets the hamstring muscles. The exercise involves flexing the lower leg against resistance towards the buttocks. Other exercises that can be used to strengthen the hamstrings are the glute-ham raise and the deadlift.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "standingCalfRaise": {
+    "description": "Get onto the calf raises machine, you should able to completely push your calves down. Stand straight, don't make a hollow back and don't bend your legs. Pull yourself up as high as you can. Make a small pause of 1 - 2 seconds and go slowly down.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "hipAbduction": {
+    "description": "Starting Position:\n\nAdjust the seat height so that your knees are aligned with the pivot point of the machine.\nSit with your back flat against the backrest, maintaining good posture.\nPlace the outside of your thighs against the machine's padded levers.\nPosition your feet flat on the footrests or platform of the machine.\nGrasp the handles or sides of the seat for stability.\nEnsure your spine is neutral and your core is slightly engaged.\n\nMovement:\n\nExhale as you slowly push your legs outward against the resistance pads.\nFocus on initiating the movement from your hips, not your knees.\nContinue opening your legs until you feel a strong contraction in your outer hips and thighs.\nHold the fully abducted position briefly (1-2 seconds) to maximize muscle engagement.\nInhale as you slowly control the return of your legs to the starting position, resisting the weight throughout the movement.\nAvoid allowing the weight stack to touch down between repetitions to maintain constant tension on the muscles.\nRepeat for the desired number of repetitions, maintaining control throughout the set.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "hipAdduction": {
+    "description": "Starting position:\nSit upright on the machine with your back firmly against the backrest and the pads resting against the inside of your thighs/knees. Grab the side handles for stability.\n\nExecution:\n1. Squeeze your thighs together against the resistance pads in a controlled movement by contracting your adductors.\n2. Hold the peak contraction briefly as the pads come close together.\n3. Slowly reverse the movement and open your legs, controlling the weight stack without letting the plates crash.\n\nNotes:\nKeep your torso stable and back flat against the pad throughout the movement.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "barbellOverheadPress": {
+    "description": "Setup: Stand with feet hip-width apart and grip the bar slightly wider than shoulder-width.\nPosition: Rest the bar comfortably across your upper chest and front deltoids.\nPress: Brace your core and press the bar straight overhead until your arms are fully extended.\nFinish: Control the bar steadily back down to your upper chest.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "dumbbellShoulderPress": {
+    "description": "Sit on a bench, the back rest should be almost vertical. Take two dumbbells and bring them up to shoulder height, the palms and the elbows point during the whole exercise to the front. Press the weights up, at the highest point they come very near but don't touch. Go slowly down and repeat.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "arnoldPress": {
+    "description": "Starting position:\nSit upright on a bench with back support. Hold two dumbbells in front of your chest at shoulder height, palms facing your body (supinated) with elbows tucked under your wrists.\n\nExecution:\n1. Press the dumbbells overhead while smoothly rotating your hands outward so that your palms face forward (pronated) at the top of the lift.\n2. Fully extend your arms without locking out your elbows.\n3. Slowly lower the dumbbells back along the same path, rotating your palms back toward your chest to return to the starting position.\n\nNotes:\nPerform the rotation smoothly throughout the upward and downward press. Maintain a tight core and neutral spine against the backrest.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "dumbbellLateralRaise": {
+    "description": "This exercise works the deltoid muscle of the shoulder. The movement starts with the arms straight, and the hands holding weights at the sides or in front of the body. Body is in a slight forward-leaning position with hips and knees bent a little. Arms are kept straight or slightly bent, and raised through an arc of movement in the coronal plane that terminates when the hands are at approximately shoulder height. Weights are lowered to the starting position, completing one rep. When using a cable machine the individual stands with the coronal plane in line with the pulley, which is at or near the ground.[9] The exercise can be completed one shoulder at a time (with the other hand used to stabilize the body against the weight moved), or with both hands simultaneously if two parallel pulleys are available.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "dumbbellFrontRaise": {
+    "description": "Starting position:\nStand upright with feet hip-width apart, holding a dumbbell in each hand in front of your thighs with an overhand grip (palms facing your body).\n\nExecution:\n1. Keeping a slight bend in your elbows, raise the dumbbells forward and upward until they reach shoulder or eye level.\n2. Pause briefly at the top to emphasize contraction in the front deltoids.\n3. Lower the weights slowly and with control back to your thighs.\n\nTips:\nAvoid swinging your torso or using leg momentum. Keep your core braced throughout the lift.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "facePull": {
+    "description": "Attach a rope to a pulley station set at about chest level.\nStep back so you're supporting the weight with arms completely outstretched and assume a staggered (one foot forward) stance. Bend the knees slightly for a stable base.\nRetract the scapulae (squeeze your partner's finger with your shoulder blades) and pull the center of the rope slightly up towards the face. A good cue is to think about pulling the ends of the rope apart, not just pulling back.\nAs you near your face, externally rotate so your knuckles are facing the ceiling.\nHold for one second at the top position and slowly lower.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "reverseFly": {
+    "description": "Stand with a good posture holding a cable in each hand opposite the machine\nStarting with the hands in front of your chest pull the arms out to\nyour side into the shape of a T with the elbows nearly straight\nSlowly release the arms forward to the start\nRepeat with the arms moving into the shape of a Y\nRepeat with the arms in the shape of a W\nRepeat with the arms in the shape of an L by your side",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "barbellCurl": {
+    "description": "Hold the Barbell shoulder-wide, the back is straight, the shoulders slightly back, the arms are streched. Bend the arms, bringing the weight up, with a fast movement. Without pausing, let down the bar with a slow and controlled movement.\nDon't allow your body to swing during the exercise, all work is done by the biceps, which are the only mucles that should move (pay attention to the elbows).",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "dumbbellCurl": {
+    "description": "Hold two dumbbells, the arms are streched, the hands are on your side, the palms face inwards. Bend the arms and bring the weight with a fast movement up. At the same time, rotate your arms by 90 degrees at the very beginning of the movement. At the highest point, rotate a little the weights further outwards. Without a pause, bring them down, slowly.\nDon't allow your body to swing during the exercise, all work is done by the biceps, which are the only mucles that should move (pay attention to the elbows).",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "hammerCurl": {
+    "description": "Start: Hold dumbbells at your sides with palms facing your torso.\nCurl: Lift the weights toward your shoulders while maintaining the neutral grip (like holding a hammer).\nSqueeze: Contract the biceps at the top without moving your elbows forward.\nLower: Slowly return to the starting position with full control.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "preacherCurl": {
+    "description": "Place an EZ-curl bar on the rest cradles in front of the preacher bench. Lean over the bench and grasp the inner angled grips with an underhand (supinated) grip. Sit down firmly on the seat with your triceps resting flush against the slanted pad and your chest pressed comfortably against it.\nLower the bar slowly under control until your elbows are fully extended without hyperextending. Curl the weight upward by contracting your biceps, stopping just short of vertical to maintain tension. Repeat.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "concentrationCurl": {
+    "description": "Sit on bench. Grasp dumbbell between feet. Place back of upper arm to inner thigh. Lean into leg to raise elbow slightly.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "tricepsPushdown": {
+    "description": "Starting Position:\n• Stand upright facing a high cable pulley equipped with a straight bar, EZ-bar, or rope attachment.\n• Grasp the attachment with an overhand grip, elbows bent and tucked firmly against your ribs.\n• Lean forward slightly from the hips with a flat back and braced core.\n\nExecution:\n• Push the bar down by extending your elbows until your arms are fully extended toward your thighs.\n• Keep your upper arms completely stationary by your sides throughout the movement.\n• Squeeze your triceps forcefully at the bottom of the movement for a brief pause.\n• Slowly allow the bar to return to approximately chest height under full control.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "closeGripBenchPress": {
+    "description": "Setup: Lie flat on the bench and grip the bar at shoulder-width (closer than a standard bench press).\nDescent: Lower the bar with control to your lower chest.\nForm: Keep your elbows tucked in tight against your torso—do not let them flare out.\nAscent: Press the bar straight back up, squeezing your triceps at the top.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "overheadTricepsExtension": {
+    "description": "Starting position:\nSit upright on a bench or stand with feet shoulder-width apart. Hold a dumbbell with both hands overhead, with arms extended.\n\nExecution:\n1. Keeping your upper arms stationary and elbows pointed forward close to your head, slowly lower the dumbbell behind your head by bending your elbows.\n2. Lower until your triceps are fully stretched.\n3. Press the dumbbell back up overhead by extending your elbows, squeezing the triceps at the top.\n\nTips:\nKeep your elbows fixed in place throughout and avoid overarching your lower back.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "tricepsRopeExtension": {
+    "description": "Grab the rope attachment on the cable, stand with your feet shoulder-width apart, keep your back straight and lean forward a little. Push the rope down, making sure the elbows don't move during the exercise. Rotate your hands outwards at the very end and return to the initial position in a controlled manner.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "crunch": {
+    "description": "Starting position:\nLie on your back on a mat with your knees bent and feet flat on the floor, about hip-width apart. Place your hands lightly behind your head (without interlocking fingers) or cross them over your chest.\n\nExecution:\n1. Contract your abdominal muscles to curl your upper spine, lifting your shoulder blades off the floor toward your pelvis.\n2. Pause and hold the peak contraction for one second at the top while exhaling.\n3. Slowly lower your upper back down under control, keeping tension on your abs throughout.\n\nNotes:\nDo not pull on your neck with your hands. Keep your lower back in contact with the mat; this is a spinal curl, not a full sit-up.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "plank": {
+    "description": "Get into a position on the floor supporting your weight on your forearms and toes. Arms are bent and directly below the shoulder.\nKeep your body straight at all times and hold this position as long as possible. To increase difficulty an arm or leg can be raised while performing this exercise.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "hangingLegRaise": {
+    "description": "Hang from a pull-up bar with an overhand grip, arms straight. Keeping your core tight, raise your legs until they are parallel to the floor (or higher) with knees straight or slightly flexed, then lower them slowly under control.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "cableCrunch": {
+    "description": "Grasp the cable attachment (rope) with both hands and hold it next to your temples. Kneel down facing or facing away from the cable stack with your torso upright and slightly hinged forward. Crunch down by rolling your spine inward, bringing your elbows toward your knees. Pause briefly, then slowly return under control to the starting position.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "deadBug": {
+    "description": "Starting Position:\nLie on your back on an exercise mat with arms extended straight up toward the ceiling. Lift your legs and bend your hips and knees to 90 degrees (tabletop position) with shins parallel to the floor. Press your lower back firmly into the floor by bracing your core.\n\nExecution:\n1. Slowly lower your right arm overhead toward the floor behind you while simultaneously extending your left leg straight out just above the floor.\n2. Keep your lower back completely flat against the floor throughout the entire movement (anti-extension).\n3. Return your arm and leg to the starting tabletop position under control.\n4. Repeat with the left arm and right leg, alternating sides smoothly.\n\nCues:\nOnly lower your limbs as far as you can maintain full contact between your lumbar spine and the floor.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "birdDog": {
+    "description": "Starting Position:\nBegin on all fours (quadruped position) on a mat with hands directly under shoulders and knees under hips. Maintain a neutral spine and engage your core.\n\nExecution:\n1. Simultaneously reach your right arm straight forward and extend your left leg straight back until both are parallel to the floor.\n2. Pause and hold the fully extended position for 1–2 seconds, actively squeezing your glute and spinal erectors without arching your lower back.\n3. Return to the starting position under control and switch to the opposite arm and leg.\n\nCues:\nKeep your hips and shoulders squared to the floor. Avoid rotating your pelvis or overarching the lumbar spine.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "abCrunchMachine": {
+    "description": "The procedure is very similar as for regular crunches, only with the additional weight of the machine. Sit on the machine, put both feet firmly on the ground. Grab the to the weights, cables, etc. and do a rolling motion forwards (the spine should ideally lose touch vertebra by vertebra). Slowly return to the starting position.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "machineChestPress": {
+    "description": "Starting position:\nAdjust the seat height so the machine handles align with your mid-to-lower chest when seated. Sit tall with your back and head pressed against the backrest and your feet planted firmly on the floor.\n\nExecution:\n1. Grasp the handles with an overhand grip, retract your shoulder blades, and brace your core.\n2. Press the handles forward in a powerful, controlled motion until your arms are nearly fully extended without locking your elbows.\n3. Squeeze your pectoral muscles hard at peak contraction.\n4. Slowly return the handles under control until you feel a comfortable stretch across your chest, then repeat.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "inclineDumbbellFly": {
+    "description": "Use inclined bench. Hold dumbbells straight out to your sides, elbows slightly bent. Bring arms together above you, keeping angle of elbows fixed.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "invertedRow": {
+    "description": "Starting Position:\n• Set a barbell in a rack at waist height (or use a Smith machine or suspension trainer).\n• Lie supine underneath the bar and grasp it with an overhand grip slightly wider than shoulder-width.\n• Extend your legs with your heels on the ground, forming a straight rigid line from head to heels.\n\nExecution:\n• Pull your chest up to the bar by driving your elbows back and retracting your shoulder blades.\n• Keep your glutes and core fully braced so your hips do not sag.\n• Lower yourself slowly and under control until your arms are fully extended before beginning the next rep.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "reverseGripBarbellRow": {
+    "description": "The same as regular rowing, but holding a reversed grip (your palms pointing forwards):\nGrab the barbell with a wide grIp (slightly more than shoulder wide) and lean forward. Your upper body is not quite parallel to the floor, but forms a slight angle. The chest's out during the whole exercise.\nPull now the barbell with a fast movement towards your belly button, not further up. Go slowly down to the initial position. Don't swing with your body and keep your arms next to your body.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "gobletSquat": {
+    "description": "Grasp dumbbell with both hands at the sides of the upper plates. Hold dumbbell in front of chest, close to torso. Place feet about shoulderwide apart, keep knees slightly bent.\nSquat down until thighs are parallel to floor. Keep back straight, bend and move hips backward to keep knees above feet. Return, keep knees slightly flexed. Repeat.\nKeep bodyweight on heels and look ahead or slightly above to keep back straight.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "smithMachineSquat": {
+    "description": "Starting Position:\nStep under the Smith machine bar and rest it across your upper trapezius. Set your feet shoulder-width apart, positioned slightly in front of the bar's vertical plane to optimize knee mechanics and direct load to the quadriceps and glutes. Unrack the bar by rotating your wrists.\n\nExecution:\n1. Inhale and brace your core, then initiate the squat by bending at your hips and knees along the fixed track.\n2. Descend under strict control until your thighs are at least parallel to the floor.\n3. Drive firmly through your whole foot and heels to return to the starting position.\n4. Stop just short of locking your knees out at the top to maintain continuous tension.\n\nCues:\nKeep your chest proud and spine neutral; adjust foot placement forward if you wish to reduce forward knee travel and maximize glute/quad emphasis.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "boxSquat": {
+    "description": "Set up the box: Position the box behind you, about 3 feet from a squat rack if you're using a barbell. Choose a height that allows you to squat down and gently tap your glutes on the box with your back straight.\nStand with proper form: Stand with your feet shoulder-width apart, toes pointed slightly outward. Engage your core and keep your back neutral. If using a barbell, rack it at shoulder height.\nLower down: Sit back as if going to sit on a chair, bending your knees and lowering your hips towards the box. Keep your core tight and back straight throughout the movement.\nControlled descent: Descend in a controlled manner until your glutes gently touch the box. Don't plop down.\nPause and press up: Briefly pause at the bottom with your back straight and core engaged. Then, press through your heels to drive yourself back up to the starting position.\n\nImprovements in coordination, balance and endurance, toning of the leg and buttock muscles and an overall increase in bone density eliminating the risk of osteoporosis.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "gluteKickback": {
+    "description": "Starting Position: Begin on all fours (quadruped) on a mat with your hands beneath your shoulders and knees beneath your hips.\nExecution: Keeping your core tight and maintaining a 90-degree bend in your knee (or extending the leg straight), drive the sole of one foot upward and backward toward the ceiling, contracting your glute intensely.\nReturn: Hold for a second at the top, then slowly lower your knee back toward the floor without letting it rest completely.\nCues: Avoid arching your lower back or shifting your weight heavily to one side.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "seatedLegCurl": {
+    "description": "Starting Position:\nSit in the seated leg curl machine with your back flat against the backrest. Adjust the back pad so your knees align with the machine's pivot axis. Position the lower roller pad against the back of your lower calves, just above your heels. Lower the thigh pad firmly across your quads to secure your legs.\n\nExecution:\n1. Grasp the machine handles for stability. Flex your knees to pull the roller pad down and back beneath the seat.\n2. Squeeze your hamstrings forcefully at peak flexion, holding for 1 second.\n3. Slowly extend your legs back upward under complete control, resisting the weight stack until your legs are nearly straight.\n\nCues:\nKeep your toes pointed slightly upward (dorsiflexed) or neutral; do not lift your hips off the seat during the movement.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "machineShoulderPress": {
+    "description": "Starting Position: Sit down on the shoulder press machine and adjust the seat height so that the handles align with your shoulders. Keep your back firmly against the pad and feet flat on the floor.\nExecution: Press the handles upward overhead in a controlled motion until your arms are extended without locking your elbows.\nReturn: Lower the weight slowly back to the starting position at shoulder level.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "cableInternalRotation": {
+    "description": "Keep your elbow tucked to your side like it's superglued there.\nDon’t rotate your torso — only your forearm should move.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "ezBarCurl": {
+    "description": "Hold the EZ-bar shoulder-wide, the back is straight, the shoulders slightly back, the arms are streched. Bend the arms, bringing the weight up, with a fast movement. Without pausing, let down the bar with a slow and controlled movement.\nDon't allow your body to swing during the exercise, all work is done by the biceps, which are the only mucles that should move (pay attention to the elbows).",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "inclineDumbbellCurl": {
+    "description": "Setup: Set an adjustable bench to an incline of approximately 45 to 60 degrees.\nStarting Position: Sit back against the bench with a dumbbell in each hand. Let your arms hang straight down toward the floor with your palms facing forward (supinated grip).\nThe Curl: Keeping your upper arms stationary and shoulders pinned back against the bench, exhale and curl the weights upward toward your shoulders.\nPeak Contraction: Squeeze your biceps hard at the top of the movement, ensuring your elbows do not swing forward.\nThe Descent: Inhale and slowly lower the dumbbells back to the starting position, maintaining full control and feeling the stretch in the biceps.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "abRollout": {
+    "description": "Starting Position:\nKneel on a padded mat with your knees hip-width apart. Grasp the handles of the ab wheel firmly, resting it on the floor in front of your knees.\n\nExecution:\n1. Brace your abdominal muscles, tuck your pelvis slightly, and slowly roll the wheel forward in a controlled line, extending your body towards the floor.\n2. Roll out as far as you can maintain a neutral, slightly rounded lumbar spine without sagging in the lower back.\n3. Pull through your abdominals and lats to roll the wheel back to the starting position.\n\nCues:\nA premier anti-extension exercise for the rectus abdominis and transversus abdominis. Never allow your lower back to collapse into excessive extension.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "sidePlank": {
+    "description": "Starting Position: Lie on your side with your legs extended and your forearm directly under your shoulder, perpendicular to your body.\nExecution: Contract your obliques and lift your hips off the floor until your body forms a straight line from head to ankles.\nReturn / Hold: Hold this rigid position for the designated duration, keeping your hips elevated without sagging.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "oedb:48": {
+    "description": "Sitting on a bench, grab a barbell with your palms facing down and your hands shoulder-width apart. Rest your forearms on your thighs and allow your wrists to hang over your knees.\nCurl your knuckles towards your face, lifting the barbell. Pause for a moment in the top position, then slowly return the barbell to the starting position.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "oedb:51": {
+    "description": "Sitting on a bench, grab a barbell with your palms facing up and your hands shoulder-width apart. Rest your forearms on your thighs and allow your wrists to hang over your knees. Perform the movement by curling your palms and wrists towards your face.\nPause for a moment in the top position, then slowly return the barbell to the starting position.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "oedb:142": {
+    "description": "Starting position:\nSet the cable pulley to elbow height. Stand sideways to the cable tower and grasp the handle with your outside hand (the hand furthest from the cable). Bend your elbow to a 90-degree angle and keep it pinned against your flank (you may place a small rolled towel between your elbow and torso).\n\nExecution:\n1. Keeping your elbow securely tucked against your side, rotate your forearm outward away from your body as far as comfortable.\n2. Squeeze your rotator cuff muscles at the end range of motion and pause for a second.\n3. Slowly return the handle back across your torso to the starting position under control.\n\nNotes:\nKeep your torso stationary without twisting your spine or hips. The rotation must originate purely from the shoulder joint.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "oedb:386": {
+    "description": "Start: Get into a high plank position. Place your hands close together directly beneath your chest so that your thumbs and index fingers form a diamond shape.\nLower: Bend your elbows to lower your chest toward your hands, keeping your elbows tucked close to your ribs and your core braced.\nPush: Press firmly through your palms to return to full arm extension.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "oedb:454": {
+    "description": "Starting Position:\nGet into a downward-facing dog / pike position with your hands shoulder-width apart, hips raised high, and body forming an inverted V-shape.\nExecution:\n1. Bend your elbows and lower the top of your head forward toward the floor between or slightly ahead of your hands.\n2. Press firmly through your palms to push yourself back up to the starting pike position.\n3. Keep your core braced and legs as straight as possible throughout. Feet can optionally be elevated on a bench or box for increased difficulty.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "oedb:456": {
+    "description": "Stand with feet hip-width apart, toes pointed forward, and chest tall.\nExtend your leg straight out; extend both arms in front of you, at shoulder level. Brace your core and look straight ahead.\nSlowly squat down.\n(optional) pause at the bottom.\n\nKeep your (free) leg and arms extended for the whole duration.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "oedb:477": {
+    "description": "Adjust the counterweight on the assisted pull-up machine to provide the desired assistance. Place your knees or feet on the pad and grip the overhead handles with an overhand grip slightly wider than shoulder-width.\nPull yourself upward until your chin clears the bar, focusing on driving your elbows down and back. Lower your body slowly under control until your arms are fully extended, and repeat.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "oedb:493": {
+    "description": "Stand upright holding an EZ-curl bar with a shoulder-width overhand (pronated) grip, palms facing down. Keep your elbows tucked close to your torso.\nCurl the bar upward toward your chest by flexing your elbows, emphasizing the brachialis and brachioradialis in your forearms. Squeeze at the top and lower the weight slowly under control to full extension.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "oedb:510": {
+    "description": "Starting Position: Lie face down on a flat elevated bench. Grasp the barbell placed beneath the bench with a shoulder-width overhand grip.\nExecution: Pull the barbell upward toward your torso by driving your elbows back and squeezing your shoulder blades together.\nReturn: Lower the barbell under control back to the fully extended starting position.\nCues: The bench supports your torso, eliminating spinal load and allowing pure isolation of the latissimus dorsi, rhomboids, and upper back.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "oedb:571": {
+    "description": "Take a barbell and stand with a straight body, the arms are hanging freely in front of you. Lift from this position the shoulders as high as you can, but don't bend the arms during the movement. On the highest point, make a short pause of 1 or 2 seconds before returning slowly to the initial position.\nWhen training with a higher weight, make sure that you still do the whole movement!",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "oedb:572": {
+    "description": "Stand with straight body, the hands are hanging freely on the side and hold each a dumbbell. Lift from this position the shoulders as high as you can, but don't bend the arms during the movement. On the highest point, make a short pause of 1 or 2 seconds before returning slowly to the initial position.\nWhen training with a higher weight, make sure that you still do the whole movement!",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "oedb:822": {
+    "description": "- Set the cable pulleys to approximately head or eye level.\n- Grasp the left cable with your right hand and the right cable with your left hand, crossing the cables in front of you.\n- Pull your arms out and back in a wide horizontal arc while keeping a slight, fixed bend in your elbows.\n- Squeeze your rear deltoids at the end of the range, then slowly return the handles back across your chest under control.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "oedb:918": {
+    "description": "- Sit on the edge of a flat bench with feet firmly planted and hold a dumbbell in each hand at your sides.\n- Lean your torso slightly forward and maintain a slight, fixed bend in your elbows.\n- Raise the dumbbells out to the sides in a wide arc until your elbows and weights reach shoulder height.\n- Pause briefly at the top of the lift, then lower the dumbbells slowly under full control without swinging.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "oedb:999": {
+    "description": "Starting Position: Stand tall with feet hip-width apart, chest lifted and hands on hips or in front of your chest.\nExecution: Take a controlled step backward with one leg, landing on the ball of your foot. Lower your hips until your front thigh is parallel to the ground and your back knee hovers just above the floor.\nReturn: Drive through your front heel to return to the standing starting position.\nCues: Keep your torso upright and front knee tracking over your front toes.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "oedb:1088": {
+    "description": "Starting position:\nAssume a wide stance (roughly 1.5 to 2 times shoulder width) with your toes turned out at approximately 45 degrees. Stand over a vertically oriented dumbbell placed on the floor between your feet.\n\nExecution:\n1. Hinge at your hips and bend your knees, keeping your chest tall and back straight, to grip the upper end of the dumbbell with both hands.\n2. Drive your feet through the floor and extend your hips and knees to pull the weight upward to a full standing lockout.\n3. Squeeze your glutes and inner thighs firmly at the top.\n4. Lower the dumbbell back down under control until it touches the ground before initiating the next repetition.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "oedb:1143": {
+    "description": "Back extension performed on a weighted extension machine to target the lower back.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "oedb:1194": {
+    "description": "Starting Position:\n• Stand sideways to a cable machine with the pulley set at chest height.\n• Grasp the handle with both hands and hold it tight against the center of your chest.\n• Set your feet shoulder-width apart, knees slightly unlocked, and brace your core and glutes firmly.\n\nExecution:\n• Press the handle straight out in front of you until your arms are fully extended.\n• Actively resist the rotational pull of the cable, keeping your shoulders and hips squared forward.\n• Hold the extended position for 1 to 2 seconds, then slowly return your hands back to your chest under full control.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "oedb:1234": {
+    "description": "Starting Position:\n• Sit on the floor with your upper back resting across the edge of a sturdy bench.\n• Place a dumbbell securely across your hips and hold it in place with your hands.\n• Plant one foot firmly on the floor (working leg) with the knee bent at approximately 90 degrees, and lift the opposite leg off the ground with the knee bent.\n\nExecution:\n• Drive through the heel of your working leg to extend your hips upward until your torso and working thigh form a straight horizontal line.\n• Squeeze your glute forcefully at the top of the movement for a 1 to 2-second pause.\n• Lower your hips back down slowly under control without resting completely on the floor before the next rep.\n• Complete all repetitions and switch sides.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "oedb:1283": {
+    "description": "Set up an adjustable bench at a 45-degree angle.\nLay on your stomach with your head hanging just above the edge of the bench.\nGrab a dumbbell in each hand and set up with a good posture – core and lats engaged and shoulders neutral.\nRow the dumbbells toward the top of the stomach and squeeze the back at the top of the rep.\nFinally, lower the dumbbells back to the starting position and repeat until all reps are completed.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "oedb:1294": {
+    "description": "Starting position:\nLie on your back on a mat. Place the heel of one leg on the floor (or on a slider/towel) with the knee slightly bent, while holding the other leg elevated off the ground.\n\nExecution:\n1. Lift your hips off the mat into a single-leg bridge position.\n2. Curl your heel toward your glutes by flexing at the knee, strongly contracting the hamstrings.\n3. Slowly extend your leg back out under control while keeping your hips elevated.\n\nTips:\nEffectively isolates and strengthens the hamstring group (biceps femoris, semimembranosus, semitendinosus) unilaterally using only bodyweight.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "oedb:1348": {
+    "description": "Starting position:\nPosition yourself face down on the Roman chair / hyperextension bench with your thighs resting on the pads and hips free to hinge. Lock your heels securely under the foot pads. Cross your arms over your chest or place your hands lightly by your ears.\n\nMovement:\nSlowly hinge at the hips to lower your torso toward the floor, keeping your spine neutral. Lift your upper body by contracting your erector spinae, glutes, and hamstrings until your body forms a straight line from heels to head.\n\nNotes:\nAvoid hyperextending your lower back at the top of the movement. Maintain a controlled tempo without using momentum.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "oedb:1372": {
+    "description": "Starting position:\nSelect the appropriate counterweight on the assisted dip machine (higher weight provides more assistance). Grasp the parallel handles, place your knees or feet onto the support platform, and press yourself up until your arms are nearly fully extended.\n\nMovement:\nLower your body with control by bending your elbows back until your upper arms are roughly parallel to the floor (approximately 90-degree elbow bend). Press through your palms and contract your triceps to push yourself back up to the starting position.\n\nNotes:\nKeep your elbows tucked close to your torso to emphasize the triceps rather than the chest. Do not lock out your elbows harshly at the top.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "oedb:1378": {
+    "description": "Starting position:\nStand beside a low cable pulley with the attachment set to the lowest position. Grasp the single D-handle with the hand furthest from the machine (cable running behind or in front of your body). Grip the upright pillar with your inside hand for stability and lean slightly outward.\n\nMovement:\nKeeping a slight, fixed bend in your working elbow, raise your arm outward in a wide lateral arc until your hand is roughly level with your shoulder. Pause briefly at peak contraction in the lateral deltoid, then lower the handle slowly under continuous tension back to the starting position.\n\nNotes:\nDo not shrug your traps or swing your torso to initiate the pull. Maintain constant control throughout both the lifting and lowering phases.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "oedb:1612": {
+    "description": "Place your feet wider than shoulder-width apart, pointing your toes outward.\nKeep your back straight, shoulders back, and chest up.\nThe knees must follow the same direction as the toes and not move forward.\nWhen going up, it is advisable to contract your glutes to maximize the effectiveness of the exercise..",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "oedb:1620": {
+    "description": "The seated dumbbell calf raise is a targeted exercise for strengthening the lower leg muscles. It follows the same movement pattern as the machine version: you place the weight on your knees, and by extending and flexing your ankles, you move the weight.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "oedb:1642": {
+    "description": "This exercise involves sitting on the ground with a dumbbell resting on the hips, then thrusting the hips upward while squeezing the glutes. It is a great exercise for strengthening the glutes and improving hip mobility.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "oedb:1652": {
+    "description": "This exercise involves holding a dumbbell in each hand and bending forward at the hips while keeping the back straight, then returning to a standing position. It primarily targets the hamstrings and glutes.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "oedb:1696": {
+    "description": "Execution\n\nPulling phase (concentric):\n\nDrive your elbows down and back, pulling your chest toward your hands.\nKeep your shoulders depressed and retracted (avoid shrugging).\nFocus on squeezing your lats and upper back at the top.\n\nTop position:\n\nChin should clear or reach the level of your hands.\nPause briefly and contract your lats hard.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "oedb:1725": {
+    "description": "Keep your chest up and squeeze your shoulder blades at the end.\nDon’t hunch forward or round your back during the pull.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "oedb:1732": {
+    "description": "Face pulls with band – standing horizontal pull. Grab the band at face height, pull elbows high and wide towards your face while squeezing shoulder blades together. Trains upper back, rear shoulders and improves posture.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "oedb:1830": {
+    "description": "Starting Position:\nRest a barbell across your upper trapezius. Stand tall with your feet hip-width apart, chest proud, and core firmly braced.\n\nExecution:\n1. Take a deliberate, controlled step backward with one leg, keeping your hips square.\n2. Lower your hips vertically until your front thigh is parallel to the floor and your back knee hovers just above the mat (both knees at roughly 90 degrees).\n3. Drive firmly through the heel and midfoot of your FRONT leg to stand back up to the starting position.\n4. Repeat with the opposite leg, alternating sides, or complete all reps on one leg before switching.\n\nCues:\nPush through the front heel rather than kicking off the rear foot to keep tension loaded on the lead glute and quadriceps.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "oedb:1929": {
+    "description": "Starting position:\nAnchor a resistance band overhead to a pull-up bar or high anchor point. Stand facing the anchor, grasp the band with both hands using an overhand grip, and step back until tension is established. Hinge slightly forward at your hips with a flat back and extend your arms overhead with a slight, locked bend in your elbows.\n\nExecution:\nPull the band downward in a sweeping arc toward your thighs, driving the motion strictly through your lats. Squeeze your lats and rear delts firmly at the bottom for one full second. Slowly allow the band to return upward under control until you feel a complete stretch along your sides.\n\nTips:\nKeep your elbows rigid; do not bend or extend at the elbow joint during the pull, as that shifts tension from the lats to the triceps.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  },
+  "oedb:475:weighted": {
+    "description": "Grab the pull up bar with a wide grip, the body is hanging freely. Keep your chest out and pull yourself up till your chin reaches the bar or it touches your neck, if you want to pull behind you. Go with a slow and controlled movement down, always keeping the chest out.",
+    "instructions": [],
+    "cues": [],
+    "commonMistakes": []
+  }
+}

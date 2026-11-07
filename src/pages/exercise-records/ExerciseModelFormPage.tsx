@@ -23,6 +23,11 @@ import {
   type ExerciseModelForm,
 } from '../../db/sessions'
 import { MuscleDistributionEditor } from './MuscleDistributionEditor'
+import { ExerciseMetadataFields } from '../../components/exercise/ExerciseMetadataFields'
+import type { ExerciseMetadata } from '../../domain/exercise-catalog'
+import { parseExerciseMetadata } from '../../domain/exercise-catalog/validation'
+import { listExerciseDefinitions, type ExerciseDefinition } from '../../db/exercise-models'
+import { getDefinitionName, normalizeSearch } from '../../lib/exercise-search'
 
 type ExercisePickerReturnState = {
   backTo: string
@@ -176,6 +181,11 @@ export function ExerciseModelFormPage({
   const [movementPattern, setMovementPattern] = useState<MovementPattern>('fullBody')
   const [measurementType, setMeasurementType] = useState<MeasurementType>('weightReps')
   const [muscleDistribution, setMuscleDistribution] = useState<MuscleDistributionItem[]>([])
+  const [metadata, setMetadata] = useState<ExerciseMetadata>({})
+  const [aliases, setAliases] = useState('')
+  const [notes, setNotes] = useState('')
+  const [definitions, setDefinitions] = useState<ExerciseDefinition[]>([])
+  useEffect(() => { void listExerciseDefinitions().then(setDefinitions).catch(console.error) }, [])
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
@@ -193,6 +203,13 @@ export function ExerciseModelFormPage({
 
         setForm(result)
         if (result) {
+          if (result.readOnly && result.profileId) {
+            navigate(`/exercise-guide/${encodeURIComponent(result.profileId)}`, { replace: true })
+            return
+          }
+          setMetadata(result)
+          setAliases(result.aliases?.join(', ') ?? '')
+          setNotes(result.notes ?? '')
           const initialName = result.name.trim()
             || readExerciseModelName(location.state)
             || (result.catalogExerciseId ? getExerciseName(t, result.catalogExerciseId) : '')
@@ -217,13 +234,15 @@ export function ExerciseModelFormPage({
     return () => {
       isCancelled = true
     }
-  }, [location.state, profileId, t])
+  }, [location.state, profileId, t, navigate])
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (!form) {
       return
     }
+    const range = metadata.trainingDefaults?.repsRange
+    if (range && range.min > range.max) { setError(t('catalog.invalidDefaults')); return }
 
     try {
       setIsSaving(true)
@@ -235,6 +254,9 @@ export function ExerciseModelFormPage({
         measurementType,
         name,
         profileId: form.profileId,
+        metadata: parseExerciseMetadata(metadata as Record<string, unknown>),
+        aliases: aliases.split(/[,，]/).map((value) => value.trim()).filter(Boolean),
+        notes,
       })
 
       if (result.status !== 'saved') {
@@ -329,6 +351,8 @@ export function ExerciseModelFormPage({
             />
           </label>
 
+          {name.trim() && definitions.some((item) => item.profileId !== form.profileId && normalizeSearch(getDefinitionName(t, item)) === normalizeSearch(name)) && <p className="text-sm text-[var(--on-surface-variant)]">{t('catalog.duplicateHint')}</p>}
+
           <div className="grid grid-cols-2 gap-4">
             <FormSelect
               disabled={isSaving}
@@ -372,6 +396,10 @@ export function ExerciseModelFormPage({
               onChange={setMuscleDistribution}
             />
           </section>
+
+          <ExerciseMetadataFields value={metadata} onChange={setMetadata} />
+          <label className="block space-y-2"><span>{t('catalog.aliases')}</span><input className="w-full rounded-xl bg-[var(--surface-container)] p-3" value={aliases} onChange={(event) => setAliases(event.target.value)} /></label>
+          <label className="block space-y-2"><span>{t('catalog.notes')}</span><textarea rows={6} className="w-full rounded-xl bg-[var(--surface-container)] p-3" value={notes} onChange={(event) => setNotes(event.target.value)} /></label>
 
           <div className="flex items-center justify-between gap-3">
             {mode === 'edit' && form.profileId ? (

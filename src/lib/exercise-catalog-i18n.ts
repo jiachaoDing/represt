@@ -1,6 +1,7 @@
 import type { TFunction } from 'i18next'
 
 import type { Exercise, MovementPattern, MuscleGroup } from '../domain/exercise-catalog'
+import generated from '../domain/exercise-catalog/generated.json'
 
 function getLocalizedString(t: TFunction, key: string, fallback: string) {
   const value = t(key, { defaultValue: fallback, fallbackLng: false })
@@ -13,15 +14,18 @@ function getLocalizedStringArray(t: TFunction, key: string) {
 }
 
 export function getExerciseName(t: TFunction, id: Exercise['id']) {
-  return getLocalizedString(t, `exercises:names.${id}`, id)
+  return String(t(`names.${id}`, { ns: 'exercises', nsSeparator: false, defaultValue: id }))
 }
 
 export function getExerciseAliases(t: TFunction, id: Exercise['id']) {
-  return getLocalizedStringArray(t, `exercises:aliases.${id}`)
+  return [...getLocalizedStringArray(t, `exercises:aliases.${id}`), ...(generated.aliases as Record<string, string[]>)[id] ?? []]
 }
 
 export function getMuscleGroupName(t: TFunction, groupId: MuscleGroup) {
   return getLocalizedString(t, `muscles:groups.${groupId}`, groupId)
+}
+export function getDetailedMuscleName(t: TFunction, id: string) {
+  return t(`catalog.muscleNames.${id}`, { ns: 'common', defaultValue: generated.muscles.find((node) => node.id === id)?.name ?? id })
 }
 
 export function getMuscleGroupShortName(t: TFunction, groupId: MuscleGroup) {
@@ -33,11 +37,11 @@ export function getMuscleGroupAliases(t: TFunction, groupId: MuscleGroup) {
 }
 
 export function getMovementPatternName(t: TFunction, id: MovementPattern) {
-  return getLocalizedString(t, `exercises:movementPatterns.names.${id}`, id)
+  return t(`catalog.patterns.${id}`, { ns: 'common', defaultValue: getLocalizedString(t, `exercises:movementPatterns.names.${id}`, id) })
 }
 
 export function getMovementPatternDescription(t: TFunction, id: MovementPattern) {
-  return getLocalizedString(t, `exercises:movementPatterns.descriptions.${id}`, id)
+  return getLocalizedString(t, `exercises:movementPatterns.descriptions.${id}`, getMovementPatternName(t, id))
 }
 
 export function getMovementPatternAliases(t: TFunction, id: MovementPattern) {

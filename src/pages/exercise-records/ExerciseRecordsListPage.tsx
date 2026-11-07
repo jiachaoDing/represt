@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
-import { ChevronRight, Plus, Search } from 'lucide-react'
+import { BookOpen, ChevronRight, Plus, Search } from 'lucide-react'
+import { listExerciseDefinitions, type ExerciseDefinition } from '../../db/exercise-models'
+import { searchExerciseDefinitions } from '../../lib/exercise-search'
 
 import { PageHeader } from '../../components/ui/PageHeader'
 import { useBackLinkState } from '../../hooks/useRouteBack'
@@ -21,14 +23,17 @@ export function ExerciseRecordsListPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [query, setQuery] = useState('')
+  const [showHidden, setShowHidden] = useState(false)
+  const [definitions, setDefinitions] = useState<ExerciseDefinition[]>([])
 
   useEffect(() => {
     let isCancelled = false
 
-    listExerciseRecordSummaries()
-      .then((summaries) => {
+    Promise.all([listExerciseRecordSummaries(showHidden), listExerciseDefinitions(showHidden)])
+      .then(([summaries, models]) => {
         if (!isCancelled) {
           setItems(summaries)
+          setDefinitions(models)
         }
       })
       .catch((loadError) => {
@@ -46,10 +51,11 @@ export function ExerciseRecordsListPage() {
     return () => {
       isCancelled = true
     }
-  }, [t])
+  }, [t, showHidden])
 
   const visibleItems = useMemo(() => {
     const normalizedQuery = query.normalize('NFKC').trim().toLowerCase()
+    const matchedIds = new Set(searchExerciseDefinitions(definitions, query, t).map((model) => model.profileId))
 
     return items
       .filter((item) => {
@@ -59,7 +65,7 @@ export function ExerciseRecordsListPage() {
 
         const displayName = getDisplayExerciseName(t, item)
         const aliases = item.catalogExerciseId ? getExerciseAliases(t, item.catalogExerciseId) : []
-        return [displayName, item.name, ...aliases]
+        return matchedIds.has(item.profileId) || [displayName, item.name, ...aliases]
           .join(' ')
           .normalize('NFKC')
           .toLowerCase()
@@ -85,7 +91,7 @@ export function ExerciseRecordsListPage() {
           i18n.resolvedLanguage,
         )
       })
-  }, [i18n.resolvedLanguage, items, query, t])
+  }, [definitions, i18n.resolvedLanguage, items, query, t])
 
   return (
     <div className="pb-4">
@@ -116,6 +122,7 @@ export function ExerciseRecordsListPage() {
       <p className="mx-5 mt-2 text-[12px] font-medium text-[var(--on-surface-variant)]">
         {t('summary.exerciseRecords.totalCount', { count: items.length })}
       </p>
+      <label className="mx-5 mt-3 flex items-center gap-2 text-sm"><input type="checkbox" checked={showHidden} onChange={(event) => setShowHidden(event.target.checked)} />{t('catalog.showHidden')}</label>
 
       {error ? (
         <div className="mx-4 mt-4 rounded-xl bg-[var(--error-container)] px-4 py-3 text-sm text-[var(--on-error-container)]">
@@ -130,12 +137,13 @@ export function ExerciseRecordsListPage() {
           {visibleItems.map((item) => {
             const displayName = getDisplayExerciseName(t, item)
             return (
+              <div key={item.profileId} className="relative">
               <Link
                 key={item.profileId}
                 to={`/summary/exercises/${encodeURIComponent(item.profileId)}`}
                 state={backLinkState}
                 viewTransition
-                className="rounded-[1.25rem] border border-[var(--outline-variant)]/20 bg-[var(--surface)] p-4 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)]"
+                className="block rounded-[1.25rem] border border-[var(--outline-variant)]/20 bg-[var(--surface)] p-4 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)]"
               >
                 <div className="flex items-start gap-3">
                   <div className="min-w-0 flex-1">
@@ -155,6 +163,8 @@ export function ExerciseRecordsListPage() {
                   <MetricValue metric={item.primaryMetric} />
                 </div>
               </Link>
+              <Link to={`/exercise-guide/${encodeURIComponent(item.profileId)}`} aria-label={t('catalog.guide')} className="absolute bottom-2 right-2 flex h-11 w-11 items-center justify-center rounded-full text-[var(--primary)]"><BookOpen size={20} /></Link>
+              </div>
             )
           })}
           {visibleItems.length === 0 ? (

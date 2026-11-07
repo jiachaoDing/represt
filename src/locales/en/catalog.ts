@@ -1,0 +1,33 @@
+import generated from '../../domain/exercise-catalog/generated.json'
+const catalog = {
+  muscleNames: Object.fromEntries(generated.muscles.map((node) => [node.id, node.name])),
+  guide: 'Exercise guide', noGuide: 'No guide available yet.', englishFallback: 'This guide is currently available in English.',
+  description: 'Description', instructions: 'Steps', cues: 'Technique cues', commonMistakes: 'Common mistakes', sources: 'Sources and licenses',
+  builtin: 'Built-in', custom: 'Custom', legacy: 'Saved personal version', readOnly: 'Built-in exercises are read-only. Make a copy to edit.',
+  copy: 'Copy exercise', copyName: '{{name}} (copy)', hide: 'Archive / hide', restore: 'Restore', reset: 'Reset saved override',
+  showHidden: 'Show archived exercises', aliases: 'Aliases (comma-separated)', notes: 'Personal guide / notes',
+  primaryEquipment: 'Equipment', setup: 'Setup', mechanic: 'Mechanic', laterality: 'Sides', loadMode: 'Load meaning',
+  muscles: 'Primary and secondary muscles', primary: 'Primary', secondary: 'Secondary', defaults: 'New exercise defaults',
+  repsRange: 'Suggested reps', increment: 'Weight increment', noDefault: 'Not specified', unclassified: 'Unclassified',
+  compound: 'Compound', isolation: 'Isolation', bilateral: 'Bilateral', unilateral: 'Unilateral', alternating: 'Alternating',
+  external: 'External resistance', bodyweight: 'Bodyweight / added weight', assisted: 'Assistance (higher is easier)', variable: 'Variable resistance',
+  allEquipment: 'All equipment', allPatterns: 'All movement patterns', allMechanics: 'All mechanics',
+  primaryMuscles: 'Primary muscles', secondaryMuscles: 'Secondary muscles', failed: 'Unable to load exercise.',
+  sets: 'Sets', rest: 'Rest (seconds)', repsMin: 'Minimum reps', repsMax: 'Maximum reps', incrementKg: 'Increment (kg)',
+  invalidDefaults: 'Enter valid defaults; minimum reps must not exceed maximum reps.',
+  duplicateHint: 'An exercise already uses this name; saving keeps this exercise separate.',
+  modified: 'Adapted for RepRest',
+  patterns: {
+    unspecified: 'Unspecified', horizontal_push: 'Horizontal push', vertical_push: 'Vertical push', horizontal_pull: 'Horizontal pull', vertical_pull: 'Vertical pull',
+    squat: 'Squat', hinge: 'Hip hinge', lunge: 'Lunge', carry: 'Carry', rotation: 'Rotation', anti_rotation: 'Anti-rotation', anti_extension: 'Anti-extension',
+    anti_lateral_flexion: 'Anti-lateral flexion', anti_flexion: 'Anti-flexion', elbow_flexion: 'Elbow flexion', elbow_extension: 'Elbow extension',
+    wrist_flexion: 'Wrist flexion', wrist_extension: 'Wrist extension', knee_flexion: 'Knee flexion', knee_extension: 'Knee extension',
+    hip_abduction: 'Hip abduction', hip_adduction: 'Hip adduction', shoulder_abduction: 'Shoulder abduction', shoulder_flexion: 'Shoulder flexion',
+    scapular_elevation: 'Scapular elevation', hip_extension: 'Hip extension', spinal_extension: 'Spinal extension', spinal_flexion: 'Spinal flexion',
+    plantar_flexion: 'Plantar flexion', dorsiflexion: 'Dorsiflexion', gait: 'Locomotion', other: 'Other',
+  },
+  equipment: { ...generated.equipmentNames, bodyweight: 'Bodyweight', barbell: 'Barbell', dumbbell: 'Dumbbell', cable: 'Cable', machine: 'Machine', kettlebell: 'Kettlebell',
+    resistance_band: 'Resistance band', smith_machine: 'Smith machine', ez_bar: 'EZ bar', bench: 'Bench', incline_bench: 'Incline bench',
+    flat_bench: 'Flat bench', pullup_bar: 'Pull-up bar', mat: 'Mat', dip_bars: 'Dip bars', ab_wheel: 'Ab wheel', other: 'Other' },
+}
+export default catalog

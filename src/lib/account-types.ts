@@ -5,6 +5,7 @@ import type { AccountDataDelta, AccountSnapshot } from './account-sync-data'
 export type AccountSession = { token: string; user: { id: string; email: string } }
 export type AccountPlans = { plans: Array<WorkoutPlan & { exercises: PlanExercise[] }>; cycle: TrainingCycle | null }
 export type AccountCloudState = {
+  supportedDataSchemaVersion?: number
   version: number
   syncedAt: string | null
   baseline: AccountPlans | null

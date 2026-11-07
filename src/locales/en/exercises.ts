@@ -1,5 +1,7 @@
+import generatedNames from '../../domain/exercise-catalog/names.json'
 const exercises = {
   names: {
+    ...generatedNames.en,
     barbellBenchPress: 'Barbell bench press',
     dumbbellBenchPress: 'Dumbbell bench press',
     inclineBarbellBenchPress: 'Incline barbell bench press',

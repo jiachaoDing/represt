@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "tsx --env-file-if-exists=.env src/main.ts",
-    "build": "node scripts/package-plugin.mjs && tsc -p tsconfig.json",
+    "build": "node scripts/package-catalog.mjs && node scripts/package-plugin.mjs && tsc -p tsconfig.json",
     "start": "node --env-file-if-exists=.env dist/main.js",
     "test": "vitest run",
     "test:integration": "tsx test/integration.ts",

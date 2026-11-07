@@ -2,7 +2,7 @@ import { backupTableNames, type FullDataBackup } from './full-data-backup'
 
 type TableName = (typeof backupTableNames)[number]
 export type AccountDataDelta = {
-  schemaVersion: 1
+  schemaVersion: 1 | 2
   exportedAt: string
   tables: Partial<Record<TableName, { upserts: unknown[]; deletes: string[] }>>
   localStorage?: Record<string, string>
@@ -48,7 +48,7 @@ export async function describeAccountSnapshot(backup: FullDataBackup, version: n
 }
 
 export function buildAccountDelta(backup: FullDataBackup, current: AccountSnapshot, baseline: AccountSnapshot) {
-  const delta: AccountDataDelta = { schemaVersion: 1, exportedAt: backup.exportedAt, tables: {} }
+  const delta: AccountDataDelta = { schemaVersion: backup.schemaVersion, exportedAt: backup.exportedAt, tables: {} }
   for (const name of backupTableNames) {
     const previous = new Map(Object.entries(baseline.tables[name]))
     const next = new Map(Object.entries(current.tables[name]))

@@ -40,7 +40,7 @@ const timestamp = z.string().refine((s) => Number.isFinite(Date.parse(s)), 'Use 
 export const snapshotSchema = z.object({
   version: versionSchema, syncedAt: timestamp.nullable(),
   snapshotVersion: versionSchema.nullable().optional(), pending: z.boolean().optional(),
-  backup: z.object({ schemaVersion: z.literal(1), exportedAt: timestamp, tables: z.object({
+  backup: z.object({ schemaVersion: z.union([z.literal(1), z.literal(2)]), exportedAt: timestamp, tables: z.object({
     workoutSessions: rows, performedExercises: rows, setRecords: rows, sessionPlanItems: rows, exerciseProfiles: rows,
   }) }),
 })
@@ -56,7 +56,7 @@ export const totalsSchema = z.object({
 })
 const outputFields = {
   version: versionSchema, syncedAt: timestamp,
-  schemaVersion: z.literal(1), exportedAt: z.string(),
+  schemaVersion: z.union([z.literal(1), z.literal(2)]), exportedAt: z.string(),
   range: z.object({ from: dateKey, to: dateKey, dateBasis: z.literal('sessionDateKey'), weekStartsOn: z.literal('Monday') }),
   status: z.enum(['ok', 'no_matching_data', 'insufficient_history']),
   coverage: z.object({ firstTrainingDate: dateKey.nullable(), lastTrainingDate: dateKey.nullable(),

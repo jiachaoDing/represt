@@ -34,12 +34,12 @@ export function AccountSyncSettings() {
 
   function report(error: unknown) {
     const code = error instanceof AccountApiError ? error.code : 'REQUEST_FAILED'
-    const key = code === 'NETWORK' ? 'network' : code === 'NOT_CONFIGURED' ? 'notConfigured' :
+    const key = code === 'SERVER_UPGRADE_REQUIRED' || code === 'CLIENT_UPGRADE_REQUIRED' ? 'upgradeRequired' : code === 'NETWORK' ? 'network' : code === 'NOT_CONFIGURED' ? 'notConfigured' :
       ['VERSION_CONFLICT', 'LOCAL_CHANGED', 'OPERATION_CONFLICT'].includes(code) ? 'changed' :
       ['UNAUTHORIZED', 'INVALID_EMAIL_OR_PASSWORD', 'SESSION_EXPIRED'].includes(code) ? 'credentials' :
       code === 'USER_ALREADY_EXISTS' || code === 'USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL' ? 'exists' :
       ['DATA_TOO_LARGE', 'PLANS_TOO_LARGE'].includes(code) ? 'tooLarge' : code === 'NO_DATA' ? 'noData' : 'failed'
-    setError(t(`accountSync.errors.${key}`))
+    setError(t(key === 'upgradeRequired' ? 'dataUpgradeRequired' : `accountSync.errors.${key}`))
     void triggerHaptic('error')
   }
 

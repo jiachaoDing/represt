@@ -24,6 +24,7 @@ coverage
 /mcp-server/assets/*.bin
 /sites/represt-mcp/
 .asset-work
+/tmp/openexercisedb.db
 *.apk
 *.aab
 *.ap_

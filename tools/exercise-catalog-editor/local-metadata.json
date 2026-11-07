@@ -1,0 +1,21 @@
+{
+  "weightedPushUp": {"primaryEquipment":"bodyweight","setup":[],"mechanic":"compound","laterality":"bilateral","movementPattern":"horizontal_push","loadMode":"bodyweight"},
+  "squat": {"primaryEquipment":"bodyweight","setup":[],"mechanic":"compound","laterality":"bilateral","movementPattern":"squat","loadMode":"bodyweight"},
+  "lunge": {"primaryEquipment":"barbell","setup":[],"mechanic":"compound","laterality":"unilateral","movementPattern":"lunge","loadMode":"external"},
+  "bulgarianSplitSquat": {"primaryEquipment":"dumbbell","setup":["flat_bench"],"mechanic":"compound","laterality":"unilateral","movementPattern":"lunge","loadMode":"external"},
+  "walkingLunge": {"primaryEquipment":"dumbbell","setup":[],"mechanic":"compound","laterality":"alternating","movementPattern":"lunge","loadMode":"external"},
+  "seatedCalfRaise": {"primaryEquipment":"machine","setup":[],"mechanic":"isolation","laterality":"bilateral","movementPattern":"plantar_flexion","loadMode":"external"},
+  "shrug": {"primaryEquipment":null,"setup":[],"mechanic":"isolation","laterality":"bilateral","movementPattern":"scapular_elevation","loadMode":"external"},
+  "skullCrusher": {"primaryEquipment":"barbell","setup":["flat_bench"],"mechanic":"isolation","laterality":"bilateral","movementPattern":"elbow_extension","loadMode":"external"},
+  "russianTwist": {"primaryEquipment":null,"setup":[],"mechanic":"compound","laterality":"alternating","movementPattern":"rotation","loadMode":"external"},
+  "sitUp": {"primaryEquipment":"bodyweight","setup":["mat"],"mechanic":"compound","laterality":"bilateral","movementPattern":"spinal_flexion","loadMode":"bodyweight"},
+  "dumbbellFly": {"primaryEquipment":"dumbbell","setup":["flat_bench"],"mechanic":"isolation","laterality":"bilateral","movementPattern":"horizontal_push","loadMode":"external"},
+  "smithMachineBenchPress": {"primaryEquipment":"smith_machine","setup":["flat_bench"],"mechanic":"compound","laterality":"bilateral","movementPattern":"horizontal_push","loadMode":"external"},
+  "dumbbellStepUp": {"primaryEquipment":"dumbbell","setup":["plyo_box"],"mechanic":"compound","laterality":"unilateral","movementPattern":"lunge","loadMode":"external"},
+  "uprightBarbellRow": {"primaryEquipment":"barbell","setup":[],"mechanic":"compound","laterality":"bilateral","movementPattern":"shoulder_abduction","loadMode":"external"},
+  "cableOverheadTricepsExtension": {"primaryEquipment":"cable","setup":[],"mechanic":"isolation","laterality":"bilateral","movementPattern":"elbow_extension","loadMode":"external"},
+  "cableHammerCurl": {"primaryEquipment":"cable","setup":[],"mechanic":"isolation","laterality":"bilateral","movementPattern":"elbow_flexion","loadMode":"external"},
+  "highCableCurl": {"primaryEquipment":"cable","setup":[],"mechanic":"isolation","laterality":"bilateral","movementPattern":"elbow_flexion","loadMode":"external"},
+  "obliqueCrunch": {"primaryEquipment":"bodyweight","setup":["mat"],"mechanic":"isolation","laterality":"unilateral","movementPattern":"spinal_flexion","loadMode":"bodyweight"},
+  "exerciseBallCrunch": {"primaryEquipment":"bodyweight","setup":["swiss_ball"],"mechanic":"isolation","laterality":"bilateral","movementPattern":"spinal_flexion","loadMode":"bodyweight"}
+}

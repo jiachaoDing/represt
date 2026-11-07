@@ -26,7 +26,7 @@ it.each(['missing_table', 'unsupported_version', 'invalid_timestamp', 'wrong_ver
   'rejects %s snapshot metadata without returning a partial successful aggregate', async (fault) => {
     const snapshot = trainingFixture()
     if (fault === 'missing_table') Reflect.deleteProperty(snapshot.backup.tables, 'performedExercises')
-    if (fault === 'unsupported_version') Object.assign(snapshot.backup, { schemaVersion: 2 })
+    if (fault === 'unsupported_version') Object.assign(snapshot.backup, { schemaVersion: 3 })
     if (fault === 'invalid_timestamp') snapshot.syncedAt = 'not a timestamp'
     if (fault === 'wrong_version') snapshot.version = 8
     const api = new ReprestApi('https://api.example', 'test-token', async () => Response.json(snapshot))
