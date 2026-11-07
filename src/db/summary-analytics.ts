@@ -193,8 +193,7 @@ function getTrainingTimeSegments(records: SetRecord[]) {
   })
 }
 
-function getExerciseIdentity(exercise: Pick<PerformedExercise, 'catalogExerciseId' | 'id' | 'name' | 'exerciseProfileId'>) {
-  if (exercise.exerciseProfileId) return exercise.exerciseProfileId
+function getExerciseIdentity(exercise: Pick<PerformedExercise, 'catalogExerciseId' | 'id' | 'name'>) {
   const catalogExerciseId = resolveCatalogExerciseId(exercise)
   if (catalogExerciseId) {
     return `catalog:${catalogExerciseId}`
@@ -211,11 +210,11 @@ function getExerciseMeasurementType(
 }
 
 function getExerciseMuscleDistribution(
-  exercise: Pick<PerformedExercise, 'catalogExerciseId' | 'name' | 'exerciseProfileId'>,
+  exercise: Pick<PerformedExercise, 'catalogExerciseId' | 'name'>,
   exerciseProfilesById: Map<string, ExerciseProfile>,
 ): MuscleDistributionItem[] | null {
   const profile = exerciseProfilesById.get(getExerciseProfileId(exercise))
-  if (profile && !profile.preferencesOnly) {
+  if (profile) {
     return profile.muscleDistribution
   }
 

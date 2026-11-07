@@ -18,8 +18,6 @@ function toTransferPlan(plan: Awaited<ReturnType<typeof listPlansWithExercises>>
   return {
     planName: plan.name,
     exercises: plan.exercises.map((exercise) => ({
-      exerciseProfileId: exercise.exerciseProfileId ?? getExerciseProfileId(exercise),
-      loadMode: exercise.loadMode,
       name: exercise.name,
       catalogExerciseId: exercise.catalogExerciseId ?? null,
       measurementType: exercise.measurementType ?? null,
@@ -44,10 +42,8 @@ async function buildExerciseModelExport(plans: PlanWithExercises[]) {
     const profileId = getExerciseProfileId(exercise)
     const profile = profilesById.get(profileId)
 
-    if (profile && !profile.preferencesOnly) {
+    if (profile && !profile.deletedAt) {
       modelsByProfileId.set(profileId, {
-        ...profile,
-        profileId,
         name: profile.name,
         catalogExerciseId: profile.catalogExerciseId ?? null,
         movementPattern: profile.movementPattern ?? fallbackMovementPattern,
@@ -58,8 +54,6 @@ async function buildExerciseModelExport(plans: PlanWithExercises[]) {
 
     if (!resolveCatalogExerciseId(exercise)) {
       modelsByProfileId.set(profileId, {
-        profileId,
-        measurementType: exercise.measurementType,
         name: exercise.name,
         catalogExerciseId: null,
         movementPattern: fallbackMovementPattern,
@@ -90,7 +84,6 @@ export async function buildPlanTemplateExport(planIds: string[]) {
   }
 
   return {
-    formatVersion: 2,
     plans: selectedPlans.map(toTransferPlan),
     cycle: [],
     exerciseModels: await buildExerciseModelExport(selectedPlans),
@@ -126,50 +119,54 @@ export async function buildTrainingCycleExport() {
     }) ?? []
 
   return {
-    formatVersion: 2,
     plans: exportedPlans.map(toTransferPlan),
     cycle: cycleSlots,
     exerciseModels: await buildExerciseModelExport(exportedPlans),
   } satisfies PlanTransferData
 }
 
-async function prepareExerciseModels(models: PlanTransferExerciseModel[]) {
-  const existing = await db.exerciseProfiles.toArray()
-  const references = new Map<string, string>()
-  const profiles: ExerciseProfile[] = []
-  const timestamp = new Date().toISOString()
-  for (const model of models) {
-    const sourceId = model.profileId ?? getExerciseProfileId(model)
-    const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(JSON.stringify(model)))
-    const signature = Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, '0')).join('')
-    const same = [...existing, ...profiles].find((profile) => profile.source === 'custom' && profile.importSignature === signature)
-    if (same) { references.set(sourceId, same.id); continue }
-    const id = !sourceId.startsWith('catalog:') && !existing.some((profile) => profile.id === sourceId)
-      ? sourceId : `custom:${crypto.randomUUID()}`
-    profiles.push({ ...model, id, catalogExerciseId: null, source: 'custom',
-      copiedFromProfileId: model.copiedFromProfileId ?? (sourceId.startsWith('catalog:') ? sourceId : null),
-      importSignature: signature, updatedAt: timestamp })
-    references.set(sourceId, id)
+async function importExerciseModels(models: PlanTransferExerciseModel[]) {
+  if (models.length === 0) {
+    return
   }
-  return { profiles, references }
+
+  const timestamp = new Date().toISOString()
+  const profiles = models.map((model) => {
+    const catalogExerciseId = resolveCatalogExerciseId(model)
+    const profileId = getExerciseProfileId({
+      catalogExerciseId,
+      name: model.name,
+    })
+
+    return {
+      catalogExerciseId,
+      id: profileId,
+      muscleDistribution: model.muscleDistribution,
+      movementPattern: model.movementPattern,
+      name: model.name,
+      source: catalogExerciseId ? undefined : 'custom',
+      updatedAt: timestamp,
+    } satisfies ExerciseProfile
+  })
+
+  await db.exerciseProfiles.bulkPut(profiles)
 }
 
 export async function importPlanTransferData(data: PlanTransferData) {
-  const { profiles, references } = await prepareExerciseModels(data.exerciseModels)
-  return db.transaction('rw', db.workoutPlans, db.planExercises, db.exerciseProfiles, db.trainingCycles, async () => {
-    const createdPlans: PlanWithExercises[] = []
-    await db.exerciseProfiles.bulkPut(profiles)
-    for (const plan of data.plans) {
-      const inputs = plan.exercises.map((exercise) => {
-        const sourceId = exercise.exerciseProfileId ?? getExerciseProfileId(exercise)
-        const profileId = references.get(sourceId) ?? exercise.exerciseProfileId
-        return { ...exercise, exerciseProfileId: profileId,
-          catalogExerciseId: profileId ? profileId.startsWith('catalog:') ? profileId.slice(8) : null : exercise.catalogExerciseId }
-      })
-      const createdPlan = await createPlanWithExercises(plan.planName, inputs)
-      if (createdPlan) createdPlans.push(createdPlan)
+  const createdPlans: PlanWithExercises[] = []
+
+  await importExerciseModels(data.exerciseModels)
+
+  for (const plan of data.plans) {
+    const createdPlan = await createPlanWithExercises(plan.planName, plan.exercises)
+    if (createdPlan) {
+      createdPlans.push(createdPlan)
     }
-    if (data.cycle.length > 0) await setTrainingCycleSlots(data.cycle.map((index) => index === null ? null : createdPlans[index]?.id ?? null))
-    return createdPlans
-  })
+  }
+
+  if (data.cycle.length > 0) {
+    await setTrainingCycleSlots(data.cycle.map((planIndex) => (planIndex === null ? null : createdPlans[planIndex]?.id ?? null)))
+  }
+
+  return createdPlans
 }

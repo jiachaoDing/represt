@@ -1,7 +1,4 @@
-import catalog from './catalog'
 const common = {
-  catalog,
-  dataUpgradeRequired: 'Update the sync service and app to support exercise data v2 before syncing.',
   accountSync: {
     title: 'Account & sync', description: 'Manually sync data for AI analysis and plan edits',
     loginDescription: 'Register or sign in with your email. Training data stays on this device; signing in does not upload or download data.',

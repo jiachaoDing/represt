@@ -72,9 +72,6 @@ export function formatWeightKg(weightKg: number, t: TFunction, unit = getStoredW
     value: formatWeightUnitNumber(convertKgToWeightUnit(weightKg, unit), unit),
   })
 }
-export function formatWeightIncrement(weightKg: number, t: TFunction, unit = getStoredWeightUnitPreference()) {
-  return t(`common.weight.${unit}`, { value: formatNumber(convertKgToWeightUnit(weightKg, unit)) })
-}
 
 export function formatWeightRepsVolume(volumeKg: number, t: TFunction, unit = getStoredWeightUnitPreference()) {
   return t(`common.weightVolume.${unit}`, {

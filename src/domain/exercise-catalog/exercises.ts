@@ -1,7 +1,6 @@
 import type { Exercise } from './types'
-import generated from './generated.json'
 
-const legacyExercises: Exercise[] = [
+export const exercises: Exercise[] = [
   {
     id: 'barbellBenchPress',
     slug: 'barbell-bench-press',
@@ -977,10 +976,4 @@ const legacyExercises: Exercise[] = [
     measurementType: 'reps',
     sourceUrls: ['https://github.com/wrkout/exercises.json/blob/master/exercises/Exercise_Ball_Crunch/exercise.json'],
   },
-]
-
-const metadata = generated.metadata as Record<string, Partial<Exercise>>
-export const exercises: Exercise[] = [
-  ...legacyExercises.map((exercise) => ({ ...exercise, ...metadata[exercise.id], measurementType: exercise.measurementType })),
-  ...generated.additions as Exercise[],
 ]

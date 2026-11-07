@@ -2,19 +2,6 @@
 
 轻量化动作库与 i18n 管理工具。它是一个静态 HTML 工具，不接入主 App 路由，不需要后端。
 
-| 维护输入 | 用途 |
-| --- | --- |
-| `upstream-selection.json` | 固定 OpenExerciseDB 版本、提交与 SQLite SHA-256；维护既有 ID 映射、新增动作和显式变式 |
-| `local-metadata.json` | 保存本地分类修正；重新导入时覆盖对应生成值 |
-| `import-report.json` | 列出新增动作、不支持的记录组合、未建立上游映射的原有动作及重复候选 |
-| `src/domain/exercise-catalog/legacy-v21.json` | 冻结兼容快照，不随目录或文案更新重新生成 |
-
-在仓库根目录，将所选 SQLite 发布物保存到 `tmp/openexercisedb.db`，运行 `npm run catalog:import`。导入器先验证校验和，再生成元数据、英文讲解、中英文新增名称、署名与审核清单。原有训练记录模式和肌群记账比例由应用保留；不支持的记录组合不进入新增目录。
-
-更新来源版本时先审核选择清单和分类修正，保留已发布 ID；运行 `npm run catalog:diff -- <基准提交>` 输出新增、移除及字段变更报告，默认基准为 HEAD。再运行 `npm run catalog:check`、`npm test` 与 `npm run build`。MCP 的目录子集由其构建脚本生成，禁止独立手改。
-
-编辑器读取完整生成数据，保存动作时保留新增元数据。写回时保持目录拼装代码和类型文件，并同时保存生成数据、本地修正及 i18n；来源归属和讲解文本仍由导入流程维护。
-
 ## 打开方式
 
 直接在浏览器中打开：
@@ -29,7 +16,7 @@ tools/exercise-catalog-editor/index.html
 
 - Catalog Tab
   - 按 Exercises / Measurement Types / Movement Patterns / Muscle Groups 拆分为四个子页面。
-  - exercises 支持新增、编辑和关键词搜索；已载入的发布 ID 不可改名或删除，尚未写回的新动作可删除。
+  - exercises 支持新增、编辑、删除和关键词搜索。
   - measurement types 支持新增、编辑、删除和关键词搜索。
   - movement patterns 支持新增、编辑、删除和关键词搜索。
   - muscle groups 支持新增、编辑、删除和关键词搜索，并维护 en / zh-CN group name。

@@ -10,8 +10,6 @@ export const dateKey = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine((s) => {
 }, 'Use a real calendar date in YYYY-MM-DD format')
 const timestamp = z.string().refine((s) => Number.isFinite(Date.parse(s)), 'Use an ISO timestamp')
 export const exerciseFields = {
-  exerciseProfileId: z.string().min(1).max(300).nullish(),
-  loadMode: z.enum(['external', 'bodyweight', 'assisted', 'variable']).nullish(),
   name, catalogExerciseId: id.nullable(),
   measurementType: z.enum(['weightReps', 'reps', 'duration', 'distance', 'weightDistance', 'leftRightWeightReps', 'durationReps']),
   targetSets: z.number().int().positive(), restSeconds: nonnegative.int(),

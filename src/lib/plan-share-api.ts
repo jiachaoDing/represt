@@ -11,7 +11,7 @@ export type SharedPlanSummary = {
 
 export type SharedPlanDetail = {
   code: string
-  schemaVersion: 1 | 2
+  schemaVersion: 1
   app: 'RepRest'
   kind: SharedPlanKind
   title: string
@@ -115,7 +115,7 @@ export async function createSharedPlan(data: PlanTransferData, kind: SharedPlanK
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        schemaVersion: 2,
+        schemaVersion: 1,
         app: 'RepRest',
         kind,
         locale,

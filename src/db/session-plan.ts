@@ -8,7 +8,6 @@ import { getTodaySessionDateKey } from '../lib/session-date-key'
 import { resolveCatalogExerciseId } from '../lib/exercise-name'
 import { getMeasurementTypeForExercise } from '../lib/set-record-measurement'
 import { db } from './app-db'
-import { prepareExerciseReference } from './exercise-models'
 import { getTodayTrainingCycleDay, getTrainingCycle } from './training-cycle'
 import { getPerformedExerciseForPlanItem, getSessionPlanItems, getSessionRecord, nowIso } from './session-core'
 import type { SessionPlanItemInput, PlanSyncResult, PlanSyncStatus } from './session-types'
@@ -23,9 +22,7 @@ function normalizeSessionPlanItem(input: Partial<SessionPlanItemInput>) {
 
   return {
     name,
-    exerciseProfileId: input.exerciseProfileId ?? null,
-    loadMode: input.loadMode ?? null,
-    catalogExerciseId: resolveCatalogExerciseId({ ...input, name }),
+    catalogExerciseId: resolveCatalogExerciseId({ name, catalogExerciseId: input.catalogExerciseId }),
     measurementType,
     targetSets: Math.max(1, Math.floor(input.targetSets ?? 4)),
     restSeconds: Math.max(0, Math.floor(input.restSeconds ?? 90)),
@@ -43,8 +40,6 @@ function createPlanExerciseSnapshot(
 ): SessionPlanExerciseSnapshot {
   return {
     name: exercise.name,
-    exerciseProfileId: exercise.exerciseProfileId,
-    loadMode: exercise.loadMode,
     catalogExerciseId: exercise.catalogExerciseId ?? null,
     measurementType: exercise.measurementType ?? null,
     targetSets: exercise.targetSets,
@@ -82,8 +77,6 @@ async function buildPlanItemsFromPlan(
     sourcePlanSnapshot: createPlanExerciseSnapshot(exercise),
     origin: 'plan',
     name: exercise.name,
-    exerciseProfileId: exercise.exerciseProfileId,
-    loadMode: exercise.loadMode,
     catalogExerciseId: exercise.catalogExerciseId ?? null,
     measurementType: exercise.measurementType ?? null,
     targetSets: exercise.targetSets,
@@ -296,11 +289,7 @@ export async function addTemporarySessionPlanItems(
   const nextOrder = planItems.reduce((maxOrder, item) => Math.max(maxOrder, item.order), -1) + 1
   const timestamp = nowIso()
 
-  const prepared = await Promise.all(inputs.map(async (input) => {
-    const reference = await prepareExerciseReference({ ...input, name: input.name ?? '' })
-    return { ...reference.defaults, ...input, ...reference }
-  }))
-  const nextPlanItems = prepared.map((input, index) => {
+  const nextPlanItems = inputs.map((input, index) => {
     const normalized = normalizeSessionPlanItem(input)
 
     return {
@@ -311,8 +300,6 @@ export async function addTemporarySessionPlanItems(
       sourcePlanSnapshot: null,
       origin: 'manual',
       name: normalized.name,
-      exerciseProfileId: normalized.exerciseProfileId,
-      loadMode: normalized.loadMode,
       catalogExerciseId: normalized.catalogExerciseId,
       measurementType: normalized.measurementType,
       targetSets: normalized.targetSets,
@@ -355,8 +342,6 @@ export async function copySessionPlanItemAfter(sessionId: string, planItemId: st
       sourcePlanSnapshot: source.sourcePlanSnapshot ?? null,
       origin: source.origin ?? 'manual',
       name: source.name,
-      exerciseProfileId: source.exerciseProfileId,
-      loadMode: source.loadMode,
       catalogExerciseId: source.catalogExerciseId ?? null,
       measurementType: source.measurementType ?? null,
       targetSets: source.targetSets,
@@ -410,8 +395,7 @@ export async function replaceSessionPlanItem(
     throw new Error('当前动作不存在。')
   }
 
-  const reference = await prepareExerciseReference({ ...input, name: input.name ?? '' })
-  const normalized = normalizeSessionPlanItem({ ...reference.defaults, ...input, ...reference })
+  const normalized = normalizeSessionPlanItem(input)
   const timestamp = nowIso()
   const nextPlanItem: SessionPlanItem = {
     id: crypto.randomUUID(),
@@ -421,8 +405,6 @@ export async function replaceSessionPlanItem(
     sourcePlanSnapshot: null,
     origin: 'manual',
     name: normalized.name,
-    exerciseProfileId: normalized.exerciseProfileId,
-    loadMode: normalized.loadMode,
     catalogExerciseId: normalized.catalogExerciseId,
     measurementType: normalized.measurementType,
     targetSets: normalized.targetSets,

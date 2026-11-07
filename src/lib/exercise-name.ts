@@ -1,19 +1,17 @@
 import type { TFunction } from 'i18next'
 
 import { exercises } from '../domain/exercise-catalog'
-import legacy from '../domain/exercise-catalog/legacy-v21.json'
+import enExercises from '../locales/en/exercises'
+import zhCNExercises from '../locales/zh-CN/exercises'
+import { supportedLanguages, type SupportedLanguage } from '../i18n/languages'
 
 type ExerciseNameSource = {
-  exerciseProfileId?: string | null
   catalogExerciseId?: string | null
   displayNameOverride?: string | null
   name?: string | null
 }
 
 export type ExerciseNameValue = {
-  exerciseProfileId?: string | null
-  loadMode?: import('../domain/exercise-catalog').LoadMode | null
-  measurementType?: import('../domain/exercise-catalog').MeasurementType | null
   name: string
   catalogExerciseId: string | null
 }
@@ -89,6 +87,10 @@ const exactNameMatchedExerciseIds = new Set([
   'deadBug',
   'birdDog',
 ])
+const primaryNamesByLanguage: Record<SupportedLanguage, Record<string, string>> = {
+  'zh-CN': zhCNExercises.names,
+  en: enExercises.names,
+}
 
 function normalizePrimaryName(value: string) {
   return value.normalize('NFKC').trim().toLowerCase().replace(/\s+/g, ' ')
@@ -96,7 +98,8 @@ function normalizePrimaryName(value: string) {
 
 const catalogIdsByNormalizedPrimaryName = new Map<string, Set<string>>()
 
-  for (const [name, exerciseId] of Object.entries(legacy.names)) {
+for (const language of supportedLanguages) {
+  for (const [exerciseId, name] of Object.entries(primaryNamesByLanguage[language])) {
     if (!exerciseIds.has(exerciseId) || !exactNameMatchedExerciseIds.has(exerciseId)) {
       continue
     }
@@ -110,13 +113,12 @@ const catalogIdsByNormalizedPrimaryName = new Map<string, Set<string>>()
     current.add(exerciseId)
     catalogIdsByNormalizedPrimaryName.set(normalizedName, current)
   }
+}
 
 function getLocalizedExerciseName(t: TFunction, catalogExerciseId: string) {
-  const value = t(`names.${catalogExerciseId}`, {
-    ns: 'exercises',
+  const value = t(`exercises:names.${catalogExerciseId}`, {
     defaultValue: '',
     fallbackLng: false,
-    nsSeparator: false,
   })
 
   return typeof value === 'string' && value.trim() ? value : null
@@ -134,9 +136,6 @@ export function findCatalogExerciseIdByExactName(name: string) {
 }
 
 export function resolveCatalogExerciseId(input: ExerciseNameSource) {
-  if (input.exerciseProfileId) {
-    return input.exerciseProfileId.startsWith('catalog:') ? input.exerciseProfileId.slice(8) : null
-  }
   const catalogExerciseId = input.catalogExerciseId?.trim()
   if (catalogExerciseId && exerciseIds.has(catalogExerciseId)) {
     return catalogExerciseId

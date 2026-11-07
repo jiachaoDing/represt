@@ -159,6 +159,6 @@ it('migrates existing set records with their historical measurement type', async
   await legacy.table('setRecords').put(record)
   legacy.close()
   await db.open()
-  expect(await db.setRecords.get(record.id)).toEqual({ ...record, measurementType: 'duration', exerciseProfileId: 'catalog:plank' })
-  expect(db.verno).toBe(22)
+  expect(await db.setRecords.get(record.id)).toEqual({ ...record, measurementType: 'duration' })
+  expect(db.verno).toBe(21)
 })

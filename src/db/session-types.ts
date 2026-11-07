@@ -64,7 +64,7 @@ export type PlanSyncResult = {
   removedCount: number
 }
 
-export type SessionPlanItemInput = import('../models/types').ExerciseReference & {
+export type SessionPlanItemInput = {
   name: string
   catalogExerciseId?: string | null
   measurementType?: MeasurementType | null

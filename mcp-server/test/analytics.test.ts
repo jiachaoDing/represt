@@ -7,7 +7,7 @@ import { exercises } from '../../src/domain/exercise-catalog/exercises.js'
 
 describe('actual training aggregates', () => {
   it('packages exactly the authoritative application catalog without browser dependencies', () => {
-    expect(catalog).toEqual(exercises.map(({ id, measurementType, muscleDistribution, loadMode }) => ({ id, measurementType, muscleDistribution, loadMode })))
+    expect(catalog).toEqual(exercises.map(({ id, measurementType, muscleDistribution }) => ({ id, measurementType, muscleDistribution })))
   })
   it('counts actual sets rather than empty sessions, targets or cached completion counters', () => {
     const result = aggregateTraining(trainingFixture(), query())

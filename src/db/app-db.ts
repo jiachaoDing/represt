@@ -1,8 +1,8 @@
 import Dexie, { type EntityTable } from 'dexie'
 
-import { type MeasurementType } from '../domain/exercise-catalog'
-import { legacyCatalog, resolveLegacyCatalogId as resolveCatalogExerciseId, legacyMeasurement as getMeasurementTypeForExercise } from '../domain/exercise-catalog/legacy'
-import { normalizeExerciseTables, type ExerciseTables } from './exercise-identity'
+import { exercises, type MeasurementType } from '../domain/exercise-catalog'
+import { resolveCatalogExerciseId } from '../lib/exercise-name'
+import { getMeasurementTypeForExercise } from '../lib/set-record-measurement'
 import type {
   ExerciseProfile,
   PerformedExercise,
@@ -23,7 +23,7 @@ export type SharedPlanRecord = {
   expiresAt: string | null
 }
 
-const catalogExercisesById = new Map(legacyCatalog.map((exercise) => [exercise.id, exercise]))
+const catalogExercisesById = new Map(exercises.map((exercise) => [exercise.id, exercise]))
 
 function normalizeExerciseRecordName(name: string) {
   return name.normalize('NFKC').trim().toLowerCase().replace(/\s+/g, ' ')
@@ -34,7 +34,7 @@ function getDefaultMeasurementType(catalogExerciseId: string | null): Measuremen
     return 'weightReps'
   }
 
-  return (catalogExercisesById.get(catalogExerciseId)?.measurementType ?? 'weightReps') as MeasurementType
+  return catalogExercisesById.get(catalogExerciseId)?.measurementType ?? 'weightReps'
 }
 
 function getMigrationProfileId(input: { catalogExerciseId?: string | null; id?: string; name?: string | null }) {
@@ -160,18 +160,6 @@ class RepRestDatabase extends Dexie {
       await tx.table<SetRecord>('setRecords').toCollection().modify((record) => {
         record.measurementType ??= types.get(record.performedExerciseId) ?? 'weightReps'
       })
-    })
-    this.version(22).stores({
-      planExercises: 'id, planId, exerciseProfileId, [planId+order]',
-      sessionPlanItems: 'id, sessionId, planExerciseId, sourcePlanId, exerciseProfileId, [sessionId+order]',
-      performedExercises: 'id, sessionId, planItemId, restEndsAt, exerciseProfileId, [sessionId+order]',
-    }).upgrade(async (tx) => {
-      const names = ['exerciseProfiles', 'planExercises', 'sessionPlanItems', 'performedExercises', 'setRecords'] as const
-      const tables = Object.fromEntries(await Promise.all(names.map(async (name) => [name, await tx.table(name).toArray()]))) as ExerciseTables
-      const normalized = normalizeExerciseTables(tables)
-      for (const name of names) await tx.table(name).bulkPut(normalized[name])
-      // In-flight requests retain their original payload and operation ID.
-      await tx.table('accountSync').toCollection().modify((state) => { if (!state.pending) state.snapshot = null })
     })
   }
 }

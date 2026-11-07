@@ -2,14 +2,7 @@ import type {
   MeasurementType,
   MovementPattern,
   MuscleDistributionItem,
-  ExerciseMetadata,
-  LoadMode,
 } from '../domain/exercise-catalog'
-
-export interface ExerciseReference {
-  exerciseProfileId?: string | null
-  loadMode?: LoadMode | null
-}
 
 export type SessionStatus = 'pending' | 'active' | 'completed'
 
@@ -35,7 +28,7 @@ export interface TrainingCycle {
   updatedAt: string
 }
 
-export interface PlanExercise extends ExerciseReference {
+export interface PlanExercise {
   id: string
   planId: string
   name: string
@@ -62,7 +55,7 @@ export interface WorkoutSession {
   lastSyncedPlanUpdatedAt?: string | null
 }
 
-export interface SessionPlanExerciseSnapshot extends ExerciseReference {
+export interface SessionPlanExerciseSnapshot {
   name: string
   catalogExerciseId?: string | null
   measurementType?: MeasurementType | null
@@ -77,7 +70,7 @@ export interface SessionPlanExerciseSnapshot extends ExerciseReference {
   order: number
 }
 
-export interface SessionPlanItem extends ExerciseReference {
+export interface SessionPlanItem {
   id: string
   sessionId: string
   planExerciseId: string | null
@@ -99,7 +92,7 @@ export interface SessionPlanItem extends ExerciseReference {
   createdAt: string
 }
 
-export interface PerformedExercise extends ExerciseReference {
+export interface PerformedExercise {
   id: string
   sessionId: string
   planItemId: string | null
@@ -125,7 +118,7 @@ export interface PerformedExercise extends ExerciseReference {
   restEndsAt: string | null
 }
 
-export interface SetRecord extends ExerciseReference {
+export interface SetRecord {
   id: string
   sessionId: string
   performedExerciseId: string
@@ -140,7 +133,7 @@ export interface SetRecord extends ExerciseReference {
   distanceMeters: number | null
 }
 
-export interface ExerciseProfile extends ExerciseMetadata {
+export interface ExerciseProfile {
   id: string
   catalogExerciseId?: string | null
   deletedAt?: string | null
@@ -149,12 +142,6 @@ export interface ExerciseProfile extends ExerciseMetadata {
   movementPattern?: MovementPattern | null
   muscleDistribution: MuscleDistributionItem[]
   source?: 'custom'
-  aliases?: string[]
-  notes?: string
-  copiedFromProfileId?: string | null
-  importSignature?: string
-  legacyOverride?: boolean
-  preferencesOnly?: boolean
   updatedAt: string
 }
 

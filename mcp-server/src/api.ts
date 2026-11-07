@@ -53,6 +53,6 @@ export class ReprestApi {
   program() { return this.request('/api/account/plans', stateSchema) }
   history(query: URLSearchParams) { return this.request(`/api/account/data?${query}`, historyPageSchema) }
   save(body: unknown) {
-    return this.request('/api/account/plans', z.object({ version: versionSchema, pending: z.boolean() }), { ...(body as Record<string, unknown>), dataSchemaVersion: 2 })
+    return this.request('/api/account/plans', z.object({ version: versionSchema, pending: z.boolean() }), body)
   }
 }

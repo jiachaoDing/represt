@@ -1,7 +1,4 @@
-import catalog from './catalog'
 const common = {
-  catalog,
-  dataUpgradeRequired: '请先升级同步服务和应用，使其支持 v2 动作数据后再同步。',
   accountSync: {
     title: '账号与同步', description: '手动同步数据，供 AI 分析和调整计划',
     loginDescription: '用邮箱注册或登录。训练数据仍保存在本机，登录不会自动上传或下载。',

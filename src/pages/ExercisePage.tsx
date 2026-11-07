@@ -2,8 +2,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
-import { ArrowRight, BookOpen, Copy, Pause, Plus } from 'lucide-react'
-import { getExerciseProfileId } from '../db/exercise-records'
+import { ArrowRight, Copy, Pause, Plus } from 'lucide-react'
 
 import { ExerciseHero } from '../components/exercise/ExerciseHero'
 import { ExerciseLatestRecordCard } from '../components/exercise/ExerciseLatestRecordCard'
@@ -271,7 +270,7 @@ export function ExercisePage() {
         title={displayExerciseName ?? t('exercise.pageTitle')}
         backFallbackTo="/"
         backViewTransition={false}
-        actions={<>{detail && <button aria-label={t('catalog.guide')} onClick={() => navigate(`/exercise-guide/${encodeURIComponent(getExerciseProfileId(detail.exercise))}`, { state: { backTo: `/exercise/${id}` } })} className="flex h-11 w-11 items-center justify-center rounded-full text-[var(--primary)]"><BookOpen size={21} /></button>}{headerActions}</>}
+        actions={headerActions}
       />
 
       {error ? (

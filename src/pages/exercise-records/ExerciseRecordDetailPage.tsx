@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { Edit3, BookOpen } from 'lucide-react'
+import { Edit3 } from 'lucide-react'
 
 import { PageHeader } from '../../components/ui/PageHeader'
 import { getDisplayExerciseName } from '../../lib/exercise-name'
@@ -63,11 +63,11 @@ export function ExerciseRecordDetailPage({ profileId }: { profileId: string }) {
         actions={detail ? (
           <button
             type="button"
-            onClick={() => navigate(detail.profileId.startsWith('catalog:') ? `/exercise-guide/${encodeURIComponent(detail.profileId)}` : `/summary/exercises/catalog/${encodeURIComponent(editToken)}`)}
+            onClick={() => navigate(`/summary/exercises/catalog/${encodeURIComponent(editToken)}`)}
             className="flex h-11 w-11 items-center justify-center rounded-full text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/10"
-            aria-label={t(detail.profileId.startsWith('catalog:') ? 'catalog.guide' : 'summary.exerciseRecords.editModel')}
+            aria-label={t('summary.exerciseRecords.editModel')}
           >
-            {detail.profileId.startsWith('catalog:') ? <BookOpen size={20} aria-hidden="true" /> : <Edit3 size={20} aria-hidden="true" />}
+            <Edit3 size={20} strokeWidth={2.3} aria-hidden="true" />
           </button>
         ) : null}
       />

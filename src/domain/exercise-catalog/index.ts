@@ -3,8 +3,6 @@ export { measurementTypes } from './measurement-types'
 export { movementPatterns } from './movement-patterns'
 export { muscleGroups } from './muscles'
 export { needsReview } from './needs-review'
-export { getTrainingDefaults, loadModes } from './metadata'
-export type { ExerciseMetadata, ExerciseGuide, ExerciseProvenance, TrainingDefaults, LoadMode, MuscleNode } from './metadata'
 export type {
   Exercise,
   ExerciseCatalogReviewItem,

@@ -9,7 +9,6 @@ import {
   ExerciseRecordsPage,
   ExercisePickerPage,
   ExercisePage,
-  ExerciseGuidePage,
   QuickTimerPage,
   ReminderSettingsPage,
   SchedulePage,
@@ -31,7 +30,6 @@ export const router = createBrowserRouter([
     path: '/',
     element: <AppLayout />,
     children: [
-      { path: 'exercise-guide/:profileId', element: lazyRoute(<ExerciseGuidePage />), handle: { titleKey: 'catalog.guide' } },
       {
         index: true,
         element: lazyRoute(<SchedulePage />),

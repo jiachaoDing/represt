@@ -12,7 +12,7 @@ const initialData = {
   },
 }
 
-const measurementTypes = ['weightReps', 'reps', 'duration', 'distance', 'weightDistance', 'leftRightWeightReps', 'durationReps']
+const measurementTypes = ['weightReps', 'reps', 'duration', 'distance', 'weightDistance']
 const movementPatterns = ['push', 'pull', 'legs', 'core', 'fullBody', 'conditioning']
 const defaultMuscleGroups = ['chest', 'back', 'shoulders', 'arms', 'core', 'legs', 'fullBody']
 const exportPaths = [
@@ -563,7 +563,6 @@ function saveExercise(event) {
   }
 
   const exercise = {
-    ...state.catalog.exercises.find((item) => item.id === state.editingExerciseId),
     id: document.getElementById('exercise-id').value.trim(),
     slug: document.getElementById('exercise-slug').value.trim(),
     muscleDistribution,
@@ -574,10 +573,6 @@ function saveExercise(event) {
 
   if (!exercise.id || !exercise.slug) {
     window.alert('id and slug are required.')
-    return
-  }
-  if (state.loadedExerciseIds?.has(state.editingExerciseId) && exercise.id !== state.editingExerciseId) {
-    window.alert('Published exercise IDs are immutable. Create a separate exercise instead.')
     return
   }
 
@@ -612,10 +607,6 @@ function editExercise(id) {
 }
 
 function deleteExercise(id) {
-  if (state.loadedExerciseIds?.has(id)) {
-    window.alert('Published exercise IDs must be retained for historical references.')
-    return
-  }
   if (!window.confirm(`Delete exercise "${id}" from catalog? i18n entries will remain until edited separately.`)) return
   state.catalog.exercises = state.catalog.exercises.filter((exercise) => exercise.id !== id)
   if (state.editingExerciseId === id) state.editingExerciseId = null
@@ -1186,14 +1177,9 @@ async function selectProjectDirectory() {
 async function loadFromProjectFiles() {
   try {
     const files = await readProjectFiles(exportPaths)
-    const dataFiles = await readProjectFiles(['src/domain/exercise-catalog/generated.json', 'src/domain/exercise-catalog/names.json'])
-    state.generatedData = JSON.parse(dataFiles['src/domain/exercise-catalog/generated.json'])
-    state.generatedNames = JSON.parse(dataFiles['src/domain/exercise-catalog/names.json'])
-    state.sourceFiles = files
     state.catalog = {
       exercises: parseCatalogSource(files['src/domain/exercise-catalog/exercises.ts'], 'exercises'),
     }
-    state.loadedExerciseIds = new Set(state.catalog.exercises.map((exercise) => exercise.id))
     state.measurementTypes = parseCatalogSource(files['src/domain/exercise-catalog/measurement-types.ts'], 'measurementTypes')
     state.movementPatterns = parseCatalogSource(files['src/domain/exercise-catalog/movement-patterns.ts'], 'movementPatterns')
     state.muscleGroups = parseCatalogSource(files['src/domain/exercise-catalog/muscles.ts'], 'muscleGroups')
@@ -1220,14 +1206,6 @@ async function loadFromProjectFiles() {
 
 async function writeToProjectFiles() {
   try {
-    if (!state.sourceFiles) throw new Error('Load the project before writing; source metadata must be preserved.')
-    const legacyIds = new Set(state.baseExercises.map((exercise) => exercise.id))
-    const data = { ...state.generatedData,
-      metadata: Object.fromEntries(state.catalog.exercises.filter((exercise) => legacyIds.has(exercise.id)).map((exercise) => [exercise.id, exercise])),
-      additions: state.catalog.exercises.filter((exercise) => !legacyIds.has(exercise.id)),
-    }
-    await writeProjectFile('src/domain/exercise-catalog/generated.json', JSON.stringify(data, null, 2) + '\n')
-    await writeProjectFile('tools/exercise-catalog-editor/local-metadata.json', JSON.stringify(Object.fromEntries(state.catalog.exercises.map((exercise) => [exercise.id, exercise])), null, 2) + '\n')
     for (const path of exportPaths) {
       await writeProjectFile(path, generateExport(path))
     }
@@ -1393,13 +1371,6 @@ async function getFileHandle(path, options = {}) {
 }
 
 function parseCatalogSource(source, name) {
-  if (name === 'exercises' && source.includes('const legacyExercises')) {
-    const code = source.slice(0, source.indexOf('const metadata'))
-      .replace(/^\s*import[^\n]*\r?\n/gm, '')
-      .replace(/const\s+legacyExercises\s*:\s*Exercise\[\]\s*=/, 'return')
-    state.baseExercises = Function(code)()
-    return [...state.baseExercises.map((exercise) => ({ ...exercise, ...state.generatedData.metadata[exercise.id], measurementType: exercise.measurementType })), ...state.generatedData.additions]
-  }
   const code = source
     .replace(/^\s*import\s+type[^\n]*\r?\n/gm, '')
     .replace(/\s+as\s+const\s*$/m, '')
@@ -1409,10 +1380,9 @@ function parseCatalogSource(source, name) {
 
 function parseLocaleSource(source, name) {
   const code = source
-    .replace(/^\s*import[^\n]*\r?\n/gm, '')
     .replace(new RegExp(`const\\s+${name}\\s*=`), 'return')
     .replace(new RegExp(`export\\s+default\\s+${name}\\s*$`), '')
-  return Function('generatedNames', code)(state.generatedNames)
+  return Function(code)()
 }
 
 function generateExport(path) {
@@ -1423,11 +1393,10 @@ function generateExport(path) {
     return `export const movementPatterns = ${formatArray(state.movementPatterns, 0)} as const\n`
   }
   if (path.endsWith('domain/exercise-catalog/types.ts')) {
-    return state.sourceFiles?.[path] ?? generateTypesFile()
+    return generateTypesFile()
   }
   if (path.endsWith('domain/exercise-catalog/exercises.ts')) {
-    if (!state.sourceFiles?.[path]) throw new Error('Load project sources before exporting the catalog.')
-    return state.sourceFiles[path]
+    return `import type { Exercise } from './types'\n\nexport const exercises: Exercise[] = ${formatArrayOfObjects(state.catalog.exercises)}\n`
   }
   if (path.endsWith('domain/exercise-catalog/muscles.ts')) {
     return `export const muscleGroups = ${formatArray(state.muscleGroups, 0)} as const\n`
@@ -1456,9 +1425,7 @@ function formatLocaleFile(namespace, bundle) {
   if (namespace === 'exercises') {
     blocks.push(`  movementPatterns: ${formatObject(safeBundle.movementPatterns || { names: {}, descriptions: {}, aliases: {} }, 2)}`)
   }
-  const locale = Object.keys(state.i18n).find((key) => state.i18n[key]?.[namespace] === bundle)
-  const content = `const ${namespace} = {\n${blocks.join(',\n')},\n}\n\nexport default ${namespace}\n`
-  return namespace === 'exercises' ? `import generatedNames from '../../domain/exercise-catalog/names.json'\n` + content.replace('  names: {', `  names: {\n    ...generatedNames[${formatString(locale || 'en')}],`) : content
+  return `const ${namespace} = {\n${blocks.join(',\n')},\n}\n\nexport default ${namespace}\n`
 }
 
 function generateTypesFile() {
@@ -1504,7 +1471,7 @@ function formatObject(value, level = 0) {
   const entries = Object.entries(value || {})
   if (!entries.length) return '{}'
   return `{\n${entries
-    .map(([key, item]) => `${childIndent}${/^[a-zA-Z_$][\w$]*$/.test(key) ? key : formatString(key)}: ${formatValue(item, level + 1)}`)
+    .map(([key, item]) => `${childIndent}${key}: ${formatValue(item, level + 1)}`)
     .join(',\n')},\n${indent}}`
 }
 

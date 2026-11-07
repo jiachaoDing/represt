@@ -7,15 +7,13 @@ import type { MeasurementType } from '../domain/exercise-catalog'
 import { resolveCatalogExerciseId } from '../lib/exercise-name'
 import { buildSetRecordValuesForMeasurement, getMeasurementTypeForExercise } from '../lib/set-record-measurement'
 import { db } from './app-db'
-import { prepareExerciseReference } from './exercise-models'
-import type { ExerciseReference } from '../models/types'
 import { clearPlanFromTrainingCycle } from './training-cycle'
 
 export type PlanWithExercises = WorkoutPlan & {
   exercises: PlanExercise[]
 }
 
-export type PlanExerciseInput = ExerciseReference & {
+export type PlanExerciseInput = {
   name: string
   catalogExerciseId?: string | null
   measurementType?: MeasurementType | null
@@ -32,8 +30,6 @@ export type PlanExerciseInput = ExerciseReference & {
 type SessionPlanPlanSource = Pick<
   SessionPlanItem,
   | 'name'
-  | 'exerciseProfileId'
-  | 'loadMode'
   | 'catalogExerciseId'
   | 'measurementType'
   | 'targetSets'
@@ -59,7 +55,7 @@ function normalizePlanName(name: string) {
 
 function normalizeExercise(input: Partial<PlanExerciseInput>) {
   const name = input.name?.trim() || '未命名动作'
-  const catalogExerciseId = resolveCatalogExerciseId({ ...input, name })
+  const catalogExerciseId = resolveCatalogExerciseId({ name, catalogExerciseId: input.catalogExerciseId })
   const measurementType = getMeasurementTypeForExercise({
     catalogExerciseId,
     measurementType: input.measurementType ?? null,
@@ -76,8 +72,6 @@ function normalizeExercise(input: Partial<PlanExerciseInput>) {
 
   return {
     name,
-    exerciseProfileId: input.exerciseProfileId ?? null,
-    loadMode: input.loadMode ?? null,
     catalogExerciseId,
     measurementType,
     targetSets: Math.max(1, Math.floor(input.targetSets ?? 4)),
@@ -100,8 +94,6 @@ function buildPlanExercisesFromSessionPlanItems(
       id: crypto.randomUUID(),
       planId,
       name: item.name,
-      exerciseProfileId: item.exerciseProfileId,
-      loadMode: item.loadMode,
       catalogExerciseId: item.catalogExerciseId ?? null,
       measurementType: item.measurementType ?? null,
       targetSets: item.targetSets,
@@ -207,11 +199,7 @@ export async function createPlanWithExercises(
     createdAt: timestamp,
     updatedAt: timestamp,
   }
-  const prepared = await Promise.all(exerciseInputs.map(async (input) => {
-    const reference = await prepareExerciseReference({ ...input, name: input.name ?? '' })
-    return { ...reference.defaults, ...input, ...reference }
-  }))
-  const exercises = prepared.map((input, order) => ({
+  const exercises = exerciseInputs.map((input, order) => ({
     id: crypto.randomUUID(),
     planId: plan.id,
     order,
@@ -259,11 +247,7 @@ export async function createPlanExercises(
   const exercises = await db.planExercises.where('planId').equals(planId).toArray()
   const nextOrder = exercises.reduce((maxOrder, exercise) => Math.max(maxOrder, exercise.order), -1) + 1
 
-  const prepared = await Promise.all(inputs.map(async (input) => {
-    const reference = await prepareExerciseReference({ ...input, name: input.name ?? '' })
-    return { ...reference.defaults, ...input, ...reference }
-  }))
-  const nextExercises = prepared.map((input, index) => ({
+  const nextExercises = inputs.map((input, index) => ({
     id: crypto.randomUUID(),
     planId,
     order: nextOrder + index,
@@ -289,8 +273,6 @@ export async function copyPlanExerciseAfter(planId: string, exerciseId: string) 
       id: crypto.randomUUID(),
       planId,
       name: source.name,
-      exerciseProfileId: source.exerciseProfileId,
-      loadMode: source.loadMode,
       catalogExerciseId: source.catalogExerciseId ?? null,
       measurementType: source.measurementType ?? null,
       targetSets: source.targetSets,
@@ -341,8 +323,6 @@ export async function importPlanExercises(targetPlanId: string, sourceExerciseId
     id: crypto.randomUUID(),
     planId: targetPlanId,
     name: exercise.name,
-    exerciseProfileId: exercise.exerciseProfileId,
-    loadMode: exercise.loadMode,
     catalogExerciseId: exercise.catalogExerciseId ?? null,
     measurementType: exercise.measurementType ?? null,
     targetSets: exercise.targetSets,
@@ -398,9 +378,7 @@ export async function updatePlanExercise(
     return
   }
 
-  const combined = { ...current, ...input }
-  const reference = await prepareExerciseReference(combined)
-  await db.planExercises.update(exerciseId, normalizeExercise({ ...combined, ...reference }))
+  await db.planExercises.update(exerciseId, normalizeExercise({ ...current, ...input }))
   await touchPlan(current.planId)
 }
 

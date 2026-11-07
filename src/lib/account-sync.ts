@@ -5,8 +5,6 @@ import { backupWithPlans, chooseAccountPlans, plansFromBackup, planSignature } f
 import { notifyPlansChanged } from './plan-change-events'
 import { accountDeltaIsEmpty, buildAccountDelta, describeAccountSnapshot } from './account-sync-data'
 import type { AccountPlans, AccountRestore, AccountSession, AccountSyncState } from './account-types'
-import { normalizeExerciseTables, type ExerciseTables } from '../db/exercise-identity'
-import type { ExerciseProfile } from '../models/types'
 
 export class AccountPlanConflict extends Error {
   readonly local: AccountPlans
@@ -25,7 +23,7 @@ async function applyPending(session: AccountSession, state: AccountSyncState) {
   let receipt: { version: number; syncedAt: string }
   try { receipt = await uploadAccountData(session, pending) }
   catch (error) {
-    if (error instanceof AccountApiError && ['VERSION_CONFLICT', 'OPERATION_CONFLICT', 'CLIENT_UPGRADE_REQUIRED'].includes(error.code)) {
+    if (error instanceof AccountApiError && ['VERSION_CONFLICT', 'OPERATION_CONFLICT'].includes(error.code)) {
       await db.transaction('rw', db.accountSync, async () => {
         const current = await db.accountSync.get(session.user.id)
         if (current?.pending?.operationId === pending.operationId) await db.accountSync.update(state.id, { pending: null })
@@ -55,9 +53,6 @@ async function applyPending(session: AccountSession, state: AccountSyncState) {
       if (exercises.length) await db.planExercises.bulkPut(exercises)
     }
     if (target.cycle) await db.trainingCycles.put(target.cycle)
-    for (const profile of pending.backup.tables.exerciseProfiles as ExerciseProfile[]) {
-      if (!await db.exerciseProfiles.get(profile.id)) await db.exerciseProfiles.put(profile)
-    }
     await db.accountSync.put({ id: state.id, pending: null, baseline: target, syncedAt: receipt.syncedAt, snapshot })
   })
   if (localChanged) throw new AccountApiError('LOCAL_CHANGED')
@@ -100,7 +95,6 @@ export async function syncAccount(session: AccountSession, resolution?: AccountR
     if (saved?.pending) return await applyPending(session, saved)
     const cloud = await fetchAccountPlans(session)
     const backup = await buildFullDataBackup()
-    if ((cloud.supportedDataSchemaVersion ?? 1) < 2) throw new AccountApiError('SERVER_UPGRADE_REQUIRED')
     const local = plansFromBackup(backup)
     const signature = planSignature(local)
     let choice = chooseAccountPlans(local, cloud.plans, saved?.baseline ?? null)
@@ -109,10 +103,8 @@ export async function syncAccount(session: AccountSession, resolution?: AccountR
       choice = resolution.source
     }
     if (choice === 'conflict') throw new AccountPlanConflict(local, cloud.plans!, cloud.version)
-    const selected = choice === 'cloud' ? cloud.plans! : local
-    const withPlans = backupWithPlans(backup, selected)
-    const upload = { ...withPlans, tables: normalizeExerciseTables(withPlans.tables as unknown as ExerciseTables) as unknown as typeof backup.tables }
-    const target = plansFromBackup(upload)
+    const target = choice === 'cloud' ? cloud.plans! : local
+    const upload = backupWithPlans(backup, target)
     const snapshot = await describeAccountSnapshot(upload, cloud.snapshotVersion ?? 0)
     const delta = saved?.snapshot && saved.snapshot.version === cloud.snapshotVersion
       ? { baseSnapshotVersion: saved.snapshot.version, changes: buildAccountDelta(upload, snapshot, saved.snapshot) } : undefined

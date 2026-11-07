@@ -1,7 +1,6 @@
 import type { measurementTypes } from './measurement-types'
 import type { movementPatterns } from './movement-patterns'
 import type { muscleGroups } from './muscles'
-import type { ExerciseMetadata } from './metadata'
 
 export type MeasurementType = (typeof measurementTypes)[number]
 
@@ -14,7 +13,7 @@ export type MuscleDistributionItem = {
   ratio: number
 }
 
-export type Exercise = ExerciseMetadata & {
+export type Exercise = {
   id: string
   slug: string
   muscleDistribution: MuscleDistributionItem[]

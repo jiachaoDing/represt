@@ -7,15 +7,13 @@ const id = z.string().min(1)
 const optionalText = z.string().nullish()
 const sessionSchema = z.object({ id, sessionDateKey: dateKey, plannedPlanId: optionalText, plannedPlanNameSnapshot: optionalText })
 const exerciseSchema = z.object({ id, sessionId: id, name: z.string(), catalogExerciseId: optionalText,
-  exerciseProfileId: optionalText, loadMode: optionalText,
   measurementType: z.unknown().optional(), planItemId: optionalText, sourcePlanSnapshot: z.unknown().optional() })
 const setSchema = z.object({ id, sessionId: id, performedExerciseId: id, completedAt: z.string().refine((s) => Number.isFinite(Date.parse(s))),
-  exerciseProfileId: optionalText, loadMode: optionalText,
   setNumber: z.unknown().optional(),
   measurementType: z.unknown().optional(), rightWeightKg: z.unknown().optional(), rightReps: z.unknown().optional(),
   weightKg: z.unknown().optional(), reps: z.unknown().optional(), durationSeconds: z.unknown().optional(), distanceMeters: z.unknown().optional() })
 const distributionSchema = z.array(z.object({ muscleGroupId: id, ratio: z.number().finite().positive().max(1) })).min(1)
-const historicalSchema = z.object({ measurementType: z.unknown().optional(), catalogExerciseId: z.unknown().optional(), exerciseProfileId: optionalText })
+const historicalSchema = z.object({ measurementType: z.unknown().optional(), catalogExerciseId: z.unknown().optional() })
 export const normalizeName = (s: string) => s.normalize('NFKC').trim().toLowerCase().replace(/\s+/g, ' ')
 export type Measurement = z.infer<typeof measurementSchema> | 'unknown'
 export type Session = z.infer<typeof sessionSchema>
@@ -70,9 +68,8 @@ export function prepareFacts(snapshot: TrainingSnapshot) {
     const historical = historicalSchema.safeParse(exercise.sourcePlanSnapshot)
     const catalogExerciseId = exercise.catalogExerciseId?.trim() ||
       (historical.success && typeof historical.data.catalogExerciseId === 'string' ? historical.data.catalogExerciseId.trim() : null)
-    const exerciseKey = exercise.exerciseProfileId || (historical.success ? historical.data.exerciseProfileId : null) || (catalogExerciseId ? `catalog:${catalogExerciseId}`
+    const exerciseKey = catalogExerciseId ? `catalog:${catalogExerciseId}`
       : normalizeName(exercise.name) ? `name:${normalizeName(exercise.name)}` : `exercise:${exercise.id}`
-    )
     const profile = profiles.get(exerciseKey)
     const entry = catalogById.get(catalogExerciseId ?? '')
     // Historical per-performance metadata wins over a subsequently edited profile.
@@ -81,7 +78,7 @@ export function prepareFacts(snapshot: TrainingSnapshot) {
     const parsedMeasurement = measurementSchema.safeParse(measurement)
     const measurementType = parsedMeasurement.success ? parsedMeasurement.data : 'unknown'
     if (measurementType === 'unknown') warn('UNKNOWN_MEASUREMENT', 'Sets with unknown measurement types count as completed sets but contribute no numeric metrics.')
-    const rawDistribution = profile && !profile.preferencesOnly ? profile.muscleDistribution : entry?.muscleDistribution
+    const rawDistribution = profile ? profile.muscleDistribution : entry?.muscleDistribution
     const parsedDistribution = distributionSchema.safeParse(rawDistribution)
     const distribution = parsedDistribution.success &&
       new Set(parsedDistribution.data.map((d) => d.muscleGroupId)).size === parsedDistribution.data.length &&
@@ -94,7 +91,6 @@ export function prepareFacts(snapshot: TrainingSnapshot) {
       ? ['weightKg', 'distanceMeters'] : measurementType === 'reps' ? ['reps'] : measurementType === 'duration'
         ? ['durationSeconds'] : measurementType === 'distance' ? ['distanceMeters'] : []
     for (const key of allowed as Array<'weightKg' | 'reps' | 'durationSeconds' | 'distanceMeters'>) {
-      if (key === 'weightKg' && (set.loadMode === 'assisted' || set.loadMode === 'variable')) continue
       const value = set[key]
       if (typeof value === 'number' && Number.isFinite(value) && value >= 0 && (key !== 'reps' || Number.isInteger(value))) values[key] = value
       else warn('MISSING_METRICS', 'Missing/invalid metric fields were omitted; planned defaults never fill actual values.')
@@ -104,7 +100,7 @@ export function prepareFacts(snapshot: TrainingSnapshot) {
       if (Number.isFinite(product)) values.weightRepsKg = product
     }
     if (measurementType === 'leftRightWeightReps') {
-      const rightWeight = set.loadMode !== 'assisted' && set.loadMode !== 'variable' && typeof set.rightWeightKg === 'number' && Number.isFinite(set.rightWeightKg) && set.rightWeightKg >= 0 ? set.rightWeightKg : undefined
+      const rightWeight = typeof set.rightWeightKg === 'number' && Number.isFinite(set.rightWeightKg) && set.rightWeightKg >= 0 ? set.rightWeightKg : undefined
       const rightReps = typeof set.rightReps === 'number' && Number.isInteger(set.rightReps) && set.rightReps >= 0 ? set.rightReps : undefined
       if (rightWeight === undefined || rightReps === undefined) warn('MISSING_METRICS', 'Missing/invalid metric fields were omitted; planned defaults never fill actual values.')
       if (rightWeight !== undefined) values.weightKg = (values.weightKg ?? 0) + rightWeight
@@ -118,7 +114,7 @@ export function prepareFacts(snapshot: TrainingSnapshot) {
       if (Number.isFinite(product)) values.loadDistanceKgMeters = product
     }
     facts.push({ set, session, exercise: { ...exercise, catalogExerciseId }, exerciseKey, measurementType, distribution,
-      distributionSource: distribution ? profile && !profile.preferencesOnly ? 'profile' : 'catalog' : 'unknown', values })
+      distributionSource: distribution ? profile ? 'profile' : 'catalog' : 'unknown', values })
   }
   if (facts.some((f) => f.distributionSource === 'profile')) {
     warn('PROFILE_CLASSIFICATION', 'Profile muscle classifications are from the synced snapshot; historical per-set muscle snapshots do not exist.')

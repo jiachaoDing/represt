@@ -27,8 +27,6 @@ jobs:
 
       - name: Build
         run: npm run build
-      - name: Check exercise data
-        run: npm run catalog:check
 
       - name: Test
         run: npm test

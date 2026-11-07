@@ -1,6 +1,5 @@
 export const loadCalendarPage = () => import('../pages/CalendarPage')
 export const loadExercisePage = () => import('../pages/ExercisePage')
-export const loadExerciseGuidePage = () => import('../pages/ExerciseGuidePage')
 export const loadExercisePickerPage = () => import('../pages/ExercisePickerPage')
 export const loadExerciseRecordsPage = () => import('../pages/ExerciseRecordsPage')
 export const loadQuickTimerPage = () => import('../pages/QuickTimerPage')
