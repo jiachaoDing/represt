@@ -812,6 +812,7 @@ const common = {
     latestRecord: '上一组记录',
     prWeight: 'PR 重量',
     prReps: 'PR 次数',
+    currentSetGuidance: '本组建议',
     openQuickTimer: '打开快捷计时器',
     closeQuickTimer: '返回动作内容',
     quickTimerTitle: '快捷计时器',

@@ -67,7 +67,7 @@ it('provides separate left and right default weights in the exercise editor', ()
   expect(html.replace(/<[^>]+>/g, '')).not.toContain('当前：')
 })
 
-it('shows saved-mode PR fields and displays winning bilateral records as left/right values', () => {
+it('shows only the current set guidance in place of defaults and PR fields', () => {
   const detail: ScheduleExerciseDetail = {
     session: { id: 'session', sessionDateKey: '2026-10-27', createdAt: '2026-10-27T10:00:00Z', status: 'active' },
     exercise: { id: 'exercise', sessionId: 'session', planExerciseId: null, name: 'Custom', createdAt: '2026-10-27T10:00:00Z',
@@ -78,17 +78,21 @@ it('shows saved-mode PR fields and displays winning bilateral records as left/ri
       rightWeightKg: 20, reps: 10, rightReps: 14, durationSeconds: null, distanceMeters: null },
     previousSetRecord: null,
     personalRecords: { weightKg: 60, reps: 12, weightSides: [40, 20], repsSides: [10, 14] },
+    trainingTarget: { weightKg: 30, reps: 11 },
   }
   const render = () => renderToStaticMarkup(createElement(I18nextProvider, { i18n: translator },
     createElement(ExerciseHero, { detail, now: Date.parse('2026-10-27T11:00:00Z') }))).replace(/<[^>]+>/g, '')
-  const bilateral = render()
-  expect(bilateral).toContain(translator.t('exercise.prWeight'))
-  expect(bilateral).toContain('40/20')
-  expect(bilateral).toContain('10/14')
-  detail.latestSetRecord!.measurementType = 'duration'
-  expect(render()).not.toContain(translator.t('exercise.prWeight'))
-  expect(render()).not.toContain(translator.t('exercise.prReps'))
-  detail.latestSetRecord!.measurementType = 'reps'
-  expect(render()).not.toContain(translator.t('exercise.prWeight'))
-  expect(render()).toContain(translator.t('exercise.prReps'))
+  const guidance = render()
+  expect(guidance).toContain(translator.t('exercise.currentSetGuidance'))
+  expect(guidance).toContain('30 kg × 11')
+  expect(guidance).not.toContain(translator.t('exercise.prWeight'))
+  expect(guidance).not.toContain(translator.t('exercise.prReps'))
+  expect(guidance).not.toContain(translator.t('plans.defaultWeight'))
+  expect(guidance).not.toContain(translator.t('plans.defaultReps'))
+  expect(detail.personalRecords).toEqual({ weightKg: 60, reps: 12, weightSides: [40, 20], repsSides: [10, 14] })
+  detail.exercise.measurementType = 'leftRightWeightReps'
+  detail.trainingTarget = { weightKg: 30, rightWeightKg: 20, reps: 11, rightReps: 10 }
+  expect(render()).toContain('30/20 kg × 11/10')
+  detail.exercise.completedSets = 4
+  expect(render()).not.toContain(translator.t('exercise.currentSetGuidance'))
 })

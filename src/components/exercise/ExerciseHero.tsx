@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 
 import { quickEaseTransition } from '../motion/motion-tokens'
 import { getExerciseHeroData, getExerciseHeroTone } from '../../lib/exercise-hero'
-import { formatRepsValues, formatWeightValues, getMeasurementTypeForExercise, getSetRecordMeasurementType } from '../../lib/set-record-measurement'
+import { formatRepsValues, formatWeightValues, getMeasurementTypeForExercise } from '../../lib/set-record-measurement'
 import type { ScheduleExerciseDetail } from '../../db/sessions'
 
 type ExerciseHeroProps = {
@@ -15,21 +15,10 @@ export function ExerciseHero({ detail, now }: ExerciseHeroProps) {
   const { t } = useTranslation()
   const reduceMotion = useReducedMotion()
   const hero = getExerciseHeroData(detail, now, t)
-  const measurementType = detail.latestSetRecord
-    ? getSetRecordMeasurementType(detail.latestSetRecord, getMeasurementTypeForExercise(detail.exercise))
-    : getMeasurementTypeForExercise(detail.exercise)
+  const measurementType = getMeasurementTypeForExercise(detail.exercise)
   const bilateral = measurementType === 'leftRightWeightReps'
-  const { defaultWeightKg, defaultReps, defaultRightWeightKg, defaultRightReps } = detail.exercise
-  const { weightKg: prWeightKg, reps: prReps, weightSides, repsSides } = detail.personalRecords
-  const showWeight =
-    (measurementType === 'weightReps' || measurementType === 'weightDistance' || bilateral) && (defaultWeightKg != null || (bilateral && defaultRightWeightKg != null))
-  const showReps =
-    (measurementType === 'weightReps' || measurementType === 'reps' || measurementType === 'durationReps' || bilateral) && (defaultReps != null || (bilateral && defaultRightReps != null))
-  const showPrWeight =
-    (measurementType === 'weightReps' || measurementType === 'weightDistance' || bilateral) && prWeightKg != null
-  const showPrReps =
-    (measurementType === 'weightReps' || measurementType === 'reps' || measurementType === 'durationReps' || bilateral) && prReps != null
-  const showPrSeparator = (showWeight || showReps) && (showPrWeight || showPrReps)
+  const target = detail.trainingTarget
+  const showWeight = target && (target.weightKg != null || (bilateral && target.rightWeightKg != null))
 
   if (!hero) {
     return null
@@ -84,51 +73,14 @@ export function ExerciseHero({ detail, now }: ExerciseHeroProps) {
             <p className="mt-4 text-[16px] text-[var(--on-surface-variant)]">{hero.supporting}</p>
           ) : null}
 
-          {showWeight || showReps || showPrWeight || showPrReps ? (
-            <dl className="mx-auto mt-5 grid min-h-15 max-w-sm grid-flow-col auto-cols-fr items-end gap-x-3">
-              {showWeight ? (
-                <div className="min-w-0">
-                  <dt className="flex items-end justify-center text-[12px] text-[var(--on-surface-variant)]">{t('plans.defaultWeight')}</dt>
-                  <dd className="mt-1 text-[16px] font-medium tabular-nums text-[var(--on-surface)]">
-                    {formatWeightValues(defaultWeightKg, bilateral ? defaultRightWeightKg : null, t)}
-                  </dd>
-                </div>
-              ) : null}
-              {showReps ? (
-                <div className="min-w-0">
-                  <dt className="flex items-end justify-center text-[12px] text-[var(--on-surface-variant)]">{t('plans.defaultReps')}</dt>
-                  <dd className="mt-1 text-[16px] font-medium tabular-nums text-[var(--on-surface)]">
-                    {formatRepsValues(defaultReps, bilateral ? defaultRightReps : null, t)}
-                  </dd>
-                </div>
-              ) : null}
-              {showPrWeight ? (
-                <div className="relative min-w-0">
-                  <dt className="flex items-end justify-center text-[12px] text-[var(--on-surface-variant)]">
-                    {showPrSeparator ? (
-                      <span aria-hidden="true" className="absolute top-[3px] bottom-1 -left-1.5 w-px -translate-x-1/2 -skew-x-12 bg-[var(--outline-variant)]" />
-                    ) : null}
-                    {t('exercise.prWeight')}
-                  </dt>
-                  <dd className="mt-1 text-[16px] font-medium tabular-nums text-[var(--on-surface)]">
-                    {formatWeightValues(weightSides?.[0] ?? prWeightKg, weightSides?.[1], t)}
-                  </dd>
-                </div>
-              ) : null}
-              {showPrReps ? (
-                <div className="relative min-w-0">
-                  <dt className="flex items-end justify-center text-[12px] text-[var(--on-surface-variant)]">
-                    {showPrSeparator && !showPrWeight ? (
-                      <span aria-hidden="true" className="absolute top-[3px] bottom-1 -left-1.5 w-px -translate-x-1/2 -skew-x-12 bg-[var(--outline-variant)]" />
-                    ) : null}
-                    {t('exercise.prReps')}
-                  </dt>
-                  <dd className="mt-1 text-[16px] font-medium tabular-nums text-[var(--on-surface)]">
-                    {formatRepsValues(repsSides?.[0] ?? prReps, repsSides?.[1], t)}
-                  </dd>
-                </div>
-              ) : null}
-            </dl>
+          {target && detail.exercise.completedSets < detail.exercise.targetSets ? (
+            <div className="mx-auto mt-5 min-h-15 max-w-sm" aria-live="polite" aria-atomic="true">
+              <p className="text-[12px] text-[var(--on-surface-variant)]">{t('exercise.currentSetGuidance')}</p>
+              <p className="mt-1 text-[24px] font-semibold tabular-nums text-[var(--on-surface)]">
+                {showWeight ? <>{formatWeightValues(target.weightKg, bilateral ? target.rightWeightKg : null, t)} × </> : null}
+                {formatRepsValues(target.reps, bilateral ? target.rightReps : null, t)}
+              </p>
+            </div>
           ) : null}
         </motion.div>
       </AnimatePresence>

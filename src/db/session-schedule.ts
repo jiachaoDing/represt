@@ -13,6 +13,7 @@ import {
   getSessionRecord,
 } from './session-core'
 import type { ScheduleExercise, ScheduleExerciseDetail } from './session-types'
+import { ensureTrainingGuidance, getGuidanceTarget } from './training-guidance'
 
 function toScheduleExercise(
   planItem: SessionPlanItem,
@@ -75,6 +76,7 @@ export async function getScheduleExerciseDetail(planItemId: string) {
       ? await getPreviousSetRecord(performedExercise.id, latestSetRecord.setNumber)
       : null
   const exercise = toScheduleExercise(planItem, performedExercise ?? null)
+  const guidance = await ensureTrainingGuidance(planItem)
 
   return {
     session: attachDerivedSessionStatus(session, performedExercise ? [performedExercise] : []),
@@ -82,5 +84,6 @@ export async function getScheduleExerciseDetail(planItemId: string) {
     latestSetRecord,
     previousSetRecord,
     personalRecords,
+    trainingTarget: guidance ? getGuidanceTarget(guidance, exercise.completedSets + 1) : null,
   } satisfies ScheduleExerciseDetail
 }

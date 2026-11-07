@@ -3,6 +3,7 @@ import type {
   MovementPattern,
   MuscleDistributionItem,
 } from '../domain/exercise-catalog'
+import type { TrainingGuidance } from '../lib/progressive-overload'
 
 export type SessionStatus = 'pending' | 'active' | 'completed'
 
@@ -90,6 +91,7 @@ export interface SessionPlanItem {
   restSeconds: number
   order: number
   createdAt: string
+  trainingGuidance?: TrainingGuidance
 }
 
 export interface PerformedExercise {
@@ -131,6 +133,8 @@ export interface SetRecord {
   rightReps?: number | null
   durationSeconds: number | null
   distanceMeters: number | null
+  kind?: 'working' | 'warmup'
+  status?: 'completed' | 'skipped' | 'incomplete'
 }
 
 export interface ExerciseProfile {

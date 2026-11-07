@@ -8,6 +8,7 @@ import type {
 import type { MeasurementType } from '../domain/exercise-catalog'
 import type { DerivedExerciseStatus } from '../lib/session-display'
 import type { ExercisePersonalRecords } from './exercise-records'
+import type { ProgressionTarget } from '../lib/progressive-overload'
 
 export type WorkoutSessionWithStatus = WorkoutSession & {
   status: SessionStatus
@@ -31,6 +32,7 @@ export type ScheduleExerciseDetail = {
   latestSetRecord: SetRecord | null
   previousSetRecord: SetRecord | null
   personalRecords: ExercisePersonalRecords
+  trainingTarget: ProgressionTarget | null
 }
 
 export type SessionSummaryExercise = PerformedExercise & {

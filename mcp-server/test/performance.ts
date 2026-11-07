@@ -3,17 +3,30 @@ import { writeFile } from 'node:fs/promises'
 import { pathToFileURL } from 'node:url'
 import { resolve } from 'node:path'
 import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client'
+import type { z } from 'zod'
 import { startHarness } from './harness.js'
 import { connectUser, registerUser } from './oauth-client.js'
 import { performanceFixture } from './performance-fixture.js'
 import { prepareBaseline } from './performance-baseline.js'
 import { createApp } from '../src/app.js'
+import type { analyticsOutput } from '../src/analytics-schema.js'
 
 const baseline = await prepareBaseline()
 const oldApp = (await import(pathToFileURL(resolve(baseline.mcpDir, 'src/app.ts')).href)).createApp as typeof createApp
 const fixture = performanceFixture()
 const repeats = Number(process.env.BENCH_REPEATS ?? 5)
 type Sample = { calls: number; elapsedMs: number; serverMs: number; transportAndProtocolMs: number; responseBytes: number; upstreamCalls: number; upstreamBytes: number }
+type AnalyticsResult = z.infer<typeof analyticsOutput>
+type AnalyticsQuery = AnalyticsResult['query']
+type WorkoutSet = Extract<AnalyticsResult, { query: 'workout_summary' }>['items'][number]['exercises'][number]['sets'][number]
+type HistoryTables = {
+  workoutSessions: { plannedPlanId: string | null; sessionDateKey: string }
+  sessionPlanItems: { targetSets: number }
+  performedExercises: { id: string; planItemId: string | null }
+  setRecords: Omit<WorkoutSet, 'planItemId'>
+}
+type PeriodSummary = Extract<AnalyticsResult, { query: 'overview' }>['summary']
+type PeriodComparison = { current: PeriodSummary; previous: NonNullable<AnalyticsResult['comparison']>['summary'] }
 const output: Record<string, Record<string, Sample>> = {}
 const evidence: Record<string, unknown> = {}
 
@@ -48,19 +61,21 @@ for (const mode of ['before', 'after'] as const) {
     const listed = await client.listTools()
     assert.equal(listed.tools.length, mode === 'before' ? 5 : 3)
     let calls = 0; let toolMs = 0
-    const call = async (name: string, args: Record<string, unknown> = {}) => {
+    const call = async <T = unknown>(name: string, args: Record<string, unknown> = {}): Promise<T> => {
       calls++
       const result = await client!.callTool({ name, arguments: args })
       assert(!result.isError, JSON.stringify(result.structuredContent))
       toolMs += Number((result._meta?.performance as { toolMs?: number })?.toolMs ?? 0)
-      return result.structuredContent!.data as Record<string, any>
+      const content = result.structuredContent
+      assert(content && typeof content === 'object' && 'data' in content)
+      return content.data as T
     }
-    const analytics = (query: string, from: string, to: string, extra = {}) => call('query_training_analytics', {
+    const analytics = <Q extends AnalyticsQuery>(query: Q, from: string, to: string, extra = {}) => call<Extract<AnalyticsResult, { query: Q }>>('query_training_analytics', {
       query, from, to, limit: 100, ...(mode === 'before' ? { version: 1 } : {}), ...extra })
-    const raw = async (table: string, from: string, to: string) => {
-      const records: any[] = []; let offset: number | null = 0
+    const raw = async <T extends keyof HistoryTables>(table: T, from: string, to: string) => {
+      const records: HistoryTables[T][] = []; let offset: number | null = 0
       while (offset !== null) {
-        const page = await call('read_training_history', { table, from, to, version: 1, offset, limit: 1000 })
+        const page: { records: HistoryTables[T][]; nextOffset: number | null } = await call('read_training_history', { table, from, to, version: 1, offset, limit: 1000 })
         records.push(...page.records); offset = page.nextOffset
       }
       return records
@@ -71,8 +86,9 @@ for (const mode of ['before', 'after'] as const) {
           const result = await analytics('workout_summary', '2026-10-26', '2026-10-26')
           const item = result.items[0]
           assert.equal(item.completion.rate, 17 / 18)
-          return { sets: item.exercises.flatMap((e: any) => e.sets).sort((a: any, b: any) => a.id.localeCompare(b.id)),
-            previousSets: item.exercises.flatMap((e: any) => e.previous?.sets ?? []).sort((a: any, b: any) => a.id.localeCompare(b.id)),
+          assert(item.previous)
+          return { sets: item.exercises.flatMap((e) => e.sets).sort((a, b) => a.id.localeCompare(b.id)),
+            previousSets: item.exercises.flatMap((e) => e.previous?.sets ?? []).sort((a, b) => a.id.localeCompare(b.id)),
             previousDate: item.previous.date, targetSets: item.completion.knownTargetSets }
         }
         const today = await raw('workoutSessions', '2026-10-26', '2026-10-26')
@@ -84,7 +100,7 @@ for (const mode of ['before', 'after'] as const) {
         await raw('sessionPlanItems', previous.sessionDateKey, previous.sessionDateKey)
         const previousExercises = await raw('performedExercises', previous.sessionDateKey, previous.sessionDateKey)
         const previousSets = await raw('setRecords', previous.sessionDateKey, previous.sessionDateKey)
-        const project = (values: any[], exercises: any[]) => {
+        const project = (values: HistoryTables['setRecords'][], exercises: HistoryTables['performedExercises'][]) => {
           const byId = new Map(exercises.map((e) => [e.id, e]))
           return values.map((s) => ({ id: s.id, performedExerciseId: s.performedExerciseId,
           planItemId: byId.get(s.performedExerciseId)?.planItemId ?? null, setNumber: s.setNumber, completedAt: s.completedAt,
@@ -96,6 +112,7 @@ for (const mode of ['before', 'after'] as const) {
       weekComparison: async () => {
         const current = await analytics('overview', '2026-10-19', '2026-10-25', mode === 'after' ? { compare: 'previous_period' } : {})
         const previous = mode === 'after' ? current.comparison : await analytics('overview', '2026-10-12', '2026-10-18')
+        assert(previous)
         return { current: current.summary, previous: previous.summary }
       },
       trend: async () => {
@@ -115,10 +132,11 @@ for (const mode of ['before', 'after'] as const) {
         const elapsedMs = performance.now() - start
         if (mode === 'before') evidence[name] = result
         else if (name === 'weekComparison') {
-          const expected = evidence[name] as any
+          const expected = evidence[name] as PeriodComparison
+          const actual = result as PeriodComparison
           // overview adds plan/empty-session metadata; period comparisons intentionally return metric totals only.
-          for (const key of ['sessions', 'trainingDays', 'completedSets', 'reps', 'durationSeconds', 'weightRepsKg']) {
-            assert.equal((result as any).current[key], expected.current[key]); assert.equal((result as any).previous[key], expected.previous[key])
+          for (const key of ['sessions', 'trainingDays', 'completedSets', 'reps', 'durationSeconds', 'weightRepsKg'] as const) {
+            assert.equal(actual.current[key], expected.current[key]); assert.equal(actual.previous[key], expected.previous[key])
           }
         } else assert.deepEqual(result, evidence[name])
         if (run >= 0) samples.push({ calls, elapsedMs, serverMs: authMs + toolMs,

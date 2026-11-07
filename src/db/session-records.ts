@@ -11,6 +11,7 @@ import {
 } from '../lib/set-record-measurement'
 import { db } from './app-db'
 import { getLatestSetRecord, getPerformedExerciseForPlanItem, nowIso } from './session-core'
+import { ensureTrainingGuidance, getGuidanceTarget } from './training-guidance'
 
 function createPerformedExercise(planItem: SessionPlanItem, timestamp: string) {
   return {
@@ -57,10 +58,13 @@ export async function completePlanItemSet(planItemId: string): Promise<SetRecord
 
   await db.transaction(
     'rw',
-    db.sessionPlanItems,
-    db.performedExercises,
-    db.setRecords,
-    db.planExercises,
+    [
+      db.sessionPlanItems,
+      db.performedExercises,
+      db.setRecords,
+      db.planExercises,
+      db.workoutSessions,
+    ],
     async () => {
       const planItem = await db.sessionPlanItems.get(planItemId)
       if (!planItem) {
@@ -78,13 +82,15 @@ export async function completePlanItemSet(planItemId: string): Promise<SetRecord
       const nextCompletedSets = exercise.completedSets + 1
       const restEndsAt = getRestEndsAt(completedAt, exercise.restSeconds)
       const measurementType = getMeasurementTypeForExercise(exercise)
+      const guidance = await ensureTrainingGuidance(planItem)
+      const target = guidance ? getGuidanceTarget(guidance, nextCompletedSets) : null
       const defaultValues = buildSetRecordValuesForMeasurement(measurementType, {
-        weightKg: exercise.defaultWeightKg ?? planExercise?.weightKg ?? null,
-        reps: exercise.defaultReps ?? planExercise?.reps ?? null,
+        weightKg: target ? target.weightKg : exercise.defaultWeightKg ?? planExercise?.weightKg ?? null,
+        reps: target?.reps ?? exercise.defaultReps ?? planExercise?.reps ?? null,
         durationSeconds: exercise.defaultDurationSeconds ?? planExercise?.durationSeconds ?? null,
         distanceMeters: exercise.defaultDistanceMeters ?? planExercise?.distanceMeters ?? null,
-        rightWeightKg: exercise.defaultRightWeightKg ?? planExercise?.rightWeightKg ?? null,
-        rightReps: exercise.defaultRightReps ?? planExercise?.rightReps ?? null,
+        rightWeightKg: target ? target.rightWeightKg : exercise.defaultRightWeightKg ?? planExercise?.rightWeightKg ?? null,
+        rightReps: target?.rightReps ?? exercise.defaultRightReps ?? planExercise?.rightReps ?? null,
       })
 
       const setRecord: SetRecord = {
@@ -94,6 +100,8 @@ export async function completePlanItemSet(planItemId: string): Promise<SetRecord
         setNumber: nextCompletedSets,
         completedAt,
         measurementType,
+        kind: 'working',
+        status: 'completed',
         ...defaultValues,
       }
 
@@ -280,6 +288,17 @@ export async function updateLatestSetRecordValues(
       ...buildSetRecordValuesForMeasurement(measurementType, input),
     }
     await db.setRecords.update(latestSetRecord.id, updates)
+    const item = await db.sessionPlanItems.get(planItemId)
+    const guidance = item?.trainingGuidance
+    if (guidance && guidance.measurementType === measurementType) {
+      // An explicit load edit applies to remaining sets, without recalculating their reps.
+      const next = { ...guidance }
+      if (updates.weightKg !== latestSetRecord.weightKg) next.manualWeightKg = updates.weightKg
+      if (measurementType === 'leftRightWeightReps' && updates.rightWeightKg !== latestSetRecord.rightWeightKg) {
+        next.manualRightWeightKg = updates.rightWeightKg
+      }
+      await db.sessionPlanItems.update(planItemId, { trainingGuidance: next })
+    }
     return { ...latestSetRecord, ...updates } satisfies SetRecord
   })
 }

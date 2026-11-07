@@ -812,6 +812,7 @@ const common = {
     latestRecord: 'Previous set record',
     prWeight: 'PR weight',
     prReps: 'PR reps',
+    currentSetGuidance: 'This set',
     openQuickTimer: 'Open quick timer',
     closeQuickTimer: 'Back to exercise',
     quickTimerTitle: 'Quick timer',
