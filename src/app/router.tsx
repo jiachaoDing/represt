@@ -14,6 +14,7 @@ import {
   SchedulePage,
   SettingsPage,
   SummaryHeatmapPage,
+  TrainingDurationPage,
   SummaryPage,
   PlanAiImportPage,
   PlansPage,
@@ -99,6 +100,11 @@ export const router = createBrowserRouter([
         path: 'summary/heatmap',
         element: lazyRoute(<SummaryHeatmapPage />),
         handle: { titleKey: 'routes.summaryHeatmap' },
+      },
+      {
+        path: 'summary/duration',
+        element: lazyRoute(<TrainingDurationPage />),
+        handle: { titleKey: 'duration.analysisTitle' },
       },
       {
         path: 'summary/:sessionId',

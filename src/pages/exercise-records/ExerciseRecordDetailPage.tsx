@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { Edit3 } from 'lucide-react'
@@ -6,13 +6,18 @@ import { Edit3 } from 'lucide-react'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { getDisplayExerciseName } from '../../lib/exercise-name'
 import { formatSetRecordValue } from '../../lib/set-record-measurement'
-import { formatSessionDateKey } from '../../lib/session-date-key'
+import { formatSessionDateKey, getTodaySessionDateKey } from '../../lib/session-date-key'
+import { growthFromExerciseDetail } from '../../lib/training-growth'
 import {
   getExerciseRecordDetail,
   type ExerciseRecordDetail,
 } from '../../db/sessions'
-import { MetricCards, MuscleDistributionCard, TrendCard } from './components'
+import { MuscleDistributionCard } from './components'
 import { formatTotalWork } from './utils'
+
+const GrowthTrend = lazy(() => import('../../components/summary/GrowthTrend').then((module) => ({
+  default: module.GrowthTrend,
+})))
 
 export function ExerciseRecordDetailPage({ profileId }: { profileId: string }) {
   const { i18n, t } = useTranslation()
@@ -20,6 +25,8 @@ export function ExerciseRecordDetailPage({ profileId }: { profileId: string }) {
   const [detail, setDetail] = useState<ExerciseRecordDetail | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const today = getTodaySessionDateKey()
+  const growth = useMemo(() => detail ? growthFromExerciseDetail(detail, today) : null, [detail, today])
 
   useEffect(() => {
     let isCancelled = false
@@ -90,8 +97,14 @@ export function ExerciseRecordDetailPage({ profileId }: { profileId: string }) {
 
       {detail ? (
         <>
-          <MetricCards detail={detail} />
-          <TrendCard detail={detail} />
+          {growth && (
+            <section className="mx-4 mt-4 rounded-3xl bg-[var(--surface)] p-4">
+              <h2 className="text-base font-semibold">{t('growth.performance')}</h2>
+              <Suspense fallback={<p role="status" className="py-4 text-sm">{t('growth.loading')}</p>}>
+                <GrowthTrend key={profileId} exercise={growth} today={today} />
+              </Suspense>
+            </section>
+          )}
           <section className="mx-4 mt-3 grid grid-cols-2 gap-3">
             <div className="rounded-[1.25rem] bg-[var(--surface-container)] p-4">
               <p className="text-[12px] font-semibold text-[var(--on-surface-variant)]">{t('summary.exerciseRecords.trainingDays')}</p>

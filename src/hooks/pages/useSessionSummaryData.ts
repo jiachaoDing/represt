@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import {
   getSessionSummaryDetail,
@@ -20,6 +21,7 @@ export function useSessionSummaryData({
   sessionDateKey,
   sessionId,
 }: UseSessionSummaryDataInput) {
+  const { t } = useTranslation()
   const [analytics, setAnalytics] = useState<SummaryRangeAnalytics | null>(null)
   const [detail, setDetail] = useState<SessionSummaryDetail | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -55,7 +57,7 @@ export function useSessionSummaryData({
         }
 
         console.error(loadError)
-        setError('训练总结加载失败，请返回训练安排页后重试。')
+        setError(t('growth.loadFailed'))
       } finally {
         if (!isCancelled) {
           setIsLoading(false)
@@ -68,7 +70,7 @@ export function useSessionSummaryData({
     return () => {
       isCancelled = true
     }
-  }, [range, sessionDateKey, sessionId])
+  }, [range, sessionDateKey, sessionId, t])
 
   return {
     analytics,

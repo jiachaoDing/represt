@@ -37,7 +37,7 @@ function getDurationMinutes(startedAt: string, endedAt: string) {
   return Math.max(0, Math.floor((endedAtMs - startedAtMs) / 60000))
 }
 
-function getActiveDurationSummary(setRecords: Awaited<ReturnType<typeof getSessionSetRecords>>) {
+export function getActiveDurationSummary(setRecords: Awaited<ReturnType<typeof getSessionSetRecords>>) {
   const sortedRecords = [...setRecords].sort((left, right) =>
     left.completedAt.localeCompare(right.completedAt),
   )

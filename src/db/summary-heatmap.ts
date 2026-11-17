@@ -1,6 +1,8 @@
 import type { MeasurementType } from '../domain/exercise-catalog'
 import { resolveCatalogExerciseId } from '../lib/exercise-name'
 import { getMeasurementTypeForExercise } from '../lib/set-record-measurement'
+import { getSessionPlanColor } from '../lib/plan-color'
+import { getSessionCompletionRatios, getTrainingCompletionColor } from '../lib/training-completion'
 import { getTodaySessionDateKey, parseSessionDateKey } from '../lib/session-date-key'
 import type { PerformedExercise, SetRecord } from '../models/types'
 import { db } from './app-db'
@@ -17,6 +19,8 @@ export type SummaryTrainingHeatmapExercise = {
 }
 
 export type SummaryTrainingHeatmapDay = {
+  planColor?: string
+  completionRatio?: number
   completedSets: number
   dateKey: string
   exerciseCount: number
@@ -101,22 +105,35 @@ export async function getSummaryTrainingHeatmap(selectedDateKey: string) {
   const dateKeys = getDateKeysInRange(startDateKey, endDateKey)
   const daysByDateKey = new Map(dateKeys.map((dateKey) => [dateKey, createEmptyDay(dateKey)]))
   const exerciseGroupsByDateKey = new Map<string, Map<string, SummaryTrainingHeatmapExercise>>()
-  const [sessions, performedExercises, setRecords] = await Promise.all([
-    db.workoutSessions.toArray(),
-    db.performedExercises.toArray(),
-    db.setRecords.orderBy('completedAt').toArray(),
+  const sessions = await db.workoutSessions.where('sessionDateKey')
+    .between(startDateKey, endDateKey, true, true).toArray()
+  const sessionIds = sessions.map((session) => session.id)
+  const [performedExercises, setRecords, plans, planItems] = await Promise.all([
+    db.performedExercises.where('sessionId').anyOf(sessionIds).toArray(),
+    db.setRecords.where('sessionId').anyOf(sessionIds).toArray(),
+    db.workoutPlans.toArray(),
+    db.sessionPlanItems.where('sessionId').anyOf(sessionIds).toArray(),
   ])
   const sessionsById = new Map(sessions.map((session) => [session.id, session]))
+  const plansById = new Map(plans.map((plan) => [plan.id, plan]))
+  const completionRatios = getSessionCompletionRatios(planItems, performedExercises, setRecords)
   const performedExercisesById = new Map(performedExercises.map((exercise) => [exercise.id, exercise]))
 
   for (const setRecord of setRecords) {
+    if ((setRecord.status ?? 'completed') !== 'completed') continue
     const session = sessionsById.get(setRecord.sessionId)
     const day = session ? daysByDateKey.get(session.sessionDateKey) : undefined
-    if (!day) {
+    const exercise = performedExercisesById.get(setRecord.performedExerciseId)
+    if (!day || !exercise || exercise.sessionId !== session?.id) {
       continue
     }
 
     day.completedSets += 1
+    if (day.completedSets === 1) {
+      const color = getSessionPlanColor(session!, plansById)?.solid ?? 'var(--on-surface-variant)'
+      day.completionRatio = completionRatios.get(session!.id) ?? 0
+      day.planColor = getTrainingCompletionColor(color, day.completionRatio)
+    }
     day.firstCompletedAt =
       day.firstCompletedAt && day.firstCompletedAt < setRecord.completedAt
         ? day.firstCompletedAt
@@ -125,11 +142,6 @@ export async function getSummaryTrainingHeatmap(selectedDateKey: string) {
       day.lastCompletedAt && day.lastCompletedAt > setRecord.completedAt
         ? day.lastCompletedAt
         : setRecord.completedAt
-
-    const exercise = performedExercisesById.get(setRecord.performedExerciseId)
-    if (!exercise) {
-      continue
-    }
 
     const mergeKey = getExerciseMergeKey(exercise)
     const exerciseGroups = exerciseGroupsByDateKey.get(day.dateKey) ?? new Map()

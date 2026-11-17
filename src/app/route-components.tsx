@@ -10,6 +10,7 @@ import {
   loadSchedulePage,
   loadSettingsPage,
   loadSummaryHeatmapPage,
+  loadTrainingDurationPage,
   loadSummaryPage,
   loadPlansPage,
   loadPlanAiImportPage,
@@ -45,6 +46,9 @@ export const SummaryPage = lazy(() =>
 )
 export const SummaryHeatmapPage = lazy(() =>
   loadSummaryHeatmapPage().then((module) => ({ default: module.SummaryHeatmapPage })),
+)
+export const TrainingDurationPage = lazy(() =>
+  loadTrainingDurationPage().then((module) => ({ default: module.TrainingDurationPage })),
 )
 export const TrainingCyclePage = lazy(() =>
   loadTrainingCyclePage().then((module) => ({ default: module.TrainingCyclePage })),

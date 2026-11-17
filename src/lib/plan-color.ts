@@ -1,3 +1,5 @@
+import type { WorkoutPlan, WorkoutSession } from '../models/types'
+
 export type PlanColor = {
   /** State-only dots, orbit nodes and auxiliary marks without text. */
   solid: string
@@ -48,6 +50,15 @@ export function getTemplateColor(plan: { id: string; name: string }): PlanColor 
   if (/休息|rest\b/iu.test(plan.name)) return restDayColor
   const hash = Array.from(plan.id).reduce((value, char) => (value * 31 + char.charCodeAt(0)) >>> 0, 0)
   return getPlanColor(hash)
+}
+
+export function getSessionPlanColor(session: WorkoutSession, plans: ReadonlyMap<string, WorkoutPlan>) {
+  if (!session.plannedPlanId) return null
+  const plan = plans.get(session.plannedPlanId)
+  return getTemplateColor(plan ?? {
+    id: session.plannedPlanId,
+    name: session.plannedPlanNameSnapshot ?? '',
+  })
 }
 
 export const restDayColor: PlanColor = {

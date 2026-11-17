@@ -75,7 +75,7 @@ export type SummaryRangeAnalytics = {
 
 const catalogExercisesById = new Map(exercises.map((exercise) => [exercise.id, exercise]))
 const maxTrainingSegmentGapMs = 60 * 60 * 1000
-const trainingTimeBucketOrder = [
+export const trainingTimeBucketOrder = [
   'earlyMorning',
   'morning',
   'afternoon',
@@ -124,7 +124,7 @@ function isDateKeyInRange(dateKey: string, startDateKey: string, endDateKey: str
   return compareDateKeys(dateKey, startDateKey) >= 0 && compareDateKeys(dateKey, endDateKey) <= 0
 }
 
-function getTrainingTimeBucket(completedAt: string): SummaryTrainingTimeBucket | null {
+export function getTrainingTimeBucket(completedAt: string): SummaryTrainingTimeBucket | null {
   const completedAtDate = new Date(completedAt)
   if (Number.isNaN(completedAtDate.getTime())) {
     return null

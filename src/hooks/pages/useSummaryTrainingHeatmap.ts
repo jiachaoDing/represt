@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { liveQuery } from 'dexie'
 
 import {
   getSummaryTrainingHeatmap,
@@ -42,10 +43,11 @@ export function useSummaryTrainingHeatmap(selectedDateKey: string, enabled: bool
       }
     }
 
-    void loadHeatmap()
+    const subscription = liveQuery(loadHeatmap).subscribe()
 
     return () => {
       isCancelled = true
+      subscription.unsubscribe()
     }
   }, [enabled, selectedDateKey])
 

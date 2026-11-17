@@ -20,7 +20,7 @@ export function SummaryHeatmapPage() {
     return isSessionDateKey(currentDate) ? currentDate : todayDateKey
   }, [searchParams, todayDateKey])
   const heatmap = useSummaryTrainingHeatmap(selectedDateKey, true)
-  const backTo = `/summary?date=${selectedDateKey}&range=month`
+  const backTo = '/summary'
   const subtitle = formatSessionDateKey(selectedDateKey, {
     month: 'long',
     year: 'numeric',
@@ -37,7 +37,6 @@ export function SummaryHeatmapPage() {
         data={heatmap.data}
         error={heatmap.error}
         isLoading={heatmap.isLoading}
-        variant="page"
       />
     </div>
   )
