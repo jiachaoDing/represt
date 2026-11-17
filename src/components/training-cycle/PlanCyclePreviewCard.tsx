@@ -13,7 +13,10 @@ type PlanCyclePreviewCardProps = {
   daysUntil: number | null
   getPlanColor: (planId: string) => PlanColor | null
   planId: string | null
-  planName: string | null
+  selectedIndex: number | null
+  onSelect: (index: number) => void
+  getDayLabel: (index: number) => string
+  disabled: boolean
 }
 
 function getNextTrainingLabel(
@@ -37,38 +40,25 @@ export function PlanCyclePreviewCard({
   daysUntil,
   getPlanColor,
   planId,
-  planName,
+  selectedIndex,
+  onSelect,
+  getDayLabel,
+  disabled,
 }: PlanCyclePreviewCardProps) {
   const { t } = useTranslation()
   const isConfigured = (cycle?.slots.length ?? 0) > 0
   const backLinkState = useBackLinkState()
   const previewTitle = !isConfigured
     ? t('trainingCycle.cycleNotSet')
-    : planId
+    : selectedIndex !== null || planId
       ? getNextTrainingLabel(daysUntil, t)
       : t('trainingCycle.cycleSet')
 
   return (
-    <Link
-      to="/plans/cycle"
-      state={backLinkState}
-      viewTransition
-      aria-label={isConfigured ? t('trainingCycle.editCycle') : t('trainingCycle.setCycle')}
-      className="group relative mx-4 mt-4 block rounded-[1.25rem] border border-[var(--outline-variant)]/20 bg-[var(--surface)] p-4 pr-12 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)] transition-colors hover:bg-[var(--surface-container)]/35"
-    >
-      <span
-        className="absolute right-2.5 top-2.5 flex h-7 w-7 items-center justify-center rounded-full border border-[var(--outline-variant)]/20 bg-[var(--surface-container)]/60 text-[var(--primary)] opacity-60 transition-opacity group-active:opacity-80"
-        aria-hidden="true"
-      >
-        <ArrowUpRight size={14} strokeWidth={2.25} />
-      </span>
-
-      <div className="flex items-start justify-between gap-4">
+    <div className="mx-4 mt-2">
+      <div className="flex min-h-11 items-center justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-[12px] text-[var(--on-surface-variant)]">
-            {t('trainingCycle.nextTraining')}
-          </p>
-          <p className="mt-1 text-[17px] font-semibold text-[var(--on-surface)]">
+          <p className="text-[17px] font-semibold text-[var(--on-surface)]">
             {previewTitle}
           </p>
           {!isConfigured ? (
@@ -77,35 +67,33 @@ export function PlanCyclePreviewCard({
             </p>
           ) : null}
         </div>
+        <Link
+          to="/plans/cycle"
+          state={backLinkState}
+          viewTransition
+          aria-label={isConfigured ? t('trainingCycle.editCycle') : t('trainingCycle.setCycle')}
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[var(--on-surface-variant)] hover:bg-[var(--surface-container)]"
+        >
+          <ArrowUpRight size={20} aria-hidden="true" />
+        </Link>
       </div>
 
-      <div className="mt-4 flex items-start justify-between gap-4">
+      <div data-primary-tab-swipe-lock="true" data-plan-view-navigation="true">
         {isConfigured && cycle ? (
           <TrainingCycleDots
             slots={cycle.slots}
             currentIndex={currentIndex}
             getPlanColor={getPlanColor}
             highlightedPlanId={planId ?? null}
+            selectedIndex={selectedIndex}
+            onSelect={onSelect}
+            getDayLabel={getDayLabel}
+            disabled={disabled}
           />
         ) : (
           <div />
         )}
-
-        <div className="text-right text-[12px] text-[var(--on-surface-variant)]">
-          <p>
-            {isConfigured && planId && planName
-              ? planName
-              : isConfigured
-                ? t('trainingCycle.cyclePreview')
-                : t('trainingCycle.title')}
-          </p>
-          <p className="mt-1">
-            {isConfigured && cycle
-              ? t('trainingCycle.currentCycleDays', { days: cycle.slots.length })
-              : t('trainingCycle.uninitialized')}
-          </p>
-        </div>
       </div>
-    </Link>
+    </div>
   )
 }

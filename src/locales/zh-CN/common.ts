@@ -708,6 +708,7 @@ const common = {
     interactionHint: '点击左侧序号可设为今天 · 长按拖动排序',
     calendar: '日历',
     dayNumber: '第 {{dayNumber}} 天',
+    viewDay: '查看第 {{dayNumber}} 天，{{name}}',
     today: '今天',
     setDayAsToday: '将第 {{dayNumber}} 天校准为今天',
     dragDay: '长按拖动调整第 {{dayNumber}} 天顺序',

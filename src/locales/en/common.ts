@@ -708,6 +708,7 @@ const common = {
     interactionHint: 'Tap the left number to set today · long press and drag to reorder',
     calendar: 'Calendar',
     dayNumber: 'Day {{dayNumber}}',
+    viewDay: 'View day {{dayNumber}}, {{name}}',
     today: 'Today',
     setDayAsToday: 'Set day {{dayNumber}} as today',
     dragDay: 'Long press and drag to reorder day {{dayNumber}}',

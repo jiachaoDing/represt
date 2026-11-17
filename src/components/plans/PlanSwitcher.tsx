@@ -1,4 +1,5 @@
 import { KeyRound } from 'lucide-react'
+import { useLayoutEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import type { PlanWithExercises } from '../../db/plans'
@@ -22,9 +23,24 @@ export function PlanSwitcher({
   onSelect,
 }: PlanSwitcherProps) {
   const { t } = useTranslation()
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const selectedRef = useRef<HTMLButtonElement>(null)
+
+  useLayoutEffect(() => {
+    const container = scrollRef.current
+    const selected = selectedRef.current
+    if (!container || !selected) return
+
+    const containerRect = container.getBoundingClientRect()
+    const selectedRect = selected.getBoundingClientRect()
+    if (selectedRect.left < containerRect.left + 16 || selectedRect.right > containerRect.right - 16) {
+      container.scrollLeft += selectedRect.left - containerRect.left - 16
+    }
+  }, [selectedPlanId, plans.length])
 
   return (
     <div
+      ref={scrollRef}
       className="-mx-4 mt-2 overflow-x-auto px-4 scrollbar-hide"
       data-primary-tab-swipe-lock="true"
     >
@@ -67,9 +83,12 @@ export function PlanSwitcher({
           return (
             <button
               key={plan.id}
+              ref={isSelected ? selectedRef : undefined}
+              data-plan-view-navigation="true"
               type="button"
               onClick={() => onSelect(plan.id)}
               disabled={isSubmitting}
+              aria-pressed={isSelected}
               className={[
                 'flex h-8 items-center justify-center rounded-lg px-4 text-sm font-medium whitespace-nowrap transition-colors tap-highlight-transparent',
                 isSelected ? 'border-2' : 'border',

@@ -37,7 +37,10 @@ export function usePlansPageData(preferredSelectedPlanId?: string | null) {
   const [plans, setPlans] = useState<PlanWithExercises[]>([])
   const [trainingCycle, setTrainingCycle] = useState<TrainingCycle | null>(null)
   const [newPlanName, setNewPlanName] = useState('')
-  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null)
+  const [selection, setSelection] = useState<{ planId: string | null; slotId: string | null }>({
+    planId: null,
+    slotId: null,
+  })
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [lastCreatedExerciseId, setLastCreatedExerciseId] = useState<string | null>(null)
@@ -50,16 +53,25 @@ export function usePlansPageData(preferredSelectedPlanId?: string | null) {
     )
     setPlans(sortedItems)
     setTrainingCycle(cycle)
-    setSelectedPlanId((current) => {
+    setSelection((current) => {
+      const selectedSlot = cycle?.slots.find((slot) => slot.id === current.slotId)
+      if (
+        selectedSlot &&
+        (preferredPlanId === undefined || preferredPlanId === selectedSlot.planId)
+      ) {
+        return { planId: selectedSlot.planId, slotId: selectedSlot.id }
+      }
       if (preferredPlanId !== undefined) {
-        return sortedItems.some((plan) => plan.id === preferredPlanId)
+        const planId = sortedItems.some((plan) => plan.id === preferredPlanId)
           ? preferredPlanId
           : (sortedItems[0]?.id ?? null)
+        return { planId, slotId: null }
       }
 
-      return sortedItems.some((plan) => plan.id === current)
-        ? current
+      const planId = sortedItems.some((plan) => plan.id === current.planId)
+        ? current.planId
         : (sortedItems[0]?.id ?? null)
+      return { planId, slotId: null }
     })
   }, [])
 
@@ -246,6 +258,9 @@ export function usePlansPageData(preferredSelectedPlanId?: string | null) {
     })
   }
 
+  const selectedSlot = trainingCycle?.slots.find((slot) => slot.id === selection.slotId)
+  const selectedPlanId = selectedSlot ? selectedSlot.planId : selection.planId
+  const isViewingRestDay = selectedSlot?.planId === null
   const currentPlan =
     plans.find((plan) => plan.id === selectedPlanId) ?? null
   const todayCycleDay = useMemo(() => getTodayTrainingCycleDay(trainingCycle), [trainingCycle])
@@ -266,6 +281,24 @@ export function usePlansPageData(preferredSelectedPlanId?: string | null) {
       slotIndexes: getTrainingCyclePlanIndexes(trainingCycle, currentPlan.id),
     }
   }, [currentPlan, trainingCycle])
+  // A template can occur more than once. Preserve an explicitly viewed day,
+  // otherwise select its next occurrence using the existing cycle calculation.
+  const selectedCycleIndex = trainingCycle && selectedSlot
+    ? trainingCycle.slots.indexOf(selectedSlot)
+    : trainingCycle && todayCycleDay && currentPlanCyclePreview && currentPlanCyclePreview.daysUntil !== null
+      ? (todayCycleDay.index + currentPlanCyclePreview.daysUntil) % trainingCycle.slots.length
+      : null
+
+  function setSelectedPlanId(planId: string | null) {
+    setSelection({ planId, slotId: null })
+  }
+
+  function selectCycleDay(index: number) {
+    const slot = trainingCycle?.slots[index]
+    if (slot) {
+      setSelection({ planId: slot.planId, slotId: slot.id })
+    }
+  }
 
   return {
     clearLastCreatedExerciseId: () => setLastCreatedExerciseId(null),
@@ -287,6 +320,9 @@ export function usePlansPageData(preferredSelectedPlanId?: string | null) {
     newPlanName,
     setNewPlanName,
     selectedPlanId,
+    selectedCycleIndex,
+    selectCycleDay,
+    isViewingRestDay,
     setSelectedPlanId,
     todayCycleDay,
     todayPlan,

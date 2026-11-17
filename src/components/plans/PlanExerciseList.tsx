@@ -197,6 +197,10 @@ export function PlanExerciseList({
 
     const activeEditExerciseId = editExerciseId
     function handlePointerDown(event: PointerEvent) {
+      // Plan navigation awaits this save before changing the viewed plan.
+      if (event.target instanceof Element && event.target.closest('[data-plan-view-navigation]')) {
+        return
+      }
       const editorElement = editorItemRefs.current.get(activeEditExerciseId)
       if (!editorElement || !(event.target instanceof Node)) {
         return

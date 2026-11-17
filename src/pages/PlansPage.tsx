@@ -86,6 +86,14 @@ export function PlansPage() {
     ui.startContinuousEdit(createdExerciseIds)
   }, [addedExerciseIds, location.key, navigate, plans.currentPlan, plans.isLoading, ui])
 
+  async function changeViewedPlan(select: () => void) {
+    if (ui.isExerciseEditorActive && !(await ui.saveExerciseEditor())) {
+      return
+    }
+    ui.closeExerciseEditor()
+    select()
+  }
+
   const menuItems = plans.currentPlan
     ? [
         {
@@ -100,7 +108,7 @@ export function PlansPage() {
       ]
     : []
   return (
-    <div className="pb-4">
+    <div className="pb-10">
       <PageHeader
         title={t('plans.title')}
         titleAlign="center"
@@ -128,8 +136,7 @@ export function PlansPage() {
         onImportShareCode={() => setIsShareCodeSheetOpen(true)}
         onCreate={() => ui.openPlanSheet('create')}
         onSelect={(planId) => {
-          ui.closeExerciseEditor()
-          plans.setSelectedPlanId(planId)
+          void changeViewedPlan(() => plans.setSelectedPlanId(planId))
         }}
       />
 
@@ -142,14 +149,34 @@ export function PlansPage() {
       <PlanCyclePreviewCard
         cycle={plans.trainingCycle}
         currentIndex={plans.todayCycleDay?.index ?? null}
-        daysUntil={plans.currentPlanCyclePreview?.daysUntil ?? null}
+        daysUntil={plans.selectedCycleIndex !== null && plans.todayCycleDay && plans.trainingCycle
+          ? (plans.selectedCycleIndex - plans.todayCycleDay.index + plans.trainingCycle.slots.length) % plans.trainingCycle.slots.length
+          : plans.currentPlanCyclePreview?.daysUntil ?? null}
         getPlanColor={(planId) => planColorMap.get(planId) ?? null}
         planId={plans.currentPlan?.id ?? null}
-        planName={plans.currentPlan?.name ?? null}
+        selectedIndex={plans.selectedCycleIndex}
+        disabled={plans.isSubmitting}
+        getDayLabel={(index) => {
+          const slot = plans.trainingCycle?.slots[index]
+          const plan = plans.plans.find((item) => item.id === slot?.planId)
+          return t('trainingCycle.viewDay', {
+            dayNumber: index + 1,
+            name: plan?.name ?? t('trainingCycle.restDay'),
+          })
+        }}
+        onSelect={(index) => {
+          void changeViewedPlan(() => plans.selectCycleDay(index))
+        }}
       />
 
       <section className="mt-4">
-        <PlanExerciseList
+        {plans.isViewingRestDay ? (
+          <div className="px-4 py-6 text-center">
+            <p className="font-medium">{t('trainingCycle.restDay')}</p>
+            <p className="mt-2 text-sm text-[var(--on-surface-variant)]">{t('trainingCycle.restDescription')}</p>
+          </div>
+        ) : <PlanExerciseList
+          key={plans.currentPlan?.id ?? 'empty'}
           currentPlan={plans.currentPlan}
           draft={ui.exerciseDraft}
           editExerciseId={ui.editExerciseId}
@@ -179,7 +206,7 @@ export function PlansPage() {
           onScrollAnimationComplete={plans.clearLastCreatedExerciseId}
           onSaveEdit={() => ui.saveExerciseEditor()}
           onSubmit={ui.handleExerciseSubmit}
-        />
+        />}
       </section>
 
       <PlanNameSheet
