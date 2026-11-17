@@ -7,6 +7,7 @@ import { useResolvedBackTo } from '../../hooks/useRouteBack'
 
 type PageHeaderProps = {
   actions?: ReactNode
+  leadingAction?: ReactNode
   backFallbackTo?: string
   backViewTransition?: boolean
   subtitle?: string
@@ -17,6 +18,7 @@ type PageHeaderProps = {
 
 export function PageHeader({
   actions,
+  leadingAction,
   backFallbackTo,
   backViewTransition = true,
   subtitle,
@@ -49,6 +51,7 @@ export function PageHeader({
       }`}
     >
       <div className="flex h-16 items-center gap-4">
+        {leadingAction ? <div className="flex shrink-0 items-center">{leadingAction}</div> : null}
         {backLink ? (
           <Link
             to={backLink.backTo}

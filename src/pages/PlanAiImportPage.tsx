@@ -157,7 +157,10 @@ export function PlanAiImportPage() {
 
       <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pb-[calc(1rem_+_var(--app-safe-area-inset-bottom))]">
         <section className="shrink-0 overflow-hidden rounded-2xl border border-[var(--outline-variant)]/40 bg-[var(--surface)]">
-          <AccountSyncSettings />
+          <AccountSyncSettings
+            entryLabel={t('plans.aiImport.agentConnectionTitle')}
+            entryDescription={t('plans.aiImport.agentConnectionDescription')}
+          />
         </section>
         <section className="shrink-0 rounded-2xl border border-[var(--outline-variant)]/40 bg-[var(--surface)] p-3">
           <div className="mb-2 flex items-center justify-between gap-3">

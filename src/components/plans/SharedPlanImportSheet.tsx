@@ -28,25 +28,24 @@ function getPlanShareErrorMessage(
 
 export function SharedPlanImportSheet({ open, onClose, onImported }: SharedPlanImportSheetProps) {
   const { t } = useTranslation()
+  return (
+    <AnimatedSheet open={open} onClose={onClose} title={t('planShare.importTitle')}>
+      {open ? <SharedPlanImportForm onImported={onImported} autoFocus /> : null}
+    </AnimatedSheet>
+  )
+}
+
+export function SharedPlanImportForm({
+  onImported,
+  autoFocus = false,
+}: Pick<SharedPlanImportSheetProps, 'onImported'> & { autoFocus?: boolean }) {
+  const { t } = useTranslation()
   const [code, setCode] = useState('')
   const [detail, setDetail] = useState<SharedPlanDetail | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
   const [isBusy, setIsBusy] = useState(false)
   const isTrainingCycle = detail?.kind === 'training-cycle'
-
-  function resetFlow() {
-    setCode('')
-    setDetail(null)
-    setError(null)
-    setMessage(null)
-    setIsBusy(false)
-  }
-
-  function closeSheet() {
-    onClose()
-    resetFlow()
-  }
 
   async function loadSharedPlan() {
     if (!code.trim()) {
@@ -96,17 +95,26 @@ export function SharedPlanImportSheet({ open, onClose, onImported }: SharedPlanI
   }
 
   return (
-    <AnimatedSheet open={open} onClose={closeSheet} title={t('planShare.importTitle')}>
       <div className="space-y-3">
         {!detail ? (
-          <>
+          <form
+            onSubmit={(event) => {
+              event.preventDefault()
+              if (!isBusy) void loadSharedPlan()
+            }}
+            className="space-y-3"
+          >
             <label className="block">
               <span className="mb-2 block px-1 text-xs font-semibold text-[var(--on-surface-variant)]">
                 {t('planShare.codeLabel')}
               </span>
               <input
-                autoFocus
+                autoFocus={autoFocus}
                 value={code}
+                disabled={isBusy}
+                autoCapitalize="characters"
+                autoCorrect="off"
+                spellCheck={false}
                 onChange={(event) => {
                   setCode(event.target.value.toUpperCase())
                   setError(null)
@@ -116,15 +124,14 @@ export function SharedPlanImportSheet({ open, onClose, onImported }: SharedPlanI
               />
             </label>
             <button
-              type="button"
-              onClick={() => void loadSharedPlan()}
+              type="submit"
               disabled={isBusy || !code.trim()}
               className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[var(--primary)] px-4 text-sm font-bold text-[var(--on-primary)] disabled:opacity-50"
             >
               <Search size={18} strokeWidth={2.2} aria-hidden="true" />
               <span>{isBusy ? t('planShare.loading') : t('planShare.viewSharedPlan')}</span>
             </button>
-          </>
+          </form>
         ) : (
           <>
             <section className="rounded-xl bg-[var(--surface)] px-4 py-3">
@@ -187,6 +194,5 @@ export function SharedPlanImportSheet({ open, onClose, onImported }: SharedPlanI
           </p>
         ) : null}
       </div>
-    </AnimatedSheet>
   )
 }

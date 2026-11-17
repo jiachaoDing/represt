@@ -16,7 +16,12 @@ import type { AccountRestore, AccountSession } from '../../lib/account-types'
 const inputClass = 'min-h-12 w-full rounded-xl border border-[var(--outline-variant)] bg-[var(--surface)] px-3 text-sm text-[var(--on-surface)]'
 const buttonClass = 'flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[var(--primary)] px-4 text-sm font-semibold text-[var(--on-primary)] disabled:opacity-50'
 
-export function AccountSyncSettings() {
+type AccountSyncSettingsProps = {
+  entryLabel?: string
+  entryDescription?: string
+}
+
+export function AccountSyncSettings({ entryLabel, entryDescription }: AccountSyncSettingsProps) {
   const { t, i18n } = useTranslation()
   const [open, setOpen] = useState(false)
   const [session, setSession] = useState<AccountSession | null>(readAccountSession)
@@ -122,9 +127,9 @@ export function AccountSyncSettings() {
   }
 
   return <>
-    <SettingsRow icon={Cloud} label={t('accountSync.title')} supporting={t('accountSync.description')}
+    <SettingsRow icon={Cloud} label={entryLabel ?? t('accountSync.title')} supporting={entryDescription ?? t('accountSync.description')}
       onClick={() => void show()} right={<ChevronRight size={16} strokeWidth={2.2} aria-hidden="true" />} />
-    <AnimatedSheet open={open} onClose={() => { if (!busy) setOpen(false) }} title={t('accountSync.title')}>
+    <AnimatedSheet open={open} onClose={() => { if (!busy) setOpen(false) }} title={entryLabel ?? t('accountSync.title')}>
       <div className="max-h-[65dvh] space-y-4 overflow-y-auto pb-4">
         {session ? <>
           <div className="space-y-1 text-sm text-[var(--on-surface-variant)]">

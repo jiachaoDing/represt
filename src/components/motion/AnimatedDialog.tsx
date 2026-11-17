@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useEffect, useRef, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
@@ -9,16 +9,48 @@ type AnimatedDialogProps = {
   children: ReactNode
   onClose: () => void
   open: boolean
+  position?: 'center' | 'upper'
 }
 
-export function AnimatedDialog({ children, onClose, open }: AnimatedDialogProps) {
+export function AnimatedDialog({ children, onClose, open, position = 'center' }: AnimatedDialogProps) {
   const { t } = useTranslation()
   const reduceMotion = useReducedMotion()
+  const viewportRef = useRef<HTMLDivElement>(null)
+  const isUpper = position === 'upper'
+
+  useEffect(() => {
+    if (!open || !isUpper) return
+
+    const { overflow } = document.body.style
+    document.body.style.overflow = 'hidden'
+    const viewport = window.visualViewport
+    function updateViewport() {
+      if (!viewportRef.current || !viewport) return
+      viewportRef.current.style.top = `${viewport.offsetTop}px`
+      viewportRef.current.style.height = `${viewport.height}px`
+    }
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') onClose()
+    }
+    updateViewport()
+    viewport?.addEventListener('resize', updateViewport)
+    viewport?.addEventListener('scroll', updateViewport)
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.body.style.overflow = overflow
+      viewport?.removeEventListener('resize', updateViewport)
+      viewport?.removeEventListener('scroll', updateViewport)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isUpper, onClose, open])
 
   return createPortal(
     <AnimatePresence initial={false}>
       {open ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-6">
+        <div
+          ref={viewportRef}
+          className={`fixed inset-0 z-50 flex justify-center px-6 ${isUpper ? 'items-start pb-4 pt-[min(8dvh,3rem)]' : 'items-center'}`}
+        >
           <motion.button
             key="dialog-backdrop"
             type="button"
@@ -48,7 +80,7 @@ export function AnimatedDialog({ children, onClose, open }: AnimatedDialogProps)
                     transition: quickEaseTransition,
                   }
             }
-            className="relative z-10 w-full"
+            className={`relative z-10 w-full ${isUpper ? 'max-h-full max-w-[30rem] overflow-y-auto overscroll-contain rounded-[28px]' : ''}`}
           >
             {children}
           </motion.section>

@@ -1,6 +1,4 @@
-import { KeyRound } from 'lucide-react'
 import { useLayoutEffect, useRef } from 'react'
-import { useTranslation } from 'react-i18next'
 
 import type { PlanWithExercises } from '../../db/plans'
 import { getPlanColor } from '../../lib/plan-color'
@@ -9,8 +7,6 @@ type PlanSwitcherProps = {
   isSubmitting: boolean
   selectedPlanId: string | null
   plans: PlanWithExercises[]
-  onCreate: () => void
-  onImportShareCode: () => void
   onSelect: (planId: string) => void
 }
 
@@ -18,11 +14,8 @@ export function PlanSwitcher({
   isSubmitting,
   selectedPlanId,
   plans,
-  onCreate,
-  onImportShareCode,
   onSelect,
 }: PlanSwitcherProps) {
-  const { t } = useTranslation()
   const scrollRef = useRef<HTMLDivElement>(null)
   const selectedRef = useRef<HTMLButtonElement>(null)
 
@@ -45,38 +38,6 @@ export function PlanSwitcher({
       data-primary-tab-swipe-lock="true"
     >
       <div className="flex w-max items-center gap-2 pb-2">
-        <button
-          type="button"
-          onClick={onCreate}
-          disabled={isSubmitting}
-          className="flex h-8 items-center justify-center rounded-lg border border-[var(--outline-variant)] px-3 text-[var(--primary)] transition-colors whitespace-nowrap tap-highlight-transparent hover:bg-[var(--primary)]/10"
-        >
-          <svg
-            viewBox="0 0 24 24"
-            width="16"
-            height="16"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="mr-1"
-          >
-            <line x1="12" y1="5" x2="12" y2="19" />
-            <line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
-          {t('common.add')}
-        </button>
-        <button
-          type="button"
-          onClick={onImportShareCode}
-          disabled={isSubmitting}
-          aria-label={t('plans.importByShareCode')}
-          className="flex h-8 items-center justify-center rounded-lg border border-[var(--outline-variant)] px-3 text-[var(--primary)] transition-colors whitespace-nowrap tap-highlight-transparent hover:bg-[var(--primary)]/10"
-        >
-          <KeyRound size={16} strokeWidth={2.3} className="mr-1" aria-hidden="true" />
-          {t('plans.importByShareCode')}
-        </button>
         {plans.map((plan, index) => {
           const isSelected = plan.id === selectedPlanId
           const color = getPlanColor(index)

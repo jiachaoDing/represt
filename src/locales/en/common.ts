@@ -630,6 +630,8 @@ const common = {
       entry: 'AI',
       entryDescription: 'Paste an AI response to create plans and cycles',
       title: 'AI plan import',
+      agentConnectionTitle: 'Connect your AI to edit plans',
+      agentConnectionDescription: 'Let your AI edit plans directly via MCP',
       promptTitle: 'AI prompt',
       copyPrompt: 'Copy prompt',
       collapsePrompt: 'Collapse prompt',

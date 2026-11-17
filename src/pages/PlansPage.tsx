@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Share2 } from 'lucide-react'
+import { Plus, Share2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useLocation, useNavigate } from 'react-router-dom'
 
@@ -10,7 +10,6 @@ import { ConfirmDialog } from '../components/ui/ConfirmDialog'
 import { PlanExerciseList } from '../components/plans/PlanExerciseList'
 import { PlanNameSheet } from '../components/plans/PlanNameSheet'
 import { PlanShareSheet } from '../components/plans/PlanShareSheet'
-import { SharedPlanImportSheet } from '../components/plans/SharedPlanImportSheet'
 import { PlanSwitcher } from '../components/plans/PlanSwitcher'
 import { usePlansPageData } from '../hooks/pages/usePlansPageData'
 import { usePlansPageUi } from '../hooks/pages/usePlansPageUi'
@@ -46,7 +45,6 @@ export function PlansPage() {
   const plans = usePlansPageData(preferredSelectedPlanId)
   const ui = usePlansPageUi(plans)
   const [sharePlanId, setSharePlanId] = useState<string | null>(null)
-  const [isShareCodeSheetOpen, setIsShareCodeSheetOpen] = useState(false)
   const handledAddedExerciseLocationKeyRef = useRef<string | null>(null)
   const planColorMap = useMemo(
     () => new Map(plans.plans.map((plan, index) => [plan.id, getPlanColor(index)])),
@@ -88,10 +86,11 @@ export function PlansPage() {
 
   async function changeViewedPlan(select: () => void) {
     if (ui.isExerciseEditorActive && !(await ui.saveExerciseEditor())) {
-      return
+      return false
     }
     ui.closeExerciseEditor()
     select()
+    return true
   }
 
   const menuItems = plans.currentPlan
@@ -112,6 +111,17 @@ export function PlansPage() {
       <PageHeader
         title={t('plans.title')}
         titleAlign="center"
+        leadingAction={
+          <button
+            type="button"
+            onClick={() => ui.openPlanSheet('create')}
+            disabled={plans.isSubmitting}
+            aria-label={t('plans.newPlan')}
+            className="flex h-11 w-11 items-center justify-center rounded-full text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/10 disabled:opacity-40 tap-highlight-transparent"
+          >
+            <Plus size={24} strokeWidth={2.2} aria-hidden="true" />
+          </button>
+        }
         actions={
           plans.currentPlan ? (
             <div className="flex items-center gap-1">
@@ -133,8 +143,6 @@ export function PlansPage() {
         isSubmitting={plans.isSubmitting}
         selectedPlanId={plans.selectedPlanId}
         plans={plans.plans}
-        onImportShareCode={() => setIsShareCodeSheetOpen(true)}
-        onCreate={() => ui.openPlanSheet('create')}
         onSelect={(planId) => {
           void changeViewedPlan(() => plans.setSelectedPlanId(planId))
         }}
@@ -164,9 +172,7 @@ export function PlansPage() {
             name: plan?.name ?? t('trainingCycle.restDay'),
           })
         }}
-        onSelect={(index) => {
-          void changeViewedPlan(() => plans.selectCycleDay(index))
-        }}
+        onSelect={(index) => changeViewedPlan(() => plans.selectCycleDay(index))}
       />
 
       <section className="mt-4">
@@ -223,15 +229,10 @@ export function PlansPage() {
         onCreateNameChange={plans.setNewPlanName}
         onRenameNameChange={ui.setRenamePlanName}
         onSubmit={(event) => void ui.handlePlanSubmit(event, ui.renamePlanName)}
-      />
-
-      <SharedPlanImportSheet
-        open={isShareCodeSheetOpen}
-        onClose={() => setIsShareCodeSheetOpen(false)}
         onImported={(importedPlans, data) => {
           const selectedPlanId = importedPlans[0]?.id ?? null
           notifyPlansChanged(selectedPlanId)
-          setIsShareCodeSheetOpen(false)
+          ui.setPlanSheetMode(null)
           navigate(data.cycle.length > 0 ? '/plans/cycle' : '/plans', {
             state: data.cycle.length > 0 ? undefined : { selectedPlanId },
           })

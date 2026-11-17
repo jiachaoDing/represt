@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
 import { useBackLinkState } from '../../hooks/useRouteBack'
-import { TrainingCycleDots } from './TrainingCycleDots'
+import { TrainingCycleWheel } from './TrainingCycleWheel'
 import type { TrainingCycle } from '../../models/types'
 import type { PlanColor } from '../../lib/plan-color'
 
@@ -14,7 +14,7 @@ type PlanCyclePreviewCardProps = {
   getPlanColor: (planId: string) => PlanColor | null
   planId: string | null
   selectedIndex: number | null
-  onSelect: (index: number) => void
+  onSelect: (index: number) => Promise<boolean>
   getDayLabel: (index: number) => string
   disabled: boolean
 }
@@ -80,11 +80,10 @@ export function PlanCyclePreviewCard({
 
       <div data-primary-tab-swipe-lock="true" data-plan-view-navigation="true">
         {isConfigured && cycle ? (
-          <TrainingCycleDots
+          <TrainingCycleWheel
             slots={cycle.slots}
             currentIndex={currentIndex}
             getPlanColor={getPlanColor}
-            highlightedPlanId={planId ?? null}
             selectedIndex={selectedIndex}
             onSelect={onSelect}
             getDayLabel={getDayLabel}

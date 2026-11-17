@@ -630,6 +630,8 @@ const common = {
       entry: 'AI',
       entryDescription: '粘贴 AI 回复创建计划和循环日程',
       title: 'AI 导入计划',
+      agentConnectionTitle: '连接 AI 助手修改计划',
+      agentConnectionDescription: '通过 MCP 让 AI 直接修改计划',
       promptTitle: 'AI 提示词',
       copyPrompt: '复制提示词',
       collapsePrompt: '收起提示词',
