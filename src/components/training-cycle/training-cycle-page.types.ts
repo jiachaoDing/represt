@@ -13,7 +13,6 @@ export type TrainingCycleSlotRowProps = TrainingCycleSlotRenderData & {
   index: number
   isDragging?: boolean
   isSorting?: boolean
-  isFocused?: boolean
   isSubmitting: boolean
   onCalibrateToday: (slotId: string) => void
   onOpenSheet: (slotId: string) => void

@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react'
 import { motion, useReducedMotion, useTransform, type MotionStyle, type MotionValue } from 'framer-motion'
 
-import { cycleWheelRowHeight, getCycleOrbitEmphasis, getCycleWheelGeometry } from './training-cycle-wheel-geometry'
+import { cycleWheelRowHeight, getCycleWheelGeometry } from './training-cycle-wheel-geometry'
+import { getCycleOrbitEmphasis } from './cycle-orbit-tokens'
 
 type TrainingCycleWheelItemProps = {
   children: ReactNode

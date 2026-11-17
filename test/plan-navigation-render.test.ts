@@ -6,6 +6,8 @@ import { I18nextProvider } from 'react-i18next'
 
 import { PlanExerciseCard } from '../src/components/plans/PlanExerciseCard'
 import { TrainingCycleDots } from '../src/components/training-cycle/TrainingCycleDots'
+import { TrainingCycleSlotRow } from '../src/components/training-cycle/TrainingCycleSlotRow'
+import { getPlanColor } from '../src/lib/plan-color'
 import type { PlanExercise } from '../src/models/types'
 import zh from '../src/locales/zh-CN/common'
 
@@ -64,4 +66,23 @@ it('selects each cycle slot including rest without changing slots or today', () 
   expect(tree.props.children[0].props['aria-pressed']).toBe(false)
   expect(tree.props.children[2].props['aria-pressed']).toBe(true)
   expect(tree.props.children[1].props.className).toContain('h-11 w-11')
+})
+
+it('keeps schedule rows soft and exposes today independently of selection', () => {
+  const color = getPlanColor(1)
+  for (const isToday of [false, true]) {
+    const html = renderToStaticMarkup(createElement(I18nextProvider, { i18n: translator },
+      createElement(TrainingCycleSlotRow, {
+        color, index: 0, isSubmitting: false, isToday,
+        onCalibrateToday: () => {}, onOpenSheet: () => {},
+        slot: { id: 'slot', planId: 'plan' }, weekdayLabel: 'Monday',
+        plan: { id: 'plan', name: 'Upper', createdAt: '', updatedAt: '', exercises: [] },
+      })))
+    const card = [...html.matchAll(/<button\b[^>]*>/g)][1][0]
+    expect(card).toContain(`background-color:${color.soft}`)
+    expect(card).toContain(`color:${color.text}`)
+    expect(html).not.toContain('var(--cycle-focus)')
+    expect(html).not.toContain('aria-pressed')
+    expect(html.includes('aria-current="date"')).toBe(isToday)
+  }
 })

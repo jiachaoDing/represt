@@ -24,7 +24,7 @@ import { TrainingCycleSlotRow } from './TrainingCycleSlotRow'
 import { TrainingCycleWheelItem } from './TrainingCycleWheelItem'
 import { cycleWheelRowHeight, getCycleWheelGeometry } from './training-cycle-wheel-geometry'
 import type { TrainingCycleSlotListItem } from './training-cycle-page.types'
-import { listSpringTransition } from '../motion/motion-tokens'
+import { cycleOrbitReducedTransition, cycleOrbitTokens, cycleOrbitTransition } from './cycle-orbit-tokens'
 
 type TrainingCycleSlotListProps = {
   initialFocusSlotId: string | null
@@ -132,8 +132,7 @@ export function TrainingCycleSlotList({
       // Let Motion own intermediate positions, then restore native settling.
       container.style.scrollSnapType = 'none'
       scrollAnimationRef.current = animate(container.scrollTop, index * cycleWheelRowHeight, {
-        ...listSpringTransition,
-        ...(reduceMotion ? { type: 'tween' as const, duration: 0 } : {}),
+        ...(reduceMotion ? cycleOrbitReducedTransition : cycleOrbitTransition),
         onUpdate: (value) => { container.scrollTop = value },
         onComplete: () => { container.style.scrollSnapType = 'y proximity' },
       })
@@ -157,15 +156,15 @@ export function TrainingCycleSlotList({
 
   return (
     <section className="relative mx-auto min-h-0 w-full max-w-lg flex-1 overflow-hidden">
-      <svg aria-hidden="true" viewBox={`0 0 80 ${Math.max(1, height)}`} preserveAspectRatio="none" className="pointer-events-none absolute inset-y-0 left-0 h-full w-20 fill-none text-[var(--cycle-track)]">
+      <svg aria-hidden="true" viewBox={`0 0 80 ${Math.max(1, height)}`} preserveAspectRatio="none" className="pointer-events-none absolute inset-y-0 left-0 h-full w-20 fill-none" style={{ color: cycleOrbitTokens.track.color }}>
         <defs>
           <linearGradient id={rimGradientId} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="currentColor" stopOpacity="0.08" />
-            <stop offset="0.5" stopColor="currentColor" stopOpacity="0.25" />
-            <stop offset="1" stopColor="currentColor" stopOpacity="0.08" />
+            <stop offset="0" stopColor="currentColor" stopOpacity={cycleOrbitTokens.track.edgeOpacity} />
+            <stop offset="0.5" stopColor="currentColor" stopOpacity={cycleOrbitTokens.track.opacity} />
+            <stop offset="1" stopColor="currentColor" stopOpacity={cycleOrbitTokens.track.edgeOpacity} />
           </linearGradient>
         </defs>
-        <path d={rimPath} stroke={`url(#${rimGradientId})`} strokeWidth="1" />
+        <path d={rimPath} stroke={`url(#${rimGradientId})`} strokeWidth={cycleOrbitTokens.track.width} />
       </svg>
       <div
         ref={scrollRef}
@@ -203,7 +202,6 @@ export function TrainingCycleSlotList({
                 index={index}
                 isSorting={isSorting}
                 isSubmitting={isSubmitting}
-                isFocused={slot.id === focusedSlotId}
                 onCalibrateToday={onCalibrateToday}
                 onOpenSheet={openCenteredSlot}
                 slot={slot}
@@ -227,7 +225,6 @@ export function TrainingCycleSlotList({
                       isDragging
                       isSorting
                       isSubmitting
-                      isFocused={activeSlotItem.slot.id === focusedSlotId}
                       onCalibrateToday={onCalibrateToday}
                       onOpenSheet={onOpenSheet}
                       slot={activeSlotItem.slot}

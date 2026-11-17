@@ -17,9 +17,9 @@ export const PlanTemplateChip = forwardRef<HTMLButtonElement, PlanTemplateChipPr
         aria-pressed={selected}
         className={`flex h-8 shrink-0 items-center justify-center rounded-lg px-4 text-sm font-medium whitespace-nowrap transition-colors tap-highlight-transparent disabled:opacity-40 ${selected ? 'border-2' : 'border hover:opacity-90'} ${className}`}
         style={{
-          backgroundColor: `color-mix(in srgb, ${color.soft} ${selected ? 78 : 36}%, transparent)`,
+          backgroundColor: color.soft,
           borderColor: selected ? 'var(--cycle-focus)' : `color-mix(in srgb, ${color.solid} 46%, transparent)`,
-          color: selected ? color.text : color.solid,
+          color: color.text,
         }}
       >
         {children}

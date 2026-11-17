@@ -7,7 +7,6 @@ import { CycleNode } from './CycleNode'
 function TrainingCycleSlotCard({
   color,
   isSorting = false,
-  isFocused = false,
   isSubmitting,
   onOpenSheet,
   slot,
@@ -20,7 +19,6 @@ function TrainingCycleSlotCard({
     <button
       type="button"
       onClick={() => onOpenSheet(slot.id)}
-      aria-pressed={isFocused}
       disabled={isSubmitting || isSorting}
       className={[
         'relative flex h-[88px] min-w-0 flex-1 origin-left items-center justify-between gap-2 rounded-[1.4rem] px-4 text-left active:scale-[0.98] border border-transparent shadow-[var(--shadow-soft)] disabled:opacity-80',
@@ -29,14 +27,12 @@ function TrainingCycleSlotCard({
           : 'bg-[var(--surface-container)] text-[var(--on-surface)] border-[var(--outline-variant)]/20',
       ].join(' ')}
       style={{
-        borderColor: isFocused ? 'var(--cycle-focus)' : undefined,
-        boxShadow: isFocused ? '0 0 0 1px var(--cycle-focus), var(--shadow-soft)' : undefined,
         transform: 'scale(var(--cycle-card-scale, 1))',
         backgroundColor: plan && color ? color.soft : undefined,
         color: plan && color ? color.text : undefined,
       }}
     >
-      <span aria-hidden="true" style={{ backgroundColor: isFocused ? 'var(--cycle-focus)' : undefined }} className="absolute -left-px top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-[var(--cycle-accent)]/40" />
+      <span aria-hidden="true" className="absolute -left-px top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-[var(--cycle-accent)]" />
       <div className="min-w-0">
         <h4 className="line-clamp-2 break-words text-[16px] font-bold leading-snug tracking-tight">
           {plan ? plan.name : t('trainingCycle.restDay')}
@@ -67,7 +63,6 @@ export function TrainingCycleSlotRow({
   index,
   isDragging = false,
   isSorting = false,
-  isFocused = false,
   isSubmitting,
   isToday,
   onCalibrateToday,
@@ -92,7 +87,7 @@ export function TrainingCycleSlotRow({
             aria-label={`${t('trainingCycle.dayNumber', { dayNumber: index + 1 })}，${t('trainingCycle.today')}`}
           >
             <span style={{ transform: 'scale(var(--cycle-node-scale, 1))' }}>
-              <CycleNode color={color} focused={isFocused} day={index + 1} />
+              <CycleNode color={color} focused={false} day={index + 1} />
             </span>
             <span className="absolute top-full mt-0.5 whitespace-nowrap text-[10px] font-medium leading-4 text-[var(--on-surface-variant)]">
               {t('trainingCycle.today')}
@@ -107,7 +102,7 @@ export function TrainingCycleSlotRow({
             aria-label={t('trainingCycle.setDayAsToday', { dayNumber: index + 1 })}
           >
             <span style={{ transform: 'scale(var(--cycle-node-scale, 1))' }}>
-              <CycleNode color={color} focused={isFocused} day={index + 1} />
+              <CycleNode color={color} focused={false} day={index + 1} />
             </span>
           </button>
         )}
@@ -115,7 +110,6 @@ export function TrainingCycleSlotRow({
       <span aria-hidden="true" className="w-3 shrink-0" />
 
       <TrainingCycleSlotCard
-        isFocused={isFocused}
         color={color}
         isSorting={isSorting}
         isSubmitting={isSubmitting || isDragging}

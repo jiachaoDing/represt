@@ -1,6 +1,9 @@
 export type PlanColor = {
+  /** State-only dots, orbit nodes and auxiliary marks without text. */
   solid: string
+  /** Text-bearing chips, cards, containers and numbered nodes. */
   soft: string
+  /** Foreground paired with soft in both light and dark themes. */
   text: string
 }
 

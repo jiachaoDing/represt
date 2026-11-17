@@ -14,9 +14,10 @@ import { useTranslation } from 'react-i18next'
 
 import type { TrainingCycleSlot } from '../../models/types'
 import type { PlanColor } from '../../lib/plan-color'
-import { listSpringTransition } from '../motion/motion-tokens'
+import { getCycleNodeState } from '../../lib/cycle-orbit'
 import { CycleNode } from './CycleNode'
-import { getCycleOrbitEmphasis } from './training-cycle-wheel-geometry'
+import { CycleTodayMarker } from './CycleTodayMarker'
+import { cycleOrbitReducedTransition, cycleOrbitTokens, cycleOrbitTransition, getCycleOrbitEmphasis } from './cycle-orbit-tokens'
 import { triggerHaptic } from '../../lib/haptics'
 
 type TrainingCycleWheelProps = {
@@ -41,8 +42,7 @@ function getNodeSpacing(width: number) {
 function settleWheel(position: MotionValue<number>, index: number, count: number, reduceMotion: boolean | null) {
   const target = position.get() + getOffset(index, position.get(), count)
   return animate(position, target, {
-    ...listSpringTransition,
-    ...(reduceMotion ? { duration: 0, type: 'tween' as const } : {}),
+    ...(reduceMotion ? cycleOrbitReducedTransition : cycleOrbitTransition),
   })
 }
 
@@ -99,13 +99,13 @@ function WheelNode({
       aria-pressed={isSelected}
       aria-current={isCurrent ? 'date' : undefined}
       data-wheel-focus={copy === 0 && isFocusable ? 'true' : undefined}
-      style={{ x, y, opacity: visibility, pointerEvents, outlineColor: 'var(--cycle-focus)' }}
+      style={{ x, y, opacity: visibility, pointerEvents, outlineColor: cycleOrbitTokens.focus.color }}
       className="absolute left-1/2 top-0 -ml-[22px] -mt-[22px] flex h-11 w-11 items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-[-2px] disabled:cursor-default tap-highlight-transparent"
     >
       <motion.span style={{ scale }}>
         <CycleNode color={color} focused={isSelected} />
       </motion.span>
-      {isCurrent ? <span aria-hidden="true" className="absolute bottom-0.5 h-1 w-1 rounded-full bg-[var(--on-surface-variant)]" /> : null}
+      {isCurrent ? <CycleTodayMarker className="absolute bottom-0.5" /> : null}
     </motion.button>
   )
 }
@@ -249,26 +249,29 @@ export function TrainingCycleWheel({
       }}
       className="relative mx-auto h-[88px] w-full max-w-[26rem] touch-pan-y select-none overflow-hidden"
     >
-      <svg aria-hidden="true" viewBox="0 0 400 88" preserveAspectRatio="none" className="pointer-events-none absolute inset-0 h-full w-full fill-none text-[var(--cycle-track)]/25">
-        <path d="M 0 8 Q 200 96 400 8" stroke="currentColor" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+      <svg aria-hidden="true" viewBox="0 0 400 88" preserveAspectRatio="none" className="pointer-events-none absolute inset-0 h-full w-full fill-none" style={{ color: cycleOrbitTokens.track.color, opacity: cycleOrbitTokens.track.opacity }}>
+        <path d="M 0 8 Q 200 96 400 8" stroke="currentColor" strokeWidth={cycleOrbitTokens.track.width} vectorEffect="non-scaling-stroke" />
       </svg>
-      {slots.flatMap((slot, index) => (count <= 2 ? [0] : [-1, 0, 1]).map((copy) => (
-        <WheelNode
-          key={`${slot.id}-${copy}`}
-          index={index}
-          copy={copy}
-          count={count}
-          position={position}
-          width={width}
-          color={slot.planId ? getPlanColor(slot.planId) : null}
-          isSelected={selectedIndex === index}
-          isCurrent={currentIndex === index}
-          isFocusable={focusIndex === index}
-          label={getDayLabel(index)}
-          disabled={disabled}
-          onSelect={selectDay}
-        />
-      )))}
+      {slots.flatMap((slot, index) => {
+        const state = getCycleNodeState(slot, slots[selectedIndex ?? -1]?.id ?? null, slots[currentIndex ?? -1]?.id ?? null)
+        return (count <= 2 ? [0] : [-1, 0, 1]).map((copy) => (
+          <WheelNode
+            key={`${slot.id}-${copy}`}
+            index={index}
+            copy={copy}
+            count={count}
+            position={position}
+            width={width}
+            color={slot.planId ? getPlanColor(slot.planId) : null}
+            isSelected={state.focused}
+            isCurrent={state.today}
+            isFocusable={focusIndex === index}
+            label={getDayLabel(index)}
+            disabled={disabled}
+            onSelect={selectDay}
+          />
+        ))
+      })}
     </motion.div>
   )
 }
