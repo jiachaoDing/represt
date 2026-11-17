@@ -9,13 +9,14 @@ type TrainingCycleWheelItemProps = {
   index: number
   scrollTop: MotionValue<number>
   viewportHeight: MotionValue<number>
+  offsetY?: MotionValue<number>
 }
 
-export function TrainingCycleWheelItem({ children, index, scrollTop, viewportHeight }: TrainingCycleWheelItemProps) {
+export function TrainingCycleWheelItem({ children, index, scrollTop, viewportHeight, offsetY }: TrainingCycleWheelItemProps) {
   const reduceMotion = useReducedMotion()
   // The first row is centered by the scroll container's leading spacer.
   const distance = useTransform(() => Math.min(1, Math.abs(
-    (index * cycleWheelRowHeight - scrollTop.get()) / Math.max(1, viewportHeight.get() / 2),
+    (index * cycleWheelRowHeight + (offsetY?.get() ?? 0) - scrollTop.get()) / Math.max(1, viewportHeight.get() / 2),
   )))
   const x = useTransform(() => {
     if (reduceMotion) return 8

@@ -11,7 +11,7 @@ export type AnimatedSheetProps = PropsWithChildren<{
   onClose: () => void
   open: boolean
   title: string
-  variant?: 'default' | 'prominent' | 'compact'
+  variant?: 'default' | 'prominent' | 'compact' | 'expanded'
 }>
 
 export function AnimatedSheet({
@@ -26,7 +26,8 @@ export function AnimatedSheet({
   const { t } = useTranslation()
   const reduceMotion = useReducedMotion()
   const isProminent = variant === 'prominent'
-  const isCompact = variant === 'compact'
+  const isExpanded = variant === 'expanded'
+  const isCompact = variant === 'compact' || isExpanded
   const dragControls = useDragControls()
   const titleId = useId()
   const panelRef = useRef<HTMLElement>(null)
@@ -115,7 +116,12 @@ export function AnimatedSheet({
                       transition: quickEaseTransition,
                     }
               }
-              className={`${isCompact ? 'flex h-[min(24rem,80dvh)] flex-col overflow-hidden pt-1' : 'max-h-[90vh] overflow-auto pb-[max(1.5rem,var(--app-safe-area-inset-bottom))] pt-4'} w-full rounded-t-[28px] bg-[var(--surface-container)] px-4 shadow-2xl ${
+              style={isExpanded ? {
+                height: 'calc((100dvh - var(--app-safe-area-inset-top) - var(--app-safe-area-inset-bottom)) * 0.9 + var(--app-safe-area-inset-bottom))',
+                paddingLeft: 'var(--app-safe-area-inset-left)',
+                paddingRight: 'var(--app-safe-area-inset-right)',
+              } : undefined}
+              className={`${isCompact ? 'flex flex-col overflow-hidden pt-1' : 'max-h-[90vh] overflow-auto pb-[max(1.5rem,var(--app-safe-area-inset-bottom))] pt-4'} ${isCompact && !isExpanded ? 'h-[min(24rem,80dvh)]' : ''} w-full rounded-t-[28px] bg-[var(--surface-container)] ${isExpanded ? '' : 'px-4'} shadow-2xl ${
                 isProminent ? 'rounded-t-[2rem] pb-[max(2rem,var(--app-safe-area-inset-bottom))]' : ''
               }`}
             >
@@ -126,7 +132,7 @@ export function AnimatedSheet({
               >
                 <div className={`mx-auto h-1 rounded-full bg-[var(--outline)] ${isCompact ? 'w-8' : isProminent ? 'mb-8 w-14' : 'mb-6 w-8'}`} />
               </div>
-              <div className={`flex shrink-0 items-start justify-between gap-3 px-2 ${isCompact ? 'items-center' : ''}`}>
+              <div className={`flex shrink-0 items-start justify-between gap-3 ${isExpanded ? 'px-4' : 'px-2'} ${isCompact ? 'items-center' : ''}`}>
                 <div className="min-w-0">
                   <h2 id={titleId} className={`${isProminent ? 'text-3xl font-semibold' : isCompact ? 'text-lg font-semibold' : 'text-xl font-normal'} text-[var(--on-surface)]`}>
                     {title}
@@ -160,8 +166,8 @@ export function AnimatedSheet({
                   </svg>
                 </button>
               </div>
-              <div className={isCompact ? 'flex min-h-0 flex-1 flex-col overflow-hidden px-2 pt-2' : 'mt-4 px-2'}>{children}</div>
-              {actions ? <div className={isCompact ? 'shrink-0 border-t border-[var(--outline-variant)]/40 px-2 pt-3 pb-[max(1rem,var(--app-safe-area-inset-bottom))]' : 'mt-5 px-2'}>{actions}</div> : null}
+              <div className={isCompact ? `flex min-h-0 flex-1 flex-col overflow-hidden pt-2 ${isExpanded ? '' : 'px-2'}` : 'mt-4 px-2'}>{children}</div>
+              {actions ? <div className={isCompact ? `shrink-0 border-t border-[var(--outline-variant)]/40 pt-3 pb-[max(1rem,var(--app-safe-area-inset-bottom))] ${isExpanded ? 'px-4' : 'px-2'}` : 'mt-5 px-2'}>{actions}</div> : null}
             </motion.section>
           </div>
         </div>

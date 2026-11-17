@@ -1,7 +1,7 @@
 import { afterEach, expect, it } from 'vitest'
 import { getTemplateColor, getPlanColor, restDayColor } from '../src/lib/plan-color'
 import { getCycleReturnSlotId, getViewedCycleSlotId, setViewedCycleSlotId } from '../src/lib/cycle-view-selection'
-import { getCycleOrbitEmphasis } from '../src/components/training-cycle/training-cycle-wheel-geometry'
+import { cycleWheelRowHeight, getCycleOrbitEmphasis, rebaseCycleWheelOffset } from '../src/components/training-cycle/training-cycle-wheel-geometry'
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { getCycleNodeState } from '../src/lib/cycle-orbit'
@@ -11,6 +11,29 @@ import { PlanTemplateChip } from '../src/components/plans/PlanTemplateChip'
 import { TrainingCycleDots } from '../src/components/training-cycle/TrainingCycleDots'
 
 afterEach(() => setViewedCycleSlotId(null))
+
+it('preserves rendered wheel positions when sorting commits during an unfinished animation', () => {
+  for (const previousIndex of [0, 2, 5]) {
+    for (const index of [0, 1, 5]) {
+      for (const offset of [-224, -57.5, 0, 31.25, 336]) {
+        const rebased = rebaseCycleWheelOffset(offset, previousIndex, index)
+        expect(index * cycleWheelRowHeight + rebased)
+          .toBe(previousIndex * cycleWheelRowHeight + offset)
+        expect(rebaseCycleWheelOffset(rebased, index, previousIndex)).toBe(offset)
+      }
+    }
+  }
+})
+
+it('commits completed sorting previews without a second displacement', () => {
+  const order = ['first', 'rest', 'repeat', 'last']
+  const preview = ['rest', 'repeat', 'last', 'first']
+  for (const [index, id] of preview.entries()) {
+    const previousIndex = order.indexOf(id)
+    const offset = (index - previousIndex) * cycleWheelRowHeight
+    expect(rebaseCycleWheelOffset(offset, previousIndex, index)).toBe(0)
+  }
+})
 
 it('shares category colors across templates and languages', () => {
   for (const name of ['上肢 A', '上肢 C', 'Upper B']) {

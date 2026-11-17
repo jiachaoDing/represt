@@ -1,4 +1,3 @@
-import { createPortal } from 'react-dom'
 import { useId, useLayoutEffect, useRef, useState } from 'react'
 import { animate, useMotionValue, useReducedMotion } from 'framer-motion'
 import { Plus, Repeat2 } from 'lucide-react'
@@ -6,7 +5,6 @@ import { useTranslation } from 'react-i18next'
 
 import {
   DndContext,
-  DragOverlay,
   MouseSensor,
   TouchSensor,
   closestCenter,
@@ -18,9 +16,8 @@ import {
 } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 
-import { verticalSortDropAnimation, verticalSortModifiers } from '../dnd/vertical-sortable-motion'
+import { verticalSortModifiers } from '../dnd/vertical-sortable-motion'
 import { SortableTrainingCycleSlotRow } from './SortableTrainingCycleSlotRow'
-import { TrainingCycleSlotRow } from './TrainingCycleSlotRow'
 import { TrainingCycleWheelItem } from './TrainingCycleWheelItem'
 import { cycleWheelRowHeight, getCycleWheelGeometry } from './training-cycle-wheel-geometry'
 import type { TrainingCycleSlotListItem } from './training-cycle-page.types'
@@ -30,7 +27,6 @@ type TrainingCycleSlotListProps = {
   initialFocusSlotId: string | null
   focusedSlotId: string | null
   onFocusSlot: (slotId: string) => void
-  activeSlotItem: TrainingCycleSlotListItem | null
   isSorting: boolean
   isSubmitting: boolean
   onAddSlot: () => void
@@ -47,7 +43,6 @@ export function TrainingCycleSlotList({
   initialFocusSlotId,
   focusedSlotId,
   onFocusSlot,
-  activeSlotItem,
   isSorting,
   isSubmitting,
   onAddSlot,
@@ -72,6 +67,7 @@ export function TrainingCycleSlotList({
   const spacer = Math.max(0, (height - cycleWheelRowHeight) / 2)
   const centeredDayRef = useRef(false)
   const previousOrderRef = useRef('')
+  const wasSortingRef = useRef(false)
   const rememberedIndex = orderedSlotItems.findIndex((item) => item.slot.id === initialFocusSlotId)
   const initialIndex = rememberedIndex >= 0
     ? rememberedIndex
@@ -107,8 +103,10 @@ export function TrainingCycleSlotList({
     const order = orderedSlotItems.map((item) => item.slot.id).join(',')
     const previousOrder = previousOrderRef.current
     previousOrderRef.current = order
+    const wasSorting = wasSortingRef.current
+    wasSortingRef.current = isSorting
     const container = scrollRef.current
-    if (!previousOrder || previousOrder === order || !container || !centeredDayRef.current) return
+    if (isSorting || wasSorting || !previousOrder || previousOrder === order || !container || !centeredDayRef.current) return
     const focusedIndex = orderedSlotItems.findIndex((item) => item.slot.id === focusedSlotId)
     const index = focusedIndex >= 0 ? focusedIndex : Math.max(0, Math.min(
       orderedSlotItems.length - 1, Math.round(container.scrollTop / cycleWheelRowHeight),
@@ -117,7 +115,7 @@ export function TrainingCycleSlotList({
     scrollTop.set(container.scrollTop)
     const item = orderedSlotItems[index]
     if (item) onFocusSlot(item.slot.id)
-  }, [focusedSlotId, onFocusSlot, orderedSlotItems, scrollTop])
+  }, [focusedSlotId, isSorting, onFocusSlot, orderedSlotItems, scrollTop])
 
   function stopCentering() {
     scrollAnimationRef.current?.stop()
@@ -178,7 +176,7 @@ export function TrainingCycleSlotList({
           const item = orderedSlotItems[index]
           if (item && item.slot.id !== focusedSlotId) onFocusSlot(item.slot.id)
         }}
-        style={{ scrollSnapType: isSorting ? 'none' : 'y proximity' }}
+        style={{ overflowAnchor: 'none' }}
         className="scrollbar-hide relative h-full overflow-y-auto overflow-x-hidden overscroll-y-contain"
       >
         <div style={{ height: spacer }} aria-hidden="true" />
@@ -187,7 +185,11 @@ export function TrainingCycleSlotList({
           sensors={sensors}
           collisionDetection={closestCenter}
           modifiers={verticalSortModifiers}
-          onDragStart={onDragStart}
+          onDragStart={(event) => {
+            scrollAnimationRef.current?.stop()
+            if (scrollRef.current) scrollRef.current.style.scrollSnapType = 'none'
+            onDragStart(event)
+          }}
           onDragOver={onDragOver}
           onDragCancel={onDragCancel}
           onDragEnd={onDragEnd}
@@ -212,32 +214,6 @@ export function TrainingCycleSlotList({
             ))}
           </SortableContext>
 
-          {activeSlotItem
-            ? createPortal(
-                <DragOverlay
-                  adjustScale={false}
-                  dropAnimation={verticalSortDropAnimation}
-                  modifiers={verticalSortModifiers}
-                >
-                  <TrainingCycleWheelItem index={activeSlotItem.index} scrollTop={scrollTop} viewportHeight={viewportHeight}>
-                    <TrainingCycleSlotRow
-                      index={activeSlotItem.index}
-                      isDragging
-                      isSorting
-                      isSubmitting
-                      onCalibrateToday={onCalibrateToday}
-                      onOpenSheet={onOpenSheet}
-                      slot={activeSlotItem.slot}
-                      color={activeSlotItem.color}
-                      isToday={activeSlotItem.isToday}
-                      plan={activeSlotItem.plan}
-                      weekdayLabel={activeSlotItem.weekdayLabel}
-                    />
-                  </TrainingCycleWheelItem>
-                </DragOverlay>,
-                document.body,
-              )
-            : null}
         </DndContext>
 
         <TrainingCycleWheelItem index={orderedSlotItems.length} scrollTop={scrollTop} viewportHeight={viewportHeight}>

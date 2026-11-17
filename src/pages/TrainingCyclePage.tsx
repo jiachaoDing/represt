@@ -41,7 +41,6 @@ export function TrainingCyclePage() {
   const [sheetOpen, setSheetOpen] = useState(false)
   const [sheetSession, setSheetSession] = useState(0)
   const [slotOrder, setSlotOrder] = useState<string[] | null>(null)
-  const [activeSlotId, setActiveSlotId] = useState<string | null>(null)
   const [isSorting, setIsSorting] = useState(false)
   const [isShareSheetOpen, setIsShareSheetOpen] = useState(false)
   const [focusedSlotId, setFocusedSlotId] = useState(getViewedCycleSlotId)
@@ -105,10 +104,6 @@ export function TrainingCyclePage() {
       }
     })
   }, [orderedAnchorIndex, orderedSlots, planColorMap, plans, todayCycleDay, trainingCycle, weekdayLocale])
-  const activeSlotItem =
-    activeSlotId === null
-      ? null
-      : orderedSlotItems.find((item) => item.slot.id === activeSlotId) ?? null
 
   async function assignPlan(planId: string | null) {
     if (!selectedSlot) return false
@@ -133,7 +128,6 @@ export function TrainingCyclePage() {
   }
 
   function handleDragStart(event: DragStartEvent) {
-    setActiveSlotId(String(event.active.id))
     setIsSorting(true)
     lastDragOverIdRef.current = String(event.active.id)
     void triggerHaptic('medium')
@@ -150,7 +144,6 @@ export function TrainingCyclePage() {
   }
 
   function handleDragCancel() {
-    setActiveSlotId(null)
     setIsSorting(false)
     lastDragOverIdRef.current = null
     void triggerHaptic('light')
@@ -159,7 +152,6 @@ export function TrainingCyclePage() {
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event
 
-    setActiveSlotId(null)
     setIsSorting(false)
     lastDragOverIdRef.current = null
     void triggerHaptic('light')
@@ -250,7 +242,6 @@ export function TrainingCyclePage() {
               setFocusedSlotId(slotId)
               setViewedCycleSlotId(slotId, true)
             }}
-            activeSlotItem={activeSlotItem}
             isSorting={isSorting}
             isSubmitting={isSubmitting}
             onAddSlot={() => void handleAddSlot()}

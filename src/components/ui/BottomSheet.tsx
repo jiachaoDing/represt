@@ -8,7 +8,7 @@ type BottomSheetProps = PropsWithChildren<{
   onClose: () => void
   open: boolean
   title: string
-  variant?: 'default' | 'prominent' | 'compact'
+  variant?: 'default' | 'prominent' | 'compact' | 'expanded'
 }>
 
 export function BottomSheet({

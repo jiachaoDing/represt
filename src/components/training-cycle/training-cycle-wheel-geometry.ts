@@ -1,5 +1,9 @@
 export const cycleWheelRowHeight = 112
 
+export function rebaseCycleWheelOffset(offset: number, previousIndex: number, index: number) {
+  return offset + (previousIndex - index) * cycleWheelRowHeight
+}
+
 export { getCycleOrbitEmphasis } from './cycle-orbit-tokens'
 
 export function getCycleWheelGeometry(height: number) {
