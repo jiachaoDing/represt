@@ -2,6 +2,7 @@ import { useLayoutEffect, useRef } from 'react'
 
 import type { PlanWithExercises } from '../../db/plans'
 import { getTemplateColor } from '../../lib/plan-color'
+import { PlanTemplateChip } from './PlanTemplateChip'
 
 type PlanSwitcherProps = {
   isSubmitting: boolean
@@ -42,31 +43,17 @@ export function PlanSwitcher({
           const isSelected = plan.id === selectedPlanId
           const color = getTemplateColor(plan)
           return (
-            <button
+            <PlanTemplateChip
               key={plan.id}
               ref={isSelected ? selectedRef : undefined}
               data-plan-view-navigation="true"
-              type="button"
               onClick={() => onSelect(plan.id)}
               disabled={isSubmitting}
-              aria-pressed={isSelected}
-              className={[
-                'flex h-8 items-center justify-center rounded-lg px-4 text-sm font-medium whitespace-nowrap transition-colors tap-highlight-transparent',
-                isSelected ? 'border-2' : 'border',
-                isSelected ? '' : 'hover:opacity-90',
-              ].join(' ')}
-              style={{
-                backgroundColor: isSelected
-                  ? `color-mix(in srgb, ${color.soft} 78%, transparent)`
-                  : `color-mix(in srgb, ${color.soft} 36%, transparent)`,
-                borderColor: isSelected
-                  ? 'var(--cycle-focus)'
-                  : `color-mix(in srgb, ${color.solid} 46%, transparent)`,
-                color: isSelected ? color.text : color.solid,
-              }}
+              selected={isSelected}
+              color={color}
             >
               {plan.name}
-            </button>
+            </PlanTemplateChip>
           )
         })}
       </div>

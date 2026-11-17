@@ -8,6 +8,7 @@ import { SharedPlanImportForm } from './SharedPlanImportSheet'
 type PlanSheetMode = 'create' | 'rename' | null
 
 type PlanNameSheetProps = {
+  error?: string | null
   createName: string
   isOpen: boolean
   isSubmitting: boolean
@@ -22,6 +23,7 @@ type PlanNameSheetProps = {
 }
 
 export function PlanNameSheet({
+  error,
   createName,
   isOpen,
   isSubmitting,
@@ -76,6 +78,7 @@ export function PlanNameSheet({
             />
           </label>
 
+          {error ? <p role="alert" className="text-sm text-[var(--error)]">{error}</p> : null}
           <div className="pt-2">
             <button
               type="submit"

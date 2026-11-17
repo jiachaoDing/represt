@@ -26,17 +26,20 @@ export function TrainingCyclePage() {
     error,
     handleAddSlot,
     handleAssignPlan,
+    handleCreatePlan,
     handleCalibrateToday,
     handleRemoveSlot,
     handleReorderSlots,
     isLoading,
     isSubmitting,
     plans,
+    refreshPlans,
     todayCycleDay,
     trainingCycle,
   } = useTrainingCyclePageData()
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null)
   const [sheetOpen, setSheetOpen] = useState(false)
+  const [sheetSession, setSheetSession] = useState(0)
   const [slotOrder, setSlotOrder] = useState<string[] | null>(null)
   const [activeSlotId, setActiveSlotId] = useState<string | null>(null)
   const [isSorting, setIsSorting] = useState(false)
@@ -69,7 +72,7 @@ export function TrainingCyclePage() {
   const selectedPlan = selectedSlot?.planId
     ? plans.find((plan) => plan.id === selectedSlot.planId) ?? null
     : null
-  const isSlotSheetOpen = sheetOpen && Boolean(trainingCycle && trainingCycle.slots.length > 0)
+  const isSlotSheetOpen = sheetOpen && selectedSlot !== null
 
   const orderedAnchorIndex =
     todayCycleDay === null
@@ -108,22 +111,24 @@ export function TrainingCyclePage() {
       : orderedSlotItems.find((item) => item.slot.id === activeSlotId) ?? null
 
   async function assignPlan(planId: string | null) {
-    if (!selectedSlot) return
-    await handleAssignPlan(selectedSlot.id, planId)
+    if (!selectedSlot) return false
+    return handleAssignPlan(selectedSlot.id, planId)
   }
 
   async function deleteSlot(slotId: string | null) {
-    if (!slotId) return
+    if (!slotId) return false
     const didDelete = await handleRemoveSlot(slotId)
     if (didDelete) {
       setSelectedSlotId(null)
     }
+    return didDelete
   }
 
   function openSlotSheet(slotId: string) {
     setFocusedSlotId(slotId)
     setViewedCycleSlotId(slotId, true)
     setSelectedSlotId(slotId)
+    setSheetSession((session) => session + 1)
     setSheetOpen(true)
   }
 
@@ -266,15 +271,18 @@ export function TrainingCyclePage() {
       </div>
 
       <TrainingCycleSlotSheet
+        key={sheetSession}
+        error={error}
         isSubmitting={isSubmitting}
-        onAssignPlan={(planId) => void assignPlan(planId)}
+        onAssignPlan={assignPlan}
+        onCreatePlan={handleCreatePlan}
+        onPlansImported={refreshPlans}
         onClose={() => setSheetOpen(false)}
-        onDeleteSlot={(slotId) => void deleteSlot(slotId)}
+        onDeleteSlot={deleteSlot}
         open={isSlotSheetOpen}
         selectedIndex={selectedIndex}
         selectedSlotId={selectedSlotId}
         selectedPlan={selectedPlan}
-        planColorMap={planColorMap}
         plans={plans}
       />
 

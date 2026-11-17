@@ -1,6 +1,6 @@
-import { useEffect, type PropsWithChildren, type ReactNode } from 'react'
+import { useEffect, useId, useRef, type PropsWithChildren, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
+import { AnimatePresence, motion, useDragControls, useReducedMotion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 
 import { quickEaseTransition, sheetSpringTransition } from './motion-tokens'
@@ -11,7 +11,7 @@ export type AnimatedSheetProps = PropsWithChildren<{
   onClose: () => void
   open: boolean
   title: string
-  variant?: 'default' | 'prominent'
+  variant?: 'default' | 'prominent' | 'compact'
 }>
 
 export function AnimatedSheet({
@@ -26,6 +26,19 @@ export function AnimatedSheet({
   const { t } = useTranslation()
   const reduceMotion = useReducedMotion()
   const isProminent = variant === 'prominent'
+  const isCompact = variant === 'compact'
+  const dragControls = useDragControls()
+  const titleId = useId()
+  const panelRef = useRef<HTMLElement>(null)
+
+  useEffect(() => {
+    if (!open || !isCompact) return
+    const previousFocus = document.activeElement
+    panelRef.current?.querySelector<HTMLButtonElement>('button')?.focus({ preventScroll: true })
+    return () => {
+      if (previousFocus instanceof HTMLElement && previousFocus.isConnected) previousFocus.focus({ preventScroll: true })
+    }
+  }, [isCompact, open])
 
   useEffect(() => {
     if (!open) {
@@ -60,7 +73,33 @@ export function AnimatedSheet({
           />
           <div className="absolute inset-x-0 bottom-0 mx-auto w-full max-w-[30rem] px-0 pb-0">
             <motion.section
+              ref={panelRef}
               key="sheet-panel"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby={titleId}
+              onKeyDown={isCompact ? (event) => {
+                if (event.key === 'Escape') onClose()
+                if (event.key !== 'Tab') return
+                const buttons = event.currentTarget.querySelectorAll<HTMLElement>('button:not(:disabled), a[href], input:not(:disabled), [tabindex="0"]')
+                const first = buttons[0]
+                const last = buttons[buttons.length - 1]
+                if (event.shiftKey && document.activeElement === first) {
+                  event.preventDefault()
+                  last?.focus()
+                } else if (!event.shiftKey && document.activeElement === last) {
+                  event.preventDefault()
+                  first?.focus()
+                }
+              } : undefined}
+              drag={isCompact ? 'y' : false}
+              dragListener={false}
+              dragControls={dragControls}
+              dragConstraints={{ top: 0, bottom: 0 }}
+              dragElastic={{ top: 0, bottom: 0.3 }}
+              onDragEnd={(_, info) => {
+                if (info.offset.y > 70 || info.velocity.y > 500) onClose()
+              }}
               initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 40 }}
               animate={{
                 opacity: 1,
@@ -76,14 +115,20 @@ export function AnimatedSheet({
                       transition: quickEaseTransition,
                     }
               }
-              className={`max-h-[90vh] w-full overflow-auto rounded-t-[28px] bg-[var(--surface-container)] px-4 pb-[max(1.5rem,var(--app-safe-area-inset-bottom))] pt-4 shadow-2xl ${
+              className={`${isCompact ? 'flex h-[min(24rem,80dvh)] flex-col overflow-hidden pt-1' : 'max-h-[90vh] overflow-auto pb-[max(1.5rem,var(--app-safe-area-inset-bottom))] pt-4'} w-full rounded-t-[28px] bg-[var(--surface-container)] px-4 shadow-2xl ${
                 isProminent ? 'rounded-t-[2rem] pb-[max(2rem,var(--app-safe-area-inset-bottom))]' : ''
               }`}
             >
-              <div className={`mx-auto h-1 rounded-full bg-[var(--outline)] ${isProminent ? 'mb-8 w-14' : 'mb-6 w-8'}`} />
-              <div className="flex items-start justify-between gap-3 px-2">
+              <div
+                onPointerDown={isCompact ? (event) => dragControls.start(event) : undefined}
+                style={isCompact ? { touchAction: 'none' } : undefined}
+                className={isCompact ? 'flex h-5 shrink-0 items-center justify-center' : ''}
+              >
+                <div className={`mx-auto h-1 rounded-full bg-[var(--outline)] ${isCompact ? 'w-8' : isProminent ? 'mb-8 w-14' : 'mb-6 w-8'}`} />
+              </div>
+              <div className={`flex shrink-0 items-start justify-between gap-3 px-2 ${isCompact ? 'items-center' : ''}`}>
                 <div className="min-w-0">
-                  <h2 className={`${isProminent ? 'text-3xl font-semibold' : 'text-xl font-normal'} text-[var(--on-surface)]`}>
+                  <h2 id={titleId} className={`${isProminent ? 'text-3xl font-semibold' : isCompact ? 'text-lg font-semibold' : 'text-xl font-normal'} text-[var(--on-surface)]`}>
                     {title}
                   </h2>
                   {description ? (
@@ -115,8 +160,8 @@ export function AnimatedSheet({
                   </svg>
                 </button>
               </div>
-              <div className="mt-4 px-2">{children}</div>
-              {actions ? <div className="mt-5 px-2">{actions}</div> : null}
+              <div className={isCompact ? 'flex min-h-0 flex-1 flex-col overflow-hidden px-2 pt-2' : 'mt-4 px-2'}>{children}</div>
+              {actions ? <div className={isCompact ? 'shrink-0 border-t border-[var(--outline-variant)]/40 px-2 pt-3 pb-[max(1rem,var(--app-safe-area-inset-bottom))]' : 'mt-5 px-2'}>{actions}</div> : null}
             </motion.section>
           </div>
         </div>

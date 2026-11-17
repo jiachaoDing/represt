@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import {
   addTrainingCycleSlot,
@@ -9,11 +10,13 @@ import {
   removeTrainingCycleSlot,
   reorderTrainingCycleSlots,
 } from '../../db/training-cycle'
-import { listPlansWithExercises, type PlanWithExercises } from '../../db/plans'
+import { createPlan, listPlansWithExercises, type PlanWithExercises } from '../../db/plans'
 import { triggerHaptic } from '../../lib/haptics'
+import { notifyPlansChanged } from '../../lib/plan-change-events'
 import type { TrainingCycle } from '../../models/types'
 
 export function useTrainingCyclePageData() {
+  const { t } = useTranslation()
   const [plans, setPlans] = useState<PlanWithExercises[]>([])
   const [trainingCycle, setTrainingCycle] = useState<TrainingCycle | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -39,7 +42,7 @@ export function useTrainingCyclePageData() {
     } catch (mutationError) {
       console.error(mutationError)
       setError(
-        mutationError instanceof Error ? mutationError.message : '循环日程保存失败，请重试。',
+        mutationError instanceof Error ? mutationError.message : t('trainingCycle.saveFailed'),
       )
       void triggerHaptic('error')
       return false
@@ -69,6 +72,17 @@ export function useTrainingCyclePageData() {
       await addTrainingCycleSlot()
       await loadData()
     })
+  }
+
+  async function handleCreatePlan(name: string) {
+    let createdId: string | null = null
+    const saved = await runMutation(async () => {
+      const plan = await createPlan(name)
+      createdId = plan.id
+      await loadData()
+      notifyPlansChanged(plan.id)
+    })
+    return saved ? createdId : null
   }
 
   async function handleRemoveSlot(slotId: string) {
@@ -109,12 +123,14 @@ export function useTrainingCyclePageData() {
     error,
     handleAddSlot,
     handleAssignPlan,
+    handleCreatePlan,
     handleCalibrateToday,
     handleRemoveSlot,
     handleReorderSlots,
     isLoading,
     isSubmitting,
     plans,
+    refreshPlans: () => runMutation(loadData),
     todayCycleDay: getTodayTrainingCycleDay(trainingCycle),
     trainingCycle,
   }
