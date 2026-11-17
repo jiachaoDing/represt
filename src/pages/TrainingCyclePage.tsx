@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from 'react'
 import type { DragEndEvent, DragOverEvent, DragStartEvent } from '@dnd-kit/core'
 import { arrayMove } from '@dnd-kit/sortable'
-import { Share2 } from 'lucide-react'
+import { CircleHelp, Share2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
@@ -16,7 +16,8 @@ import { getCycleSlotDateKey, getWeekdayLabel } from '../components/training-cyc
 import { useTrainingCyclePageData } from '../hooks/pages/useTrainingCyclePageData'
 import { useBackLinkState } from '../hooks/useRouteBack'
 import { triggerHaptic } from '../lib/haptics'
-import { getPlanColor } from '../lib/plan-color'
+import { getTemplateColor } from '../lib/plan-color'
+import { getViewedCycleSlotId, setViewedCycleSlotId } from '../lib/cycle-view-selection'
 import type { TrainingCycleSlot } from '../models/types'
 
 export function TrainingCyclePage() {
@@ -40,11 +41,13 @@ export function TrainingCyclePage() {
   const [activeSlotId, setActiveSlotId] = useState<string | null>(null)
   const [isSorting, setIsSorting] = useState(false)
   const [isShareSheetOpen, setIsShareSheetOpen] = useState(false)
+  const [focusedSlotId, setFocusedSlotId] = useState(getViewedCycleSlotId)
+  const [initialFocusSlotId] = useState(getViewedCycleSlotId)
   const lastDragOverIdRef = useRef<string | null>(null)
   const backLinkState = useBackLinkState()
 
   const planColorMap = useMemo(
-    () => new Map(plans.map((plan, index) => [plan.id, getPlanColor(index)])),
+    () => new Map(plans.map((plan) => [plan.id, getTemplateColor(plan)])),
     [plans],
   )
   const orderedSlots = useMemo(() => {
@@ -118,6 +121,8 @@ export function TrainingCyclePage() {
   }
 
   function openSlotSheet(slotId: string) {
+    setFocusedSlotId(slotId)
+    setViewedCycleSlotId(slotId, true)
     setSelectedSlotId(slotId)
     setSheetOpen(true)
   }
@@ -212,9 +217,15 @@ export function TrainingCyclePage() {
       />
 
       {!isLoading && trainingCycle && trainingCycle.slots.length > 0 ? (
-        <div className="mx-4 mt-1 rounded-full bg-[var(--surface-container)] px-3 py-2 text-center text-[12px] font-medium text-[var(--on-surface-variant)]">
-          {t('trainingCycle.interactionHint')}
-        </div>
+        <details className="relative z-10 ml-auto mr-4 shrink-0">
+          <summary className="flex min-h-11 cursor-pointer list-none items-center gap-1.5 px-2 text-[11px] text-[var(--on-surface-variant)]/70 [&::-webkit-details-marker]:hidden">
+            <CircleHelp size={14} aria-hidden="true" />
+            {t('trainingCycle.interactionHelp')}
+          </summary>
+          <p className="absolute right-0 top-full z-10 w-56 rounded-2xl border border-[var(--outline-variant)]/50 bg-[var(--surface-container)] px-4 py-3 text-xs leading-relaxed text-[var(--on-surface-variant)] shadow-[var(--shadow-soft)]">
+            {t('trainingCycle.interactionHint')}
+          </p>
+        </details>
       ) : null}
 
       {error ? (
@@ -223,11 +234,17 @@ export function TrainingCyclePage() {
         </div>
       ) : null}
 
-      <div className="min-h-0 flex-1 overflow-y-auto">
+      <div className="scrollbar-hide flex min-h-0 flex-1 flex-col overflow-y-auto">
         {isLoading ? (
           <TrainingCyclePageLoading showHeader={false} />
         ) : trainingCycle && trainingCycle.slots.length > 0 ? (
           <TrainingCycleSlotList
+            initialFocusSlotId={initialFocusSlotId}
+            focusedSlotId={focusedSlotId}
+            onFocusSlot={(slotId) => {
+              setFocusedSlotId(slotId)
+              setViewedCycleSlotId(slotId, true)
+            }}
             activeSlotItem={activeSlotItem}
             isSorting={isSorting}
             isSubmitting={isSubmitting}

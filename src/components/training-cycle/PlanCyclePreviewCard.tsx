@@ -6,6 +6,7 @@ import { useBackLinkState } from '../../hooks/useRouteBack'
 import { TrainingCycleWheel } from './TrainingCycleWheel'
 import type { TrainingCycle } from '../../models/types'
 import type { PlanColor } from '../../lib/plan-color'
+import { setViewedCycleSlotId } from '../../lib/cycle-view-selection'
 
 type PlanCyclePreviewCardProps = {
   cycle: TrainingCycle | null
@@ -69,6 +70,7 @@ export function PlanCyclePreviewCard({
         </div>
         <Link
           to="/plans/cycle"
+          onClick={() => setViewedCycleSlotId(cycle?.slots[selectedIndex ?? currentIndex ?? 0]?.id ?? null)}
           state={backLinkState}
           viewTransition
           aria-label={isConfigured ? t('trainingCycle.editCycle') : t('trainingCycle.setCycle')}

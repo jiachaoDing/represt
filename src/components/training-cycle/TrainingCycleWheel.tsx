@@ -14,7 +14,9 @@ import { useTranslation } from 'react-i18next'
 
 import type { TrainingCycleSlot } from '../../models/types'
 import type { PlanColor } from '../../lib/plan-color'
-import { wheelEaseTransition } from '../motion/motion-tokens'
+import { listSpringTransition } from '../motion/motion-tokens'
+import { CycleNode } from './CycleNode'
+import { getCycleOrbitEmphasis } from './training-cycle-wheel-geometry'
 import { triggerHaptic } from '../../lib/haptics'
 
 type TrainingCycleWheelProps = {
@@ -39,8 +41,8 @@ function getNodeSpacing(width: number) {
 function settleWheel(position: MotionValue<number>, index: number, count: number, reduceMotion: boolean | null) {
   const target = position.get() + getOffset(index, position.get(), count)
   return animate(position, target, {
-    ...wheelEaseTransition,
-    duration: reduceMotion ? 0 : wheelEaseTransition.duration,
+    ...listSpringTransition,
+    ...(reduceMotion ? { duration: 0, type: 'tween' as const } : {}),
   })
 }
 
@@ -77,12 +79,12 @@ function WheelNode({
   const spacing = useTransform(() => getNodeSpacing(width.get()))
   const x = useTransform(() => offset.get() * spacing.get())
   const y = useTransform(() => 52 - 44 * Math.min(1, (2 * x.get() / width.get()) ** 2))
-  const scale = useTransform(() => Math.max(0.38, 1 - Math.abs(offset.get()) * 0.2))
+  const scale = useTransform(() => getCycleOrbitEmphasis(offset.get() / 3).nodeScale)
   const visibility = useTransform(() => {
     const distance = Math.abs(offset.get())
     const radius = Math.min(count / 2, (width.get() / 2 - 22) / spacing.get())
     const edgeFade = count <= 2 ? 1 : Math.min(1, Math.max(0, (radius - distance) * 2))
-    return Math.max(0.18, 1 - distance * 0.25) * edgeFade
+    return getCycleOrbitEmphasis(distance / 3).opacity * edgeFade
   })
   const pointerEvents = useTransform(() => visibility.get() > 0.08 ? 'auto' : 'none')
 
@@ -97,20 +99,12 @@ function WheelNode({
       aria-pressed={isSelected}
       aria-current={isCurrent ? 'date' : undefined}
       data-wheel-focus={copy === 0 && isFocusable ? 'true' : undefined}
-      style={{ x, y, opacity: visibility, pointerEvents, outlineColor: color?.solid ?? 'var(--outline)' }}
+      style={{ x, y, opacity: visibility, pointerEvents, outlineColor: 'var(--cycle-focus)' }}
       className="absolute left-1/2 top-0 -ml-[22px] -mt-[22px] flex h-11 w-11 items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-[-2px] disabled:cursor-default tap-highlight-transparent"
     >
-      <motion.span
-        aria-hidden="true"
-        className="h-6 w-6 rounded-full"
-        style={{
-          scale,
-          backgroundColor: color?.solid ?? 'var(--outline)',
-          boxShadow: isSelected
-            ? `0 3px 14px color-mix(in srgb, ${color?.solid ?? 'var(--outline)'} 16%, transparent)`
-            : 'none',
-        }}
-      />
+      <motion.span style={{ scale }}>
+        <CycleNode color={color} focused={isSelected} />
+      </motion.span>
       {isCurrent ? <span aria-hidden="true" className="absolute bottom-0.5 h-1 w-1 rounded-full bg-[var(--on-surface-variant)]" /> : null}
     </motion.button>
   )
@@ -255,7 +249,7 @@ export function TrainingCycleWheel({
       }}
       className="relative mx-auto h-[88px] w-full max-w-[26rem] touch-pan-y select-none overflow-hidden"
     >
-      <svg aria-hidden="true" viewBox="0 0 400 88" preserveAspectRatio="none" className="pointer-events-none absolute inset-0 h-full w-full fill-none text-[var(--outline-variant)]/50">
+      <svg aria-hidden="true" viewBox="0 0 400 88" preserveAspectRatio="none" className="pointer-events-none absolute inset-0 h-full w-full fill-none text-[var(--cycle-track)]/25">
         <path d="M 0 8 Q 200 96 400 8" stroke="currentColor" strokeWidth="1" vectorEffect="non-scaling-stroke" />
       </svg>
       {slots.flatMap((slot, index) => (count <= 2 ? [0] : [-1, 0, 1]).map((copy) => (

@@ -71,6 +71,14 @@
   --plan-5-container: #FFE0E8;
   --on-plan-5-container: #3A1A24;
 
+  /* Shared cycle overview and expanded orbit */
+  --cycle-focus: var(--plan-1);
+  --on-cycle-focus: var(--plan-1-container);
+  --cycle-track: var(--outline);
+  --cycle-rest: var(--outline);
+  --cycle-rest-container: var(--surface-container);
+  --on-cycle-rest-container: var(--on-surface);
+
   --recording-weightReps: var(--plan-1);
   --recording-leftRightWeightReps: var(--plan-2);
   --recording-reps: var(--plan-3);

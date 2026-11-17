@@ -708,6 +708,7 @@ const common = {
     loadingSubtitle: 'Loading cycle',
     currentCycleDays: 'Current cycle: {{days}} days',
     interactionHint: 'Tap the left number to set today · long press and drag to reorder',
+    interactionHelp: 'Help',
     calendar: 'Calendar',
     dayNumber: 'Day {{dayNumber}}',
     viewDay: 'View day {{dayNumber}}, {{name}}',

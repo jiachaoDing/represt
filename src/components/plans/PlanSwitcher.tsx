@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef } from 'react'
 
 import type { PlanWithExercises } from '../../db/plans'
-import { getPlanColor } from '../../lib/plan-color'
+import { getTemplateColor } from '../../lib/plan-color'
 
 type PlanSwitcherProps = {
   isSubmitting: boolean
@@ -38,9 +38,9 @@ export function PlanSwitcher({
       data-primary-tab-swipe-lock="true"
     >
       <div className="flex w-max items-center gap-2 pb-2">
-        {plans.map((plan, index) => {
+        {plans.map((plan) => {
           const isSelected = plan.id === selectedPlanId
-          const color = getPlanColor(index)
+          const color = getTemplateColor(plan)
           return (
             <button
               key={plan.id}
@@ -60,7 +60,7 @@ export function PlanSwitcher({
                   ? `color-mix(in srgb, ${color.soft} 78%, transparent)`
                   : `color-mix(in srgb, ${color.soft} 36%, transparent)`,
                 borderColor: isSelected
-                  ? color.solid
+                  ? 'var(--cycle-focus)'
                   : `color-mix(in srgb, ${color.solid} 46%, transparent)`,
                 color: isSelected ? color.text : color.solid,
               }}

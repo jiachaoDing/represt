@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import {
@@ -29,11 +29,13 @@ import {
 } from '../../lib/input-parsers'
 import { triggerHaptic } from '../../lib/haptics'
 import { subscribeToPlansChanged } from '../../lib/plan-change-events'
+import { getCycleReturnSlotId, getViewedCycleSlotId, setViewedCycleSlotId } from '../../lib/cycle-view-selection'
 import type { PlanExerciseDraft } from '../../lib/plan-editor'
 import type { TrainingCycle } from '../../models/types'
 
 export function usePlansPageData(preferredSelectedPlanId?: string | null) {
   const { t } = useTranslation()
+  const returnSlotIdRef = useRef(getCycleReturnSlotId())
   const [plans, setPlans] = useState<PlanWithExercises[]>([])
   const [trainingCycle, setTrainingCycle] = useState<TrainingCycle | null>(null)
   const [newPlanName, setNewPlanName] = useState('')
@@ -46,7 +48,7 @@ export function usePlansPageData(preferredSelectedPlanId?: string | null) {
   const [lastCreatedExerciseId, setLastCreatedExerciseId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  const loadPlans = useCallback(async (preferredPlanId?: string | null) => {
+  const loadPlans = useCallback(async (preferredPlanId?: string | null, preferredSlotId?: string | null) => {
     const [items, cycle] = await Promise.all([listPlansWithExercises(), getTrainingCycle()])
     const sortedItems = [...items].sort((left, right) =>
       right.createdAt.localeCompare(left.createdAt),
@@ -54,10 +56,10 @@ export function usePlansPageData(preferredSelectedPlanId?: string | null) {
     setPlans(sortedItems)
     setTrainingCycle(cycle)
     setSelection((current) => {
-      const selectedSlot = cycle?.slots.find((slot) => slot.id === current.slotId)
+      const selectedSlot = cycle?.slots.find((slot) => slot.id === (preferredSlotId ?? current.slotId ?? getViewedCycleSlotId()))
       if (
         selectedSlot &&
-        (preferredPlanId === undefined || preferredPlanId === selectedSlot.planId)
+        (preferredSlotId === selectedSlot.id || preferredPlanId === undefined || preferredPlanId === selectedSlot.planId)
       ) {
         return { planId: selectedSlot.planId, slotId: selectedSlot.id }
       }
@@ -95,7 +97,8 @@ export function usePlansPageData(preferredSelectedPlanId?: string | null) {
     async function initialize() {
       try {
         setError(null)
-        await loadPlans(preferredSelectedPlanId)
+        await loadPlans(preferredSelectedPlanId ?? undefined, returnSlotIdRef.current)
+        returnSlotIdRef.current = null
       } catch (loadError) {
         console.error(loadError)
         setError(t('plans.loadFailed'))
@@ -290,12 +293,14 @@ export function usePlansPageData(preferredSelectedPlanId?: string | null) {
       : null
 
   function setSelectedPlanId(planId: string | null) {
+    setViewedCycleSlotId(null)
     setSelection({ planId, slotId: null })
   }
 
   function selectCycleDay(index: number) {
     const slot = trainingCycle?.slots[index]
     if (slot) {
+      setViewedCycleSlotId(slot.id)
       setSelection({ planId: slot.planId, slotId: slot.id })
     }
   }

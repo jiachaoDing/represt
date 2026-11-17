@@ -13,7 +13,7 @@ import { PlanShareSheet } from '../components/plans/PlanShareSheet'
 import { PlanSwitcher } from '../components/plans/PlanSwitcher'
 import { usePlansPageData } from '../hooks/pages/usePlansPageData'
 import { usePlansPageUi } from '../hooks/pages/usePlansPageUi'
-import { getPlanColor } from '../lib/plan-color'
+import { getTemplateColor } from '../lib/plan-color'
 import { notifyPlansChanged } from '../lib/plan-change-events'
 
 export function PlansPage() {
@@ -47,7 +47,7 @@ export function PlansPage() {
   const [sharePlanId, setSharePlanId] = useState<string | null>(null)
   const handledAddedExerciseLocationKeyRef = useRef<string | null>(null)
   const planColorMap = useMemo(
-    () => new Map(plans.plans.map((plan, index) => [plan.id, getPlanColor(index)])),
+    () => new Map(plans.plans.map((plan) => [plan.id, getTemplateColor(plan)])),
     [plans.plans],
   )
 

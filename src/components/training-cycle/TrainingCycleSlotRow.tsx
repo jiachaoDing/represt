@@ -1,52 +1,58 @@
+import type { CSSProperties } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import type { TrainingCycleSlotRowProps } from './training-cycle-page.types'
+import { CycleNode } from './CycleNode'
 
 function TrainingCycleSlotCard({
   color,
   isSorting = false,
+  isFocused = false,
   isSubmitting,
   onOpenSheet,
   slot,
   plan,
   weekdayLabel,
-  isToday,
-}: Omit<TrainingCycleSlotRowProps, 'index' | 'isDragging' | 'onCalibrateToday'>) {
+}: Omit<TrainingCycleSlotRowProps, 'index' | 'isDragging' | 'isToday' | 'onCalibrateToday'>) {
   const { t } = useTranslation()
 
   return (
     <button
       type="button"
       onClick={() => onOpenSheet(slot.id)}
+      aria-pressed={isFocused}
       disabled={isSubmitting || isSorting}
       className={[
-        'flex flex-1 items-center justify-between rounded-3xl p-5 text-left transition-transform active:scale-[0.98] shadow-sm border border-transparent disabled:opacity-80',
+        'relative flex h-[88px] min-w-0 flex-1 origin-left items-center justify-between gap-2 rounded-[1.4rem] px-4 text-left active:scale-[0.98] border border-transparent shadow-[var(--shadow-soft)] disabled:opacity-80',
         plan
           ? ''
           : 'bg-[var(--surface-container)] text-[var(--on-surface)] border-[var(--outline-variant)]/20',
       ].join(' ')}
-      style={
-        plan && color
-          ? { backgroundColor: color.soft, color: color.text, borderColor: 'rgba(0,0,0,0.05)' }
-          : {}
-      }
+      style={{
+        borderColor: isFocused ? 'var(--cycle-focus)' : undefined,
+        boxShadow: isFocused ? '0 0 0 1px var(--cycle-focus), var(--shadow-soft)' : undefined,
+        transform: 'scale(var(--cycle-card-scale, 1))',
+        backgroundColor: plan && color ? color.soft : undefined,
+        color: plan && color ? color.text : undefined,
+      }}
     >
+      <span aria-hidden="true" style={{ backgroundColor: isFocused ? 'var(--cycle-focus)' : undefined }} className="absolute -left-px top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-[var(--cycle-accent)]/40" />
       <div className="min-w-0">
-        <h4 className="text-[17px] font-bold tracking-tight">
+        <h4 className="line-clamp-2 break-words text-[16px] font-bold leading-snug tracking-tight">
           {plan ? plan.name : t('trainingCycle.restDay')}
         </h4>
-        <p className="mt-1 text-[13px] font-medium opacity-70">
+        <p className="mt-1 truncate text-[12px] font-medium opacity-75">
           {plan
             ? t('trainingCycle.exerciseCount', { count: plan.exercises.length })
             : t('trainingCycle.restDescription')}
         </p>
       </div>
 
-      <div className="ml-4 flex shrink-0 items-center gap-2">
-        <span className="text-[15px] font-semibold opacity-65">
-          {isToday ? t('trainingCycle.today') : weekdayLabel}
+      <div className="flex shrink-0 flex-col items-end gap-2">
+        <span className="text-[12px] font-medium opacity-70">
+          {weekdayLabel}
         </span>
-        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-black/5 opacity-50">
+        <div className="flex h-5 w-5 items-center justify-center opacity-50" aria-hidden="true">
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
           </svg>
@@ -61,6 +67,7 @@ export function TrainingCycleSlotRow({
   index,
   isDragging = false,
   isSorting = false,
+  isFocused = false,
   isSubmitting,
   isToday,
   onCalibrateToday,
@@ -72,22 +79,24 @@ export function TrainingCycleSlotRow({
   const { t } = useTranslation()
 
   return (
-    <div className="relative flex gap-4 px-4 py-3">
-      <div className="relative z-10 flex w-12 shrink-0 flex-col items-center pt-2">
+    <div style={{ '--cycle-accent': color?.solid ?? 'var(--cycle-rest)' } as CSSProperties} className="relative flex h-[112px] items-center px-4 pr-6">
+      <span aria-hidden="true" className="pointer-events-none absolute left-10 top-1/2 h-px w-9 bg-[var(--cycle-accent)]/35" />
+      <div className="relative z-10 flex w-12 shrink-0 items-center justify-center">
         {isToday ? (
           <button
             type="button"
             disabled={isSubmitting || isSorting}
+            aria-current="date"
             onClick={() => onCalibrateToday(slot.id)}
             className="relative flex h-12 w-12 items-center justify-center rounded-full transition-transform active:scale-95 disabled:opacity-60"
             aria-label={`${t('trainingCycle.dayNumber', { dayNumber: index + 1 })}，${t('trainingCycle.today')}`}
           >
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--primary)] text-sm font-bold text-[var(--on-primary)] ring-4 ring-[var(--primary)]/20 shadow-sm">
-              {index + 1}
+            <span style={{ transform: 'scale(var(--cycle-node-scale, 1))' }}>
+              <CycleNode color={color} focused={isFocused} day={index + 1} />
             </span>
-            <div className="absolute -bottom-6 whitespace-nowrap rounded-full bg-[var(--primary)] px-2 py-0.5 text-[10px] font-semibold text-[var(--on-primary)] shadow-sm">
+            <span className="absolute top-full mt-0.5 whitespace-nowrap text-[10px] font-medium leading-4 text-[var(--on-surface-variant)]">
               {t('trainingCycle.today')}
-            </div>
+            </span>
           </button>
         ) : (
           <button
@@ -97,18 +106,19 @@ export function TrainingCycleSlotRow({
             className="flex h-12 w-12 items-center justify-center rounded-full transition-colors active:scale-95 disabled:opacity-60"
             aria-label={t('trainingCycle.setDayAsToday', { dayNumber: index + 1 })}
           >
-            <span className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-[var(--surface)] bg-[var(--surface-variant)] text-[11px] font-medium text-[var(--on-surface-variant)] shadow-sm">
-              {index + 1}
+            <span style={{ transform: 'scale(var(--cycle-node-scale, 1))' }}>
+              <CycleNode color={color} focused={isFocused} day={index + 1} />
             </span>
           </button>
         )}
       </div>
+      <span aria-hidden="true" className="w-3 shrink-0" />
 
       <TrainingCycleSlotCard
+        isFocused={isFocused}
         color={color}
         isSorting={isSorting}
         isSubmitting={isSubmitting || isDragging}
-        isToday={isToday}
         onOpenSheet={onOpenSheet}
         slot={slot}
         plan={plan}

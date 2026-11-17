@@ -2,12 +2,17 @@ import type { CSSProperties } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { useTranslation } from 'react-i18next'
+import type { MotionValue } from 'framer-motion'
 
 import { verticalSortTransition } from '../dnd/vertical-sortable-motion'
 import { TrainingCycleSlotRow } from './TrainingCycleSlotRow'
+import { TrainingCycleWheelItem } from './TrainingCycleWheelItem'
 import type { TrainingCycleSlotRowProps } from './training-cycle-page.types'
 
-export function SortableTrainingCycleSlotRow(props: TrainingCycleSlotRowProps) {
+export function SortableTrainingCycleSlotRow({ wheelScrollTop, wheelViewportHeight, ...props }: TrainingCycleSlotRowProps & {
+  wheelScrollTop: MotionValue<number>
+  wheelViewportHeight: MotionValue<number>
+}) {
   const { t } = useTranslation()
   const {
     attributes,
@@ -26,6 +31,7 @@ export function SortableTrainingCycleSlotRow(props: TrainingCycleSlotRowProps) {
     transform: isDragging ? undefined : CSS.Transform.toString(transform),
     transition,
     touchAction: 'manipulation',
+    scrollSnapAlign: 'center',
   }
 
   return (
@@ -43,7 +49,9 @@ export function SortableTrainingCycleSlotRow(props: TrainingCycleSlotRowProps) {
       {...attributes}
       {...listeners}
     >
-      <TrainingCycleSlotRow {...props} isDragging={isDragging} />
+      <TrainingCycleWheelItem index={props.index} scrollTop={wheelScrollTop} viewportHeight={wheelViewportHeight}>
+        <TrainingCycleSlotRow {...props} isDragging={isDragging} />
+      </TrainingCycleWheelItem>
     </div>
   )
 }

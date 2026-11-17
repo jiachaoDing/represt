@@ -708,6 +708,7 @@ const common = {
     loadingSubtitle: '正在载入日程',
     currentCycleDays: '当前循环：{{days}} 天',
     interactionHint: '点击左侧序号可设为今天 · 长按拖动排序',
+    interactionHelp: '操作帮助',
     calendar: '日历',
     dayNumber: '第 {{dayNumber}} 天',
     viewDay: '查看第 {{dayNumber}} 天，{{name}}',
