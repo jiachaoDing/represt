@@ -30,6 +30,8 @@ type TrainingCycleWheelProps = {
   disabled: boolean
 }
 
+const wheelGestureThreshold = 8
+
 function getOffset(index: number, position: number, count: number) {
   // One- and two-day cycles have a single visible instance of each day.
   return count <= 2 ? index - position : wrap(-count / 2, count / 2, index - position)
@@ -180,12 +182,16 @@ export function TrainingCycleWheel({
   }
 
   function handlePan(_event: PointerEvent, info: PanInfo) {
+    const horizontalDistance = Math.abs(info.offset.x)
+    if (Math.max(horizontalDistance, Math.abs(info.offset.y)) >= wheelGestureThreshold) {
+      suppressClickRef.current = true
+    }
     if (disabled || selectingRef.current || count < 2) return
     if (!dragRef.current) {
-      if (Math.abs(info.offset.x) < 8 || Math.abs(info.offset.x) <= Math.abs(info.offset.y)) return
+      if (horizontalDistance < wheelGestureThreshold) return
       position.stop()
-      dragRef.current = { origin: position.get(), tick: Math.round(position.get()) }
-      suppressClickRef.current = true
+      const origin = position.get()
+      dragRef.current = { origin, tick: Math.round(origin) }
     }
     const nextPosition = dragRef.current.origin - info.offset.x / getNodeSpacing(width.get())
     position.set(count === 2 ? Math.max(0, Math.min(1, nextPosition)) : nextPosition)
@@ -247,7 +253,7 @@ export function TrainingCycleWheel({
           event.stopPropagation()
         }
       }}
-      className="relative mx-auto h-[88px] w-full max-w-[26rem] touch-pan-y select-none overflow-hidden"
+      className="relative mx-auto h-[88px] w-full max-w-[26rem] touch-none select-none overflow-clip"
     >
       <svg aria-hidden="true" viewBox="0 0 400 88" preserveAspectRatio="none" className="pointer-events-none absolute inset-0 h-full w-full fill-none" style={{ color: cycleOrbitTokens.track.color, opacity: cycleOrbitTokens.track.opacity }}>
         <path d="M 0 8 Q 200 96 400 8" stroke="currentColor" strokeWidth={cycleOrbitTokens.track.width} vectorEffect="non-scaling-stroke" />
